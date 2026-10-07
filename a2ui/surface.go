@@ -1,6 +1,10 @@
 package a2ui
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+	"strings"
+)
 
 // Surface is one A2UI surface as the renderer holds it: its components (the
 // adjacency list, as the agent sent it), its data model, and the node tree
@@ -111,7 +115,7 @@ func (s *Surface) ComponentType(c *Component) *ComponentType {
 	if !ok {
 		return nil
 	}
-	return cat.Components[c.Type]
+	return cat.Component(c.Type)
 }
 
 // CatalogOf is the catalog a component resolves against.
@@ -188,4 +192,72 @@ func (c *Component) Definition() map[string]any {
 		d["catalogId"] = c.Catalog
 	}
 	return d
+}
+
+// Dispatch runs an Action that source, in scope, started: an event goes to
+// the agent as an action message, its context and userMessage resolved
+// now; a functionCall runs (with the user's activation when activation is
+// set), and the tree is resolved again. An error also goes to the agent.
+func (s *Surface) Dispatch(action map[string]any, scope Scope, source string, activation bool) error {
+	ctx := s.Context(scope)
+	ctx.Activation = activation
+	ctx.Caller = source
+	if fc, ok := action["functionCall"].(map[string]any); ok {
+		_, err := ctx.Resolve(fc)
+		if err != nil {
+			s.Tree.report(err)
+		}
+		s.Tree.Resolve()
+		return err
+	}
+	ev, ok := action["event"].(map[string]any)
+	if !ok {
+		err := &ValidationError{Msg: fmt.Sprintf("component '%s': an action is an event or a functionCall", source)}
+		s.Tree.report(err)
+		return err
+	}
+	a, err := s.ActionFor(ev, ctx, source)
+	if err != nil {
+		s.Tree.report(err)
+		return err
+	}
+	if s.env.Action != nil {
+		s.env.Action(s, a)
+	}
+	return nil
+}
+
+// ActionFor builds the action message an event sends, resolving its
+// context and userMessage in ctx.
+func (s *Surface) ActionFor(ev map[string]any, ctx *Context, source string) (*ActionMessage, error) {
+	name, _ := ev["name"].(string)
+	if strings.TrimSpace(name) == "" {
+		return nil, &ValidationError{Msg: "an event action needs a name"}
+	}
+	a := &ActionMessage{
+		Name:              name,
+		SurfaceID:         s.ID,
+		SourceComponentID: source,
+		Timestamp:         Now().UTC().Format("2006-01-02T15:04:05.000Z"),
+		Context:           map[string]any{},
+	}
+	if c, ok := ev["context"].(map[string]any); ok {
+		for _, k := range SortedKeys(c) {
+			v, err := ctx.Resolve(c[k])
+			if err != nil {
+				return nil, err
+			}
+			a.Context[k] = v
+		}
+	}
+	if um, ok := ev["userMessage"]; ok {
+		v, err := ctx.Resolve(um)
+		if err != nil {
+			return nil, err
+		}
+		if s, ok := v.(string); ok {
+			a.UserMessage = s
+		}
+	}
+	return a, nil
 }

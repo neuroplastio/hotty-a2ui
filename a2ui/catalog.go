@@ -19,6 +19,11 @@ type Catalog struct {
 	Doc        map[string]any
 	Components map[string]*ComponentType
 	Functions  map[string]*Function
+	// Open accepts any component type with any properties, unchecked: a
+	// stand-in for a catalog the renderer knows only by its id.
+	Open bool
+
+	compiled catalogSchemas
 }
 
 // ComponentType is one component of a catalog.
@@ -29,7 +34,11 @@ type ComponentType struct {
 	// resolver does with it.
 	Props map[string]*Prop
 	// Required lists the properties the schema requires, component aside.
-	Required        []string
+	Required []string
+	// AllowedParents and AllowedChildren constrain which component types
+	// may contain this one, and which it may contain: nil when the schema
+	// does not say, empty when none may. A surface's root has the parent
+	// type Surface.
 	AllowedParents  []string
 	AllowedChildren []string
 }
@@ -120,7 +129,12 @@ func ParseCatalog(doc []byte) (*Catalog, error) {
 		c.ID = str(d["$id"])
 	}
 	if c.ID == "" {
-		return nil, fmt.Errorf("a2ui: catalog has no catalogId")
+		return nil, &CatalogError{Msg: "catalog has no catalogId"}
+	}
+	if major, _, ok := parseVersion(c.ProtocolVersion); ok && major >= 1 {
+		if err := checkIdentifiers(d); err != nil {
+			return nil, err
+		}
 	}
 	comps, _ := d["components"].(map[string]any)
 	for name, s := range comps {
@@ -143,6 +157,128 @@ func ParseCatalog(doc []byte) (*Catalog, error) {
 		c.Functions[name] = f
 	}
 	return c, nil
+}
+
+// NewOpenCatalog is an open catalog: any component, no functions.
+func NewOpenCatalog(id, protocolVersion string) *Catalog {
+	return &Catalog{
+		ID:              id,
+		ProtocolVersion: protocolVersion,
+		Components:      map[string]*ComponentType{},
+		Functions:       map[string]*Function{},
+		Open:            true,
+	}
+}
+
+// Component finds a component type: the catalog's, or, in an open
+// catalog, one that takes any properties (child and children are its
+// children, as A2UI's containers name them).
+func (c *Catalog) Component(name string) *ComponentType {
+	if t, ok := c.Components[name]; ok {
+		return t
+	}
+	if !c.Open {
+		return nil
+	}
+	t := &ComponentType{Name: name, Props: map[string]*Prop{
+		"child":    {Kind: ChildRef},
+		"children": {Kind: ChildList},
+	}}
+	for k, p := range commonProps {
+		t.Props[k] = p
+	}
+	return t
+}
+
+// CheckComponent validates a component definition against its type's
+// schema, ComponentCommon's properties with it; an open catalog accepts
+// anything.
+func (c *Catalog) CheckComponent(def map[string]any) error {
+	s, err := c.schemas()
+	if err != nil {
+		return err
+	}
+	typ, _ := def["component"].(string)
+	sch := s.components[typ]
+	if sch == nil {
+		return nil
+	}
+	id, _ := def["id"].(string)
+	return checkSchema(sch, def, fmt.Sprintf("Component '%s' (%s)", id, typ))
+}
+
+// CheckCall validates a call of one of the catalog's functions,
+// {"@call", "args", …}, against the function's schema.
+func (c *Catalog) CheckCall(name string, call map[string]any) error {
+	s, err := c.schemas()
+	if err != nil {
+		return err
+	}
+	sch := s.functions[name]
+	if sch == nil {
+		return nil
+	}
+	return checkSchema(sch, call, fmt.Sprintf("Invalid arguments for function '%s'", name))
+}
+
+// checkIdentifiers checks that a v1 catalog names its components, their
+// properties, its functions and their arguments as UAX #31 identifiers.
+// "@index" is A2UI's own.
+func checkIdentifiers(d map[string]any) error {
+	bad := func(kind, name string) error {
+		return &CatalogError{Msg: fmt.Sprintf("Invalid UAX #31 %s identifier: '%s'", kind, name)}
+	}
+	var props func(s map[string]any) error
+	props = func(s map[string]any) error {
+		if ps, ok := s["properties"].(map[string]any); ok {
+			for _, k := range SortedKeys(ps) {
+				if !IsIdentifier(k) && !strings.HasPrefix(k, "@") {
+					return bad("property", k)
+				}
+			}
+		}
+		for _, key := range []string{"allOf", "anyOf", "oneOf"} {
+			alts, _ := s[key].([]any)
+			for _, a := range alts {
+				if m, ok := a.(map[string]any); ok {
+					if err := props(m); err != nil {
+						return err
+					}
+				}
+			}
+		}
+		return nil
+	}
+	comps, _ := d["components"].(map[string]any)
+	for _, name := range SortedKeys(comps) {
+		if !IsIdentifier(name) {
+			return bad("component", name)
+		}
+		if s, ok := comps[name].(map[string]any); ok {
+			if err := props(s); err != nil {
+				return err
+			}
+		}
+	}
+	funcs, _ := d["functions"].(map[string]any)
+	for _, name := range SortedKeys(funcs) {
+		if !IsIdentifier(name) && name != "@index" {
+			return bad("function", name)
+		}
+		f, _ := funcs[name].(map[string]any)
+		args, _ := f["parameters"].(map[string]any)
+		if p, ok := f["properties"].(map[string]any); ok {
+			if a, ok := p["args"].(map[string]any); ok {
+				args, _ = a["properties"].(map[string]any)
+			}
+		}
+		for _, k := range SortedKeys(args) {
+			if !IsIdentifier(k) {
+				return bad("argument", k)
+			}
+		}
+	}
+	return nil
 }
 
 // Implement gives the renderer's implementation of a function the catalog
@@ -183,8 +319,8 @@ func classifyComponent(name string, schema map[string]any) *ComponentType {
 	for k, p := range commonProps {
 		t.Props[k] = p
 	}
-	t.AllowedParents = strs(schema["allowedParents"])
-	t.AllowedChildren = strs(schema["allowedChildren"])
+	t.AllowedParents = constraint(schema, "allowedParents")
+	t.AllowedChildren = constraint(schema, "allowedChildren")
 	var walk func(s map[string]any)
 	walk = func(s map[string]any) {
 		if props, ok := s["properties"].(map[string]any); ok {
@@ -232,6 +368,9 @@ func classify(s map[string]any) *Prop {
 	if ref := str(s["$ref"]); ref != "" {
 		switch refName(ref) {
 		case "ComponentId", "Child":
+			// A2UI's topology counts every component id as an edge: a
+			// property that names a component without containing it is a
+			// plain string.
 			p.Kind = ChildRef
 		case "ChildList":
 			p.Kind = ChildList
@@ -285,6 +424,14 @@ func classify(s map[string]any) *Prop {
 		}
 	}
 	return p
+}
+
+// constraint reads a composition constraint: nil when absent.
+func constraint(schema map[string]any, key string) []string {
+	if _, ok := schema[key].([]any); !ok {
+		return nil
+	}
+	return append([]string{}, strs(schema[key])...)
 }
 
 func str(v any) string {

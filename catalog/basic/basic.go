@@ -97,7 +97,7 @@ var Functions = map[string]a2ui.FuncImpl{
 		if s, ok := a["value"].(string); ok && emailPattern.MatchString(s) {
 			return valid
 		}
-		return invalid("Must be a valid email address.")
+		return a2ui.ValidationResult{Valid: false, Code: "INVALID_EMAIL", Message: "Please enter a valid email address (e.g. user@example.com).", Severity: "error"}
 	}),
 	"formatString": func(c *a2ui.Context, a map[string]any) (any, error) {
 		return FormatString(c, a2ui.ToString(a["value"]))

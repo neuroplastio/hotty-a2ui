@@ -203,7 +203,7 @@ func (c *Context) Invoke(catalog, name string, args map[string]any) (any, error)
 
 func (c *Context) index(args map[string]any) (any, error) {
 	if !c.Scope.InTemplate {
-		return nil, &ExpressionError{Msg: "@index is only available inside a template"}
+		return nil, &ValidationError{Msg: "@index function can only be evaluated inside a collection template iteration scope."}
 	}
 	off := 0.0
 	if o, ok := args["offset"]; ok && o != nil {
@@ -340,7 +340,7 @@ func NumberString(f float64) string {
 }
 
 // SortedKeys lists a map's keys in order.
-func SortedKeys(m map[string]any) []string {
+func SortedKeys[V any](m map[string]V) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)

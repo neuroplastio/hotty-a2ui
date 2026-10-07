@@ -20,8 +20,8 @@
           "pattern": "^((Control|Alt|Shift|Meta)\\+)*[^+]+$|^((Control|Alt|Shift|Meta)\\+)*\\+$"
         },
         "press": {
-          "$ref": "common_types.json#/$defs/ComponentId",
-          "description": "The id of a Button on this surface. The key presses it as a click would."
+          "type": "string",
+          "description": "The id of a Button on this surface. The key presses it as a click would. A plain id, not a ComponentId: the Shortcut does not contain the Button."
         },
         "action": {
           "$ref": "common_types.json#/$defs/Action",

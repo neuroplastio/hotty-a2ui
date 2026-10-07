@@ -1,6 +1,9 @@
 package a2ui
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+)
 
 // Version is the A2UI protocol version this core speaks, as messages
 // write it.
@@ -47,6 +50,21 @@ type FunctionResponse struct {
 	FunctionCallID string         `json:"functionCallId"`
 	Value          any            `json:"value,omitempty"`
 	Error          *ResponseError `json:"error,omitempty"`
+}
+
+// MarshalJSON writes the response with "value" always, null included,
+// unless it is an error: the schema requires one of them.
+func (r FunctionResponse) MarshalJSON() ([]byte, error) {
+	if r.Error != nil {
+		return json.Marshal(struct {
+			FunctionCallID string         `json:"functionCallId"`
+			Error          *ResponseError `json:"error"`
+		}{r.FunctionCallID, r.Error})
+	}
+	return json.Marshal(struct {
+		FunctionCallID string `json:"functionCallId"`
+		Value          any    `json:"value"`
+	}{r.FunctionCallID, r.Value})
 }
 
 // ResponseError is a function's failure.
@@ -102,18 +120,27 @@ func (e *RecursionError) Error() string { return "a2ui: " + e.Msg }
 
 // Code is the wire error code for an error the renderer reports.
 func Code(err error) string {
-	switch err.(type) {
-	case *ValidationError:
-		return "VALIDATION_FAILED"
-	case *IntegrityError:
-		return "INTEGRITY_ERROR"
-	case *CatalogError:
-		return "CATALOG_ERROR"
-	case *RecursionError:
+	var (
+		v *ValidationError
+		i *IntegrityError
+		c *CatalogError
+		r *RecursionError
+		d *DataError
+		e *ExpressionError
+		k *ReservedKeyError
+	)
+	switch {
+	case errors.As(err, &r):
 		return "RECURSION_ERROR"
-	case *DataError:
+	case errors.As(err, &i):
+		return "INTEGRITY_ERROR"
+	case errors.As(err, &v):
+		return "VALIDATION_FAILED"
+	case errors.As(err, &c):
+		return "CATALOG_ERROR"
+	case errors.As(err, &d):
 		return "DATA_ERROR"
-	case *ExpressionError, *ReservedKeyError:
+	case errors.As(err, &e), errors.As(err, &k):
 		return "EXPRESSION_ERROR"
 	}
 	return "EXECUTION_ERROR"

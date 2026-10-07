@@ -3,6 +3,7 @@ package a2ui
 import (
 	"fmt"
 	"strings"
+	"unicode"
 )
 
 // Pointer is a JSON Pointer (RFC 6901) taken apart into its reference
@@ -102,6 +103,9 @@ func Join(scope, path string) string {
 	if strings.HasPrefix(path, "/") {
 		return path
 	}
+	if len(scope) > 1 {
+		scope = strings.TrimSuffix(scope, "/")
+	}
 	if path == "" {
 		if scope == "" {
 			return "/"
@@ -111,5 +115,22 @@ func Join(scope, path string) string {
 	if scope == "" || scope == "/" {
 		return "/" + path
 	}
-	return strings.TrimSuffix(scope, "/") + "/" + path
+	return scope + "/" + path
+}
+
+// IsIdentifier reports whether s is a UAX #31 identifier, as A2UI names
+// catalog entities: a letter (XID_Start) or '_', then letters, marks,
+// digits or connectors (XID_Continue). General categories stand in for
+// the XID properties.
+func IsIdentifier(s string) bool {
+	for i, r := range s {
+		start := unicode.IsLetter(r) || unicode.Is(unicode.Nl, r) || r == '_'
+		if i == 0 && !start {
+			return false
+		}
+		if !start && !unicode.In(r, unicode.Mn, unicode.Mc, unicode.Nd, unicode.Pc) {
+			return false
+		}
+	}
+	return s != ""
 }

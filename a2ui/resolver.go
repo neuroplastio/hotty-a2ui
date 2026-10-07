@@ -259,9 +259,21 @@ func (r *Resolver) uniqueKey(n *Node) string {
 	return key
 }
 
+// PropError is an error evaluating one property of a component.
+type PropError struct {
+	Component, Prop string
+	Err             error
+}
+
+func (e *PropError) Error() string {
+	return fmt.Sprintf("a2ui: component '%s' %s: %s", e.Component, e.Prop, strings.TrimPrefix(e.Err.Error(), "a2ui: "))
+}
+
+func (e *PropError) Unwrap() error { return e.Err }
+
 // report sends an error to the agent once per distinct message.
 func (r *Resolver) report(err error) {
-	msg := err.Error()
+	msg := strings.TrimPrefix(err.Error(), "a2ui: ")
 	if r.reported[msg] {
 		return
 	}
@@ -359,7 +371,7 @@ func (r *Resolver) prop(n *Node, slot string, p *Prop, v any, ctx *Context, f *f
 		}
 		val, err := ctx.Resolve(v)
 		if err != nil {
-			r.fail(fmt.Errorf("%s.%s: %w", n.ComponentID, slot, err))
+			r.fail(&PropError{Component: n.ComponentID, Prop: slot, Err: err})
 			return Bound{Err: err}
 		}
 		return Bound{Value: val}
@@ -559,10 +571,8 @@ func (r *Resolver) Write(n *Node, prop string, v any) error {
 // ErrDisabled is an action of a component whose checks fail.
 var ErrDisabled = errors.New("a2ui: the component's checks fail")
 
-// Invoke runs a node's action property, with its context resolved now: an
-// event goes to the agent as an action, a function call runs (with the
-// user's activation when activation is set). A component whose checks
-// fail does nothing.
+// Invoke runs a node's action property, with its context resolved now
+// (Surface.Dispatch). A component whose checks fail does nothing.
 func (r *Resolver) Invoke(n *Node, prop string, activation bool) error {
 	if !n.Valid() {
 		return ErrDisabled
@@ -571,67 +581,7 @@ func (r *Resolver) Invoke(n *Node, prop string, activation bool) error {
 	if raw == nil {
 		return fmt.Errorf("a2ui: %s has no action %s", n.Key, prop)
 	}
-	ctx := r.s.Context(n.Scope)
-	ctx.Activation = activation
-	ctx.Caller = n.ComponentID
-	if fc, ok := raw["functionCall"].(map[string]any); ok {
-		_, err := ctx.Resolve(fc)
-		if err != nil {
-			r.report(err)
-		}
-		r.Resolve()
-		return err
-	}
-	ev, ok := raw["event"].(map[string]any)
-	if !ok {
-		err := &ValidationError{Msg: fmt.Sprintf("%s.%s is neither an event nor a functionCall", n.ComponentID, prop)}
-		r.report(err)
-		return err
-	}
-	a, err := r.ActionFor(n, ev, ctx)
-	if err != nil {
-		r.report(err)
-		return err
-	}
-	if r.s.env.Action != nil {
-		r.s.env.Action(r.s, a)
-	}
-	return nil
-}
-
-// ActionFor builds the action message an event sends, resolving its
-// context and userMessage in ctx.
-func (r *Resolver) ActionFor(n *Node, ev map[string]any, ctx *Context) (*ActionMessage, error) {
-	name, _ := ev["name"].(string)
-	if strings.TrimSpace(name) == "" {
-		return nil, &ValidationError{Msg: "an event action needs a name"}
-	}
-	a := &ActionMessage{
-		Name:              name,
-		SurfaceID:         r.s.ID,
-		SourceComponentID: n.ComponentID,
-		Timestamp:         Now().UTC().Format("2006-01-02T15:04:05.000Z"),
-		Context:           map[string]any{},
-	}
-	if c, ok := ev["context"].(map[string]any); ok {
-		for _, k := range SortedKeys(c) {
-			v, err := ctx.Resolve(c[k])
-			if err != nil {
-				return nil, err
-			}
-			a.Context[k] = v
-		}
-	}
-	if um, ok := ev["userMessage"]; ok {
-		v, err := ctx.Resolve(um)
-		if err != nil {
-			return nil, err
-		}
-		if s, ok := v.(string); ok {
-			a.UserMessage = s
-		}
-	}
-	return a, nil
+	return r.s.Dispatch(raw, n.Scope, n.ComponentID, activation)
 }
 
 // Now is the clock actions are stamped with; tests replace it.
