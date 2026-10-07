@@ -74,6 +74,7 @@ type model struct {
 	stream *story.Run
 	source string // where the stream comes from, for its heading
 	rend   string
+	want   string // the rendition asked for, if the terminal can show it
 	gen    int
 	seq    map[*a2ui.Surface]int
 	out    func(a2ui.Outbound)
@@ -152,6 +153,11 @@ func (m *model) ready(mode hottytea.Mode) {
 	if mode == hottytea.Native {
 		opts = append([]renditionOption{{rendSurfaces, "Surfaces"}}, append(opts, renditionOption{rendSide, "Side by side"})...)
 		m.rend = rendSurfaces
+	}
+	for _, o := range opts {
+		if o.value == m.want {
+			m.rend = o.value
+		}
 	}
 	m.list = entries(m.stream != nil)
 	m.ch = newChrome(m.list, opts, m.rend)

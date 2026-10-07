@@ -20,6 +20,9 @@ const (
 	panelID = "panel"
 	// streamName is the stream's entry among the stories.
 	streamName = "stream"
+	// indent stands where the current story's ▸ goes: spaces that
+	// Markdown keeps.
+	indent = "\u00a0\u00a0"
 )
 
 // chrome is the storybook as the agent of its own surfaces.
@@ -43,7 +46,7 @@ func newChrome(entries [][2]string, rends []renditionOption, rend string) *chrom
 	}
 	var items []any
 	for _, e := range entries {
-		items = append(items, map[string]any{"name": e[0], "label": "  " + e[1]})
+		items = append(items, map[string]any{"name": e[0], "label": indent + e[1]})
 	}
 	var opts []any
 	for _, r := range rends {
@@ -120,7 +123,7 @@ func (ch *chrome) rendition() string {
 // showing marks the story shown in nav, and says what it is in panel.
 func (ch *chrome) showing(entries [][2]string, name, head string) {
 	for i, e := range entries {
-		mark := "  "
+		mark := indent
 		if e[0] == name {
 			mark = "▸ "
 		}

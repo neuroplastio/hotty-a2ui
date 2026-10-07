@@ -36,6 +36,7 @@ func main() {
 	list := flag.Bool("list", false, "list the stories")
 	plain := flag.Bool("text", false, "print plain text, with no terminal (as when stdout is not one)")
 	stream := flag.String("stream", "", "read A2UI from `file` (- for stdin) instead of a story")
+	rend := flag.String("rendition", "", "start in this `rendition`: surfaces, cells, text or side (surfaces beside cells)")
 	out := flag.String("out", "", "write what the renderer sends the agent (actions, errors, function calls) to `file` as JSON lines (- for stdout)")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: storybook [flags] [story]")
@@ -50,13 +51,13 @@ func main() {
 		}
 		args = append(args, flag.Arg(0))
 	}
-	if err := run(*list, *plain, *stream, *out, args); err != nil {
+	if err := run(*list, *plain, *stream, *out, *rend, args); err != nil {
 		fmt.Fprintln(os.Stderr, "storybook:", err)
 		os.Exit(1)
 	}
 }
 
-func run(list, plain bool, stream, outPath string, args []string) error {
+func run(list, plain bool, stream, outPath, rend string, args []string) error {
 	if list {
 		for _, st := range story.All() {
 			fmt.Printf("%s\t%s\n", st.Name, st.Title)
@@ -101,13 +102,13 @@ func run(list, plain bool, stream, outPath string, args []string) error {
 	if outPath == "-" && stdoutTTY {
 		return errors.New("-out - writes to stdout, which is the terminal: pipe it, or name a file")
 	}
-	return interactive(st, in, stream, w)
+	return interactive(st, in, stream, rend, w)
 }
 
 // interactive runs the storybook in the terminal: /dev/tty when stdin
 // is the stream or stdout carries the actions, as with an agent on both
 // ends of a pipe.
-func interactive(st *story.Story, in io.Reader, source string, out func(a2ui.Outbound)) error {
+func interactive(st *story.Story, in io.Reader, source, rend string, out func(a2ui.Outbound)) error {
 	termIn, termOut := os.Stdin, os.Stdout
 	if in == os.Stdin || !term.IsTerminal(os.Stdin.Fd()) || !term.IsTerminal(os.Stdout.Fd()) {
 		tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
@@ -130,6 +131,7 @@ func interactive(st *story.Story, in io.Reader, source string, out func(a2ui.Out
 		source = "stdin"
 	}
 	m := newModel(first, in != nil, source, out)
+	m.want = rend
 	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)))
 	m.s.Attach(p.Send)
 	if in != nil {

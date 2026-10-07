@@ -64,6 +64,11 @@
 }
 .k-btn, .k-chip, .k-trigger { padding: 0 var(--k-col); cursor: pointer; text-align: start; }
 .k-btn > *, .k-chip > *, .k-trigger > * { display: inline-block; }
+/* A button is as wide as its label, as in cells, wherever its column
+   puts it. */
+.k-col > :is(.k-btn, .k-trigger) { align-self: flex-start; }
+.k-a-center > :is(.k-btn, .k-trigger) { align-self: center; }
+.k-a-end > :is(.k-btn, .k-trigger) { align-self: flex-end; }
 .k-primary:enabled { background: var(--hotty-fg); color: var(--hotty-bg); font-weight: bold; }
 .k-borderless { background: none; border: 0; text-decoration: underline; }
 .k-trigger { background: none; border: 0; color: inherit; }
@@ -78,7 +83,16 @@
 .k-error:empty { display: none; }
 .k-slide { display: flex; column-gap: var(--k-col); align-items: center; }
 .k-slide input { flex: 1 1 auto; }
-textarea.k-input { resize: none; min-height: calc(3 * var(--k-row)); }
+/* A field is one row, underlined, as in cells. */
+.k-input {
+  box-sizing: border-box;
+  height: var(--k-row);
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--k-border);
+  background: transparent;
+}
+textarea.k-input { resize: none; height: auto; min-height: calc(3 * var(--k-row)); }
 
 .k-tablist { display: flex; column-gap: calc(2 * var(--k-col)); border-bottom: 1px solid var(--k-border); }
 .k-tab { background: none; border: 0; padding: 0; color: inherit; }
