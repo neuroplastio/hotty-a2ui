@@ -82,8 +82,9 @@ func (m *DataModel) Set(path string, v any) error {
 	return nil
 }
 
-// Delete removes the value at path from its container: a key from an
-// object, an element from a list. Deleting what is not there does nothing.
+// Delete removes the value at path: a key from its object, or an element of
+// a list, which becomes null so that the list keeps its length. Deleting
+// what is not there does nothing.
 func (m *DataModel) Delete(path string) error {
 	p, err := dataPath(path)
 	if err != nil {
@@ -269,13 +270,13 @@ func del(v any, p Pointer) any {
 		return n
 	case []any:
 		i, _ := listIndex(t)
-		if len(p) == 1 {
-			n := make([]any, 0, len(c)-1)
-			return append(append(n, c[:i]...), c[i+1:]...)
-		}
 		n := make([]any, len(c))
 		copy(n, c)
-		n[i] = del(c[i], p[1:])
+		if len(p) == 1 {
+			n[i] = nil // the list keeps its length: the element reads as absent
+		} else {
+			n[i] = del(c[i], p[1:])
+		}
 		return n
 	}
 	return v

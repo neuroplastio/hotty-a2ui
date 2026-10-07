@@ -1,8 +1,9 @@
-package a2ui
+package conformance
 
-// The harness for A2UI's conformance suites (third_party/a2ui/conformance),
-// as conformance/README.md describes them. Each suite has its own test
-// function; this file holds what they share.
+// Package conformance runs A2UI's conformance suites
+// (third_party/a2ui/conformance, as its README.md describes them) against
+// the core and the basic catalog. Each suite has its own test function;
+// this file holds what they share.
 
 import (
 	"encoding/json"

@@ -1,6 +1,10 @@
-package a2ui
+package conformance
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/neuroplastio/hotty-a2ui/a2ui"
+)
 
 // TestConformanceExpressionTemplates runs expressions.yaml's
 // parse_expression_template cases. Parts are compared with adjacent
@@ -12,7 +16,7 @@ func TestConformanceExpressionTemplates(t *testing.T) {
 			continue
 		}
 		t.Run(str(c["name"]), func(t *testing.T) {
-			parts, err := ParseTemplate(str(c["input"]))
+			parts, err := a2ui.ParseTemplate(str(c["input"]))
 			if want, ok := c["expect_error"].(map[string]any); ok {
 				expectError(t, err, want)
 				return
@@ -39,9 +43,9 @@ func suiteParts(parts []any) []any {
 
 func suitePart(p any) any {
 	switch v := p.(type) {
-	case Binding:
+	case a2ui.Binding:
 		return map[string]any{"path": v.Path}
-	case Call:
+	case a2ui.Call:
 		args := map[string]any{}
 		for k, a := range v.Args {
 			args[k] = suitePart(a)

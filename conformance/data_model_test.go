@@ -1,8 +1,10 @@
-package a2ui
+package conformance
 
 import (
 	"sort"
 	"testing"
+
+	"github.com/neuroplastio/hotty-a2ui/a2ui"
 )
 
 // TestConformanceDataModel runs data_model.yaml: each case builds a model
@@ -10,7 +12,7 @@ import (
 func TestConformanceDataModel(t *testing.T) {
 	for _, c := range suite(t, "data_model.yaml") {
 		t.Run(str(c["name"]), func(t *testing.T) {
-			m := NewDataModel(c["initial"])
+			m := a2ui.NewDataModel(c["initial"])
 			var fired []string
 			watch, _ := c["watch"].([]any)
 			for _, w := range watch {
