@@ -1,0 +1,193 @@
+// Package cells is the rendition on a terminal that is not a HOTTY host:
+// a surface laid out and painted in cells, identically in every
+// implementation (docs/profile.md §3). The renderer does what a host would
+// do with the surface's document: it takes keys and clicks, and turns them
+// into the view.Controller's calls.
+package cells
+
+import (
+	"github.com/neuroplastio/hotty-a2ui/view"
+)
+
+// Rendition is one surface in cells. Besides the controller's state, which
+// belongs to the surface, it keeps what only cells have: where each text
+// control's cursor is and how it is scrolled, which select's list is open,
+// and where the last Draw put each thing a click can land on.
+type Rendition struct {
+	c *view.Controller
+
+	cursor  map[string]int // a text control's cursor: an index into its value's clusters
+	hscroll map[string]int // the first column it shows
+	vscroll map[string]int // a longText's first line shown
+	rows    map[string]int // a longText's rows, as last drawn
+	list    string         // the select whose list is open
+	hi      int            // the option highlighted in it
+
+	hits  []hit
+	panel *hit           // the open Modal's panel, as last drawn
+	boxes map[string]box // the cells each element covers, as last drawn
+}
+
+// box is a rectangle of cells.
+type box struct{ x, y, w, h int }
+
+// New is a surface's rendition in cells.
+func New(c *view.Controller) *Rendition {
+	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{}}
+}
+
+// focused reports whether id has the keyboard.
+func (r *Rendition) focused(id string) bool {
+	return r.c.St.Keyboard && r.c.St.Focus == id
+}
+
+// cursorOf is a text control's cursor, at most n; at the end when it has
+// none.
+func (r *Rendition) cursorOf(id string, n int) int {
+	if p, ok := r.cursor[id]; ok && p <= n {
+		return p
+	}
+	return n
+}
+
+// listOpen reports whether a select shows its options: after Space,
+// Enter or a click opened them, until it loses the keyboard.
+func (r *Rendition) listOpen(e *view.Element) bool {
+	return r.list == e.ID && r.focused(e.ID)
+}
+
+// Draw lays the surface out cols wide, as many rows as it takes, and
+// paints it (profile §3). The open Modal's content is a rounded panel over
+// it, centered; the frame grows when the panel is taller.
+func (r *Rendition) Draw(cols int) *Frame {
+	cols = max(cols, 1)
+	if !r.focused(r.list) {
+		r.list = ""
+	}
+	v := r.c.V
+	l := newLayout(r)
+	root := v.Root
+	if root != nil && root.A11y.Hidden {
+		root = nil
+	}
+	rootH, rows := 0, 0
+	if root != nil {
+		rootH = l.height(root, cols)
+		rows = rootH
+	}
+	var pw, ph int
+	if v.Overlay != nil {
+		most := cols
+		if cols >= 20 {
+			most = cols - 4
+		}
+		pw = min(l.natural(v.Overlay)+4, most)
+		ph = l.height(v.Overlay, pw-4) + 2
+		rows = max(rows, ph)
+	}
+	f := newFrame(cols, rows)
+	cv := &canvas{f: f}
+	r.hits, r.panel, r.boxes = nil, nil, map[string]box{}
+	if root != nil {
+		l.paint(cv, root, 0, 0, cols, rootH)
+	}
+	if v.Overlay != nil {
+		cv.restyle(0, 0, cols, rows, func(c *Cell) { c.Attr |= Faint })
+		r.hits = nil
+		f.cursor = false
+		px, py := (cols-pw)/2, (rows-ph)/2
+		cv.fill(px, py, pw, ph)
+		cv.box(px, py, pw, ph)
+		r.panel = &hit{x: px, y: py, w: pw, h: ph}
+		l.paint(cv, v.Overlay, px+2, py+1, pw-4, ph-2)
+	}
+	return f
+}
+
+// Box is the cells an element covers in the last frame Draw returned, by
+// its view id: its column and row, its width and height. ok is false when
+// it was not drawn. A control that does not fill its box (a Button, a
+// CheckBox, a Tabs' title, an option) covers what it painted.
+func (r *Rendition) Box(id string) (col, row, w, h int, ok bool) {
+	b, ok := r.boxes[id]
+	return b.x, b.y, b.w, b.h, ok
+}
+
+// Click is a click on a cell of the last frame drawn (SPEC §10.1): what
+// takes focus there gets the keyboard and is activated, as the host would
+// (a Button runs, a CheckBox toggles, a select opens, a field puts its
+// cursor there); a click on nothing that takes focus gives the keyboard
+// back. Outside the open Modal's panel, a click closes the Modal.
+func (r *Rendition) Click(col, row int) error {
+	c := r.c
+	if r.panel != nil && !r.panel.contains(col, row) {
+		r.list = ""
+		c.CloseModal()
+		c.Focus("")
+		return nil
+	}
+	var h *hit
+	for i := len(r.hits) - 1; i >= 0; i-- {
+		if r.hits[i].contains(col, row) {
+			h = &r.hits[i]
+			break
+		}
+	}
+	e := (*view.Element)(nil)
+	if h != nil {
+		e = c.V.Find(h.id)
+	}
+	if e == nil {
+		r.list = ""
+		c.Focus("")
+		return nil
+	}
+	if h.disabled {
+		r.list = ""
+		c.Focus("")
+		return c.Activate(e.ID)
+	}
+	if c.St.Focus != e.ID {
+		r.list = ""
+	}
+	c.Focus(e.ID)
+	switch {
+	case isTextControl(e):
+		if a := h.field; a != nil && row >= a.y {
+			v, _ := e.Value.(string)
+			lines := [][]string{clusters(v)}
+			if isLongText(e) {
+				lines = splitClusters(lines[0])
+			}
+			li := min(row-a.y+a.voff, len(lines)-1)
+			r.cursor[e.ID] = offset(lines, li, indexAt(lines[li], col-a.x+a.hoff, e.Variant == "obscured"))
+		}
+		return nil
+	case isSelect(e):
+		if h.opt >= 0 {
+			r.list = ""
+			return c.SetValue(e.ID, e.Options[h.opt].Value)
+		}
+		r.toggleList(e)
+		return nil
+	case e.Kind == view.Slider:
+		if t := h.track; t != nil && col >= t.x && col < t.x+t.n {
+			f := 0.0
+			if t.n > 1 {
+				f = float64(col-t.x) / float64(t.n-1)
+			}
+			return c.SetValue(e.ID, e.Min+f*(e.Max-e.Min))
+		}
+		return nil
+	}
+	return c.Activate(e.ID)
+}
+
+// toggleList opens a select's list, its value highlighted, or closes it.
+func (r *Rendition) toggleList(e *view.Element) {
+	if r.list == e.ID {
+		r.list = ""
+		return
+	}
+	r.list, r.hi = e.ID, max(picked(e), 0)
+}

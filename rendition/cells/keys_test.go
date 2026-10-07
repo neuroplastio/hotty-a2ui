@@ -1,0 +1,273 @@
+package cells
+
+import (
+	"slices"
+	"strings"
+	"testing"
+
+	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
+	"github.com/neuroplastio/hotty-a2ui/catalog/hotty"
+	"github.com/neuroplastio/hotty-a2ui/view"
+)
+
+// form is a surface with a Form, its fields, a select, a Button and two
+// Shortcuts; actions are the actions it has sent.
+func form(t *testing.T) (c *view.Controller, data func() map[string]any, actions *[]string) {
+	t.Helper()
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	actions = new([]string)
+	p.Send = func(o a2ui.Outbound) {
+		if o.Action != nil {
+			*actions = append(*actions, o.Action.Name)
+		}
+	}
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"name":"","note":"","agree":false,"size":["m"]}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Form","catalogId":"` + hotty.ID + `","child":"col","onSubmit":{"event":{"name":"send"}}},
+	 {"id":"col","component":"Column","children":["name","note","agree","size","go","save","quit"]},
+	 {"id":"name","component":"TextField","label":"Name","value":{"@path":"/name"}},
+	 {"id":"note","component":"TextField","label":"Note","variant":"longText","value":{"@path":"/note"}},
+	 {"id":"agree","component":"CheckBox","label":"Agree","value":{"@path":"/agree"}},
+	 {"id":"size","component":"ChoicePicker","label":"Size","value":{"@path":"/size"},"options":[
+	  {"label":"Small","value":"s"},{"label":"Medium","value":"m"},{"label":"Large","value":"l"}]},
+	 {"id":"go","component":"Button","child":"go_t","action":{"event":{"name":"go"}}},
+	 {"id":"go_t","component":"Text","text":"Go"},
+	 {"id":"save","component":"Shortcut","catalogId":"` + hotty.ID + `","key":"Control+s","press":"go"},
+	 {"id":"quit","component":"Shortcut","catalogId":"` + hotty.ID + `","key":"q","action":{"event":{"name":"quit"}}}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	s := p.Surface("s")
+	return view.NewController(s), func() map[string]any { return s.Data.Root().(map[string]any) }, actions
+}
+
+func keys(t *testing.T, r *Rendition, ks ...string) {
+	t.Helper()
+	for _, k := range ks {
+		if ok, err := r.Key(k); !ok || err != nil {
+			t.Fatalf("key %q: handled %v, %v", k, ok, err)
+		}
+		r.Draw(40)
+	}
+}
+
+func TestTyping(t *testing.T) {
+	c, data, _ := form(t)
+	r := New(c)
+	c.Focus("name")
+	r.Draw(40)
+	keys(t, r, "A", "d", "a", "Space", "L")
+	if got := data()["name"]; got != "Ada L" {
+		t.Fatalf("name %q", got)
+	}
+	keys(t, r, "Backspace", "Backspace")
+	if got := data()["name"]; got != "Ada" {
+		t.Fatalf("after Backspace: %q", got)
+	}
+	keys(t, r, "ArrowLeft", "ArrowLeft", "Shift+L", "Home", "Delete", "End", "!")
+	if got := data()["name"]; got != "Lda!" {
+		t.Fatalf("after editing: %q", got)
+	}
+	f := r.Draw(40)
+	if col, row, ok := f.Cursor(); !ok || col != 4 || row != 1 {
+		t.Errorf("cursor %d,%d %v", col, row, ok)
+	}
+	if !strings.HasPrefix(strings.Split(f.Plain(), "\n")[1], "Lda!") {
+		t.Errorf("field shows\n%s", f.Plain())
+	}
+}
+
+func TestLongText(t *testing.T) {
+	c, data, _ := form(t)
+	r := New(c)
+	c.Focus("note")
+	r.Draw(40)
+	keys(t, r, "a", "b", "Enter", "c", "ArrowUp", "x", "PageDown", "y")
+	if got := data()["note"]; got != "axb\ncy" {
+		t.Fatalf("note %q", got)
+	}
+}
+
+func TestTabOrder(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	want := c.V.Focusables()
+	ids := []string{want[0]}
+	c.Focus(want[0])
+	for {
+		r.Draw(40)
+		if ok, err := r.Key("Tab"); !ok || err != nil {
+			t.Fatalf("Tab: %v %v", ok, err)
+		}
+		if !c.St.Keyboard {
+			break
+		}
+		ids = append(ids, c.St.Focus)
+	}
+	if !slices.Equal(ids, want) {
+		t.Errorf("Tab order %v, focusables %v", ids, want)
+	}
+	c.Focus(want[len(want)-1])
+	if _, err := r.Key("Shift+Tab"); err != nil || c.St.Focus != want[len(want)-2] {
+		t.Errorf("Shift+Tab went to %s", c.St.Focus)
+	}
+}
+
+func TestEnterSubmits(t *testing.T) {
+	c, _, actions := form(t)
+	r := New(c)
+	c.Focus("name")
+	keys(t, r, "x", "Enter")
+	if !slices.Equal(*actions, []string{"send"}) {
+		t.Errorf("actions %v", *actions)
+	}
+}
+
+func TestSpaceToggles(t *testing.T) {
+	c, data, _ := form(t)
+	r := New(c)
+	c.Focus("agree")
+	keys(t, r, " ")
+	if data()["agree"] != true {
+		t.Fatal("Space did not tick the CheckBox")
+	}
+	keys(t, r, "Space")
+	if data()["agree"] != false {
+		t.Fatal("Space did not untick it")
+	}
+	if f := r.Draw(40).Plain(); !strings.Contains(f, "[ ] Agree") {
+		t.Errorf("box:\n%s", f)
+	}
+}
+
+func TestShortcutPresses(t *testing.T) {
+	c, _, actions := form(t)
+	r := New(c)
+	c.Focus("name")
+	keys(t, r, "Control+s")
+	c.Focus("")
+	keys(t, r, "Control+s")
+	if !slices.Equal(*actions, []string{"go", "go"}) {
+		t.Errorf("actions %v", *actions)
+	}
+}
+
+func TestPrintableNeverReachesShortcut(t *testing.T) {
+	c, data, actions := form(t)
+	r := New(c)
+	c.Focus("name")
+	keys(t, r, "q", "Shift+Q")
+	if data()["name"] != "qQ" || len(*actions) != 0 {
+		t.Fatalf("name %q, actions %v", data()["name"], *actions)
+	}
+	c.Focus("go")
+	keys(t, r, "q")
+	if !slices.Equal(*actions, []string{"quit"}) {
+		t.Errorf("q on a Button: actions %v", *actions)
+	}
+	if ok, _ := r.Key("Escape"); ok {
+		t.Error("Escape was taken with no Modal open")
+	}
+	if ok, _ := r.Key("F5"); ok {
+		t.Error("F5 was taken")
+	}
+}
+
+func TestSelect(t *testing.T) {
+	c, data, _ := form(t)
+	r := New(c)
+	c.Focus("size")
+	r.Draw(40)
+	keys(t, r, "ArrowDown")
+	if got := data()["size"]; !slices.Equal(got.([]any), []any{"l"}) {
+		t.Fatalf("ArrowDown: size %v", got)
+	}
+	keys(t, r, "s")
+	if got := data()["size"]; !slices.Equal(got.([]any), []any{"s"}) {
+		t.Fatalf("s: size %v", got)
+	}
+	keys(t, r, "Enter", "ArrowDown")
+	f := r.Draw(40).Plain()
+	if !strings.Contains(f, "Size: Small ▸") || !strings.Contains(f, "  ● Small\n  ○ Medium") {
+		t.Fatalf("open list:\n%s", f)
+	}
+	keys(t, r, " ")
+	if got := data()["size"]; !slices.Equal(got.([]any), []any{"m"}) {
+		t.Fatalf("pick: size %v", got)
+	}
+	if strings.Contains(r.Draw(40).Plain(), "○") {
+		t.Error("the list stayed open")
+	}
+}
+
+func TestClick(t *testing.T) {
+	c, data, actions := form(t)
+	r := New(c)
+	f := r.Draw(40)
+	row := func(prefix string) int {
+		for y, l := range strings.Split(f.Plain(), "\n") {
+			if strings.HasPrefix(l, prefix) {
+				return y
+			}
+		}
+		t.Fatalf("no row %q in\n%s", prefix, f.Plain())
+		return -1
+	}
+	if err := r.Click(1, row("[ ] Agree")); err != nil || data()["agree"] != true || c.St.Focus != "agree" {
+		t.Fatalf("click on the box: %v %v %s", err, data()["agree"], c.St.Focus)
+	}
+	f = r.Draw(40)
+	if err := r.Click(2, row("[ Go ]")); err != nil || !slices.Equal(*actions, []string{"go"}) {
+		t.Fatalf("click on the Button: %v %v", err, *actions)
+	}
+	f = r.Draw(40)
+	if err := r.Click(30, row("[ Go ]")); err != nil || c.St.Keyboard {
+		t.Fatal("a click on nothing kept the keyboard")
+	}
+	_ = c.SetValue("name", "Ada")
+	f = r.Draw(40)
+	if err := r.Click(1, row("Name")+1); err != nil || !c.St.Keyboard || c.St.Focus != "name" {
+		t.Fatal("a click on the field did not focus it")
+	}
+	keys(t, r, "x")
+	if data()["name"] != "Axda" {
+		t.Errorf("the click put the cursor elsewhere: %q", data()["name"])
+	}
+}
+
+func TestModalPanel(t *testing.T) {
+	c := example(t, "36_modal")
+	r := New(c)
+	openModal(t, c)
+	f := r.Draw(60)
+	if !strings.Contains(f.Plain(), "╭") || f.Cells[0][0].Attr&Faint == 0 {
+		t.Fatalf("no panel over a faint surface:\n%s", f.Plain())
+	}
+	if err := r.Click(0, f.Rows-1); err != nil || c.V.Overlay != nil {
+		t.Error("a click outside the panel left the Modal open")
+	}
+	openModal(t, c)
+	if ok, err := r.Key("Escape"); !ok || err != nil || c.V.Overlay != nil {
+		t.Error("Escape left the Modal open")
+	}
+}
+
+func TestBox(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	if _, _, _, _, ok := r.Box("go"); ok {
+		t.Error("a box before any Draw")
+	}
+	f := r.Draw(40)
+	col, row, w, h, ok := r.Box("go")
+	if !ok || w != 6 || h != 1 || !strings.HasPrefix(strings.Split(f.Plain(), "\n")[row][col:], "[ Go ]") {
+		t.Errorf("go: %d,%d %dx%d %v", col, row, w, h, ok)
+	}
+	if col, row, w, h, ok := r.Box("name"); !ok || col != 0 || row != 0 || w != 40 || h != 2 {
+		t.Errorf("name: %d,%d %dx%d %v", col, row, w, h, ok)
+	}
+	if _, _, _, _, ok := r.Box("nothing"); ok {
+		t.Error("a box for an id not drawn")
+	}
+}
