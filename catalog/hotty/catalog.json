@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+  "protocolVersion": "1.0",
+  "title": "HOTTY Catalog",
+  "description": "Keys, forms and focus for A2UI surfaces shown in a terminal: the hotty catalog of the HOTTY profile of A2UI. Mix it with the basic catalog component by component.",
+  "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+  "instructions": "These components come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog.\n\n1. Shortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt: a bare printable key does nothing while the user is typing in a field.\n\n2. Form wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a Form is still an ordinary Button.\n\n3. To move the keyboard to a component, call focus(id) from a Button's action, or send callRendererFunction. blur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.",
+  "components": {
+    "Shortcut": {
+      "type": "object",
+      "description": "Binds a key to its surface and draws nothing. When the key is pressed while its surface is the active one, it presses the Button named by `press`, as a click would and only if that Button's checks pass, or it runs `action`. A key that types a character with no modifier but Shift does nothing while a text control has the keyboard.",
+      "properties": {
+        "component": {
+          "const": "Shortcut"
+        },
+        "key": {
+          "type": "string",
+          "description": "The key: a W3C UI Events key value, after the modifiers it needs, joined by '+'. The modifiers are Control, Alt, Shift and Meta. Examples: \"Control+s\", \"Escape\", \"Alt+ArrowUp\", \"F5\". Tab and Shift+Tab move focus, and cannot be bound.",
+          "pattern": "^((Control|Alt|Shift|Meta)\\+)*[^+]+$|^((Control|Alt|Shift|Meta)\\+)*\\+$"
+        },
+        "press": {
+          "$ref": "common_types.json#/$defs/ComponentId",
+          "description": "The id of a Button on this surface. The key presses it as a click would."
+        },
+        "action": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "What the key does, when it presses no Button."
+        },
+        "label": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "What the key does, in a word or two, for a renderer that lists the keys a surface takes."
+        }
+      },
+      "required": ["component", "key"],
+      "oneOf": [
+        {"required": ["press"]},
+        {"required": ["action"]}
+      ]
+    },
+    "Form": {
+      "type": "object",
+      "description": "A container of fields. Enter in a text field inside it runs `onSubmit`, if the Form's checks pass. Fields inside it commit their values before `onSubmit`'s context is resolved.",
+      "allOf": [
+        {
+          "$ref": "common_types.json#/$defs/Checkable"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Form"
+            },
+            "child": {
+              "$ref": "common_types.json#/$defs/Child",
+              "description": "The form's content, usually a Column of fields."
+            },
+            "onSubmit": {
+              "$ref": "common_types.json#/$defs/Action",
+              "description": "What submitting the form does."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column, as CSS 'flex-grow'."
+            }
+          },
+          "required": ["component", "child", "onSubmit"]
+        }
+      ]
+    }
+  },
+  "functions": {
+    "focus": {
+      "type": "object",
+      "description": "Gives the keyboard to a component of the surface: the user's next keys go to it. On a HOTTY host it is a=focus.",
+      "returnType": "void",
+      "allowedCallers": "rendererOrAgent",
+      "properties": {
+        "@call": {
+          "const": "focus"
+        },
+        "args": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "common_types.json#/$defs/DynamicString",
+              "description": "The id of the component to focus. A template's component takes the instance in the caller's scope."
+            }
+          },
+          "required": ["id"],
+          "unevaluatedProperties": false
+        }
+      },
+      "required": ["@call", "args"]
+    },
+    "blur": {
+      "type": "object",
+      "description": "Gives the keyboard back to the terminal. A field that had it commits its value first. On a HOTTY host it is a=blur.",
+      "returnType": "void",
+      "allowedCallers": "rendererOrAgent",
+      "properties": {
+        "@call": {
+          "const": "blur"
+        }
+      },
+      "required": ["@call"]
+    }
+  },
+  "$defs": {
+    "anyComponent": {
+      "oneOf": [
+        {"$ref": "#/components/Shortcut"},
+        {"$ref": "#/components/Form"}
+      ],
+      "discriminator": {
+        "propertyName": "component"
+      }
+    },
+    "anyFunction": {
+      "oneOf": [
+        {"$ref": "#/functions/focus"},
+        {"$ref": "#/functions/blur"}
+      ]
+    }
+  }
+}
