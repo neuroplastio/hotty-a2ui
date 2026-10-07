@@ -1,0 +1,105 @@
+/* hotty-a2ui: the kit's look on a HOTTY host. It builds on the host
+   stylesheet (SPEC §8), whose palette dresses the controls, and keeps to
+   NEIO-4's roles: accent only on focus, colour never alone, rules rather
+   than boxes in the view, rounded borders for what floats. */
+:root {
+  --k-col: var(--hotty-cell-w, 1ch);
+  --k-row: var(--hotty-cell-h, 1.25em);
+  --k-muted: var(--hotty-ansi-8, GrayText);
+  --k-border: var(--hotty-ansi-8, GrayText);
+  --k-error: var(--hotty-ansi-9, red);
+}
+.k-surface { display: flex; flex-direction: column; }
+.k-surface[inert] { opacity: 0.5; }
+
+.k-stack { display: flex; min-width: 0; min-height: 0; }
+.k-row { flex-direction: row; column-gap: calc(2 * var(--k-col)); }
+.k-col { flex-direction: column; }
+.k-scroll { overflow: auto; }
+.k-j-start { justify-content: flex-start; }
+.k-j-center { justify-content: center; }
+.k-j-end { justify-content: flex-end; }
+.k-j-spaceBetween { justify-content: space-between; }
+.k-j-spaceAround { justify-content: space-around; }
+.k-j-spaceEvenly { justify-content: space-evenly; }
+.k-j-stretch > * { flex: 1 1 0; }
+.k-a-start { align-items: flex-start; }
+.k-a-center { align-items: center; }
+.k-a-end { align-items: flex-end; }
+.k-a-stretch { align-items: stretch; }
+
+.k-card {
+  border: 1px solid var(--k-border);
+  border-radius: calc(var(--k-row) / 2);
+  padding: 0 var(--k-col);
+}
+.k-hr { border: 0; border-top: 1px solid var(--k-border); margin: calc(var(--k-row) / 2 - 1px) 0; width: 100%; }
+.k-vr { border-left: 1px solid var(--k-border); align-self: stretch; }
+
+.k-text :is(p, ul, ol, pre, blockquote, h1, h2, h3, h4, h5, h6, table) { margin: 0; }
+.k-text :is(h1, h2, h3, h4, h5, h6) { font-size: inherit; font-weight: bold; }
+.k-text :is(ul, ol) { padding-left: calc(2 * var(--k-col)); }
+.k-text blockquote { border-left: 1px solid var(--k-border); padding-left: var(--k-col); }
+.k-text hr { border: 0; border-top: 1px solid var(--k-border); }
+.k-text img { max-width: 100%; }
+.k-v-h1, .k-v-h2 { font-weight: bold; text-decoration: underline; }
+.k-v-h3, .k-v-h4, .k-v-h5 { font-weight: bold; }
+.k-v-caption { color: var(--k-muted); }
+
+.k-img { display: block; max-width: 100%; object-fit: fill; }
+.k-fit-contain { object-fit: contain; }
+.k-fit-cover { object-fit: cover; }
+.k-fit-none { object-fit: none; }
+.k-fit-scaleDown { object-fit: scale-down; }
+.k-v-icon { height: var(--k-row); width: calc(2 * var(--k-col)); }
+.k-v-avatar { height: calc(2 * var(--k-row)); width: calc(4 * var(--k-col)); border-radius: 50%; }
+.k-v-smallFeature { height: calc(4 * var(--k-row)); }
+.k-v-mediumFeature { height: calc(8 * var(--k-row)); }
+.k-v-largeFeature { height: calc(12 * var(--k-row)); }
+.k-v-header { height: calc(6 * var(--k-row)); width: 100%; }
+.k-media { white-space: nowrap; }
+
+:where(.k-surface, .k-layer) :is(input, textarea, select, button, output) {
+  font: inherit;
+  line-height: inherit;
+}
+.k-btn, .k-chip, .k-trigger { padding: 0 var(--k-col); cursor: pointer; text-align: start; }
+.k-btn > *, .k-chip > *, .k-trigger > * { display: inline-block; }
+.k-primary:enabled { background: var(--hotty-fg); color: var(--hotty-bg); font-weight: bold; }
+.k-borderless { background: none; border: 0; text-decoration: underline; }
+.k-trigger { background: none; border: 0; color: inherit; }
+.k-chip[aria-pressed=true] { background: var(--hotty-fg); color: var(--hotty-bg); }
+
+.k-field { display: flex; flex-direction: column; }
+.k-label { color: var(--k-muted); }
+.k-check, .k-opt { display: flex; column-gap: var(--k-col); align-items: center; }
+.k-check > .k-label, .k-opt { color: inherit; }
+.k-options { display: flex; flex-wrap: wrap; column-gap: calc(2 * var(--k-col)); }
+.k-error { color: var(--k-error); }
+.k-error:empty { display: none; }
+.k-slide { display: flex; column-gap: var(--k-col); align-items: center; }
+.k-slide input { flex: 1 1 auto; }
+textarea.k-input { resize: none; min-height: calc(3 * var(--k-row)); }
+
+.k-tablist { display: flex; column-gap: calc(2 * var(--k-col)); border-bottom: 1px solid var(--k-border); }
+.k-tab { background: none; border: 0; padding: 0; color: inherit; }
+.k-tab[aria-selected=true] { font-weight: bold; text-decoration: underline; }
+
+.k-form { display: flex; flex-direction: column; }
+.k-submit { position: absolute; width: 0; height: 0; padding: 0; border: 0; overflow: hidden; opacity: 0; }
+
+.k-ph { color: var(--k-muted); }
+
+.k-layer:empty { display: none; }
+.k-layer { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+.k-backdrop { position: absolute; inset: 0; background: var(--hotty-bg); opacity: 0.6; }
+.k-dialog {
+  position: relative;
+  max-width: calc(100% - 4 * var(--k-col));
+  max-height: calc(100% - 2 * var(--k-row));
+  overflow: auto;
+  background: var(--hotty-bg);
+  border: 1px solid var(--k-border);
+  border-radius: calc(var(--k-row) / 2);
+  padding: 0 var(--k-col);
+}

@@ -17,6 +17,9 @@ private, and nothing in it is published.
 | [`catalog/basic/`](catalog/basic) | A2UI's basic catalog, its functions implemented (en-US formatting) |
 | [`a2ui/`](a2ui) | an A2UI v1.0 core in Go: the data model, expressions and functions, catalogs checked against the spec's JSON Schemas, node resolution, and the message processor with the agent's function calls |
 | [`conformance/`](conformance) | A2UI's conformance suites, run against the core |
+| [`view/`](view) | the renderer's model of a surface: its nodes made into a few kinds of element, with the renderer's own state (focus, the tab shown, the modal open), and the controller the user's acts go through |
+| [`rendition/html/`](rendition/html) | the rendition on a HOTTY host: a document, then deltas, and the host's events back as the user's acts |
+| [`rendition/text/`](rendition/text) | the rendition with no terminal: plain text for a pipe |
 | [`third_party/a2ui/`](third_party/a2ui) | A2UI at one commit ([`REV`](third_party/a2ui/REV)): the v1.0 schemas, the basic catalog and its examples, the conformance suites |
 
 ## The gate
