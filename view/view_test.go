@@ -88,7 +88,12 @@ func TestControls(t *testing.T) {
 		t.Errorf("tabs %+v", tb)
 	}
 	c.Focus("go")
-	if !c.FocusNext(false) || !c.FocusNext(false) || c.St.Focus != "tabs/tab/1" {
+	for range 2 {
+		if !c.FocusNext(false) {
+			t.Fatal("Tab lost the keyboard")
+		}
+	}
+	if c.St.Focus != "tabs/tab/1" {
 		t.Errorf("focus %s", c.St.Focus)
 	}
 	if c.FocusNext(false) || c.St.Keyboard {
