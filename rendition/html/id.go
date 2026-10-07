@@ -70,3 +70,14 @@ func viewID(dom string) (id, part string, ok bool) {
 	}
 	return b.String(), "", b.Len() > 0
 }
+
+// DOMID is the id of an element of the view in the document: what the
+// host's events and a test's clicks name.
+func DOMID(id string) string { return domID(id) }
+
+// ViewID is the element of the view a DOM id names, if it names one
+// itself rather than one of its parts.
+func ViewID(dom string) (id string, ok bool) {
+	id, part, ok := viewID(dom)
+	return id, ok && part == ""
+}

@@ -21,6 +21,7 @@ private, and nothing in it is published.
 | [`rendition/html/`](rendition/html) | the rendition on a HOTTY host: a document, then deltas, and the host's events back as the user's acts |
 | [`rendition/cells/`](rendition/cells) | the rendition in a terminal that is not a host: laid out and painted in cells by the profile's rules (§3), with keys and clicks as SPEC §10 has them |
 | [`rendition/text/`](rendition/text) | the rendition with no terminal: plain text for a pipe |
+| [`vectors/`](vectors) | keys and focus, one set of vectors run against the cells rendition and against the HTML one on a host |
 | [`story/`](story) | the stories (A2UI's basic examples, the hotty catalog's, the fallbacks) and a story as it runs |
 | [`cmd/storybook/`](cmd/storybook) | the storybook: every story in the rendition picked, live, with its actions, data model and messages; or what an agent streams |
 | [`third_party/a2ui/`](third_party/a2ui) | A2UI at one commit ([`REV`](third_party/a2ui/REV)): the v1.0 schemas, the basic catalog and its examples, the conformance suites |

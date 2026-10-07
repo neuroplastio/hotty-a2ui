@@ -39,6 +39,9 @@ type Rendition struct {
 	// host is the keyboard as the host has it, as far as the rendition
 	// knows: Update gives the host the controller's when they differ.
 	host keyboard
+	// back is set when the keyboard goes back after a Shortcut's blur:
+	// to where the host had it, which Tab may have moved unseen.
+	back bool
 }
 
 type keyboard struct {
@@ -78,6 +81,8 @@ func (r *Rendition) Update() []string {
 		switch {
 		case !want.on:
 			out = append(out, hotty.Blur(r.name))
+		case r.back && want.focus == r.host.focus:
+			out = append(out, hotty.Focus(r.name, ""))
 		case want.focus != "" && r.C.V.Find(want.focus) != nil:
 			out = append(out, hotty.Focus(r.name, domID(want.focus)))
 		default:
@@ -85,6 +90,7 @@ func (r *Rendition) Update() []string {
 		}
 		r.host = want
 	}
+	r.back = false
 	return out
 }
 
@@ -107,10 +113,10 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		}
 		// The field is committed: the Shortcut runs on current inputs.
 		// The blur was the rendition's own, so the keyboard goes back
-		// where it was (Update), unless the Shortcut moves it.
+		// where the host had it (Update), unless the Shortcut moves it.
 		key := r.pending
 		r.pending = ""
-		c.St.Keyboard = true
+		c.St.Keyboard, r.back = true, true
 		_, err := c.Shortcut(key)
 		return err
 	}

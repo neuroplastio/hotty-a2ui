@@ -1,0 +1,175 @@
+# Keys and focus, the same in both renditions (NEIO-11): each vector runs
+# against the cells rendition and against the HTML rendition on a host
+# (hottytest, which takes keys as SPEC §10.2 has a host take them).
+#
+# A vector is a story (story: a name, or messages: inline) and steps:
+#   key: a key, as a Shortcut writes it ("Tab", "Shift+Tab", " ", "Control+s")
+#   type: characters, one key each
+#   focus: the program gives the keyboard at an element (by view id)
+#   blur: the program takes it back
+#   click: the user clicks an element (by view id)
+#   expect:
+#     focused: the element with the keyboard, by view id; null for none
+#     actions: the names of every action the agent has had, in order
+#     context: the last action's context (the keys given)
+#     data: data model values, by path
+- name: Tab goes in tree order through every kind of control, and out past the last
+  messages: &controls
+    - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {name: "", agree: false, size: [], level: 3}}}
+    - version: v1.0
+      updateComponents:
+        surfaceId: s
+        components:
+          - {id: root, component: Column, children: [name, agree, size, tabs, go, level]}
+          - {id: name, component: TextField, label: Name, value: {"@path": /name}}
+          - {id: agree, component: CheckBox, label: Agree, value: {"@path": /agree}}
+          - {id: size, component: ChoicePicker, label: Size, variant: multipleSelection, displayStyle: chips, value: {"@path": /size}, options: [{label: S, value: s}, {label: M, value: m}]}
+          - {id: tabs, component: Tabs, tabs: [{title: One, child: one}, {title: Two, child: two}]}
+          - {id: one, component: Text, text: In one}
+          - {id: two, component: Button, child: two_t, action: {event: {name: inTwo}}}
+          - {id: two_t, component: Text, text: In two}
+          - {id: go, component: Button, child: go_t, action: {event: {name: go, context: {name: {"@path": /name}, agree: {"@path": /agree}}}}}
+          - {id: go_t, component: Text, text: Go}
+          - {id: level, component: Slider, label: Level, min: 0, max: 10, value: {"@path": /level}}
+  steps:
+    - focus: name
+    - expect: {focused: name}
+    - key: Tab
+    - expect: {focused: agree}
+    - key: Tab
+    - expect: {focused: size/option/0}
+    - key: Tab
+    - expect: {focused: size/option/1}
+    - key: Tab
+    - expect: {focused: tabs/tab/0}
+    - key: Tab
+    - expect: {focused: tabs/tab/1}
+    - key: Tab
+    - expect: {focused: go}
+    - key: Tab
+    - expect: {focused: level}
+    - key: Tab
+    - expect: {focused: null}
+
+- name: Shift+Tab goes back, and out before the first
+  messages: *controls
+  steps:
+    - focus: agree
+    - key: Shift+Tab
+    - expect: {focused: name}
+    - key: Shift+Tab
+    - expect: {focused: null}
+
+- name: Space and Enter on a Button run it; Space on a CheckBox and a chip toggles it
+  messages: *controls
+  steps:
+    - focus: name
+    - type: Ada
+    - key: Tab
+    - key: " "
+    - expect: {focused: agree, data: {/agree: true, /name: Ada}}
+    - key: Tab
+    - key: " "
+    - key: Tab
+    - key: Enter
+    - expect: {focused: size/option/1, data: {/size: [s, m]}}
+    - focus: go
+    - key: Enter
+    - expect: {actions: [go], context: {name: Ada, agree: true}}
+    - key: " "
+    - expect: {focused: go, actions: [go, go]}
+
+- name: Enter and Space on a tab show it; its content then joins the Tab order
+  messages: *controls
+  steps:
+    - focus: tabs/tab/1
+    - key: Enter
+    - expect: {focused: tabs/tab/1}
+    - key: Tab
+    - expect: {focused: two}
+    - key: " "
+    - expect: {actions: [inTwo]}
+
+- name: A Shortcut presses its Button, with the field just typed in current, and the field keeps the keyboard
+  story: hotty/shortcut-press
+  steps:
+    - key: Control+s
+    - expect: {actions: []}
+    - focus: note
+    - type: hello
+    - key: Control+s
+    - expect: {focused: note, actions: [save], context: {note: hello}}
+
+- name: A Shortcut presses its Button only when the Button's checks pass
+  story: hotty/shortcut-press
+  steps:
+    - focus: note
+    - key: Control+s
+    - expect: {focused: note, actions: []}
+
+- name: A Shortcut runs its own Action, the keyboard anywhere or nowhere
+  story: hotty/shortcut-action
+  steps:
+    - key: Control+r
+    - expect: {focused: null, actions: [refresh], context: {shown: 3}}
+    - focus: filter/option/1
+    - key: Control+r
+    - expect: {focused: filter/option/1, actions: [refresh, refresh]}
+
+- name: A bare key is the field's while a text control has the keyboard, else the Shortcut's
+  messages:
+    - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {q: ""}}}
+    - version: v1.0
+      updateComponents:
+        surfaceId: s
+        components:
+          - {id: root, component: Column, children: [q, go, help]}
+          - {id: q, component: TextField, label: Search, value: {"@path": /q}}
+          - {id: go, component: Button, child: go_t, action: {event: {name: search, context: {q: {"@path": /q}}}}}
+          - {id: go_t, component: Text, text: Search}
+          - {id: help, component: Shortcut, catalogId: "https://neuroplast.io/hotty/a2ui/v1/catalog.json", key: "?", action: {event: {name: help}}}
+  steps:
+    - focus: q
+    - type: "why?"
+    - expect: {focused: q, actions: [], data: {/q: "why?"}}
+    - key: Tab
+    - key: "?"
+    - expect: {focused: go, actions: [help]}
+    - key: Enter
+    - expect: {actions: [help, search], context: {q: "why?"}}
+
+- name: Enter in a field submits its Form, which runs only when every check inside passes
+  story: hotty/form
+  steps:
+    - focus: name
+    - type: Ada
+    - key: Enter
+    - expect: {focused: name, actions: []}
+    - key: Tab
+    - type: ada@example.com
+    - key: Enter
+    - expect: {actions: []}
+    - focus: agree
+    - key: " "
+    - focus: email
+    - key: Enter
+    - expect: {focused: email, actions: [signUp], context: {name: Ada, email: ada@example.com, plan: [free]}}
+
+- name: focus and blur move the keyboard; autofocus takes it at the start
+  story: hotty/focus-blur
+  steps:
+    - expect: {focused: name}
+    - key: Tab
+    - key: Tab
+    - expect: {focused: to_city}
+    - key: Enter
+    - expect: {focused: city}
+    - key: Tab
+    - key: Tab
+    - expect: {focused: done}
+    - key: " "
+    - expect: {focused: null}
+    - focus: city
+    - expect: {focused: city}
+    - blur: true
+    - expect: {focused: null}
