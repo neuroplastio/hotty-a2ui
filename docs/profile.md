@@ -32,10 +32,75 @@ surface is shown keeps it.
 
 ## 2. Surfaces
 
-*To be written as the renderer settles: the element each component becomes,
-ids, the kit's stylesheet as a resource, how updateComponents and
-updateDataModel become deltas, which events become which A2UI writes and
-actions, and Modal as a second surface above the first.*
+On a host, an A2UI surface is one HOTTY surface. The reference is
+`rendition/html`.
+
+**The document.** It holds the kit's stylesheet and two elements: the
+surface (`~s`), and the layer an open Modal shows in (`~o`), empty while
+none is open. The stylesheet builds on the host's (SPEC.md §8): the
+terminal's palette, NEIO-4's roles, spacing in cells (`--hotty-cell-w`,
+`--hotty-cell-h`). It draws what §3 draws in cells, where HTML can: a
+Row's children one column apart, a Card with a rounded border and a
+column of padding, a field one row tall and underlined, a Button as wide
+as its label. The document asks the network for images over HTTPS only
+(`<meta name="hotty-network" content="img-src https:">`); the host's own
+policy decides (SPEC.md §7.2).
+
+**Elements.** Each component is one element, whose `id` is the
+component's node key encoded for HOTTY. A node key is the component's id,
+with a template item's path in brackets (`row[/items/0]`). Letters,
+digits and `-_./` stay; every other byte is `~` and two upper-case hex
+digits, so an id is always a valid control value (SPEC.md §3.2). The
+parts a component draws besides itself add `~` and a lower-case letter:
+its wrapper `~w`, label `~l`, error `~e`. A control comes wrapped with its
+label and its error, which is always there (empty while there is none),
+so that an error comes and goes as a text delta.
+
+| component | element |
+| --- | --- |
+| Row, Column, List | `div`, a flex row or column; List scrolls |
+| Card | `div`, rounded border |
+| Text | `div` with the Markdown as HTML; links open in the terminal (`target=_blank`, SPEC.md §9) |
+| Image | `img` |
+| Icon | `span` with the glyph cells draw |
+| Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
+| Divider | `hr`, or a vertical rule |
+| Button | `button type=button`, `disabled` while its checks fail |
+| TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
+| CheckBox | `input type=checkbox` |
+| ChoicePicker | a `select` for one of several shown as checkboxes; else its options, as checkboxes (several) or chips (`button aria-pressed`) |
+| Slider | `input type=range` and an `output` |
+| DateTimeInput | `input` `date`, `time` or `datetime-local` |
+| Tabs | a `tablist` of `button role=tab`, then the tab shown |
+| Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
+| Form | `form` with a hidden submit button out of the Tab order, so Enter submits |
+
+**Updates are deltas.** The document goes once. After it, the renderer
+diffs the elements it sent against the elements the view makes now, and
+sends the smallest deltas the ids allow (SPEC.md §6): `attr` and `unattr`
+for an attribute, `text` for an element whose content is one text, a
+recursion into children that keep their ids and order, and `inner`
+(which morphs) for any other change below an element. `updateComponents`
+and `updateDataModel` change a surface this way, and so does the
+renderer's own state: a tab shown, a Modal opened.
+
+**Events.** Each acts on the surface as the user's act does in cells:
+
+| event | does |
+| --- | --- |
+| `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
+| `click` | a Button runs its action; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it |
+| `submit` | the Form submits (§6.2) |
+| `focus`, `blur` | the surface has the keyboard, or not |
+
+Typing reaches the data model at every key (`data-on=input`), as A2UI's
+own renderers write a bound field.
+
+**The keyboard.** The renderer gives the host the keyboard it has in mind
+when they differ: `a=focus` at the element `autofocus` (§6.4) or `focus`
+(§6.3) names, `a=blur` for `blur`. Within the surface, Tab moves focus
+where the program does not see it (SPEC.md §9), so the renderer knows the
+element last clicked or edited, not always the one focused.
 
 ## 3. Cells
 
@@ -342,7 +407,23 @@ included), keycaps and a lone ZWJ.
 
 ## 4. Text
 
-*To be written.*
+With no terminal, a surface is plain text: what it says and holds, in tree
+order, one line per component, for a pipe or a screen reader's log. The
+reference is `rendition/text`.
+
+- A Row's parts share one line, two spaces apart, when each is one line.
+- Text is its Markdown as plain text: paragraphs and list items a line
+  each, markers kept.
+- A field is `Label: value`; an obscured one shows `•` for each
+  character, and an empty one its placeholder in parentheses.
+- A CheckBox is `[x] Label` or `[ ] Label`; a ChoicePicker `Label: ` and
+  the labels picked; a Slider `Label: value (min–max)`.
+- A Button is `[ label ]`, followed by `(disabled)` while its checks fail.
+- Tabs are their titles, the one shown in brackets, then its content.
+- An error is `✗ message`, on the line after its control.
+- Image, Icon, Video, AudioPlayer and placeholders are as §7 has them.
+- An open Modal's content follows the surface, after a line `───`.
+- A component with `accessibility.hidden` says nothing.
 
 ## 5. Keys and focus
 
@@ -372,6 +453,15 @@ value only when focus leaves it (SPEC.md §9, `change`). Before resolving the
 context of an action that a key started while a field has the keyboard, a
 renderer sends `a=blur`, waits for `change` (if the value changed) and then
 `blur`, writes the value to the data model, and then resolves the context.
+It then gives the keyboard back with `a=focus` and no `t`: to the element
+the host had focused, wherever Tab took it. A renderer whose fields report
+`input` is current anyway; the blur keeps it so for a field that does not.
+
+**Vectors.** `vectors/keys.yaml` checks all of this against both
+renditions: a story played by keys, focus, blur and clicks, with who has
+the keyboard, the actions the agent got and the data model expected after
+each step. The host side runs on hottytest's host, whose `Key` takes keys
+as SPEC.md §10.2 has a host take them.
 
 ## 6. The hotty catalog
 
@@ -380,24 +470,66 @@ renderer sends `a=blur`, waits for `change` (if the value changed) and then
 
 ### 6.1 Shortcut
 
-*To be written: key syntax, `press` and `action`, printable keys while a
-text control has the keyboard.*
+Binds a key to its surface, and draws nothing. `key` is a W3C UI Events
+key value after its modifiers (`Control`, `Alt`, `Shift`, `Meta`), joined
+by `+`: `Control+s`, `Escape`, `Alt+ArrowUp`, `?`. Modifiers match in any
+order; a letter's case matters only with `Shift`. Tab and Shift+Tab move
+focus and cannot be bound.
+
+When a key reaches the program (§5) while the Shortcut's surface is the
+one keys apply to, the Shortcut either presses the Button `press` names,
+as a click would and only if the Button's checks pass, or runs its
+`action`. `press` is a plain id, not a ComponentId: a Shortcut does not
+contain its Button; in a template, the first instance in tree order is
+pressed. A key that types a character, with no modifier but Shift, never
+reaches a Shortcut while a text control has the keyboard: the field takes
+it (SPEC.md §10.2).
 
 ### 6.2 Form
 
-*To be written.*
+A container whose `onSubmit` runs on Enter in a text field inside it (on a
+host, HOTTY's `submit`). It runs only when the Form's own checks and those
+of every control inside pass; otherwise each failing control shows its
+error, and nothing goes to the agent. A control's error shows once the
+user has changed it, or tried its Form. Fields commit first (§5), so
+`onSubmit`'s context has what was typed. Forms do not nest on a host: an
+inner Form is a group, and Enter submits the outer one.
 
 ### 6.3 focus and blur
 
-*To be written.*
+Renderer functions that a Button or the agent may call
+(`allowedCallers: rendererOrAgent`). `focus({id})` gives the keyboard to
+a component of the surface: a template's component, to the instance in
+the caller's scope. Called by the agent (`callRendererFunction` names no
+surface), it focuses the first surface that has the component. `blur()`
+gives the keyboard back: from the caller's surface, or from every surface
+when the agent calls it. On a host they are `a=focus` and `a=blur`; a
+field that had the keyboard commits first.
 
 ### 6.4 autofocus
 
-*To be written.*
+`metadata.extensions.io_neuroplast_hotty.autofocus: true` on a component
+that takes focus gives it the keyboard as soon as it is there, until the
+surface has given the keyboard to anything. A surface often arrives after
+it is made, in later `updateComponents`; autofocus waits for the
+component. Other renderers ignore it.
 
 ## 7. Fallbacks
 
 A component never fails the surface it is in.
 
-*To be written: Video and AudioPlayer as a labelled link, Image without a
-network, an unknown component, a missing child.*
+- **Video and AudioPlayer** are a labelled link, `▶ Video` or `▶` and the
+  description: on a host a link the program opens (SPEC.md §9), in cells
+  an OSC 8 hyperlink, in text the label and the URL. It takes focus, and
+  Enter or Space opens it, through the renderer's `openUrl`.
+- **Image** is a picture on a host, fetched only as the network policy
+  allows (§2). In cells and text it is `[image: description]`.
+- **A child still to come.** A component may name one the agent has not
+  sent yet, as a stream does. It shows `…` in `muted` until it comes.
+- **A component that contains itself.** Where the loop closes, it shows
+  `! Type` in `warning`; the renderer reports the cycle to the agent once,
+  and the rest of the surface shows.
+- **A component this renderer cannot draw**, of a catalog the processor
+  knows but the renderer has no rendition for, shows `! Type` too. A
+  component of a catalog the surface does not support is the agent's
+  error: A2UI refuses the message, and the renderer reports it.
