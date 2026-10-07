@@ -24,6 +24,7 @@ import (
 	"strings"
 	"sync"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/term"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -90,13 +91,52 @@ func run(list, plain bool, stream, outPath string, args []string) error {
 		return err
 	}
 	defer closeOut()
-	if plain || !term.IsTerminal(os.Stdout.Fd()) {
+	stdoutTTY := term.IsTerminal(os.Stdout.Fd())
+	if plain || !stdoutTTY && outPath != "-" {
 		if outPath == "-" {
 			return errors.New("-out - needs stdout for the text: name a file")
 		}
 		return printText(os.Stdout, st, in, w)
 	}
-	return errors.New("the interactive storybook is not built yet: use -text")
+	if outPath == "-" && stdoutTTY {
+		return errors.New("-out - writes to stdout, which is the terminal: pipe it, or name a file")
+	}
+	return interactive(st, in, stream, w)
+}
+
+// interactive runs the storybook in the terminal: /dev/tty when stdin
+// is the stream or stdout carries the actions, as with an agent on both
+// ends of a pipe.
+func interactive(st *story.Story, in io.Reader, source string, out func(a2ui.Outbound)) error {
+	termIn, termOut := os.Stdin, os.Stdout
+	if in == os.Stdin || !term.IsTerminal(os.Stdin.Fd()) || !term.IsTerminal(os.Stdout.Fd()) {
+		tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
+		if err != nil {
+			return fmt.Errorf("no terminal for the storybook: %w", err)
+		}
+		defer tty.Close()
+		if in == os.Stdin || !term.IsTerminal(os.Stdin.Fd()) {
+			termIn = tty
+		}
+		if !term.IsTerminal(os.Stdout.Fd()) {
+			termOut = tty
+		}
+	}
+	first := ""
+	if st != nil {
+		first = st.Name
+	}
+	if source == "-" {
+		source = "stdin"
+	}
+	m := newModel(first, in != nil, source, out)
+	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)))
+	m.s.Attach(p.Send)
+	if in != nil {
+		go readStream(in, p.Send)
+	}
+	_, err := p.Run()
+	return err
 }
 
 // output is where the renderer's messages go: a JSON line each.

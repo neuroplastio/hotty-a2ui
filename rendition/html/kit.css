@@ -8,6 +8,7 @@
   --k-muted: var(--hotty-ansi-8, GrayText);
   --k-border: var(--hotty-ansi-8, GrayText);
   --k-error: var(--hotty-ansi-9, red);
+  --k-warning: var(--hotty-ansi-3, olive);
 }
 .k-surface { display: flex; flex-direction: column; }
 .k-surface[inert] { opacity: 0.5; }
@@ -87,6 +88,7 @@ textarea.k-input { resize: none; min-height: calc(3 * var(--k-row)); }
 .k-submit { position: absolute; width: 0; height: 0; padding: 0; border: 0; overflow: hidden; opacity: 0; }
 
 .k-ph { color: var(--k-muted); }
+.k-warn { color: var(--k-warning); }
 
 .k-layer:empty { display: none; }
 .k-layer { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }

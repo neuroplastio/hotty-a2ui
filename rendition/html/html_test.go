@@ -218,7 +218,7 @@ func TestControlsOnHost(t *testing.T) {
 	if len(x.actions) != 0 {
 		t.Fatalf("submitted an invalid form: %v", x.actions)
 	}
-	if got := x.h.Surface(name).TextOf(partID("name", partError)); got != "! Name, please" {
+	if got := x.h.Surface(name).TextOf(partID("name", partError)); got != "✗ Name, please" {
 		t.Errorf("error %q", got)
 	}
 

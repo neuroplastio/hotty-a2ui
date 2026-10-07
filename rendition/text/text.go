@@ -30,7 +30,7 @@ func element(e *view.Element) []string {
 	}
 	errLine := func(lines []string) []string {
 		if e.Error != "" {
-			lines = append(lines, "! "+e.Error)
+			lines = append(lines, "✗ "+e.Error)
 		}
 		return lines
 	}
@@ -131,13 +131,10 @@ func element(e *view.Element) []string {
 	case view.Modal:
 		return children(e)
 	case view.Placeholder:
-		switch e.State {
-		case a2ui.Pending:
+		if e.State == a2ui.Pending {
 			return []string{"…"}
-		case a2ui.Cyclic:
-			return []string{"! " + e.Type + " contains itself"}
 		}
-		return []string{"[" + e.Type + "]"}
+		return []string{"! " + e.Type}
 	}
 	return children(e)
 }

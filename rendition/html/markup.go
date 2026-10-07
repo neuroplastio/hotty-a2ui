@@ -180,14 +180,10 @@ func (m *markup) element(e *view.Element) *node {
 		// one is out of sight and out of the Tab order.
 		n.add(el("button", "id", partID(e.ID, partSubmit), "type", "submit", "class", "k-submit", "tabindex", "-1", "aria-hidden", "true"))
 	case view.Placeholder:
-		s := "[" + e.Type + "]"
-		switch e.State {
-		case a2ui.Pending:
-			s = "…"
-		case a2ui.Cyclic:
-			s = "! " + e.Type + " contains itself"
+		n = el("span", "id", id, "class", "k-ph k-warn").add(txt("! " + e.Type))
+		if e.State == a2ui.Pending {
+			n = el("span", "id", id, "class", "k-ph").add(txt("…"))
 		}
-		n = el("span", "id", id, "class", "k-ph").add(txt(s))
 	default:
 		n = el("div", "id", id, "class", "k-stack k-col").add(m.all(e.Children)...)
 	}
@@ -220,7 +216,7 @@ func (m *markup) field(e *view.Element, class string, parts ...*node) *node {
 	errID := partID(e.ID, partError)
 	msg := el("div", "id", errID, "class", "k-error", "aria-live", "polite")
 	if e.Error != "" {
-		msg.add(txt("! " + e.Error))
+		msg.add(txt("✗ " + e.Error))
 	}
 	return w.add(msg)
 }

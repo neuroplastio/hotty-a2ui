@@ -19,8 +19,25 @@ private, and nothing in it is published.
 | [`conformance/`](conformance) | A2UI's conformance suites, run against the core |
 | [`view/`](view) | the renderer's model of a surface: its nodes made into a few kinds of element, with the renderer's own state (focus, the tab shown, the modal open), and the controller the user's acts go through |
 | [`rendition/html/`](rendition/html) | the rendition on a HOTTY host: a document, then deltas, and the host's events back as the user's acts |
+| [`rendition/cells/`](rendition/cells) | the rendition in a terminal that is not a host: laid out and painted in cells by the profile's rules (§3), with keys and clicks as SPEC §10 has them |
 | [`rendition/text/`](rendition/text) | the rendition with no terminal: plain text for a pipe |
+| [`story/`](story) | the stories (A2UI's basic examples, the hotty catalog's, the fallbacks) and a story as it runs |
+| [`cmd/storybook/`](cmd/storybook) | the storybook: every story in the rendition picked, live, with its actions, data model and messages; or what an agent streams |
 | [`third_party/a2ui/`](third_party/a2ui) | A2UI at one commit ([`REV`](third_party/a2ui/REV)): the v1.0 schemas, the basic catalog and its examples, the conformance suites |
+
+## The storybook
+
+```sh
+go run ./cmd/storybook                       # the stories, in this terminal
+go run ./cmd/storybook -text 36_modal        # one story as text
+agent | go run ./cmd/storybook -stream - -out actions.jsonl
+                                             # what an agent streams; the user's actions to a file
+```
+
+On a HOTTY host (hottyterm, xterm-addon-hotty) a story shows as surfaces,
+in cells, as text, or as surfaces beside cells; elsewhere in cells or as
+text. Tab moves between the panes, F2 changes the rendition, and Ctrl+C
+quits. The storybook's own list and panel are A2UI surfaces as well.
 
 ## The gate
 
