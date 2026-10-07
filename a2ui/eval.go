@@ -45,6 +45,9 @@ type Context struct {
 	OpenURL func(url string) error
 	// Caller is the component that the value belongs to, if any.
 	Caller string
+	// Surface is the surface the value belongs to; nil for a function the
+	// agent called (callRendererFunction names no surface).
+	Surface *Surface
 }
 
 // FunctionFinder finds a function: the catalog is the call's own, or the

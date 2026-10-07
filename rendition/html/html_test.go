@@ -13,6 +13,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	hottycat "github.com/neuroplastio/hotty-a2ui/catalog/hotty"
+	"github.com/neuroplastio/hotty-a2ui/story"
 	thirdparty "github.com/neuroplastio/hotty-a2ui/third_party"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
@@ -113,11 +114,9 @@ func (x *harness) pump() {
 		for _, ev := range evs[x.seen:] {
 			x.seen++
 			for _, r := range x.rs {
-				cmds, err := r.Event(ev)
-				if err != nil {
+				if err := r.Event(ev); err != nil {
 					x.t.Fatalf("%s %s: %v", ev.Kind, ev.Target, err)
 				}
-				x.send(cmds...)
 				x.send(r.Update()...)
 			}
 		}
@@ -302,5 +301,58 @@ func must(t *testing.T, err error) {
 	t.Helper()
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+// TestFocusBlurOnHost: the hotty story of focus and blur, on a host. The
+// field with autofocus takes the keyboard once the document is there; a
+// Button's focus moves it, and blur gives it back to the terminal.
+func TestFocusBlurOnHost(t *testing.T) {
+	run, err := story.Start(story.Find("hotty/focus-blur"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := hottytest.New(t)
+	s := run.Surfaces()[0]
+	r := New(s.C, "profile")
+	send := func(cmds ...string) {
+		t.Helper()
+		for _, c := range cmds {
+			_, _ = io.WriteString(h, c)
+		}
+		if errs := h.Errors(); len(errs) > 0 {
+			t.Fatalf("the host refused: %v", errs)
+		}
+	}
+	seen := 0
+	pump := func() {
+		t.Helper()
+		for evs := h.Events(); seen < len(evs); evs = h.Events() {
+			for _, ev := range evs[seen:] {
+				seen++
+				if err := r.Event(ev); err != nil {
+					t.Fatal(err)
+				}
+				send(r.Update()...)
+			}
+		}
+	}
+	send(hotty.Doc("profile", r.Doc()), hotty.Place("profile", hotty.Placement{Cols: 60, Rows: 12}))
+	send(r.Update()...)
+	if got := h.Surface("profile").Focused(); got != "name" {
+		t.Fatalf("autofocus: %q", got)
+	}
+	must(t, h.Click("profile", "to_city"))
+	pump()
+	if got := h.Surface("profile").Focused(); got != "city" {
+		t.Errorf("after focus: %q", got)
+	}
+	must(t, h.Click("profile", "done"))
+	pump()
+	if got := h.Surface("profile").Focused(); got != "" || s.C.St.Keyboard {
+		t.Errorf("after blur: %q, keyboard %v", got, s.C.St.Keyboard)
+	}
+	if n := len(run.Actions()); n != 0 {
+		t.Errorf("%d actions for the agent", n)
 	}
 }

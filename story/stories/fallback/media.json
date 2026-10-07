@@ -1,0 +1,47 @@
+{
+  "name": "Video and audio",
+  "description": "Video and AudioPlayer have no terminal meaning: each becomes a labelled link, which opens in the platform's player.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "media",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "media",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "video",
+              "audio"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Media"
+          },
+          {
+            "id": "video",
+            "component": "Video",
+            "url": "https://example.com/talk.mp4"
+          },
+          {
+            "id": "audio",
+            "component": "AudioPlayer",
+            "url": "https://example.com/episode.mp3",
+            "description": "Episode 12"
+          }
+        ]
+      }
+    }
+  ]
+}

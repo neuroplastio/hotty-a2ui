@@ -95,6 +95,7 @@ func (s *Surface) Context(scope Scope) *Context {
 		Catalog: s.Catalog,
 		Locale:  s.env.Locale,
 		OpenURL: s.env.OpenURL,
+		Surface: s,
 	}
 	if s.env.Agent != nil {
 		c.Agent = func(f *Function, catalog string, args map[string]any) (any, error) {

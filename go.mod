@@ -10,9 +10,13 @@ require (
 )
 
 require (
+	github.com/charmbracelet/x/term v0.2.2
 	github.com/neuroplastio/hotty-go v0.0.0-20261007135140-e3c4dd4d3cb3
 	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261007135140-e3c4dd4d3cb3
 	github.com/yuin/goldmark v1.8.6
 )
 
-require golang.org/x/net v0.39.0 // indirect
+require (
+	golang.org/x/net v0.39.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+)

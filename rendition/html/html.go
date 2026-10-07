@@ -36,6 +36,14 @@ type Rendition struct {
 	// pending is the Shortcut key waiting for the host to commit the
 	// focused field (Key).
 	pending string
+	// host is the keyboard as the host has it, as far as the rendition
+	// knows: Update gives the host the controller's when they differ.
+	host keyboard
+}
+
+type keyboard struct {
+	on    bool
+	focus string
 }
 
 // New is the rendition of a controller's surface, as the host surface
@@ -63,104 +71,90 @@ func (r *Rendition) Update() []string {
 	out := r.diff(r.sent[0], main, nil)
 	out = r.diff(r.sent[1], layer, out)
 	r.sent = []*node{main, layer}
+	// The keyboard, when the controller moved it: autofocus, the focus
+	// and blur functions, the end of a Shortcut (Key).
+	st := r.C.St
+	if want := (keyboard{st.Keyboard, st.Focus}); want != r.host && (want.on || r.host.on) {
+		switch {
+		case !want.on:
+			out = append(out, hotty.Blur(r.name))
+		case want.focus != "" && r.C.V.Find(want.focus) != nil:
+			out = append(out, hotty.Focus(r.name, domID(want.focus)))
+		default:
+			out = append(out, hotty.Focus(r.name, ""))
+		}
+		r.host = want
+	}
 	return out
 }
 
-// Autofocus is the a=focus that gives the surface the keyboard at the
-// element the view starts focused (io_neuroplast_hotty.autofocus), to send
-// after the document; "" when there is none.
-func (r *Rendition) Autofocus() string {
-	if !r.C.St.Keyboard || r.C.St.Focus == "" {
-		return ""
-	}
-	return hotty.Focus(r.name, domID(r.C.St.Focus))
-}
-
-// Focus gives the surface the keyboard at an element, or with id "" where
-// it was (the focus renderer function).
-func (r *Rendition) Focus(id string) string {
-	r.C.Focus(id)
-	if id == "" {
-		r.C.St.Keyboard = true
-		return hotty.Focus(r.name, "")
-	}
-	return hotty.Focus(r.name, domID(id))
-}
-
-// Blur takes the keyboard back from the surface (the blur renderer
-// function). The host commits the focused field first.
-func (r *Rendition) Blur() string { return hotty.Blur(r.name) }
-
 // Event is what the user did in the surface: it acts on the controller,
-// and returns the commands to send in turn, before the deltas Update then
-// makes. Events of other surfaces, and of kinds it does not know, do
-// nothing.
-func (r *Rendition) Event(ev hotty.Event) (cmds []string, err error) {
+// and Update then makes the deltas. Events of other surfaces, and of kinds
+// it does not know, do nothing.
+func (r *Rendition) Event(ev hotty.Event) error {
 	if ev.Surface != r.name {
-		return nil, nil
+		return nil
 	}
 	c := r.C
 	switch ev.Kind {
 	case hotty.EventFocus:
-		c.St.Keyboard = true
-		return nil, nil
+		c.St.Keyboard, r.host.on = true, true
+		return nil
 	case hotty.EventBlur:
-		c.St.Keyboard = false
+		c.St.Keyboard, r.host.on = false, false
 		if r.pending == "" {
-			return nil, nil
+			return nil
 		}
-		// The field is committed: the Shortcut runs on current inputs,
-		// and the keyboard goes back where it was.
+		// The field is committed: the Shortcut runs on current inputs.
+		// The blur was the rendition's own, so the keyboard goes back
+		// where it was (Update), unless the Shortcut moves it.
 		key := r.pending
 		r.pending = ""
-		modal := c.St.Modal
-		_, err = c.Shortcut(key)
-		if c.St.Modal == modal {
-			c.St.Keyboard = true
-			cmds = append(cmds, hotty.Focus(r.name, ""))
-		}
-		return cmds, err
+		c.St.Keyboard = true
+		_, err := c.Shortcut(key)
+		return err
 	}
 	if ev.Target == backdropID && ev.Kind == hotty.EventClick {
 		c.CloseModal()
-		return nil, nil
+		return nil
 	}
 	id, part, ok := viewID(ev.Target)
 	if !ok {
-		return nil, nil
+		return nil
 	}
 	e := c.V.Find(id)
 	if e == nil {
-		return nil, nil
+		return nil
 	}
 	switch ev.Kind {
 	case hotty.EventClick:
 		if part != "" {
-			return nil, nil
+			return nil
 		}
 		if e.Focusable() {
 			c.Focus(id)
+			r.host = keyboard{true, id}
 		}
-		return nil, c.Activate(id)
+		return c.Activate(id)
 	case hotty.EventInput, hotty.EventChange:
-		c.St.Focus = id
+		c.St.Focus, r.host.focus = id, id
 		switch e.Kind {
 		case view.CheckBox:
 			on, _ := ev.Checked()
-			return nil, c.SetValue(id, on)
+			return c.SetValue(id, on)
 		case view.Option:
 			if on, _ := ev.Checked(); on != e.Active {
-				return nil, c.Activate(id)
+				return c.Activate(id)
 			}
-			return nil, nil
+			return nil
 		}
-		return nil, c.SetValue(id, ev.Value())
+		return c.SetValue(id, ev.Value())
 	case hotty.EventSubmit:
 		if e.Kind == view.Form {
-			return nil, c.Submit(id)
+			return c.Submit(id)
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 // Key is a key the program read while the surface is the one keys apply

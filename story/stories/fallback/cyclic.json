@@ -1,0 +1,59 @@
+{
+  "name": "A component that contains itself",
+  "description": "A Card whose column holds the Card again would never end. Where the loop closes, it shows a mark instead, and the rest of the surface shows.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "loop",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "loop",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "card",
+              "after"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## A loop"
+          },
+          {
+            "id": "card",
+            "component": "Card",
+            "child": "inner"
+          },
+          {
+            "id": "inner",
+            "component": "Column",
+            "children": [
+              "inner_text",
+              "card"
+            ]
+          },
+          {
+            "id": "inner_text",
+            "component": "Text",
+            "text": "Inside the card."
+          },
+          {
+            "id": "after",
+            "component": "Text",
+            "text": "The rest still shows."
+          }
+        ]
+      }
+    }
+  ]
+}

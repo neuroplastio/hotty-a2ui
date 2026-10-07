@@ -13,7 +13,7 @@
 .k-surface[inert] { opacity: 0.5; }
 
 .k-stack { display: flex; min-width: 0; min-height: 0; }
-.k-row { flex-direction: row; column-gap: calc(2 * var(--k-col)); }
+.k-row { flex-direction: row; column-gap: var(--k-col); }
 .k-col { flex-direction: column; }
 .k-scroll { overflow: auto; }
 .k-j-start { justify-content: flex-start; }
@@ -42,8 +42,6 @@
 .k-text blockquote { border-left: 1px solid var(--k-border); padding-left: var(--k-col); }
 .k-text hr { border: 0; border-top: 1px solid var(--k-border); }
 .k-text img { max-width: 100%; }
-.k-v-h1, .k-v-h2 { font-weight: bold; text-decoration: underline; }
-.k-v-h3, .k-v-h4, .k-v-h5 { font-weight: bold; }
 .k-v-caption { color: var(--k-muted); }
 
 .k-img { display: block; max-width: 100%; object-fit: fill; }

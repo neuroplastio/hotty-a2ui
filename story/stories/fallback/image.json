@@ -1,0 +1,56 @@
+{
+  "name": "Images",
+  "description": "An Image is a picture on a host, and its description in cells and text.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "images",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "images",
+        "components": [
+          {
+            "id": "root",
+            "component": "Row",
+            "children": [
+              "avatar",
+              "about"
+            ]
+          },
+          {
+            "id": "avatar",
+            "component": "Image",
+            "url": "https://example.com/ada.png",
+            "description": "Ada's portrait",
+            "variant": "avatar"
+          },
+          {
+            "id": "about",
+            "component": "Column",
+            "children": [
+              "who",
+              "what"
+            ]
+          },
+          {
+            "id": "who",
+            "component": "Text",
+            "text": "### Ada Lovelace"
+          },
+          {
+            "id": "what",
+            "component": "Text",
+            "text": "Wrote the first program.",
+            "variant": "caption"
+          }
+        ]
+      }
+    }
+  ]
+}

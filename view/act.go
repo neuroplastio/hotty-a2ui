@@ -23,20 +23,25 @@ type Controller struct {
 func NewController(s *a2ui.Surface) *Controller {
 	c := &Controller{S: s, St: NewState()}
 	c.Rebuild()
-	if c.St.Focus == "" {
-		c.V.Walk(func(e *Element) bool {
-			if e.Autofocus && e.Focusable() {
-				c.St.Focus, c.St.Keyboard = e.ID, true
-				return false
-			}
-			return true
-		})
-	}
 	return c
 }
 
 // Rebuild builds the view again, from the surface as it is resolved now.
-func (c *Controller) Rebuild() { c.V = Build(c.S, c.St) }
+// Until an element has had the keyboard, one with autofocus takes it as
+// soon as it is there: a surface streams in after it is made.
+func (c *Controller) Rebuild() {
+	c.V = Build(c.S, c.St)
+	if c.St.Focus != "" {
+		return
+	}
+	c.V.Walk(func(e *Element) bool {
+		if e.Autofocus && e.Focusable() {
+			c.St.Focus, c.St.Keyboard = e.ID, true
+			return false
+		}
+		return true
+	})
+}
 
 // Ancestors are the elements that contain id, outermost first; nil when
 // id is not in the view.
@@ -275,6 +280,31 @@ func (c *Controller) Focus(id string) {
 		return
 	}
 	c.St.Focus, c.St.Keyboard = id, true
+}
+
+// FindComponent is the element of a component, by its id: the instance
+// in scope, for a template's, else the first in tree order; "" if none
+// is in the view.
+func (c *Controller) FindComponent(componentID string, scope a2ui.Scope) string {
+	found, first := "", ""
+	c.V.Walk(func(e *Element) bool {
+		n := c.V.Node(e.ID)
+		if n == nil || n.ComponentID != componentID {
+			return true
+		}
+		if first == "" {
+			first = e.ID
+		}
+		if n.Scope.Path == scope.Path {
+			found = e.ID
+			return false
+		}
+		return true
+	})
+	if found == "" {
+		found = first
+	}
+	return found
 }
 
 // FocusNext moves the keyboard to the next focusable element (or the

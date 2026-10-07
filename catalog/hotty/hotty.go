@@ -28,3 +28,19 @@ func Catalog() *a2ui.Catalog {
 	}
 	return c
 }
+
+// Implement gives a catalog's focus and blur their implementation: the
+// renderer's, which moves the keyboard. s is the surface of the call, nil
+// when the agent called it (callRendererFunction names no surface); scope
+// is the caller's, which picks a template's instance.
+func Implement(c *a2ui.Catalog, focus func(s *a2ui.Surface, scope a2ui.Scope, id string) error, blur func(s *a2ui.Surface) error) {
+	if f := c.Functions["focus"]; f != nil {
+		f.Impl = func(ctx *a2ui.Context, args map[string]any) (any, error) {
+			id, _ := args["id"].(string)
+			return nil, focus(ctx.Surface, ctx.Scope, id)
+		}
+	}
+	if f := c.Functions["blur"]; f != nil {
+		f.Impl = func(ctx *a2ui.Context, _ map[string]any) (any, error) { return nil, blur(ctx.Surface) }
+	}
+}
