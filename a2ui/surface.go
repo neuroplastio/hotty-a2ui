@@ -261,3 +261,6 @@ func (s *Surface) ActionFor(ev map[string]any, ctx *Context, source string) (*Ac
 	}
 	return a, nil
 }
+
+// Env is what the surface's evaluation was given by the renderer.
+func (s *Surface) Env() Env { return s.env }
