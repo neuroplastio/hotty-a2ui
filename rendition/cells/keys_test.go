@@ -320,6 +320,35 @@ func TestSliderDrag(t *testing.T) {
 	}
 }
 
+// TestSliderSteady: the track keeps its length and place whatever the
+// value, 0.45 or a whole 1.
+func TestSliderSteady(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	if err := p.ProcessJSON([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"v":0.45}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[{"id":"root","component":"Slider","min":0,"max":1,"value":{"@path":"/v"}}]}}]`)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	r := New(c)
+	var first *trackArea
+	for _, v := range []float64{0.45, 1, 0.5, 0} {
+		if err := c.SetValue("root", v); err != nil {
+			t.Fatal(err)
+		}
+		r.Draw(20)
+		for _, h := range r.hits {
+			if h.id != "root" || h.track == nil {
+				continue
+			}
+			if first == nil {
+				first = h.track
+			} else if *h.track != *first {
+				t.Errorf("at %v the track is %+v, at 0.45 %+v", v, *h.track, *first)
+			}
+		}
+	}
+}
+
 // TestListRows: a List's Buttons are its rows, as wide as it, whatever
 // their variant; a click anywhere on a row presses its Button.
 func TestListRows(t *testing.T) {

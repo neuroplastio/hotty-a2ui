@@ -88,7 +88,7 @@ so that an error comes and goes as a text delta.
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | a `select` for one of several shown as checkboxes; else its options, as checkboxes (several) or chips (`button aria-pressed`) |
-| Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output`. The track is cut into notches with `data-on=drag`, one a step and one each end (at most 41; twenty steps without a `step`), so a drag sets the value of the notch under the pointer. Hosts draw `input type=range` unevenly (Blitz not at all) |
+| Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output` as wide as the widest value (§3.3's), in `ch`. The track is cut into notches with `data-on=drag`, one a step and one each end (at most 41; twenty steps without a `step`), so a drag sets the value of the notch under the pointer. Hosts draw `input type=range` unevenly (Blitz not at all) |
 | DateTimeInput | `input type=text` with the ISO 8601 value, its form as the placeholder, as in cells (§3.5). Hosts draw date and time inputs unevenly (Blitz not at all), and none takes an offset such as `Z` |
 | Tabs | a `tablist` of `button role=tab`, then the tab shown |
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
@@ -192,7 +192,7 @@ Natural widths:
 | CheckBox | 3 for the box, plus 1 and the label when it has one |
 | a select | `label: `, the widest option's label, ` ▸` |
 | a Choice's options | the label's width, or all the options in one row two columns apart, whichever is wider |
-| Slider | the label + 1 if it has one, a track of 10, 1, and the value's width (the widest of min, max and the value) |
+| Slider | the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |

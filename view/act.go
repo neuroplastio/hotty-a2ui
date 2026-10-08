@@ -376,8 +376,42 @@ func (e *Element) snap(f float64) float64 {
 		return f
 	}
 	f = e.Min + math.Round((f-e.Min)/q)*q
-	p := math.Pow(10, float64(min(max(decimals(q), decimals(e.Min)), 12)))
+	p := math.Pow(10, float64(e.sliderDecimals()))
 	return math.Max(e.Min, math.Min(e.Max, math.Round(f*p)/p))
+}
+
+// sliderDecimals is how many digits a Slider's value has after the point
+// once snapped: as many as its step (a hundredth of its range without
+// one) and its Min have, at most 12.
+func (e *Element) sliderDecimals() int {
+	q := e.Step
+	if q <= 0 {
+		q = (e.Max - e.Min) / 100
+	}
+	if q <= 0 || math.IsInf(q, 0) {
+		return 0
+	}
+	return min(max(decimals(q), decimals(e.Min)), 12)
+}
+
+// SliderWidth is the most characters a Slider's value takes: its ends',
+// its value's, and a snapped value's whole part, point and decimals. A
+// rendition that gives the value this much room keeps the track where it
+// is as the value moves (0.45 is wider than 1).
+func (e *Element) SliderWidth() int {
+	v, _ := e.Value.(float64)
+	w := max(len(a2ui.NumberString(e.Min)), len(a2ui.NumberString(e.Max)), len(a2ui.NumberString(v)))
+	if d := e.sliderDecimals(); d > 0 {
+		whole := 0
+		for _, f := range []float64{e.Min, e.Max} {
+			whole = max(whole, len(strconv.FormatFloat(math.Trunc(math.Abs(f)), 'f', 0, 64)))
+		}
+		if e.Min < 0 {
+			whole++
+		}
+		w = max(w, whole+1+d)
+	}
+	return w
 }
 
 // decimals is how many digits a number has after the point, written as

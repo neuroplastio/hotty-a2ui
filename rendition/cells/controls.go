@@ -241,10 +241,7 @@ func pickedLabel(e *view.Element) string {
 	return ""
 }
 
-func sliderValueWidth(e *view.Element) int {
-	v, _ := e.Value.(float64)
-	return max(Width(a2ui.NumberString(e.Min)), Width(a2ui.NumberString(e.Max)), Width(a2ui.NumberString(v)))
-}
+func sliderValueWidth(e *view.Element) int { return e.SliderWidth() }
 
 func imageText(e *view.Element) string {
 	if e.Alt == "" {

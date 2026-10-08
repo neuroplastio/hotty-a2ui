@@ -132,3 +132,22 @@ func TestSliderSnaps(t *testing.T) {
 		t.Errorf("a free value set to %v, want 0.12 (a hundredth of the range)", got)
 	}
 }
+
+// TestSliderWidth: a Slider's value has room for any value it snaps to,
+// so whole numbers take as much as the widest.
+func TestSliderWidth(t *testing.T) {
+	for _, c := range []struct {
+		e    view.Element
+		want int
+	}{
+		{view.Element{Kind: view.Slider, Min: 0, Max: 1, Value: 1.0}, 4},      // 0.45
+		{view.Element{Kind: view.Slider, Min: 0, Max: 100, Value: 5.0}, 3},    // 100
+		{view.Element{Kind: view.Slider, Min: 0, Max: 1, Step: 0.05}, 4},      // 0.05
+		{view.Element{Kind: view.Slider, Min: -5, Max: 5, Step: 0.5}, 4},      // -4.5
+		{view.Element{Kind: view.Slider, Min: 0, Max: 1, Value: 0.123456}, 8}, // the value, off its steps
+	} {
+		if got := c.e.SliderWidth(); got != c.want {
+			t.Errorf("%v..%v step %v value %v: %d, want %d", c.e.Min, c.e.Max, c.e.Step, c.e.Value, got, c.want)
+		}
+	}
+}

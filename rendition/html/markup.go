@@ -152,7 +152,7 @@ func (m *markup) element(e *view.Element) *node {
 		}
 		less := el("button", "id", partID(e.ID, partLess), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "less").add(txt("−"))
 		more := el("button", "id", partID(e.ID, partMore), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "more").add(txt("+"))
-		out := el("output", "id", partID(e.ID, partOutput), "for", id).add(txt(a2ui.NumberString(f)))
+		out := el("output", "id", partID(e.ID, partOutput), "for", id, "style", "min-width: "+strconv.Itoa(e.SliderWidth())+"ch").add(txt(a2ui.NumberString(f)))
 		outer = m.field(e, "k-field", label(e), el("div", "id", partID(e.ID, partRange), "class", "k-slide").add(less, n, more, out))
 	case view.Choice:
 		picked, _ := e.Value.([]string)
