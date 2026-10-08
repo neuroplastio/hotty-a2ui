@@ -110,8 +110,14 @@
 .k-text h2 { font-size: 1.3em; letter-spacing: -0.01em; }
 .k-text h3 { font-size: 1.15em; }
 .k-text :is(h4, h5, h6) { font-size: 1em; }
-.k-text :is(ul, ol) { padding-left: 1.25em; }
+.k-text ul { padding-left: 1.25em; }
 .k-text li + li { margin-top: 0.125em; }
+/* An ordered item's number is a span (view's Markdown HTML), set in the
+   indent a gap before the text and lined up by its full stop, so "9."
+   and "10." start their text together. */
+.k-text ol { list-style: none; padding-left: 1.75em; }
+.k-text ol > li { position: relative; }
+.k-text .k-n { position: absolute; top: 0; right: 100%; margin-right: 0.4em; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .k-text blockquote { border-left: 3px solid var(--k-line); padding-left: var(--k-3); color: var(--k-muted); }
 .k-text hr { border: 0; height: 1px; background: var(--k-line); }
 .k-text img { max-width: 100%; }

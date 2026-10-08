@@ -25,3 +25,17 @@ func TestMarkdown(t *testing.T) {
 		t.Errorf("html %s", h)
 	}
 }
+
+func TestListNumbers(t *testing.T) {
+	for _, c := range []struct{ src, want string }{
+		{"1. one", "<ol>\n<li><span class=\"k-n\">1.</span>one</li>\n</ol>"},
+		{"3. three", "<ol start=\"3\">\n<li><span class=\"k-n\">3.</span>three</li>\n</ol>"},
+		{"9. a\n10. b", "<li><span class=\"k-n\">10.</span>b</li>"},
+		{"1. a\n\n2. b", "<li><span class=\"k-n\">2.</span>\n<p>b</p>\n</li>"},
+		{"- a", "<ul>\n<li>a</li>\n</ul>"},
+	} {
+		if h := MarkdownHTML(c.src); !strings.Contains(h, c.want) {
+			t.Errorf("%q: html %s, want %s", c.src, h, c.want)
+		}
+	}
+}

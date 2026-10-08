@@ -2,6 +2,7 @@ package view
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/yuin/goldmark/extension"
 	east "github.com/yuin/goldmark/extension/ast"
 	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
+	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
 )
@@ -19,12 +22,44 @@ import (
 // into Blocks of styled Runs, which they wrap themselves.
 
 // md is the Markdown every rendition reads: GFM, raw HTML left out (a
-// Text has none), and links opened by the terminal (target=_blank makes a
-// link a hyperlink, SPEC §9).
+// Text has none), links opened by the terminal (target=_blank makes a
+// link a hyperlink, SPEC §9), and an ordered item's number written out.
 var md = goldmark.New(
 	goldmark.WithExtensions(extension.GFM),
 	goldmark.WithParserOptions(parser.WithASTTransformers(util.Prioritized(hyperlinks{}, 100))),
+	goldmark.WithRendererOptions(renderer.WithNodeRenderers(util.Prioritized(numbers{}, 100))),
 )
+
+// numbers writes an ordered list item's number as <span class="k-n">3.</span>
+// first in the item, for the kit's sheet to place. A host draws the
+// number itself otherwise, and Blitz draws it flush against the text,
+// with no gap, and doesn't support counters to draw it again.
+type numbers struct{}
+
+func (numbers) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
+	reg.Register(ast.KindListItem, func(w util.BufWriter, _ []byte, n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			_, _ = w.WriteString("</li>\n")
+			return ast.WalkContinue, nil
+		}
+		_, _ = w.WriteString("<li")
+		if n.Attributes() != nil {
+			html.RenderAttributes(w, n, html.ListItemAttributeFilter)
+		}
+		_ = w.WriteByte('>')
+		if l, ok := n.Parent().(*ast.List); ok && l.IsOrdered() {
+			num := l.Start
+			for c := l.FirstChild(); c != nil && c != n; c = c.NextSibling() {
+				num++
+			}
+			_, _ = fmt.Fprintf(w, `<span class="k-n">%d.</span>`, num)
+		}
+		if _, ok := n.FirstChild().(*ast.TextBlock); n.FirstChild() != nil && !ok {
+			_ = w.WriteByte('\n')
+		}
+		return ast.WalkContinue, nil
+	})
+}
 
 type hyperlinks struct{}
 
