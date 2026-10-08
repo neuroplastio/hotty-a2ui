@@ -223,8 +223,9 @@
 .k-none { color: var(--k-muted); }
 .k-caret { color: var(--k-muted); font-size: 0.875em; }
 .k-check, .k-opt { display: flex; align-items: center; column-gap: var(--k-2); }
-.k-check input, .k-opt input { width: 1.125rem; height: 1.125rem; margin: 0; accent-color: var(--k-focus); }
-.k-check > .k-label, .k-opt { font-size: 1rem; font-weight: 400; color: inherit; }
+.k-check input, .k-opt input { width: 1.125rem; height: 1.125rem; margin: 0; accent-color: var(--k-focus); cursor: pointer; }
+/* A checkbox's or an option's label toggles it, so it points as a button does. */
+.k-check > .k-label, .k-opt { font-size: 1rem; font-weight: 400; color: inherit; cursor: pointer; }
 
 .k-field { display: flex; flex-direction: column; row-gap: var(--k-1); min-width: 0; }
 .k-label { font-size: 0.8125rem; font-weight: 500; line-height: 1.3; color: var(--k-muted); }
