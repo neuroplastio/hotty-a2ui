@@ -8,6 +8,7 @@ import (
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
+	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/story"
 )
 
@@ -37,7 +38,7 @@ type chrome struct {
 
 type renditionOption struct{ value, label string }
 
-func newChrome(entries [][2]string, rends []renditionOption, rend string) *chrome {
+func newChrome(entries [][2]string, rends []renditionOption, rend string, th string) *chrome {
 	ch := &chrome{run: story.NewRun(), sent: map[string]string{}}
 	ch.run.Out = func(o a2ui.Outbound) {
 		if o.Action != nil {
@@ -52,13 +53,19 @@ func newChrome(entries [][2]string, rends []renditionOption, rend string) *chrom
 	for _, r := range rends {
 		opts = append(opts, map[string]any{"label": r.label, "value": r.value})
 	}
+	var themes []any
+	for _, t := range theme.All {
+		themes = append(themes, map[string]any{"label": t.Name, "value": t.Name})
+	}
 	ch.feed(
-		create(navID, map[string]any{"rendition": []any{rend}, "stories": items}),
+		create(navID, map[string]any{"rendition": []any{rend}, "theme": []any{th}, "stories": items}),
 		components(navID,
-			obj("id", "root", "component", "Column", "children", []any{"title", "rend", "list"}),
+			obj("id", "root", "component", "Column", "children", []any{"title", "rend", "theme_p", "list"}),
 			obj("id", "title", "component", "Text", "text", "**HOTTY kit** · stories"),
 			obj("id", "rend", "component", "ChoicePicker", "label", "Rendition", "displayStyle", "chips",
 				"value", obj("@path", "/rendition"), "options", opts),
+			obj("id", "theme_p", "component", "ChoicePicker", "label", "Theme", "displayStyle", "chips",
+				"value", obj("@path", "/theme"), "options", themes),
 			obj("id", "list", "component", "List", "children", obj("componentId", "item", "path", "/stories")),
 			obj("id", "item", "component", "Button", "variant", "borderless", "child", "item_t",
 				"action", obj("event", obj("name", "open", "context", obj("name", obj("@path", "name"))))),
@@ -108,6 +115,16 @@ func (ch *chrome) surface(id string) *story.Surface {
 		}
 	}
 	return nil
+}
+
+// theme is the theme picked in nav.
+func (ch *chrome) theme() string {
+	v := ch.surface(navID).S.Data.Value("/theme")
+	if l, ok := v.([]any); ok && len(l) > 0 {
+		s, _ := l[0].(string)
+		return s
+	}
+	return ""
 }
 
 // rendition is the rendition picked in nav.

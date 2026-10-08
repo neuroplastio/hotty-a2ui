@@ -155,6 +155,22 @@
     - key: Enter
     - expect: {focused: email, actions: [signUp], context: {name: Ada, email: ada@example.com, plan: [free]}}
 
+- name: arrows step a focused Slider, Home and End go to its ends
+  messages: *controls
+  steps:
+    - focus: level
+    - key: ArrowRight
+    - expect: {focused: level, data: {/level: 3.5}}
+    - key: ArrowLeft
+    - key: ArrowDown
+    - expect: {focused: level, data: {/level: 2.5}}
+    - key: End
+    - expect: {data: {/level: 10}}
+    - key: ArrowUp
+    - expect: {data: {/level: 10}}
+    - key: Home
+    - expect: {focused: level, data: {/level: 0}}
+
 - name: focus and blur move the keyboard; autofocus takes it at the start
   story: hotty/focus-blur
   steps:

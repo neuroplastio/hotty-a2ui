@@ -7,6 +7,7 @@ import (
 	"sync"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/neuroplastio/hotty-go/hottytest"
@@ -177,6 +178,38 @@ func TestRenditionSwitch(t *testing.T) {
 	eventually(t, "cells alone", func() bool { return h.Surface("s1-0-h") == nil })
 	if !strings.Contains(h.Screen(), "Ada Lovelace") {
 		t.Errorf("the cells lost the name:\n%s", h.Screen())
+	}
+}
+
+// TestSideInput: side by side, the cells beside the surface take input
+// too. A click gives their field the keyboard, the surface on the host
+// gives it up, and what is typed shows on the host as well.
+func TestSideInput(t *testing.T) {
+	h := hottytest.New(t, hottytest.Size(120, 40))
+	storybook(t, h, "hotty/form", false)
+	eventually(t, "the story on the host", func() bool { return h.Surface("s1-0-h") != nil && h.Surface(navID) != nil })
+	eventually(t, "nav's renditions", func() bool { _, ok := h.Surface(navID).Element("rend/option/3"); return ok })
+	if err := h.Click(navID, "rend/option/3"); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "the cells beside the surface", func() bool { return lineOf(h.Screen(), "Name") >= 0 })
+	// Take the keyboard on the host first: the cells must win it back.
+	if err := h.Fill("s1-0-h", "email", "ada@example.com"); err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(h.Screen(), "\n")
+	row := lineOf(h.Screen(), "Name")
+	col := utf8.RuneCountInString(lines[row][:strings.Index(lines[row], "Name")])
+	click := "\x1b[<0;" + itoa(col+1) + ";" + itoa(row+2) + "M\x1b[<0;" + itoa(col+1) + ";" + itoa(row+2) + "m"
+	h.Type(click)
+	eventually(t, "the host's surface without the keyboard", func() bool { return h.Surface("s1-0-h").Focused() == "" })
+	h.Type("Ada")
+	eventually(t, "the typing on the host", func() bool {
+		v, _ := h.Surface("s1-0-h").Value("name")
+		return v == "Ada"
+	})
+	if v, _ := h.Surface("s1-0-h").Value("email"); v != "ada@example.com" {
+		t.Errorf("the host's email is %q", v)
 	}
 }
 

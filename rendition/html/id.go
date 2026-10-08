@@ -17,7 +17,9 @@ const (
 	partLabel  = "l"
 	partError  = "e"
 	partOutput = "v" // a Slider's value
-	partRange  = "r" // a Slider's track and value
+	partRange  = "r" // a Slider's track, buttons and value
+	partLess   = "m" // a Slider's − button
+	partMore   = "n" // a Slider's + button
 	partTabs   = "t" // a Tabs' bar
 	partPanel  = "p" // a Tabs' content
 	partSubmit = "s" // a Form's hidden submit button

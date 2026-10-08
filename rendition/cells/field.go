@@ -146,7 +146,7 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	if v == "" {
 		hint := e.Placeholder
 		if hint == "" && e.Kind == view.DateTime {
-			hint = dateHint(e)
+			hint = e.DateHint()
 		}
 		cv.write(x, row, w, fit(line(hint, style{role: Muted, attr: Faint | Underline}), w))
 	}

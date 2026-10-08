@@ -21,6 +21,7 @@ private, and nothing in it is published.
 | [`rendition/html/`](rendition/html) | the rendition on a HOTTY host: a document, then deltas, and the host's events back as the user's acts |
 | [`rendition/cells/`](rendition/cells) | the rendition in a terminal that is not a host: laid out and painted in cells by the profile's rules (§3), with keys and clicks as SPEC §10 has them |
 | [`rendition/text/`](rendition/text) | the rendition with no terminal: plain text for a pipe |
+| [`rendition/theme/`](rendition/theme) | the themes both renditions paint with: colours by role, and on a host the shapes |
 | [`vectors/`](vectors) | keys and focus, one set of vectors run against the cells rendition and against the HTML one on a host |
 | [`story/`](story) | the stories (A2UI's basic examples, the hotty catalog's, the fallbacks) and a story as it runs |
 | [`cmd/storybook/`](cmd/storybook) | the storybook: every story in the rendition picked, live, with its actions, data model and messages; or what an agent streams |
@@ -37,8 +38,17 @@ agent | go run ./cmd/storybook -stream - -out actions.jsonl
 
 On a HOTTY host (hottyterm, xterm-addon-hotty) a story shows as surfaces,
 in cells, as text, or as surfaces beside cells; elsewhere in cells or as
-text. Tab moves between the panes, F2 changes the rendition, and Ctrl+C
-quits. The storybook's own list and panel are A2UI surfaces as well.
+text. Side by side, both take input: the keyboard is in one of them at a
+time, and the other shows the same state. Tab moves through the story,
+then the panel and the list; F2 changes the rendition, F3 the theme, and
+Ctrl+C quits. The storybook's own list and panel are A2UI surfaces as
+well.
+
+```sh
+go run ./cmd/storybook -theme "material dark"     # start in a theme
+go run ./cmd/storybook -html 06_music-player > p.html
+hotty render p.html -o p.png --cols 56            # hotty-blitz: see a surface
+```
 
 ## The gate
 

@@ -15,6 +15,7 @@ import (
 
 	"github.com/neuroplastio/hotty-go"
 
+	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -39,6 +40,13 @@ type Rendition struct {
 	// host is the keyboard as the host has it, as far as the rendition
 	// knows: Update gives the host the controller's when they differ.
 	host keyboard
+	// theme is the colours the kit paints with; the zero theme is the
+	// host's own.
+	theme theme.Theme
+	// Away is set while the keyboard is in another rendition of the same
+	// surface (cells beside it): the host's surface gives it up, and its
+	// blur leaves the controller's keyboard where it is.
+	Away bool
 	// back is set when the keyboard goes back after a Shortcut's blur:
 	// to where the host had it, which Tab may have moved unseen.
 	back bool
@@ -53,13 +61,17 @@ type keyboard struct {
 // name.
 func New(c *view.Controller, name string) *Rendition { return &Rendition{C: c, name: name} }
 
+// SetTheme paints the surface in a theme's colours from the next Doc or
+// Update on; the zero theme is the host's own.
+func (r *Rendition) SetTheme(th theme.Theme) { r.theme = th }
+
 // Name is the HOTTY surface's name.
 func (r *Rendition) Name() string { return r.name }
 
 // Doc is the whole document of the view as it is now, for a=doc; the host
 // has it from then on.
 func (r *Rendition) Doc() string {
-	main, layer := surface(r.C.V)
+	main, layer := surface(r.C.V, r.theme)
 	r.sent = []*node{main, layer}
 	return head + main.html() + layer.html()
 }
@@ -70,14 +82,14 @@ func (r *Rendition) Update() []string {
 	if r.sent == nil {
 		return nil
 	}
-	main, layer := surface(r.C.V)
+	main, layer := surface(r.C.V, r.theme)
 	out := r.diff(r.sent[0], main, nil)
 	out = r.diff(r.sent[1], layer, out)
 	r.sent = []*node{main, layer}
 	// The keyboard, when the controller moved it: autofocus, the focus
 	// and blur functions, the end of a Shortcut (Key).
 	st := r.C.St
-	if want := (keyboard{st.Keyboard, st.Focus}); want != r.host && (want.on || r.host.on) {
+	if want := (keyboard{st.Keyboard && !r.Away, st.Focus}); want != r.host && (want.on || r.host.on) {
 		switch {
 		case !want.on:
 			out = append(out, hotty.Blur(r.name))
@@ -107,6 +119,10 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		c.St.Keyboard, r.host.on = true, true
 		return nil
 	case hotty.EventBlur:
+		if r.Away {
+			r.host.on = false
+			return nil
+		}
 		c.St.Keyboard, r.host.on = false, false
 		if r.pending == "" {
 			return nil
@@ -134,6 +150,13 @@ func (r *Rendition) Event(ev hotty.Event) error {
 	}
 	switch ev.Kind {
 	case hotty.EventClick:
+		if e.Kind == view.Slider && (part == partLess || part == partMore) {
+			n := 1
+			if part == partLess {
+				n = -1
+			}
+			return c.StepSlider(id, n, "")
+		}
 		if part != "" {
 			return nil
 		}
@@ -143,7 +166,12 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		}
 		return c.Activate(id)
 	case hotty.EventInput, hotty.EventChange:
-		c.St.Focus, r.host.focus = id, id
+		// A field the host commits as it gives the keyboard up keeps its
+		// value, not the focus: that is in the other rendition now.
+		r.host.focus = id
+		if !r.Away {
+			c.St.Focus = id
+		}
 		switch e.Kind {
 		case view.CheckBox:
 			on, _ := ev.Checked()
@@ -192,6 +220,18 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	if key == "Escape" && c.St.Modal != "" {
 		c.CloseModal()
 		return nil, true, nil
+	}
+	// A focused Slider is a button on the host, which leaves arrows, Home
+	// and End to the program (SPEC §10.2).
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Slider {
+		switch key {
+		case "ArrowLeft", "ArrowDown":
+			return nil, true, c.StepSlider(e.ID, -1, "")
+		case "ArrowRight", "ArrowUp":
+			return nil, true, c.StepSlider(e.ID, 1, "")
+		case "Home", "End":
+			return nil, true, c.StepSlider(e.ID, 0, key)
+		}
 	}
 	return nil, false, nil
 }

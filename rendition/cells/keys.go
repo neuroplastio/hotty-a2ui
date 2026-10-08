@@ -85,6 +85,17 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	case isSelect(e):
 		return r.selectKey(e, name)
 	}
+	if e.Kind == view.Slider {
+		switch name {
+		case "ArrowLeft", "ArrowDown":
+			return true, r.c.StepSlider(e.ID, -1, "")
+		case "ArrowRight", "ArrowUp":
+			return true, r.c.StepSlider(e.ID, 1, "")
+		case "Home", "End":
+			return true, r.c.StepSlider(e.ID, 0, name)
+		}
+		return false, nil
+	}
 	switch e.Kind {
 	case view.Button, view.Tab, view.Option, view.CheckBox:
 	case view.Media:

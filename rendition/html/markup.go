@@ -1,9 +1,12 @@
 package html
 
 import (
+	"math"
+	"strconv"
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -19,10 +22,14 @@ type markup struct {
 
 // surface is the surface's two top elements: the view, and the layer an
 // open Modal's content shows in.
-func surface(v *view.Surface) (main, layer *node) {
+func surface(v *view.Surface, th theme.Theme) (main, layer *node) {
 	var m markup
 	main = el("div", "id", surfaceID, "class", "k-surface").add(m.element(v.Root))
 	layer = el("div", "id", layerID, "class", "k-layer")
+	if css := themeCSS(th); css != "" {
+		main.set("style", css)
+		layer.set("style", css)
+	}
 	if v.Overlay != nil {
 		main.flag("inert", true)
 		layer.add(
@@ -58,15 +65,20 @@ func (m *markup) element(e *view.Element) *node {
 		n = el("div", "id", id, "class", "k-card k-stack k-col").add(m.all(e.Children)...)
 	case view.Text:
 		n = el("div", "id", id, "class", "k-text k-v-"+e.Variant)
-		n.text, n.raw = view.MarkdownHTML(e.Markdown), true
+		n.text, n.raw = emojiHTML(view.MarkdownHTML(e.Markdown)), true
 	case view.Image:
 		n = el("img", "id", id, "class", "k-img k-v-"+e.Variant+" k-fit-"+e.Fit, "src", e.URL, "alt", e.Alt)
 	case view.Icon:
-		n = el("span", "id", id, "class", "k-icon", "role", "img", "aria-label", e.Name).add(txt(view.IconGlyph(e.Name)))
+		g, emoji := iconText(e.Name)
+		class := "k-icon"
+		if emoji {
+			class += " k-emoji"
+		}
+		n = el("span", "id", id, "class", class, "role", "img", "aria-label", e.Name).add(txt(g))
 	case view.Media:
 		// A link, not a hyperlink: it takes the keyboard as it does in
 		// cells, and its click is the program's, which opens it.
-		n = el("a", "id", id, "class", "k-media", "href", e.URL).add(txt("▶ " + e.Alt))
+		n = el("a", "id", id, "class", "k-media", "href", e.URL).add(texts("▶ " + e.Alt)...)
 	case view.Divider:
 		if e.Dir == view.Vertical {
 			n = el("div", "id", id, "class", "k-vr", "role", "separator", "aria-orientation", "vertical")
@@ -74,7 +86,11 @@ func (m *markup) element(e *view.Element) *node {
 			n = el("hr", "id", id, "class", "k-hr")
 		}
 	case view.Button:
-		n = el("button", "id", id, "type", "button", "class", "k-btn k-"+e.Variant).flag("disabled", e.Disabled).add(m.all(e.Children)...)
+		class := "k-btn k-" + e.Variant
+		if len(e.Children) == 1 && e.Children[0].Kind == view.Icon {
+			class += " k-icon-btn"
+		}
+		n = el("button", "id", id, "type", "button", "class", class).flag("disabled", e.Disabled).add(m.all(e.Children)...)
 	case view.TextField:
 		v, _ := e.Value.(string)
 		switch e.Variant {
@@ -95,32 +111,36 @@ func (m *markup) element(e *view.Element) *node {
 		n = el("input", "id", id, "type", "checkbox").flag("checked", e.Value == true)
 		outer = m.field(e, "k-check", n, label(e))
 	case view.DateTime:
+		// A text field, as in cells: a value in ISO 8601, its form the
+		// placeholder. Hosts draw date and time inputs unevenly (Blitz
+		// not at all), and none takes an offset such as "Z".
 		v, _ := e.Value.(string)
-		typ := "date"
-		switch {
-		case e.Date && e.Time:
-			typ = "datetime-local"
-		case e.Time:
-			typ = "time"
-		}
-		n = el("input", "id", id, "class", "k-input", "type", typ, "value", v, "data-on", "input")
-		if e.MinISO != "" {
-			n.set("min", e.MinISO)
-		}
-		if e.MaxISO != "" {
-			n.set("max", e.MaxISO)
-		}
+		hint := e.DateHint()
+		n = el("input", "id", id, "class", "k-input k-date", "type", "text", "value", v, "data-on", "input",
+			"placeholder", hint, "size", strconv.Itoa(max(len(hint), len(v))), "inputmode", "numeric")
 		outer = m.field(e, "k-field", label(e), n)
 	case view.Slider:
+		// One button is the slider, as one focusable: arrow keys reach the
+		// program (SPEC §10.2), which steps it (Key). Its track shows the
+		// value; − and + step it by a click, outside the Tab order. Hosts
+		// draw a range input unevenly (Blitz not at all).
 		f, _ := e.Value.(float64)
-		step := "any"
-		if e.Step > 0 {
-			step = a2ui.NumberString(e.Step)
+		pct := 0.0
+		if e.Max > e.Min {
+			pct = math.Max(0, math.Min(100, (f-e.Min)/(e.Max-e.Min)*100))
 		}
-		n = el("input", "id", id, "type", "range", "min", a2ui.NumberString(e.Min), "max", a2ui.NumberString(e.Max),
-			"step", step, "value", a2ui.NumberString(f), "data-on", "input")
+		at := strconv.FormatFloat(pct, 'f', 2, 64) + "%"
+		n = el("button", "id", id, "type", "button", "class", "k-track", "role", "slider",
+			"aria-valuemin", a2ui.NumberString(e.Min), "aria-valuemax", a2ui.NumberString(e.Max),
+			"aria-valuenow", a2ui.NumberString(f)).add(
+			el("span", "class", "k-rail"),
+			el("span", "class", "k-fill", "style", "width: "+at),
+			el("span", "class", "k-knob", "style", "left: "+at),
+		)
+		less := el("button", "id", partID(e.ID, partLess), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "less").add(txt("−"))
+		more := el("button", "id", partID(e.ID, partMore), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "more").add(txt("+"))
 		out := el("output", "id", partID(e.ID, partOutput), "for", id).add(txt(a2ui.NumberString(f)))
-		outer = m.field(e, "k-field", label(e), el("div", "id", partID(e.ID, partRange), "class", "k-slide").add(n, out))
+		outer = m.field(e, "k-field", label(e), el("div", "id", partID(e.ID, partRange), "class", "k-slide").add(less, n, more, out))
 	case view.Choice:
 		picked, _ := e.Value.([]string)
 		if len(e.Children) == 0 {
@@ -142,7 +162,7 @@ func (m *markup) element(e *view.Element) *node {
 		}
 		var head *node
 		if e.Label != "" {
-			head = el("div", "id", partID(e.ID, partLabel), "class", "k-label").add(txt(e.Label))
+			head = el("div", "id", partID(e.ID, partLabel), "class", "k-label").add(texts(e.Label)...)
 			n.set("aria-labelledby", partID(e.ID, partLabel))
 		}
 		outer = m.field(e, "k-field", head, n)
@@ -152,7 +172,7 @@ func (m *markup) element(e *view.Element) *node {
 		for _, c := range e.Children {
 			if c.Kind == view.Tab {
 				bar.add(el("button", "id", domID(c.ID), "type", "button", "class", "k-tab", "role", "tab",
-					"aria-selected", boolString(c.Active)).add(txt(c.Label)))
+					"aria-selected", boolString(c.Active)).add(texts(c.Label)...))
 				continue
 			}
 			panel.add(m.element(c))
@@ -203,9 +223,9 @@ func (m *markup) option(choice, o *view.Element) *node {
 	id := domID(o.ID)
 	if choice.Multiple && choice.Variant != "chips" {
 		in := el("input", "id", id, "type", "checkbox").flag("checked", o.Active)
-		return el("label", "id", partID(o.ID, partWrap), "class", "k-opt").add(in, txt(o.Label))
+		return el("label", "id", partID(o.ID, partWrap), "class", "k-opt").add(in).add(texts(o.Label)...)
 	}
-	return el("button", "id", id, "type", "button", "class", "k-chip", "aria-pressed", boolString(o.Active)).add(txt(o.Label))
+	return el("button", "id", id, "type", "button", "class", "k-chip", "aria-pressed", boolString(o.Active)).add(texts(o.Label)...)
 }
 
 // field wraps a control with what goes with it, and its error, which is
@@ -226,7 +246,7 @@ func label(e *view.Element) *node {
 	if e.Label == "" {
 		return nil
 	}
-	return el("label", "id", partID(e.ID, partLabel), "class", "k-label", "for", domID(e.ID)).add(txt(e.Label))
+	return el("label", "id", partID(e.ID, partLabel), "class", "k-label", "for", domID(e.ID)).add(texts(e.Label)...)
 }
 
 func accessible(n *node, e *view.Element) {
@@ -286,4 +306,36 @@ func fallback(s, def string) string {
 		return s
 	}
 	return def
+}
+
+// themeCSS is a theme's colours as the kit's variables, and the surface's
+// own colours; "" for the host's palette, which the zero theme keeps.
+func themeCSS(th theme.Theme) string {
+	if th == (theme.Theme{}) || th.Name == theme.Default.Name {
+		return ""
+	}
+	var b strings.Builder
+	put := func(k, v string) {
+		if v != "" {
+			b.WriteString(k + ":" + v + ";")
+		}
+	}
+	put("--k-bg", th.Bg)
+	put("--k-fg", th.Fg)
+	put("--k-muted", th.Muted)
+	put("--k-border", th.Border)
+	put("--k-accent", th.Accent)
+	put("--k-on-accent", th.Bg)
+	put("--k-selection", th.Selection)
+	put("--k-surface", th.Surface)
+	put("--k-error", th.Error)
+	put("--k-warning", th.Warning)
+	put("--k-success", th.Success)
+	put("--k-r-button", th.Shape.Button)
+	put("--k-r-chip", th.Shape.Chip)
+	put("--k-r-card", th.Shape.Card)
+	put("--k-r-field", th.Shape.Field)
+	put("--k-link", th.Accent)
+	put("--k-focus", th.Accent)
+	return b.String()
 }

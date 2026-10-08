@@ -73,6 +73,29 @@ func clusterWidth(g string) int {
 	return w
 }
 
+// Emoji reports whether a grapheme cluster is an emoji shown as one: a
+// pictograph with emoji presentation, by default or by VS16; an emoji ZWJ
+// sequence; a flag. A pictograph without VS16 that defaults to text (☀)
+// is not. A host draws these from a colour font (rendition/html).
+func Emoji(g string) bool {
+	first, n, ri, zwjSeq := rune(-1), 0, 0, false
+	for _, r := range g {
+		n++
+		if first < 0 {
+			first = r
+		}
+		switch {
+		case r == vs16:
+			return true
+		case r == zwj:
+			zwjSeq = true
+		case r >= 0x1F1E6 && r <= 0x1F1FF:
+			ri++
+		}
+	}
+	return zwjSeq && pictographic.has(first) || ri == 2 && n == 2 || pictographic.has(first) && wide.has(first)
+}
+
 // Width is a string's width in cells: the sum of its grapheme clusters'.
 func Width(s string) int {
 	w := 0

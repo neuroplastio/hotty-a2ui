@@ -356,3 +356,66 @@ func TestFocusBlurOnHost(t *testing.T) {
 		t.Errorf("%d actions for the agent", n)
 	}
 }
+
+// TestEmoji: an emoji goes in a span that names a colour font, in a
+// label's text and in a Text's HTML; a pictograph that defaults to text
+// (☀ without VS16) stays text, and so does what is inside a tag.
+func TestEmoji(t *testing.T) {
+	var b strings.Builder
+	for _, n := range texts("Sun ☀️, sun ☀, cloud ⛅ 👍🏽!") {
+		b.WriteString(n.html())
+	}
+	want := `Sun <span class="k-emoji">☀️</span>, sun ☀, cloud <span class="k-emoji">⛅</span> <span class="k-emoji">👍🏽</span>!`
+	if got := b.String(); got != want {
+		t.Errorf("texts:\n got %s\nwant %s", got, want)
+	}
+	got := emojiHTML(`<p title="☀️">Hi ⛅ <a href="x">🇺🇦</a></p>`)
+	want = `<p title="☀️">Hi <span class="k-emoji">⛅</span> <a href="x"><span class="k-emoji">🇺🇦</span></a></p>`
+	if got != want {
+		t.Errorf("emojiHTML:\n got %s\nwant %s", got, want)
+	}
+	if got := emojiHTML("<p>plain</p>"); got != "<p>plain</p>" {
+		t.Errorf("emojiHTML changed plain text: %s", got)
+	}
+}
+
+// TestSliderAndDate: a Slider is a track the host can draw, stepped by
+// its − and + buttons; a DateTime is a text field with its form as the
+// placeholder, which shows a value with an offset.
+func TestSliderAndDate(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"v":3,"due":"2025-12-15T17:00:00Z"}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["v","due"]},
+ {"id":"v","component":"Slider","label":"Volume","min":0,"max":10,"value":{"@path":"/v"}},
+ {"id":"due","component":"DateTimeInput","label":"Due","enableDate":true,"enableTime":true,"value":{"@path":"/due"}}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	r := x.rs["s"]
+	if err := x.h.Click(r.name, partID("v", partMore)); err != nil {
+		t.Fatal(err)
+	}
+	x.pump()
+	if err := x.h.Click(r.name, partID("v", partMore)); err != nil {
+		t.Fatal(err)
+	}
+	x.pump()
+	if got := r.C.S.Data.Value("/v"); got != 4.0 {
+		t.Errorf("two steps up from 3 made %v", got)
+	}
+	if v, _ := x.h.Surface(r.name).Attr("v", "aria-valuenow"); v != "4" {
+		t.Errorf("the track says %q", v)
+	}
+	x.check(r)
+	if typ, _ := x.h.Surface(r.name).Attr("due", "type"); typ != "text" {
+		t.Errorf("the date is an input of type %q", typ)
+	}
+	if v, _ := x.h.Surface(r.name).Value("due"); v != "2025-12-15T17:00:00Z" {
+		t.Errorf("the date shows %q", v)
+	}
+	if p, _ := x.h.Surface(r.name).Attr("due", "placeholder"); p != "YYYY-MM-DDTHH:MM" {
+		t.Errorf("the date's placeholder is %q", p)
+	}
+}

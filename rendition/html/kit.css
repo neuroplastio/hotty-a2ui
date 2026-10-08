@@ -1,21 +1,67 @@
-/* hotty-a2ui: the kit's look on a HOTTY host. It builds on the host
-   stylesheet (SPEC §8), whose palette dresses the controls, and keeps to
-   NEIO-4's roles: accent only on focus, colour never alone, rules rather
-   than boxes in the view, rounded borders for what floats. */
+/* hotty-a2ui: the kit's look on a HOTTY host. A surface is a web page in
+   the terminal, so it is set in web type, not the grid's: a proportional
+   face, a type scale, spacing in rem (the host's root size, which follows
+   the terminal's font). Colours come from the host's palette (SPEC §8)
+   unless a theme sets them on the surface (rendition/theme). The default
+   keeps to NEIO-4: accent only on focus and links, colour never alone. */
 :root {
-  --k-col: var(--hotty-cell-w, 1ch);
-  --k-row: var(--hotty-cell-h, 1.25em);
-  --k-muted: var(--hotty-ansi-8, GrayText);
+  --k-font: Inter, "Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --k-mono: var(--hotty-font, ui-monospace, monospace);
+  --k-emoji: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Twemoji Mozilla", emoji;
+
+  --k-bg: var(--hotty-bg, Canvas);
+  --k-fg: var(--hotty-fg, CanvasText);
   --k-border: var(--hotty-ansi-8, GrayText);
+  --k-accent: var(--hotty-fg, CanvasText);
+  --k-on-accent: var(--hotty-bg, Canvas);
+  --k-link: var(--hotty-accent, LinkText);
+  --k-focus: var(--hotty-accent, Highlight);
   --k-error: var(--hotty-ansi-9, red);
   --k-warning: var(--hotty-ansi-3, olive);
-}
-.k-surface { display: flex; flex-direction: column; }
-.k-surface[inert] { opacity: 0.5; }
+  --k-success: var(--hotty-ansi-2, green);
 
+  --k-r-button: 0.5rem;
+  --k-r-chip: 999px;
+  --k-r-card: 0.75rem;
+  --k-r-field: 0.5rem;
+
+  --k-1: 0.25rem;
+  --k-2: 0.5rem;
+  --k-3: 0.75rem;
+  --k-4: 1rem;
+  --k-5: 1.25rem;
+  --k-6: 1.5rem;
+}
+
+/* Colours made from others are made here, where a theme sets those
+   (markup.go puts it on these two), so they follow it; a theme's own value
+   of one of them wins. */
+.k-surface, .k-layer {
+  --k-muted: color-mix(in srgb, var(--k-fg) 62%, var(--k-bg));
+  --k-surface: color-mix(in srgb, var(--k-fg) 5%, var(--k-bg));
+  --k-tonal: color-mix(in srgb, var(--k-fg) 11%, var(--k-bg));
+  --k-line: color-mix(in srgb, var(--k-fg) 14%, var(--k-bg));
+  --k-field: color-mix(in srgb, var(--k-fg) 8%, var(--k-bg));
+  font-family: var(--k-font);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--k-fg);
+}
+.k-surface {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: var(--k-3);
+  background: var(--k-bg);
+}
+.k-surface[inert] { opacity: 0.5; }
+.k-emoji { font-family: var(--k-emoji); font-style: normal; font-weight: normal; }
+
+/* Layout */
 .k-stack { display: flex; min-width: 0; min-height: 0; }
-.k-row { flex-direction: row; column-gap: var(--k-col); }
-.k-col { flex-direction: column; }
+.k-row { flex-direction: row; column-gap: var(--k-3); }
+.k-col { flex-direction: column; row-gap: var(--k-2); }
 .k-scroll { overflow: auto; }
 .k-j-start { justify-content: flex-start; }
 .k-j-center { justify-content: center; }
@@ -29,91 +75,213 @@
 .k-a-end { align-items: flex-end; }
 .k-a-stretch { align-items: stretch; }
 
+/* A card is a raised surface. Its border may not draw at a fractional
+   scale (Blitz drops thin rounded borders there); its fill always does. */
 .k-card {
-  border: 1px solid var(--k-border);
-  border-radius: calc(var(--k-row) / 2);
-  padding: 0 var(--k-col);
+  background: var(--k-surface);
+  border: 1px solid var(--k-line);
+  border-radius: var(--k-r-card);
+  padding: var(--k-4) var(--k-5);
 }
-.k-hr { border: 0; border-top: 1px solid var(--k-border); margin: calc(var(--k-row) / 2 - 1px) 0; width: 100%; }
-.k-vr { border-left: 1px solid var(--k-border); align-self: stretch; }
+.k-hr { border: 0; height: 1px; background: var(--k-line); margin: var(--k-1) 0; width: 100%; }
+.k-vr { width: 1px; background: var(--k-line); align-self: stretch; }
 
+/* Type */
+.k-text { overflow-wrap: anywhere; }
 .k-text :is(p, ul, ol, pre, blockquote, h1, h2, h3, h4, h5, h6, table) { margin: 0; }
-.k-text :is(h1, h2, h3, h4, h5, h6) { font-size: inherit; font-weight: bold; }
-.k-text :is(ul, ol) { padding-left: calc(2 * var(--k-col)); }
-.k-text blockquote { border-left: 1px solid var(--k-border); padding-left: var(--k-col); }
-.k-text hr { border: 0; border-top: 1px solid var(--k-border); }
+.k-text > * + * { margin-top: var(--k-2); }
+.k-text :is(h1, h2, h3, h4, h5, h6) { font-weight: 600; line-height: 1.25; }
+.k-text h1 { font-size: 1.5em; letter-spacing: -0.015em; }
+.k-text h2 { font-size: 1.3em; letter-spacing: -0.01em; }
+.k-text h3 { font-size: 1.15em; }
+.k-text :is(h4, h5, h6) { font-size: 1em; }
+.k-text :is(ul, ol) { padding-left: 1.25em; }
+.k-text li + li { margin-top: 0.125em; }
+.k-text blockquote { border-left: 3px solid var(--k-line); padding-left: var(--k-3); color: var(--k-muted); }
+.k-text hr { border: 0; height: 1px; background: var(--k-line); }
 .k-text img { max-width: 100%; }
-.k-v-caption { color: var(--k-muted); }
+.k-text a { color: var(--k-link); text-decoration: underline; }
+.k-text code { font-family: var(--k-mono); font-size: 0.875em; background: var(--k-tonal); border-radius: 0.25rem; padding: 0 0.3em; }
+.k-text pre { font-family: var(--k-mono); font-size: 0.875em; line-height: 1.45; background: var(--k-tonal); border-radius: var(--k-r-field); padding: var(--k-3) var(--k-4); overflow: auto; }
+.k-text pre code { background: none; padding: 0; font-size: 1em; }
+.k-text table { border-collapse: collapse; }
+.k-text :is(th, td) { padding: var(--k-1) var(--k-3); border-bottom: 1px solid var(--k-line); text-align: left; }
+.k-text th { font-size: 0.8125rem; font-weight: 600; color: var(--k-muted); }
+.k-v-h1 { font-size: 1.75rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; }
+.k-v-h2 { font-size: 1.375rem; line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; }
+.k-v-h3 { font-size: 1.1875rem; line-height: 1.3; font-weight: 600; }
+.k-v-h4 { font-size: 1.0625rem; line-height: 1.35; font-weight: 600; }
+.k-v-h5 { font-size: 0.9375rem; line-height: 1.4; font-weight: 600; }
+.k-v-caption { font-size: 0.8125rem; line-height: 1.4; color: var(--k-muted); }
 
-.k-img { display: block; max-width: 100%; object-fit: fill; }
+/* Pictures */
+.k-icon { display: inline-flex; align-items: center; justify-content: center; line-height: 1; font-size: 1.125em; }
+.k-img { display: block; max-width: 100%; border-radius: var(--k-r-field); margin-bottom: var(--k-1); }
+.k-fit-fill { object-fit: fill; }
 .k-fit-contain { object-fit: contain; }
 .k-fit-cover { object-fit: cover; }
 .k-fit-none { object-fit: none; }
 .k-fit-scaleDown { object-fit: scale-down; }
-.k-v-icon { height: var(--k-row); width: calc(2 * var(--k-col)); }
-.k-v-avatar { height: calc(2 * var(--k-row)); width: calc(4 * var(--k-col)); border-radius: 50%; }
-.k-v-smallFeature { height: calc(4 * var(--k-row)); }
-.k-v-mediumFeature { height: calc(8 * var(--k-row)); }
-.k-v-largeFeature { height: calc(12 * var(--k-row)); }
-.k-v-header { height: calc(6 * var(--k-row)); width: 100%; }
-.k-media { white-space: nowrap; }
+.k-v-icon { width: 1.5rem; height: 1.5rem; border-radius: 0.25rem; margin: 0; }
+.k-v-avatar { width: 2.5rem; height: 2.5rem; border-radius: 50%; margin: 0; }
+.k-v-smallFeature { width: 4rem; height: 4rem; }
+.k-v-mediumFeature { width: 6rem; height: 6rem; }
+.k-v-largeFeature { width: 100%; height: 12rem; }
+.k-v-header { width: 100%; height: 8rem; }
+.k-media { color: var(--k-link); white-space: nowrap; }
 
+/* Controls */
 :where(.k-surface, .k-layer) :is(input, textarea, select, button, output) {
   font: inherit;
   line-height: inherit;
+  color: inherit;
 }
-.k-btn, .k-chip, .k-trigger { padding: 0 var(--k-col); cursor: pointer; text-align: start; }
-.k-btn > *, .k-chip > *, .k-trigger > * { display: inline-block; }
-/* A button is as wide as its label, as in cells, wherever its column
-   puts it. */
+.k-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--k-2);
+  box-sizing: border-box;
+  min-height: 2.25rem;
+  padding: 0.375rem 1rem;
+  border: 0;
+  border-radius: var(--k-r-button);
+  background: var(--k-tonal);
+  color: var(--k-fg);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+}
+.k-btn > * { display: inline-block; }
+.k-primary:enabled { background: var(--k-accent); color: var(--k-on-accent); }
+.k-borderless { background: transparent; min-height: 0; padding: 0.125rem var(--k-2); font-weight: 500; }
+.k-btn:disabled { opacity: 0.45; cursor: default; }
+.k-icon-btn { min-width: 2.25rem; padding: 0.375rem; border-radius: 999px; }
+/* A button is as wide as its label wherever its column puts it. */
 .k-col > :is(.k-btn, .k-trigger) { align-self: flex-start; }
 .k-a-center > :is(.k-btn, .k-trigger) { align-self: center; }
 .k-a-end > :is(.k-btn, .k-trigger) { align-self: flex-end; }
-.k-primary:enabled { background: var(--hotty-fg); color: var(--hotty-bg); font-weight: bold; }
-.k-borderless { background: none; border: 0; text-decoration: underline; }
-.k-trigger { background: none; border: 0; color: inherit; }
-.k-chip[aria-pressed=true] { background: var(--hotty-fg); color: var(--hotty-bg); }
+.k-trigger { background: none; border: 0; padding: 0; color: inherit; text-align: start; cursor: pointer; }
 
-.k-field { display: flex; flex-direction: column; }
-.k-label { color: var(--k-muted); }
-.k-check, .k-opt { display: flex; column-gap: var(--k-col); align-items: center; }
-.k-check > .k-label, .k-opt { color: inherit; }
-.k-options { display: flex; flex-wrap: wrap; column-gap: calc(2 * var(--k-col)); }
-.k-error { color: var(--k-error); }
+.k-options { display: flex; flex-wrap: wrap; gap: var(--k-2); }
+.k-chip {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 2rem;
+  padding: 0.25rem 0.875rem;
+  border: 1px solid var(--k-line);
+  border-radius: var(--k-r-chip);
+  background: var(--k-field);
+  color: var(--k-fg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.k-chip[aria-pressed=true] { background: var(--k-accent); color: var(--k-on-accent); border-color: var(--k-accent); }
+.k-check, .k-opt { display: flex; align-items: center; column-gap: var(--k-2); }
+.k-check input, .k-opt input { width: 1.125rem; height: 1.125rem; margin: 0; accent-color: var(--k-focus); }
+.k-check > .k-label, .k-opt { font-size: 1rem; font-weight: 400; color: inherit; }
+
+.k-field { display: flex; flex-direction: column; row-gap: var(--k-1); min-width: 0; }
+.k-label { font-size: 0.8125rem; font-weight: 500; line-height: 1.3; color: var(--k-muted); }
+.k-error { font-size: 0.8125rem; color: var(--k-error); }
 .k-error:empty { display: none; }
-.k-slide { display: flex; column-gap: var(--k-col); align-items: center; }
-.k-slide input { flex: 1 1 auto; }
-/* A field is one row, underlined, as in cells. */
 .k-input {
   box-sizing: border-box;
-  height: var(--k-row);
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--k-line);
+  border-radius: var(--k-r-field);
+  background: var(--k-field);
+  color: var(--k-fg);
+}
+/* Filled, so a field shows where its border does not draw (.k-card). */
+.k-input:focus { border-color: var(--k-focus); }
+.k-input::placeholder { color: var(--k-muted); }
+.k-date { width: auto; }
+textarea.k-input { min-height: 5.5rem; }
+
+/* A Slider: − track + value. The track is one button, its rail, fill and
+   knob drawn inside it. */
+.k-slide { display: flex; align-items: center; column-gap: var(--k-2); }
+.k-track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 6rem;
+  height: 1.5rem;
   padding: 0;
   border: 0;
-  border-bottom: 1px solid var(--k-border);
+  border-radius: 999px;
   background: transparent;
+  cursor: pointer;
 }
-textarea.k-input { resize: none; height: auto; min-height: calc(3 * var(--k-row)); }
+.k-rail, .k-fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 0.375rem;
+  margin-top: -0.1875rem;
+  border-radius: 999px;
+}
+.k-rail { right: 0; background: var(--k-tonal); }
+.k-fill { background: var(--k-accent); }
+.k-knob {
+  position: absolute;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin: -0.5rem 0 0 -0.5rem;
+  border-radius: 50%;
+  background: var(--k-accent);
+}
+.k-step {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--k-tonal);
+  color: var(--k-fg);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+.k-slide output { min-width: 2.5rem; text-align: right; font-variant-numeric: tabular-nums; color: var(--k-muted); }
 
-.k-tablist { display: flex; column-gap: calc(2 * var(--k-col)); border-bottom: 1px solid var(--k-border); }
-.k-tab { background: none; border: 0; padding: 0; color: inherit; }
-.k-tab[aria-selected=true] { font-weight: bold; text-decoration: underline; }
+.k-tablist { display: flex; column-gap: var(--k-1); border-bottom: 1px solid var(--k-line); }
+.k-tab {
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: var(--k-2) var(--k-3);
+  color: var(--k-muted);
+  font-weight: 500;
+  cursor: pointer;
+}
+.k-tab[aria-selected=true] { color: var(--k-fg); border-bottom-color: var(--k-accent); font-weight: 600; }
+.k-tabpanel { padding-top: var(--k-3); }
 
-.k-form { display: flex; flex-direction: column; }
+.k-form { display: flex; flex-direction: column; row-gap: var(--k-3); }
 .k-submit { position: absolute; width: 0; height: 0; padding: 0; border: 0; overflow: hidden; opacity: 0; }
 
 .k-ph { color: var(--k-muted); }
 .k-warn { color: var(--k-warning); }
 
+/* A Modal's content floats over the surface. */
 .k-layer:empty { display: none; }
 .k-layer { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
-.k-backdrop { position: absolute; inset: 0; background: var(--hotty-bg); opacity: 0.6; }
+.k-backdrop { position: absolute; inset: 0; background: var(--k-bg); opacity: 0.7; }
 .k-dialog {
   position: relative;
-  max-width: calc(100% - 4 * var(--k-col));
-  max-height: calc(100% - 2 * var(--k-row));
+  box-sizing: border-box;
+  max-width: calc(100% - 2rem);
+  max-height: calc(100% - 2rem);
   overflow: auto;
-  background: var(--hotty-bg);
-  border: 1px solid var(--k-border);
-  border-radius: calc(var(--k-row) / 2);
-  padding: 0 var(--k-col);
+  background: var(--k-surface);
+  border: 1px solid var(--k-line);
+  border-radius: 1rem;
+  padding: var(--k-5);
 }

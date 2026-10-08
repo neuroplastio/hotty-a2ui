@@ -174,6 +174,26 @@ func (c *Controller) SetValue(id string, v any) error {
 	return err
 }
 
+// StepSlider moves a Slider by n of its steps (back when n < 0), or to an
+// end: "Home" its Min, "End" its Max. A Slider with no step moves by a
+// twentieth of its range. It does nothing to any other element.
+func (c *Controller) StepSlider(id string, n int, to string) error {
+	e := c.V.Find(id)
+	if e == nil || e.Kind != Slider {
+		return nil
+	}
+	f, _ := e.Value.(float64)
+	switch to {
+	case "Home":
+		f = e.Min
+	case "End":
+		f = e.Max
+	default:
+		f += float64(n) * e.SliderStep()
+	}
+	return c.SetValue(id, f)
+}
+
 // set writes a control's value: to its binding, else to the state.
 func (c *Controller) set(e *Element, v any) error {
 	c.St.Touched[e.ID] = true

@@ -17,6 +17,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/rendition/html"
 	"github.com/neuroplastio/hotty-a2ui/rendition/text"
+	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/story"
 )
 
@@ -46,14 +47,14 @@ type pane struct {
 	html  *html.Rendition
 	cells *cells.Rendition
 	rect  hottytea.Rect
-	// mirror: a cells pane beside the same surface on the host, which
-	// shows its state and takes no input: the keyboard is in one place.
-	mirror bool
-	frame  *cells.Frame
-	top    int // the frame's first row shown
+	frame *cells.Frame
+	top   int // the frame's first row shown
 }
 
-func (p *pane) takesInput() bool { return p.kind != asText && !p.mirror }
+// takesInput: text is for reading. Cells beside a surface take input as
+// well: the keyboard is in one of the two at a time (m.focus), and the
+// other shows the same state.
+func (p *pane) takesInput() bool { return p.kind != asText }
 
 type (
 	streamMsg struct{ raw json.RawMessage }
@@ -65,6 +66,7 @@ type model struct {
 	s      *hottytea.Session
 	w, h   int
 	colors bool
+	theme  theme.Theme // the colours the cells and the kit paint with
 
 	ch     *chrome
 	list   [][2]string
@@ -149,6 +151,9 @@ func (m *model) View() tea.View {
 // host, cells elsewhere.
 func (m *model) ready(mode hottytea.Mode) {
 	opts := []renditionOption{{rendCells, "Cells"}, {rendText, "Text"}}
+	if m.theme.Name == "" {
+		m.theme = theme.Default
+	}
 	m.rend = rendCells
 	if mode == hottytea.Native {
 		opts = append([]renditionOption{{rendSurfaces, "Surfaces"}}, append(opts, renditionOption{rendSide, "Side by side"})...)
@@ -160,7 +165,7 @@ func (m *model) ready(mode hottytea.Mode) {
 		}
 	}
 	m.list = entries(m.stream != nil)
-	m.ch = newChrome(m.list, opts, m.rend)
+	m.ch = newChrome(m.list, opts, m.rend, m.theme.Name)
 	first := m.first
 	if first == "" {
 		first = m.list[0][0]
@@ -212,6 +217,10 @@ func (m *model) settle() {
 		if name, _ := a.Context["name"].(string); a.Name == "open" && name != "" {
 			m.open(name)
 		}
+	}
+	if t, ok := theme.ByName(m.ch.theme()); ok && t.Name != m.theme.Name {
+		m.theme = t
+		m.gen++
 	}
 	if r := m.ch.rendition(); r != "" && r != m.rend {
 		m.rend = r
@@ -273,6 +282,8 @@ func (m *model) key(k string) (quit bool) {
 		m.escape()
 	case "F2":
 		m.nextRendition()
+	case "F3":
+		m.nextTheme()
 	case "q":
 		return m.focus == nil
 	}
@@ -308,11 +319,20 @@ func (m *model) shortcut(k string) bool {
 
 // cycle gives the keyboard to the next pane that takes it, after from
 // (or before it, back), at its first focusable element (or its last).
+// The story's panes come first, then panel, then nav: the story is what
+// the keyboard is for, and nav lists every story.
 func (m *model) cycle(back bool, from *pane) {
 	var ps []*pane
 	for _, p := range m.order {
-		if p.takesInput() {
+		if p.takesInput() && !p.chrome(m) {
 			ps = append(ps, p)
+		}
+	}
+	for _, id := range []string{panelID, navID} {
+		for _, p := range m.order {
+			if p.takesInput() && p.s == m.ch.surface(id) {
+				ps = append(ps, p)
+			}
 		}
 	}
 	i := slices.Index(ps, from)
@@ -339,7 +359,7 @@ func (m *model) give(p *pane, back bool) bool {
 	if !c.FocusNext(back) {
 		return false
 	}
-	if f := m.focus; f != nil && f != p {
+	if f := m.focus; f != nil && f != p && f.s != p.s {
 		f.s.C.St.Keyboard = false
 	}
 	m.focus, m.last = p, p
@@ -373,14 +393,20 @@ func (m *model) nextRendition() {
 	m.ch.set(navID, "/rendition", []any{next})
 }
 
+// nextTheme shows the next theme in nav's picker.
+func (m *model) nextTheme() {
+	delete(m.ch.sent, navID+"/theme")
+	m.ch.set(navID, "/theme", []any{theme.Next(m.theme).Name})
+}
+
 // click is a primary click on the cells: in a cells pane, its rendition
 // takes it; anywhere else the keyboard goes back to the storybook.
 func (m *model) click(x, y int) {
 	for _, p := range m.order {
-		if p.kind != asCells || p.mirror || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
+		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
 			continue
 		}
-		if f := m.focus; f != nil && f != p {
+		if f := m.focus; f != nil && f != p && f.s != p.s {
 			f.s.C.St.Keyboard = false
 		}
 		m.fail(p.cells.Click(x-p.rect.X, y-p.rect.Y+p.top))
@@ -406,7 +432,7 @@ func (m *model) event(ev hotty.Event) {
 	m.fail(p.html.Event(ev))
 	switch ev.Kind {
 	case hotty.EventFocus:
-		if f := m.focus; f != nil && f != p && f.kind == asCells {
+		if f := m.focus; f != nil && f != p && f.kind == asCells && f.s != p.s {
 			f.s.C.St.Keyboard = false
 		}
 		m.focus, m.last = p, p
@@ -511,7 +537,6 @@ func (m *model) draw() tea.Cmd {
 			}
 			name := fmt.Sprintf("s%d-%d-%c", m.gen, m.seq[s.S], "hct"[k])
 			p := m.pane(name, s, k, hottytea.Rect{X: cx, Y: y, W: colW, H: h})
-			p.mirror = k == asCells && len(kinds) > 1
 			order = append(order, p)
 			y += h
 		}
@@ -548,6 +573,8 @@ func (m *model) draw() tea.Cmd {
 				}
 			}
 		case asSurface:
+			p.html.SetTheme(m.theme)
+			p.html.Away = m.focus != nil && m.focus != p && m.focus.s == p.s
 			m.s.Send(p.html.Update()...)
 			want = append(want, hottytea.Surface{Name: p.name, Rect: p.rect, Doc: p.html.Doc, Scroll: hotty.ScrollVertical})
 		}
@@ -565,7 +592,11 @@ func (m *model) draw() tea.Cmd {
 			m.cursor = tea.NewCursor(f.rect.X+c, f.rect.Y+r-f.top)
 		}
 	}
-	m.frame = scr.ANSI(m.colors)
+	if m.colors {
+		m.frame = scr.Themed(m.theme)
+	} else {
+		m.frame = scr.ANSI(false)
+	}
 	return m.s.Flush()
 }
 

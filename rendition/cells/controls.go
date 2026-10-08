@@ -256,14 +256,3 @@ func placeholderText(e *view.Element) string {
 	}
 	return "! " + e.Type
 }
-
-// dateHint is a DateTime's placeholder: the form its value takes.
-func dateHint(e *view.Element) string {
-	switch {
-	case e.Date && e.Time:
-		return "YYYY-MM-DDTHH:MM"
-	case e.Time:
-		return "HH:MM"
-	}
-	return "YYYY-MM-DD"
-}

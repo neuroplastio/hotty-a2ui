@@ -126,7 +126,7 @@ type Element struct {
 	Min  float64 `json:"min,omitempty"`
 	Max  float64 `json:"max,omitempty"`
 	Step float64 `json:"step,omitempty"`
-	// DateTime: which parts it edits, and its bounds.
+	// DateTime: which parts it edits, and its bounds (DateHint).
 	Date   bool   `json:"date,omitempty"`
 	Time   bool   `json:"time,omitempty"`
 	MinISO string `json:"minIso,omitempty"`
@@ -262,4 +262,24 @@ func (s *Surface) Focusables() []string {
 	}
 	s.Walk(add)
 	return out
+}
+
+// SliderStep is how far a Slider moves for one step of the keyboard or a
+// button: its Step, else a twentieth of its range.
+func (e *Element) SliderStep() float64 {
+	if e.Step > 0 {
+		return e.Step
+	}
+	return (e.Max - e.Min) / 20
+}
+
+// DateHint is a DateTime's placeholder: the form its value takes.
+func (e *Element) DateHint() string {
+	switch {
+	case e.Date && e.Time:
+		return "YYYY-MM-DDTHH:MM"
+	case e.Time:
+		return "HH:MM"
+	}
+	return "YYYY-MM-DD"
 }

@@ -37,14 +37,32 @@ On a host, an A2UI surface is one HOTTY surface. The reference is
 
 **The document.** It holds the kit's stylesheet and two elements: the
 surface (`~s`), and the layer an open Modal shows in (`~o`), empty while
-none is open. The stylesheet builds on the host's (SPEC.md §8): the
-terminal's palette, NEIO-4's roles, spacing in cells (`--hotty-cell-w`,
-`--hotty-cell-h`). It draws what §3 draws in cells, where HTML can: a
-Row's children one column apart, a Card with a rounded border and a
-column of padding, a field one row tall and underlined, a Button as wide
-as its label. The document asks the network for images over HTTPS only
+none is open. The document asks the network for images over HTTPS only
 (`<meta name="hotty-network" content="img-src https:">`); the host's own
 policy decides (SPEC.md §7.2).
+
+**The look.** A surface is a web page in the terminal, so it is set in web
+type, not in the grid: a proportional face (Inter, else the system's
+sans-serif), a type scale for Text's variants (`h1` to `h5`, `caption`,
+`body`), line height 1.5, and spacing in `rem`, the host's root size,
+which follows the terminal's font. Cells (§3) lay out in the grid; a
+surface lays out as a page, the same components in the same order.
+- **Colour** is the host's palette (SPEC.md §8) unless a theme sets it on
+  the surface's two elements as the kit's variables (`--k-fg`, `--k-bg`,
+  `--k-accent`, …). The colours made from those (a card's raised fill, a
+  button's tonal fill, rules) follow. Without a theme the kit keeps to
+  NEIO-4: accent only on focus and links, and a primary Button filled
+  with the foreground.
+- **Shape**: Cards, fields and Buttons are rounded, chips are pills; a
+  theme may set its own radii (Material: pill Buttons, 12px Cards, 4px
+  fields).
+- **Fills before borders.** A Card, a field and a chip each have a fill,
+  so they keep their shape where a thin rounded border does not draw
+  (Blitz at a fractional scale).
+- **Emoji** go in a span that names a colour emoji font, in a Text's HTML
+  and in labels. A host's font fallback may otherwise draw one from a text
+  font, in outline. A pictograph that defaults to text (☀ without VS16)
+  stays text.
 
 **Elements.** Each component is one element, whose `id` is the
 component's node key encoded for HOTTY. A node key is the component's id,
@@ -59,18 +77,18 @@ so that an error comes and goes as a text delta.
 | component | element |
 | --- | --- |
 | Row, Column, List | `div`, a flex row or column; List scrolls |
-| Card | `div`, rounded border |
-| Text | `div` with the Markdown as HTML; links open in the terminal (`target=_blank`, SPEC.md §9) |
-| Image | `img` |
-| Icon | `span` with the glyph cells draw |
+| Card | `div`, a raised fill and a rounded border |
+| Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9) |
+| Image | `img`, sized by its variant in `rem` |
+| Icon | `span` with a colour emoji where one says the name plainly, else the glyph cells draw |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
 | Button | `button type=button`, `disabled` while its checks fail |
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | a `select` for one of several shown as checkboxes; else its options, as checkboxes (several) or chips (`button aria-pressed`) |
-| Slider | `input type=range` and an `output` |
-| DateTimeInput | `input` `date`, `time` or `datetime-local` |
+| Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output`. Hosts draw `input type=range` unevenly (Blitz not at all) |
+| DateTimeInput | `input type=text` with the ISO 8601 value, its form as the placeholder, as in cells (§3.5). Hosts draw date and time inputs unevenly (Blitz not at all), and none takes an offset such as `Z` |
 | Tabs | a `tablist` of `button role=tab`, then the tab shown |
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
 | Form | `form` with a hidden submit button out of the Tab order, so Enter submits |
@@ -89,7 +107,7 @@ renderer's own state: a tab shown, a Modal opened.
 | event | does |
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
-| `click` | a Button runs its action; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it |
+| `click` | a Button runs its action; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it |
 | `submit` | the Form submits (§6.2) |
 | `focus`, `blur` | the surface has the keyboard, or not |
 
@@ -317,6 +335,11 @@ At the ANSI-16 floor, a role is a foreground colour:
 | `error` | 31 |
 | `info` | 36 |
 
+In a theme (`rendition/theme`), a role the theme colours is that colour
+in truecolor (`38;2;r;g;b`), and the theme's `bg` is under every cell
+(`48;2;r;g;b`), so a row keeps its blank cells to the end. A role the
+theme leaves to the terminal keeps the floor above.
+
 The attributes are bold (1), faint (2), italic (3), underline (4), reverse
 (7) and strikethrough (9). Under NO_COLOR, the attributes are written and
 the role colours are not, and every meaning above still reads.
@@ -362,8 +385,10 @@ In the output:
     keys then move the highlight, and Space or Enter picks it and closes
     the list.
   - The list closes when the select loses the keyboard.
-- **A Slider** takes no keys: SPEC §10.2 has no row for a range. A click
-  sets it.
+- **A Slider** steps by Left and Down (back) and Right and Up, and goes
+  to its ends by Home and End. A step is its `step`, else a twentieth of
+  its range, clamped. On a host the slider is a button, which leaves these
+  keys to the program (SPEC.md §10.2), so the renderer steps it there too.
 - **Space and Enter** activate a Button, a Tabs' title, an option, a
   CheckBox, a Media link, or a Modal trigger that is not a control.
 - **Tab and Shift+Tab** move the keyboard in tree order.
