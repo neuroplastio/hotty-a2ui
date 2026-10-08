@@ -37,14 +37,17 @@ func texts(s string) []*node {
 
 // emojiHTML is HTML with the emoji in its text in spans, as texts makes
 // them: what is between tags is text, and an emoji is never escaped.
-func emojiHTML(h string) string {
+func emojiHTML(h string) string { return mapText(h, emojiSpans) }
+
+// mapText is HTML with f applied to its text, what is between its tags.
+func mapText(h string, f func(string) string) string {
 	var b strings.Builder
 	for len(h) > 0 {
 		lt := strings.IndexByte(h, '<')
 		if lt < 0 {
 			lt = len(h)
 		}
-		b.WriteString(emojiSpans(h[:lt]))
+		b.WriteString(f(h[:lt]))
 		h = h[lt:]
 		if gt := strings.IndexByte(h, '>'); gt >= 0 {
 			b.WriteString(h[:gt+1])

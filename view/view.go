@@ -82,8 +82,8 @@ type Element struct {
 	// Type is the A2UI component type it was made from.
 	Type     string     `json:"type"`
 	Children []*Element `json:"children,omitempty"`
-	// Weight is how much of a Row's or Column's spare room it takes, as
-	// flex-grow; 0 takes none.
+	// Weight is A2UI's weight in a Row or a Column (CSS flex, as A2UI's
+	// renderers have it); 0 is none. The renditions say what it takes.
 	Weight float64 `json:"weight,omitempty"`
 
 	// Stack and Divider: the direction. Stack: how the children are

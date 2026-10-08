@@ -77,9 +77,9 @@ so that an error comes and goes as a text delta.
 
 | component | element |
 | --- | --- |
-| Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures); a Row of columns or cards shrinks them instead |
+| Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures); a Row of columns or cards shrinks them instead. A weighted child of a Row takes its share of it, whatever it holds (`flex: weight`, as A2UI's Lit renderer has it), so Rows weighted alike line up as a grid's; in a Column, a weight is a share of the rows to spare |
 | Card | `div`, a raised fill and a rounded border |
-| Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9) |
+| Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9). A word breaks only when it fills a line alone. A Text that is one number (`$850,000,000.00`, a grid's cell) may also break after its group separators, a zero-width space after each, so a narrow column breaks it between groups, not between any two digits |
 | Image | `img`, sized by its variant in `rem` |
 | Icon | `span` with a colour emoji where one says the name plainly, else the glyph cells draw |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |

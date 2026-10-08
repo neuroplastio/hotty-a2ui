@@ -60,6 +60,12 @@
 
 /* Layout */
 .k-stack { display: flex; min-width: 0; min-height: 0; }
+/* A weight in a Row is the child's share of it, whatever it holds, so
+   rows weighted alike line up as a grid's do (A2UI's financial grid). A
+   text is still no narrower than its longest word, or a number's group
+   (number.go). In a Column, a weight is a share of the rows to spare. */
+.k-row > .k-weighted { flex: var(--k-w) 1 0%; }
+.k-col > .k-weighted { flex-grow: var(--k-w); }
 .k-row { flex-direction: row; column-gap: var(--k-3); }
 .k-col { flex-direction: column; row-gap: var(--k-2); }
 /* A child a column does not stretch is still no wider than the column

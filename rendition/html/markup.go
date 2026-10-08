@@ -118,6 +118,7 @@ func (m *markup) element(e *view.Element) *node {
 	case view.Text:
 		n = el("div", "id", id, "class", "k-text k-v-"+e.Variant)
 		n.text, n.raw = emojiHTML(view.MarkdownHTML(e.Markdown)), true
+		n.text = groupBreaks(strings.TrimSpace(view.PlainText(view.Markdown(e.Markdown))), n.text)
 	case view.Image:
 		n = el("img", "id", id, "class", "k-img k-v-"+e.Variant+" k-fit-"+e.Fit, "src", e.URL, "alt", e.Alt)
 	case view.Icon:
@@ -288,7 +289,10 @@ func (m *markup) element(e *view.Element) *node {
 		outer = n
 	}
 	if e.Weight > 0 {
-		outer.set("style", "flex-grow: "+a2ui.NumberString(e.Weight))
+		// kit.css: in a Row, the weight is the child's share of it; in a
+		// Column, of the rows to spare.
+		class, _ := outer.attr("class")
+		outer.set("class", strings.TrimSpace(class+" k-weighted")).set("style", "--k-w: "+a2ui.NumberString(e.Weight))
 	}
 	return outer
 }

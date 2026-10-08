@@ -405,6 +405,29 @@ func TestListRows(t *testing.T) {
 	}
 }
 
+// TestWeights: a weighted child says its weight, which kit.css makes its
+// share of a Row (flex: weight, as A2UI's Lit renderer has it).
+func TestWeights(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Row","children":["a","b"]},
+ {"id":"a","component":"Text","text":"Asset","weight":2},
+ {"id":"b","component":"Text","text":"Price","weight":1.5}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	for id, w := range map[string]string{"a": "2", "b": "1.5"} {
+		class, _ := s.Attr(id, "class")
+		style, _ := s.Attr(id, "style")
+		if !strings.Contains(" "+class+" ", " k-weighted ") || style != "--k-w: "+w {
+			t.Errorf("%s: class %q, style %q", id, class, style)
+		}
+	}
+}
+
 // TestSelect: a select is a button, and a click opens its list in the
 // layer with the picked option highlighted. While it is open the program
 // has the keyboard: a host would scroll with the arrows (SPEC §5.3). The
