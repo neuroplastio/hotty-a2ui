@@ -67,6 +67,7 @@ try {
   const beat = (ms) => page.waitForTimeout(ms);
   const frame = (name) => page.frameLocator(`.hotty-surface[data-surface="${name}"] iframe`);
   const nav = frame("nav");
+  const pickers = frame("pick");
   // The story's surface: its name changes with each story opened.
   const story = async () => {
     const s = page.locator('.hotty-surface[data-surface^="s"][data-surface$="-h"]').last();
@@ -95,9 +96,9 @@ try {
   }
   const open = (title) => click(nav.getByText(title, { exact: true }));
   async function pick(select, option) {
-    await click(nav.locator("#" + select));
+    await click(pickers.locator("#" + select));
     await beat(500);
-    await click(nav.locator(`[id="${select}~o${option}"]`));
+    await click(pickers.locator(`[id="${select}~o${option}"]`));
   }
 
   await nav.getByText("Flight Status", { exact: true }).waitFor();

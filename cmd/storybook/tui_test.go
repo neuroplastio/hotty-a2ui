@@ -18,6 +18,7 @@ import (
 
 // The storybook's own surfaces, as the host has them.
 const (
+	pickID  = "pick"
 	navID   = "nav"
 	panelID = "panel"
 )
@@ -241,16 +242,17 @@ func TestStream(t *testing.T) {
 	})
 }
 
-// pickRendition picks nav's ith rendition: the select opens its list.
+// pickRendition picks pick's ith rendition: the select opens its list.
 func pickRendition(t *testing.T, h *hottytest.Host, i int) {
 	t.Helper()
 	opt := "rend~o" + strconv.Itoa(i)
-	eventually(t, "nav", func() bool { _, ok := h.Surface(navID).Element("rend"); return ok })
-	if err := h.Click(navID, "rend"); err != nil {
+	eventually(t, "pick", func() bool { s := h.Surface(pickID); return s != nil && s.Placed() })
+	eventually(t, "pick's rendition", func() bool { _, ok := h.Surface(pickID).Element("rend"); return ok })
+	if err := h.Click(pickID, "rend"); err != nil {
 		t.Fatal(err)
 	}
-	eventually(t, "nav's renditions", func() bool { _, ok := h.Surface(navID).Element(opt); return ok })
-	if err := h.Click(navID, opt); err != nil {
+	eventually(t, "pick's renditions", func() bool { _, ok := h.Surface(pickID).Element(opt); return ok })
+	if err := h.Click(pickID, opt); err != nil {
 		t.Fatal(err)
 	}
 }

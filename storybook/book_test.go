@@ -84,9 +84,13 @@ func TestInAProgram(t *testing.T) {
 	eventually(t, "nav, the story and panel on the host", func() bool {
 		return h.Surface("sb-nav") != nil && h.Surface("sb-panel") != nil && h.Surface("sb-s1-0-h") != nil
 	})
-	if col, row := h.Surface("sb-nav").At(); row != 1 || col != 0 {
-		t.Errorf("nav at row %d, col %d: want under the program's row", row, col)
+	if col, row := h.Surface("sb-pick").At(); row != 1 || col != 0 {
+		t.Errorf("pick at row %d, col %d: want under the program's row", row, col)
 	}
+	eventually(t, "nav under pick", func() bool {
+		_, row := h.Surface("sb-nav").At()
+		return row == 1+h.Surface("sb-pick").Placement().Rows
+	})
 	if h.Surface("nav") != nil {
 		t.Error("a surface without the prefix")
 	}
@@ -117,4 +121,34 @@ func TestInAProgramInCells(t *testing.T) {
 	h.Type(at)
 	h.Type("hello")
 	eventually(t, "the typing in the field", func() bool { return strings.Contains(h.Screen(), "hello") })
+}
+
+// TestPickStaysPut: the pickers are a surface of their own over nav, as
+// tall as they need, and nav, the list, is what scrolls. A select's open
+// list takes the column, over nav, until a pick closes it.
+func TestPickStaysPut(t *testing.T) {
+	h := hottytest.New(t, hottytest.Size(120, 40))
+	run(t, h, Options{First: "hotty/form", Prefix: "sb-"})
+	eventually(t, "pick and nav", func() bool {
+		p, n := h.Surface("sb-pick"), h.Surface("sb-nav")
+		return p != nil && n != nil && p.Placed() && n.Placed()
+	})
+	closed := h.Surface("sb-pick").Placement()
+	if closed.Rows >= 39/2 || closed.Z != 0 {
+		t.Fatalf("pick, closed: %+v", closed)
+	}
+	if err := h.Click("sb-pick", "theme_p"); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "the open list over nav", func() bool {
+		p := h.Surface("sb-pick").Placement()
+		return p.Rows == 39 && p.Z == 1
+	})
+	if err := h.Click("sb-pick", "theme_p~o3"); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "pick closed again", func() bool {
+		p := h.Surface("sb-pick").Placement()
+		return p.Rows < 39/2 && p.Z == 0
+	})
 }

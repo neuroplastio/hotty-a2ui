@@ -16,9 +16,11 @@ import (
 
 // The storybook's own surfaces are A2UI too, rendered by the kit like the
 // stories (NEIO-11's Q6, leaning to the kit): the storybook is their
-// agent. nav lists the stories and picks the rendition and the theme;
-// panel shows the story's actions, data model and messages.
+// agent. pick picks the rendition and the theme, and stays put above nav,
+// which lists the stories and scrolls; panel shows the story's actions,
+// data model and messages.
 const (
+	pickID  = "pick"
 	navID   = "nav"
 	panelID = "panel"
 	// streamName is the stream's entry among the stories.
@@ -52,11 +54,11 @@ type chrome struct {
 
 type renditionOption struct{ value, label string }
 
-// newChrome makes nav and panel. nav is two selects, the rendition and
-// the theme, over the stories in their groups: a List of Buttons, which
-// the kit draws as a menu's rows. The story shown is the row whose Button
-// is not borderless (showing). The selects are side by side on a host
-// (native), one over the other in cells, whose Row does not wrap.
+// newChrome makes pick, nav and panel. pick is two selects, the rendition
+// and the theme, side by side on a host (native), one over the other in
+// cells, whose Row does not wrap. nav is the stories in their groups: a
+// List of Buttons, which the kit draws as a menu's rows. The story shown
+// is the row whose Button is not borderless (showing).
 func newChrome(entries []entry, rends []renditionOption, rend string, th string, native bool) *chrome {
 	ch := &chrome{run: story.NewRun(), sent: map[string]string{}, entries: entries}
 	ch.run.Out = func(o a2ui.Outbound) {
@@ -72,13 +74,14 @@ func newChrome(entries []entry, rends []renditionOption, rend string, th string,
 	for _, t := range theme.All {
 		themes = append(themes, map[string]any{"label": t.Name, "value": t.Name})
 	}
-	nav := []map[string]any{
-		obj("id", "root", "component", "Column", "children", []any{"view", "rule", "list"}),
+	pick := []map[string]any{
+		obj("id", "root", "component", "Column", "children", []any{"view", "rule"}),
 		obj("id", "view", "component", map[bool]string{true: "Row", false: "Column"}[native], "children", []any{"rend", "theme_p"}),
 		obj("id", "rend", "component", "ChoicePicker", "label", "Rendition", "value", obj("@path", "/rendition"), "options", opts, "weight", 1),
 		obj("id", "theme_p", "component", "ChoicePicker", "label", "Theme", "value", obj("@path", "/theme"), "options", themes, "weight", 1),
 		obj("id", "rule", "component", "Divider"),
 	}
+	nav := []map[string]any{obj("id", "root", "component", "Column", "children", []any{"list"})}
 	var list []any
 	group := "-"
 	for i, e := range entries {
@@ -93,7 +96,9 @@ func newChrome(entries []entry, rends []renditionOption, rend string, th string,
 	}
 	nav = append(nav, obj("id", "list", "component", "List", "children", list))
 	ch.feed(
-		create(navID, map[string]any{"rendition": []any{rend}, "theme": []any{th}}),
+		create(pickID, map[string]any{"rendition": []any{rend}, "theme": []any{th}}),
+		components(pickID, pick...),
+		create(navID, map[string]any{}),
 		components(navID, nav...),
 		create(panelID, map[string]any{"head": "", "actions": "", "data": "", "messages": ""}),
 		components(panelID,
@@ -153,9 +158,9 @@ func (ch *chrome) surface(id string) *story.Surface {
 	return nil
 }
 
-// theme is the theme picked in nav.
+// theme is the theme picked.
 func (ch *chrome) theme() string {
-	v := ch.surface(navID).S.Data.Value("/theme")
+	v := ch.surface(pickID).S.Data.Value("/theme")
 	if l, ok := v.([]any); ok && len(l) > 0 {
 		s, _ := l[0].(string)
 		return s
@@ -163,9 +168,9 @@ func (ch *chrome) theme() string {
 	return ""
 }
 
-// rendition is the rendition picked in nav.
+// rendition is the rendition picked.
 func (ch *chrome) rendition() string {
-	v := ch.surface(navID).S.Data.Value("/rendition")
+	v := ch.surface(pickID).S.Data.Value("/rendition")
 	if l, ok := v.([]any); ok && len(l) > 0 {
 		s, _ := l[0].(string)
 		return s

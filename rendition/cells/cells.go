@@ -57,6 +57,10 @@ func (r *Rendition) listOpen(e *view.Element) bool {
 	return r.list == e.ID && r.focused(e.ID)
 }
 
+// ListOpen reports whether a select shows its options. They push what is
+// under the select down, so the frame is taller until the list closes.
+func (r *Rendition) ListOpen() bool { return r.list != "" && r.focused(r.list) }
+
 // Draw lays the surface out cols wide, as many rows as it takes, and
 // paints it (profile §3). The open Modal's content is a rounded panel over
 // it, centered; the frame grows when the panel is taller.

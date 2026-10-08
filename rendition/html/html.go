@@ -283,6 +283,10 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	return nil, false, nil
 }
 
+// ListOpen reports whether a select's list is open. The kit draws it in
+// the surface, under the select, so it needs the room there.
+func (r *Rendition) ListOpen() bool { return r.openList() != nil }
+
 // openList is the open select's list, while the select is still there,
 // a select, and has the keyboard, as in cells (profile §3.7); else none.
 func (r *Rendition) openList() *list {

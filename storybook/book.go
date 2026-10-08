@@ -104,11 +104,15 @@ type Book struct {
 	seq    map[*a2ui.Surface]int
 
 	panes  map[string]*pane
-	order  []*pane // this frame's panes, in Tab order: nav, the story's, panel
+	order  []*pane // this frame's panes, as drawn: nav, pick, the story's, panel
 	focus  *pane   // the pane with the keyboard, if any
 	last   *pane   // the pane that had it last: Tab goes on from there
 	cursor *tea.Cursor
 	status string
+
+	// pickRows is pick's height with its lists closed: the host's fit on a
+	// host, the frame's rows in cells; 0 until known.
+	pickRows int
 }
 
 // New is a Book. It starts once the terminal is known: on the Session's
@@ -257,7 +261,7 @@ func (b *Book) open(name string) {
 		b.run = run
 		head = "**" + st.Title + "** · " + st.Description
 	}
-	if b.focus != nil && b.focus.s != b.ch.surface(navID) {
+	if f := b.focus; f != nil && f.s != b.ch.surface(navID) && f.s != b.ch.surface(pickID) {
 		b.focus = nil
 	}
 	b.cur = name
@@ -298,7 +302,7 @@ func (b *Book) settle() {
 }
 
 func (p *pane) chrome(b *Book) bool {
-	return p.s == b.ch.surface(navID) || p.s == b.ch.surface(panelID)
+	return p.s == b.ch.surface(pickID) || p.s == b.ch.surface(navID) || p.s == b.ch.surface(panelID)
 }
 
 // key handles a key that reached the storybook: the pane with the
@@ -380,8 +384,8 @@ func (b *Book) shortcut(k string, h *hottytea.Session) bool {
 
 // cycle gives the keyboard to the next pane that takes it, after from
 // (or before it, back), at its first focusable element (or its last).
-// The story's panes come first, then panel, then nav: the story is what
-// the keyboard is for, and nav lists every story.
+// The story's panes come first, then panel, pick and nav: the story is
+// what the keyboard is for, and nav lists every story.
 func (b *Book) cycle(back bool, from *pane) {
 	var ps []*pane
 	for _, p := range b.order {
@@ -389,7 +393,7 @@ func (b *Book) cycle(back bool, from *pane) {
 			ps = append(ps, p)
 		}
 	}
-	for _, id := range []string{panelID, navID} {
+	for _, id := range []string{panelID, pickID, navID} {
 		for _, p := range b.order {
 			if p.takesInput() && p.s == b.ch.surface(id) {
 				ps = append(ps, p)
@@ -450,21 +454,22 @@ func (b *Book) nextRendition() {
 		}
 	}
 	next := opts[(slices.Index(opts, b.rend)+1)%len(opts)]
-	delete(b.ch.sent, navID+"/rendition")
-	b.ch.set(navID, "/rendition", []any{next})
+	delete(b.ch.sent, pickID+"/rendition")
+	b.ch.set(pickID, "/rendition", []any{next})
 }
 
-// nextTheme shows the next theme in nav's picker.
+// nextTheme shows the next theme in pick.
 func (b *Book) nextTheme() {
-	delete(b.ch.sent, navID+"/theme")
-	b.ch.set(navID, "/theme", []any{theme.Next(b.theme).Name})
+	delete(b.ch.sent, pickID+"/theme")
+	b.ch.set(pickID, "/theme", []any{theme.Next(b.theme).Name})
 }
 
 // click is a primary click on the cells, in the Book: in a cells pane,
-// its rendition takes it; anywhere else the keyboard goes back to the
+// the one drawn last where they overlap (pick's open list over nav), its
+// rendition takes it; anywhere else the keyboard goes back to the
 // storybook.
 func (b *Book) click(x, y int) {
-	for _, p := range b.order {
+	for _, p := range slices.Backward(b.order) {
 		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
 			continue
 		}
@@ -493,6 +498,15 @@ func (b *Book) event(ev hotty.Event) {
 	}
 	b.fail(p.html.Event(ev))
 	switch ev.Kind {
+	case hotty.EventFit:
+		// pick's height, while its lists are closed: open, it takes the
+		// column, and needs what it has.
+		var d struct {
+			R int `json:"r"`
+		}
+		if p.name == b.o.Prefix+pickID && !p.html.ListOpen() && json.Unmarshal(ev.Detail, &d) == nil && d.R > 0 {
+			b.pickRows = d.R
+		}
 	case hotty.EventFocus:
 		if f := b.focus; f != nil && f != p && f.kind == asCells && f.s != p.s {
 			f.s.C.St.Keyboard = false
@@ -572,7 +586,17 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if native {
 		chromeKind = asSurface
 	}
-	order := []*pane{b.pane(b.o.Prefix+navID, b.ch.surface(navID), chromeKind, hottytea.Rect{X: 0, Y: top, W: navW, H: bodyH})}
+	// pick stays at the top of the left column, and nav scrolls under it.
+	// A select's open list needs more room than pick has: pick then takes
+	// the column, over nav, until the list closes.
+	pick := b.pane(b.o.Prefix+pickID, b.ch.surface(pickID), chromeKind, hottytea.Rect{X: 0, Y: top, W: navW})
+	pickH, open := b.pickHeight(pick, bodyH)
+	pick.rect.H = pickH
+	if open {
+		pick.rect.H = bodyH
+	}
+	nav := b.pane(b.o.Prefix+navID, b.ch.surface(navID), chromeKind, hottytea.Rect{X: 0, Y: top + pickH, W: navW, H: bodyH - pickH})
+	order := []*pane{nav, pick}
 
 	kinds := map[string][]kind{rendSurfaces: {asSurface}, rendCells: {asCells}, rendText: {asText}, rendSide: {asSurface, asCells}}[b.rend]
 	if !native {
@@ -646,7 +670,14 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			h.Send(p.html.Update()...)
 			at := p.rect
 			at.X, at.Y = at.X+r.X, at.Y+r.Y
-			want = append(want, hottytea.Surface{Name: p.name, Rect: at, Doc: p.html.Doc, Scroll: hotty.ScrollVertical})
+			s := hottytea.Surface{Name: p.name, Rect: at, Doc: p.html.Doc, Scroll: hotty.ScrollVertical}
+			if p == pick {
+				s.Scroll, s.Fit = 0, true
+				if open {
+					s.Z = 1
+				}
+			}
+			want = append(want, s)
 		}
 	}
 	if f := b.focus; f != nil && f.kind == asCells && f.s.C.St.Keyboard && f.frame != nil {
@@ -658,6 +689,24 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		return scr.ANSI(false), want
 	}
 	return scr.Themed(b.theme), want
+}
+
+// pickHeight is pick's height with its lists closed, at most half the
+// column, and whether one is open.
+func (b *Book) pickHeight(p *pane, column int) (h int, open bool) {
+	switch p.kind {
+	case asCells:
+		open = p.cells.ListOpen()
+		if !open || b.pickRows == 0 {
+			b.pickRows = p.cells.Draw(p.rect.W).Rows
+		}
+	case asSurface:
+		open = p.html.ListOpen()
+		if b.pickRows == 0 {
+			b.pickRows = 4 // until the host's fit says
+		}
+	}
+	return min(b.pickRows, column/2), open
 }
 
 // LaidOut is for after the program's Layout: a surface that has just got
