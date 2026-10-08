@@ -94,9 +94,14 @@ func (o Outbound) MarshalJSON() ([]byte, error) {
 // The categories of error, as A2UI's conformance suites name them.
 
 // ValidationError is a message that does not have the shape A2UI says.
+// Code is the wire error code to report, when it is not A2UI's default
+// "VALIDATION_FAILED": a composition constraint violation is
+// "UNALLOWED_PARENT" or "UNALLOWED_CHILD" (a2ui_protocol.md, Composition
+// validation rules).
 type ValidationError struct {
 	Msg  string
 	Path string
+	Code string
 }
 
 func (e *ValidationError) Error() string { return "a2ui: " + e.Msg }
@@ -135,6 +140,9 @@ func Code(err error) string {
 	case errors.As(err, &i):
 		return "INTEGRITY_ERROR"
 	case errors.As(err, &v):
+		if v.Code != "" {
+			return v.Code
+		}
 		return "VALIDATION_FAILED"
 	case errors.As(err, &c):
 		return "CATALOG_ERROR"

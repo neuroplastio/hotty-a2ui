@@ -630,7 +630,7 @@ func (g *graph) checkComposition() error {
 		return nil
 	}
 	if t := typeOf("root"); t != nil && t.AllowedParents != nil && !slices.Contains(t.AllowedParents, "Surface") {
-		return &ValidationError{Msg: fmt.Sprintf("Component 'root' (%s) cannot be placed under parent 'Surface' (Surface). Allowed parents: %s.", t.Name, pyList(t.AllowedParents))}
+		return &ValidationError{Code: "UNALLOWED_PARENT", Msg: fmt.Sprintf("Component 'root' (%s) cannot be placed under parent 'Surface' (Surface). Allowed parents: %s.", t.Name, pyList(t.AllowedParents))}
 	}
 	for _, id := range g.ids {
 		pt := typeOf(id)
@@ -643,10 +643,10 @@ func (g *graph) checkComposition() error {
 				continue
 			}
 			if ct.AllowedParents != nil && !slices.Contains(ct.AllowedParents, pt.Name) {
-				return &ValidationError{Msg: fmt.Sprintf("Component '%s' (%s) cannot be placed under parent '%s' (%s). Allowed parents: %s.", child, ct.Name, id, pt.Name, pyList(ct.AllowedParents))}
+				return &ValidationError{Code: "UNALLOWED_PARENT", Msg: fmt.Sprintf("Component '%s' (%s) cannot be placed under parent '%s' (%s). Allowed parents: %s.", child, ct.Name, id, pt.Name, pyList(ct.AllowedParents))}
 			}
 			if pt.AllowedChildren != nil && !slices.Contains(pt.AllowedChildren, ct.Name) {
-				return &ValidationError{Msg: fmt.Sprintf("Container '%s' (%s) cannot contain child '%s' (%s). Allowed children: %s.", id, pt.Name, child, ct.Name, pyList(pt.AllowedChildren))}
+				return &ValidationError{Code: "UNALLOWED_CHILD", Msg: fmt.Sprintf("Container '%s' (%s) cannot contain child '%s' (%s). Allowed children: %s.", id, pt.Name, child, ct.Name, pyList(pt.AllowedChildren))}
 			}
 		}
 	}

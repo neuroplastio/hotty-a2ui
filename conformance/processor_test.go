@@ -269,7 +269,8 @@ func fallback(s, def string) string {
 
 // checkError checks an error against expectError: its category, A2UI's
 // error classes (an IntegrityError or a RecursionError is a
-// ValidationError), and its message, a substring or a regular expression.
+// ValidationError), its wire code, and its message, a substring or a
+// regular expression.
 func checkError(t *testing.T, step string, err error, want map[string]any) {
 	t.Helper()
 	if err == nil {
@@ -278,6 +279,9 @@ func checkError(t *testing.T, step string, err error, want map[string]any) {
 	}
 	if cat := str(want["category"]); cat != "" && !isCategory(err, cat) {
 		t.Errorf("%s: %T %v is not a %s", step, err, err, cat)
+	}
+	if code := str(want["code"]); code != "" && a2ui.Code(err) != code {
+		t.Errorf("%s: error code %q, want %q", step, a2ui.Code(err), code)
 	}
 	if m := str(want["message"]); m != "" && !messageMatches(err.Error(), m) {
 		t.Errorf("%s: error %q does not say %q", step, err, m)
