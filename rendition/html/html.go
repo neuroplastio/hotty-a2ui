@@ -88,6 +88,7 @@ func (r *Rendition) Update() []string {
 		return nil
 	}
 	main, layer := surface(r.C.V, r.theme, r.openList())
+	r.holdEdit(main)
 	out := r.diff(r.sent[0], main, nil)
 	out = r.diff(r.sent[1], layer, out)
 	r.sent = []*node{main, layer}
@@ -418,4 +419,30 @@ func pickedIndex(e *view.Element) int {
 		}
 	}
 	return -1
+}
+
+// holdEdit keeps, in the new document main, the value of the text control
+// the user is editing as the host was last sent it, so Update sends none:
+// the host has what was typed. An echo comes a key late while the user
+// types on, and a host that sets a focused field's value from it (against
+// SPEC §6.2, as hotty-blitz's attr op does) drops the keys typed since and
+// leaves the caret behind them. Once the field is left, the view's value
+// goes out, and the program's wins, as §6.2 has it.
+func (r *Rendition) holdEdit(main *node) {
+	if !r.host.on || r.host.focus == "" {
+		return
+	}
+	id := domID(r.host.focus)
+	old, cur := r.sent[0].find(id), main.find(id)
+	if old == nil || cur == nil || old.tag != cur.tag {
+		return
+	}
+	switch cur.tag {
+	case "textarea":
+		cur.kids = old.kids
+	case "input":
+		if v, ok := old.attr("value"); ok {
+			cur.set("value", v)
+		}
+	}
 }

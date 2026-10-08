@@ -63,6 +63,19 @@ func (n *node) add(kids ...*node) *node {
 	return n
 }
 
+// find is the node with that id in n's tree, n included; nil if none is.
+func (n *node) find(id string) *node {
+	if n.id == id {
+		return n
+	}
+	for _, k := range n.kids {
+		if f := k.find(id); f != nil {
+			return f
+		}
+	}
+	return nil
+}
+
 func (n *node) attr(k string) (string, bool) {
 	for _, a := range n.attrs {
 		if a.k == k {

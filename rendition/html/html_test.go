@@ -405,6 +405,53 @@ func TestListRows(t *testing.T) {
 	}
 }
 
+// TestNoEcho: what the user types is not sent back while they edit: the
+// host has it. An echo comes a key late, and a host that set a focused
+// field's value from it lost keys and the caret. Once the field is left
+// the value goes out, and a value the agent sets goes out then too.
+func TestNoEcho(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"text":""}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["f","notes","out"]},
+ {"id":"f","component":"TextField","label":"Type","value":{"@path":"/text"}},
+ {"id":"notes","component":"TextField","label":"Notes","variant":"longText","value":{"@path":"/notes"}},
+ {"id":"out","component":"Text","text":{"@call":"formatString","args":{"value":"You typed: ${/text}"}}}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	for _, c := range []struct{ id, v string }{{"f", "a"}, {"f", "ab"}, {"notes", "line"}} {
+		must(t, x.h.Fill(r.name, c.id, c.v))
+		for _, ev := range x.h.Events()[x.seen:] {
+			x.seen++
+			must(t, r.Event(ev))
+			for _, cmd := range r.Update() {
+				if strings.Contains(cmd, ":t="+c.id+":") {
+					t.Errorf("typing %q in %s sent back %q", c.v, c.id, cmd)
+				}
+				x.send(cmd)
+			}
+		}
+	}
+	if got := s.TextOf("out"); got != "You typed: ab" {
+		t.Errorf("the output says %q", got)
+	}
+	x.send(hotty.Blur(r.name))
+	x.pump()
+	x.check(r)
+
+	var set []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/text","value":"from the agent"}}]`), &set))
+	x.process(set...)
+	if v, _ := s.Value("f"); v != "from the agent" {
+		t.Errorf("the agent's value did not reach the field: %q", v)
+	}
+	x.check(r)
+}
+
 // TestWeights: a weighted child says its weight, which kit.css makes its
 // share of a Row (flex: weight, as A2UI's Lit renderer has it).
 func TestWeights(t *testing.T) {

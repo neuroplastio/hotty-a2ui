@@ -114,7 +114,10 @@ renderer's own state: a tab shown, a Modal opened.
 | `focus`, `blur` | the surface has the keyboard, or not |
 
 Typing reaches the data model at every key (`data-on=input`), as A2UI's
-own renderers write a bound field.
+own renderers write a bound field. The renderer does not send the value back
+while the user edits the field: the host has it, and an echo arrives a key
+late. Once the field is left, the view's value goes out, and the
+program's wins (SPEC.md §6.2).
 
 **A select's list** is the rendition's, as cells' is (§3.8). It opens in
 the layer, a cell under the select by the `area` the click reports, as
