@@ -17,5 +17,5 @@ NEIO-11): an A2UI v1.0 core in Go, a HOTTY renderer and a storybook.
 - **A2UI is pinned** in `third_party/a2ui` (`make a2ui REV=…`). Don't edit
   the files there; the conformance suites run from them as they are.
 - **The gate is `make check`.** Push to main once it passes, fast-forward
-  only. The repository is private, and publishing anything is the
-  maintainer's act.
+  only. The repository is public (since 2026-10-08, for hotty-demo's
+  storybook app); a release, a tag or a package is the maintainer's act.

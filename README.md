@@ -5,8 +5,9 @@ agent, describes its UI once as A2UI v1.0, and gets it in the three
 renditions of HOTTY's SDK.md §2.5. Those are surfaces on a HOTTY host, cells
 on a terminal that is not one, and plain text with no terminal.
 
-This repository is the proof of concept that gov's NEIO-11 calls for. It is
-private, and nothing in it is published.
+This repository is the proof of concept that gov's NEIO-11 calls for: a
+draft, with no release, whose API changes freely. hotty-demo shows its
+storybook as an app, on https://hotty.neuroplast.io/storybook.
 
 ## What is here
 
@@ -74,3 +75,7 @@ make a2ui REV=<full A2UI commit>
 
 The script copies only what the kit and its tests read. A2UI is Apache-2.0
 (`third_party/a2ui/LICENSE`).
+
+## License
+
+Apache-2.0 ([`LICENSE`](LICENSE)).
