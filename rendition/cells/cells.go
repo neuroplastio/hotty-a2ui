@@ -6,6 +6,9 @@
 package cells
 
 import (
+	"github.com/neuroplastio/hotty-go"
+	"github.com/neuroplastio/hotty-go/hottyedit"
+
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -22,6 +25,10 @@ type Rendition struct {
 	rows    map[string]int // a longText's rows, as last drawn
 	list    string         // the select whose list is open
 	hi      int            // the option highlighted in it
+	keys    string         // the text controls' keymap (SetKeys)
+	// fields are the text controls as last edited, which keep a run of
+	// row moves' place along the row (editKey).
+	fields map[string]*hottyedit.Field
 
 	hits  []hit
 	panel *hit           // the open Modal's panel, as last drawn
@@ -34,8 +41,15 @@ type box struct{ x, y, w, h int }
 
 // New is a surface's rendition in cells.
 func New(c *view.Controller) *Rendition {
-	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{}}
+	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
+		keys: hotty.TerminalKeys, fields: map[string]*hottyedit.Field{}}
 }
+
+// SetKeys sets the keymap the text controls edit by, as rendition/html's
+// SetKeys sets a surface's: the default keymap, then keys, then the
+// components' own (io_neuroplast_hotty.keys). New starts with
+// hotty.TerminalKeys; "" is SPEC §10.2's default keymap alone.
+func (r *Rendition) SetKeys(keys string) { r.keys = keys }
 
 // focused reports whether id has the keyboard.
 func (r *Rendition) focused(id string) bool {

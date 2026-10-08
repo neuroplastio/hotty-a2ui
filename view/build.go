@@ -94,6 +94,7 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	}
 	e.A11y = b.a11y(n)
 	e.Autofocus = autofocus(n)
+	e.Keys = keys(n)
 	return e
 }
 
@@ -244,11 +245,21 @@ func (b *Builder) a11y(n *a2ui.Node) A11y {
 
 // autofocus reads the hotty extension metadata.extensions
 // .io_neuroplast_hotty.autofocus.
-func autofocus(n *a2ui.Node) bool {
+func autofocus(n *a2ui.Node) bool { return hottyExt(n)["autofocus"] == true }
+
+// keys reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.keys: a keymap, as SPEC §10.2's data-keys.
+func keys(n *a2ui.Node) string {
+	s, _ := hottyExt(n)["keys"].(string)
+	return s
+}
+
+// hottyExt is a node's metadata.extensions.io_neuroplast_hotty.
+func hottyExt(n *a2ui.Node) map[string]any {
 	md, _ := n.Props["metadata"].(map[string]any)
 	ext, _ := md["extensions"].(map[string]any)
 	h, _ := ext["io_neuroplast_hotty"].(map[string]any)
-	return h["autofocus"] == true
+	return h
 }
 
 // SubID is the id of a part of an element that is not a node: a Tabs'

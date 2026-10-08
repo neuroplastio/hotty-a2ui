@@ -389,17 +389,18 @@ In the output:
 
 **Keys** are §5's, with these rules for cells:
 
-- **Who takes a key.** While the surface has the keyboard, the focused
-  element takes SPEC §10.2's keys for its kind, unmodified or with Shift
-  only.
-- **Text fields** take printable characters, Space, Backspace, Delete,
-  ArrowLeft, ArrowRight, Home and End.
+- **Who takes a key.** While the surface has the keyboard, a focused text
+  field takes the keys its keymap binds and the characters it types (§5,
+  SPEC §10.2); another focused element takes SPEC §10.2's keys for its
+  kind, unmodified or with Shift only.
+- **Text fields** edit as a host's do, with hotty-go's `hottyedit`: the
+  same actions, words, lines and caret, so the same keys make the same
+  edits in both renditions. A field in cells does not wrap: its rows are
+  its lines, and a longText's page is the rows it shows.
   - A number field takes every printable character but keeps only
     `0-9 . , - + e E`.
-  - Enter submits the field's Form, if it is in one.
-  - A longText also takes ArrowUp, ArrowDown, PageUp and PageDown, which
-    move by a line and by the rows it shows. Enter inserts a line break
-    there.
+  - `submit` (Enter, in a single-line field) submits the field's Form,
+    if it is in one. In a longText, Enter types a line break.
   - Every edit writes the value at once.
 - **A select** works in two states:
   - Closed, ArrowUp and ArrowDown pick the previous and next option.
@@ -422,8 +423,8 @@ In the output:
 - **Tab and Shift+Tab** move the keyboard in tree order.
 - **Any other key**, Escape among them, goes to the surface's Shortcuts.
   - Without the keyboard, only the Shortcuts are tried.
-  - A printable key, alone or with Shift, never reaches a Shortcut while a
-    text field has the keyboard.
+  - A key a focused text field uses, a character it types or a key its
+    keymap binds to an edit, never reaches a Shortcut.
 - **Escape** that no Shortcut takes closes an open Modal, as on a host.
 
 **A click** lands on the topmost thing drawn at its cell:
@@ -491,7 +492,16 @@ terminal implements them. In cells the renderer does, by the same rules:
 - **Keys** go to the focused component as SPEC.md §10.2's table says. Tab
   and Shift+Tab move focus in tree order; past the last component or before
   the first, the surface loses the keyboard. Escape, and every key the
-  focused component does not use, reach the program.
+  focused component does not use, reach the program. Keys are named as
+  SPEC.md §10.4 has them: `Control+s`, `Alt+b`, `A`, `Space`.
+- **A text field's keys are its keymap** (SPEC.md §10.2). The renderer
+  sets the surface's on its top elements as `data-keys`: hotty-go's
+  `TerminalKeys`, the keys of Bubble Tea's text input (Control+a and
+  Control+e, Alt+b and Alt+f, Control+w, Control+k, Control+u…), unless
+  the program sets another (`SetKeys`; empty for SPEC.md's default
+  keymap alone). A component's `keys` (§6.5) overrides it key by key for
+  the fields inside. The cells rendition resolves the same keymap
+  (`hotty.Resolve`), so a key does the same in both.
 - **Shortcuts** (§6.1) take the keys that reach the program, for the
   surface that is active: the one that has the keyboard, or when none has
   it, the one the program says is current.
@@ -524,20 +534,22 @@ as SPEC.md §10.2 has a host take them.
 
 ### 6.1 Shortcut
 
-Binds a key to its surface, and draws nothing. `key` is a W3C UI Events
-key value after its modifiers (`Control`, `Alt`, `Shift`, `Meta`), joined
-by `+`: `Control+s`, `Escape`, `Alt+ArrowUp`, `?`. Modifiers match in any
-order; a letter's case matters only with `Shift`. Tab and Shift+Tab move
-focus and cannot be bound.
+Binds a key to its surface, and draws nothing. `key` is a key as HOTTY
+SPEC.md §10.4 names it: a W3C UI Events key value after its modifiers
+(`Control`, `Alt`, `Meta`, `Shift`), joined by `+`: `Control+s`,
+`Escape`, `Alt+ArrowUp`, `?`, `Space`. Modifiers match in any order; a
+character carries Shift in itself, so `Control+S` is Control and Shift
+with s. Tab and Shift+Tab move focus and cannot be bound.
 
 When a key reaches the program (§5) while the Shortcut's surface is the
 one keys apply to, the Shortcut either presses the Button `press` names,
 as a click would and only if the Button's checks pass, or runs its
 `action`. `press` is a plain id, not a ComponentId: a Shortcut does not
 contain its Button; in a template, the first instance in tree order is
-pressed. A key that types a character, with no modifier but Shift, never
-reaches a Shortcut while a text control has the keyboard: the field takes
-it (SPEC.md §10.2).
+pressed. A key a focused text field uses never reaches a Shortcut: a
+character it types, or a key its keymap binds to an edit (§5, SPEC.md
+§10.2). Give Shortcuts keys the keymap leaves alone, such as Control+s,
+or bind the key to `program` for the fields (§6.5).
 
 ### 6.2 Form
 
@@ -567,6 +579,17 @@ that takes focus gives it the keyboard as soon as it is there, until the
 surface has given the keyboard to anything. A surface often arrives after
 it is made, in later `updateComponents`; autofocus waits for the
 component. Other renderers ignore it.
+
+### 6.5 keys
+
+`metadata.extensions.io_neuroplast_hotty.keys` on a component is a
+keymap, as SPEC.md §10.2's `data-keys`: bindings `key=action` separated
+by white space, such as `Control+s=submit Control+k=program`. It applies
+to the text fields inside the component, and to the component itself if
+it is one, over the surface's keymap (§5) and those of the components
+around it, key by key, the nearest last. On a host it is the element's
+`data-keys`; in cells the rendition resolves it the same way. Other
+renderers ignore it.
 
 ## 7. Fallbacks
 

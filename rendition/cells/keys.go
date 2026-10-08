@@ -2,27 +2,37 @@ package cells
 
 import (
 	"strings"
-	"unicode/utf8"
+
+	"github.com/neuroplastio/hotty-go"
+	"github.com/neuroplastio/hotty-go/hottyedit"
 
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
-// Key is a key the user pressed, as a W3C key value after its modifiers,
-// joined by "+": "a", "A", " " or "Space", "Enter", "Shift+Tab",
-// "Control+s" (profile §5, SPEC §10.2). While the surface has the
-// keyboard, the focused element takes the keys its kind uses, unmodified
-// or with Shift only; Tab and Shift+Tab move focus. Any other key, Escape
+// Key is a key the user pressed, named as SPEC §10.4 has it: "a", "A",
+// "Space", "Enter", "Shift+Tab", "Control+s" (profile §5). While the
+// surface has the keyboard, the focused element takes the keys it uses: a
+// text control those its keymap names, and the characters it types (SPEC
+// §10.2, editKey); another kind those of SPEC §10.2's table, unmodified or
+// with Shift only. Tab and Shift+Tab move focus. Any other key, Escape
 // among them, goes to the surface's Shortcuts; without the keyboard only
 // they are tried. Then, as rendition/html does, Escape closes an open
 // Modal. handled reports whether the surface took the key: when it did
 // not, the key is the program's.
 func (r *Rendition) Key(key string) (handled bool, err error) {
+	if k, ok := hotty.ParseKey(key); ok {
+		key = k
+	}
 	mods, name := splitKey(key)
 	c := r.c
 	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
 	if c.St.Keyboard {
-		e := c.V.Find(c.St.Focus)
-		if e != nil && shiftOnly {
+		switch e := c.V.Find(c.St.Focus); {
+		case isTextControl(e):
+			if ok, err := r.editKey(e, key); ok {
+				return true, err
+			}
+		case e != nil && shiftOnly:
 			if ok, err := r.elementKey(e, name); ok {
 				return true, err
 			}
@@ -34,11 +44,8 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 			}
 			return true, nil
 		}
-		if isTextControl(e) && shiftOnly && printable(name) {
-			return false, nil
-		}
 	}
-	if ok, err := c.Shortcut(strings.Join(append(mods, name), "+")); ok {
+	if ok, err := c.Shortcut(key); ok {
 		return true, err
 	}
 	if key == "Escape" && c.St.Modal != "" {
@@ -49,8 +56,7 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	return false, nil
 }
 
-// splitKey splits a key into its modifiers and its value; "Space" is " ",
-// and a letter with Shift is a capital.
+// splitKey splits a key's name into its modifiers and its value.
 func splitKey(key string) (mods []string, name string) {
 	name = key
 	if key != "+" {
@@ -59,12 +65,6 @@ func splitKey(key string) (mods []string, name string) {
 		} else if i := strings.LastIndex(key, "+"); i > 0 {
 			mods, name = strings.Split(key[:i], "+"), key[i+1:]
 		}
-	}
-	if name == "Space" {
-		name = " "
-	}
-	if len(mods) == 1 && mods[0] == "Shift" && utf8.RuneCountInString(name) == 1 {
-		name = strings.ToUpper(name)
 	}
 	return mods, name
 }
@@ -76,13 +76,10 @@ func printable(name string) bool {
 	return len(cl) == 1 && !isControl(cl[0]) && !isBreak(cl[0])
 }
 
-// elementKey gives a key to the focused element; ok reports whether it
-// took it (SPEC §10.2's table).
+// elementKey gives a key to the focused element that is not a text
+// control; ok reports whether it took it (SPEC §10.2's table).
 func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error) {
-	switch {
-	case isTextControl(e):
-		return r.editKey(e, name)
-	case isSelect(e):
+	if isSelect(e) {
 		return r.selectKey(e, name)
 	}
 	if e.Kind == view.Slider {
@@ -109,75 +106,49 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	default:
 		return false, nil
 	}
-	if name == " " || name == "Enter" {
+	if name == "Space" || name == "Enter" {
 		return true, r.c.Activate(e.ID)
 	}
 	return false, nil
 }
 
-// editKey edits a text control: the data model is written on every
-// change.
-func (r *Rendition) editKey(e *view.Element, name string) (bool, error) {
+// editKey edits a text control as a host edits a text field (SPEC
+// §10.2), with hottyedit: by its keymap, the surface's (SetKeys) and then
+// those of the components it is in, its own last (view.KeyChain), and
+// typing the characters it does not bind. A number field types only what
+// a number has. ok is false for a key the keymap leaves to the program.
+// The data model is written on every change.
+func (r *Rendition) editKey(e *view.Element, key string) (ok bool, err error) {
 	v, _ := e.Value.(string)
-	cl := clusters(v)
-	pos := r.cursorOf(e.ID, len(cl))
 	long := isLongText(e)
-	lines := splitClusters(cl)
-	li, ci := locate(lines, pos)
-	if !long {
-		lines, li, ci = [][]string{cl}, 0, pos
+	km := hotty.Resolve(long, append([]string{r.keys}, r.c.V.KeyChain(e.ID)...)...)
+	pos := r.cursorOf(e.ID, len(clusters(v)))
+	// The field is kept while nothing else moves its caret or changes its
+	// value, so that a run of row moves keeps its place along the row.
+	f := r.fields[e.ID]
+	if f == nil || f.Value != v || f.Caret != pos || f.Multiline != long {
+		f = &hottyedit.Field{Value: v, Caret: pos, Multiline: long, Password: e.Variant == "obscured"}
+		r.fields[e.ID] = f
 	}
-	write := func(before, insert, after string) error {
-		r.cursor[e.ID] = len(clusters(before + insert))
-		return r.c.SetValue(e.ID, before+insert+after)
-	}
-	join := func(cl []string) string { return strings.Join(cl, "") }
-	switch name {
-	case "Backspace":
-		if pos > 0 {
-			return true, write(join(cl[:pos-1]), "", join(cl[pos:]))
+	f.Rows = r.pageRows(e)
+	switch km.Lookup(key) {
+	case "":
+		return false, nil
+	case hotty.Insert:
+		ch := key
+		if strings.HasSuffix(key, "Space") {
+			ch = " "
 		}
-	case "Delete":
-		if pos < len(cl) {
-			return true, write(join(cl[:pos]), "", join(cl[pos+1:]))
-		}
-	case "ArrowLeft":
-		r.cursor[e.ID] = max(pos-1, 0)
-	case "ArrowRight":
-		r.cursor[e.ID] = min(pos+1, len(cl))
-	case "Home":
-		r.cursor[e.ID] = offset(lines, li, 0)
-	case "End":
-		r.cursor[e.ID] = offset(lines, li, len(lines[li]))
-	case "ArrowUp", "ArrowDown", "PageUp", "PageDown":
-		if !long {
-			return false, nil
-		}
-		step := map[string]int{"ArrowUp": -1, "ArrowDown": 1, "PageUp": -r.pageRows(e), "PageDown": r.pageRows(e)}[name]
-		t := li + step
-		switch {
-		case t < 0:
-			r.cursor[e.ID] = 0
-		case t >= len(lines):
-			r.cursor[e.ID] = len(cl)
-		default:
-			col := colOf(lines[li], ci, false)
-			r.cursor[e.ID] = offset(lines, t, indexAt(lines[t], col, false))
-		}
-	case "Enter":
-		if long {
-			return true, write(join(cl[:pos]), "\n", join(cl[pos:]))
-		}
-		r.cursor[e.ID] = pos
-		return true, r.c.Enter(e.ID)
-	default:
-		if !printable(name) {
-			return false, nil
-		}
-		if e.Kind == view.TextField && e.Variant == "number" && !strings.ContainsAny(name, "0123456789.,-+eE") {
+		if e.Kind == view.TextField && e.Variant == "number" && !strings.ContainsAny(ch, "0123456789.,-+eE") {
 			return true, nil
 		}
-		return true, write(join(cl[:pos]), name, join(cl[pos:]))
+	case hotty.Submit:
+		return true, r.c.Enter(e.ID)
+	}
+	_, changed := f.Key(km, key)
+	r.cursor[e.ID] = f.Caret
+	if changed {
+		return true, r.c.SetValue(e.ID, f.Value)
 	}
 	return true, nil
 }
@@ -211,7 +182,7 @@ func (r *Rendition) selectKey(e *view.Element, name string) (bool, error) {
 		return r.c.SetValue(e.ID, e.Options[i].Value)
 	}
 	switch name {
-	case " ", "Enter":
+	case "Space", "Enter":
 		if open && n > 0 {
 			r.list = ""
 			return true, r.c.SetValue(e.ID, e.Options[r.hi].Value)

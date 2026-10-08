@@ -2,8 +2,10 @@
 # against the cells rendition and against the HTML rendition on a host
 # (hottytest, which takes keys as SPEC §10.2 has a host take them).
 #
-# A vector is a story (story: a name, or messages: inline) and steps:
-#   key: a key, as a Shortcut writes it ("Tab", "Shift+Tab", " ", "Control+s")
+# A vector is a story (story: a name, or messages: inline), the keymap of
+# its text fields (keys: a data-keys value; hotty.TerminalKeys when not
+# given, as the renditions start) and steps:
+#   key: a key, as SPEC §10.4 names it ("Tab", "Shift+Tab", "Space", "Control+s")
 #   type: characters, one key each
 #   focus: the program gives the keyboard at an element (by view id)
 #   blur: the program takes it back
@@ -66,17 +68,17 @@
     - focus: name
     - type: Ada
     - key: Tab
-    - key: " "
+    - key: Space
     - expect: {focused: agree, data: {/agree: true, /name: Ada}}
     - key: Tab
-    - key: " "
+    - key: Space
     - key: Tab
     - key: Enter
     - expect: {focused: size/option/1, data: {/size: [s, m]}}
     - focus: go
     - key: Enter
     - expect: {actions: [go], context: {name: Ada, agree: true}}
-    - key: " "
+    - key: Space
     - expect: {focused: go, actions: [go, go]}
 
 - name: Enter and Space on a tab show it; its content then joins the Tab order
@@ -87,7 +89,7 @@
     - expect: {focused: tabs/tab/1}
     - key: Tab
     - expect: {focused: two}
-    - key: " "
+    - key: Space
     - expect: {actions: [inTwo]}
 
 - name: A Shortcut presses its Button, with the field just typed in current, and the field keeps the keyboard
@@ -150,7 +152,7 @@
     - key: Enter
     - expect: {actions: []}
     - focus: agree
-    - key: " "
+    - key: Space
     - focus: email
     - key: Enter
     - expect: {focused: email, actions: [signUp], context: {name: Ada, email: ada@example.com, plan: [free]}}
@@ -183,9 +185,164 @@
     - key: Tab
     - key: Tab
     - expect: {focused: done}
-    - key: " "
+    - key: Space
     - expect: {focused: null}
     - focus: city
     - expect: {focused: city}
     - blur: true
     - expect: {focused: null}
+
+# Text fields edit by their keymap (SPEC §10.2): the surface's, the
+# renditions' hotty.TerminalKeys unless a vector says, then the
+# components' own (io_neuroplast_hotty.keys), the field's last. Typing
+# after a move shows where it left the caret.
+- name: the terminal keymap moves and deletes by characters, words and lines
+  messages: &field
+    - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {t: ""}}}
+    - version: v1.0
+      updateComponents:
+        surfaceId: s
+        components:
+          - {id: root, component: Column, children: [t]}
+          - {id: t, component: TextField, label: Text, value: {"@path": /t}}
+  steps:
+    - focus: t
+    - type: foo bar baz
+    - key: Control+w
+    - expect: {data: {/t: "foo bar "}}
+    - key: Alt+b
+    - type: x
+    - expect: {data: {/t: "foo xbar "}}
+    - key: Control+a
+    - type: "<"
+    - key: Control+e
+    - type: ">"
+    - expect: {data: {/t: "<foo xbar >"}}
+    - key: Alt+b
+    - key: Alt+b
+    - key: Control+k
+    - expect: {data: {/t: "<foo "}}
+    - key: Control+b
+    - key: Control+b
+    - key: Control+u
+    - expect: {data: {/t: "o "}}
+    - key: Control+f
+    - key: Control+h
+    - type: z
+    - key: Control+d
+    - expect: {focused: t, data: {/t: "z"}}
+
+- name: with Shift a move moves as it does without; a key the keymap does not name is the program's
+  messages: *field
+  steps:
+    - focus: t
+    - type: ab
+    - key: Shift+ArrowLeft
+    - key: Shift+Home
+    - type: x
+    - key: Control+g
+    - key: F5
+    - expect: {focused: t, data: {/t: "xab"}}
+
+- name: the default keymap alone leaves Control+a to the program
+  keys: ""
+  messages: *field
+  steps:
+    - focus: t
+    - type: ab
+    - key: Control+a
+    - type: x
+    - key: Alt+b
+    - type: y
+    - key: Home
+    - type: "<"
+    - expect: {focused: t, data: {/t: "<abxy"}}
+
+- name: row moves in a multi-line field keep their place along the row
+  messages:
+    - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {t: ""}}}
+    - version: v1.0
+      updateComponents:
+        surfaceId: s
+        components:
+          - {id: root, component: Column, children: [t]}
+          - {id: t, component: TextField, label: Notes, variant: longText, value: {"@path": /t}}
+  steps:
+    - focus: t
+    - type: abcdef
+    - key: Enter
+    - type: ab
+    - key: Enter
+    - type: abcdef
+    - key: ArrowUp
+    - type: "1"
+    - expect: {data: {/t: "abcdef\nab1\nabcdef"}}
+    - key: End
+    - key: Control+n
+    - type: "2"
+    - expect: {data: {/t: "abcdef\nab1\nabc2def"}}
+    - key: ArrowUp
+    - key: ArrowUp
+    - type: "3"
+    - expect: {data: {/t: "abcd3ef\nab1\nabc2def"}}
+    - key: Alt+>
+    - type: "4"
+    - key: Alt+<
+    - type: "5"
+    - expect: {focused: t, data: {/t: "5abcd3ef\nab1\nabc2def4"}}
+
+- name: a password field is one word
+  messages:
+    - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {p: ""}}}
+    - version: v1.0
+      updateComponents:
+        surfaceId: s
+        components:
+          - {id: root, component: Column, children: [p]}
+          - {id: p, component: TextField, label: Password, variant: obscured, value: {"@path": /p}}
+  steps:
+    - focus: p
+    - type: correct horse
+    - key: Alt+b
+    - type: "<"
+    - key: Alt+f
+    - type: ">"
+    - expect: {data: {/p: "<correct horse>"}}
+    - key: Control+w
+    - expect: {focused: p, data: {/p: ""}}
+
+- name: a component's keymap overrides the surface's key by key, its fields' own last
+  messages:
+    - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {name: "", note: ""}}}
+    - version: v1.0
+      updateComponents:
+        surfaceId: s
+        components:
+          - {id: root, component: Column, children: [form, clear]}
+          - id: form
+            component: Form
+            catalogId: "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+            child: fields
+            onSubmit: {event: {name: send, context: {name: {"@path": /name}}}}
+            metadata: {extensions: {io_neuroplast_hotty: {keys: "Control+s=submit Control+k=program"}}}
+          - {id: fields, component: Column, children: [name, note]}
+          - {id: name, component: TextField, label: Name, value: {"@path": /name}}
+          - id: note
+            component: TextField
+            label: Note
+            value: {"@path": /note}
+            metadata: {extensions: {io_neuroplast_hotty: {keys: "Control+k=delete-to-line-end"}}}
+          - {id: clear, component: Shortcut, catalogId: "https://neuroplast.io/hotty/a2ui/v1/catalog.json", key: Control+k, action: {event: {name: clear}}}
+  steps:
+    - focus: name
+    - type: Ada
+    - key: Control+a
+    - key: Control+k
+    - expect: {actions: [clear], data: {/name: Ada}}
+    - key: Control+s
+    - expect: {actions: [clear, send], context: {name: Ada}}
+    - focus: note
+    - type: hi there
+    - key: Alt+b
+    - key: Control+k
+    - expect: {focused: note, actions: [clear, send], data: {/note: "hi "}}

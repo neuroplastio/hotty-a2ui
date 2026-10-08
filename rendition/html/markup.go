@@ -36,13 +36,23 @@ type list struct {
 
 // surface is the surface's two top elements: the view, and the layer an
 // open Modal's content shows in.
-func surface(v *view.Surface, th theme.Theme, l *list) (main, layer *node) {
+func surface(v *view.Surface, th theme.Theme, keys string, fit bool, l *list) (main, layer *node) {
 	m := markup{list: l}
-	main = el("div", "id", surfaceID, "class", "k-surface").add(m.element(v.Root))
+	class := "k-surface"
+	if fit {
+		class += " k-fit"
+	}
+	main = el("div", "id", surfaceID, "class", class).add(m.element(v.Root))
 	layer = el("div", "id", layerID, "class", "k-layer")
 	if css := themeCSS(th); css != "" {
 		main.set("style", css)
 		layer.set("style", css)
+	}
+	// The surface's keymap, for every text field in it (SPEC §10.2): the
+	// layer holds an open Modal's.
+	if keys != "" {
+		main.set("data-keys", keys)
+		layer.set("data-keys", keys)
 	}
 	if v.Overlay != nil {
 		main.flag("inert", true)
@@ -297,6 +307,9 @@ func (m *markup) element(e *view.Element) *node {
 		n = el("div", "id", id, "class", "k-stack k-col").add(m.all(e.Children)...)
 	}
 	accessible(n, e)
+	if e.Keys != "" {
+		n.set("data-keys", e.Keys)
+	}
 	if outer == nil {
 		outer = n
 	}

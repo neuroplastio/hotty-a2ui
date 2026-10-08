@@ -13,9 +13,10 @@ require (
 	charm.land/bubbletea/v2 v2.0.10
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/clipperhouse/uax29/v2 v2.7.0
-	github.com/neuroplastio/hotty-go v0.0.0-20261007135140-e3c4dd4d3cb3
-	github.com/neuroplastio/hotty-go/hottytea v0.0.0-20261007135140-e3c4dd4d3cb3
-	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261007193956-a0a38d9d3f26
+	github.com/neuroplastio/hotty-go v0.0.0-20261008213647-69317402c65e
+	github.com/neuroplastio/hotty-go/hottyedit v0.0.0-20261008213647-69317402c65e
+	github.com/neuroplastio/hotty-go/hottytea v0.0.0-20261008213647-69317402c65e
+	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261008213647-69317402c65e
 	github.com/yuin/goldmark v1.8.6
 )
 

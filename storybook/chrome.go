@@ -54,12 +54,19 @@ type chrome struct {
 
 type renditionOption struct{ value, label string }
 
-// newChrome makes pick, nav and panel. pick is two selects, the rendition
-// and the theme, side by side on a host (native), one over the other in
-// cells, whose Row does not wrap. nav is the stories in their groups: a
-// List of Buttons, which the kit draws as a menu's rows. The story shown
-// is the row whose Button is not borderless (showing).
-func newChrome(entries []entry, rends []renditionOption, rend string, th string, native bool) *chrome {
+// The keymaps the stories' text fields edit by (Book.keymap).
+const (
+	keysTerminal = "terminal" // hotty.TerminalKeys over SPEC §10.2's default
+	keysDefault  = "default"  // SPEC §10.2's default alone
+)
+
+// newChrome makes pick, nav and panel. pick is three selects: on a host
+// (native), the rendition and the keymap side by side, their values
+// short, over the theme; in cells, whose Row does not wrap, one over the
+// other. nav is the stories in their groups: a List of Buttons, which the
+// kit draws as a menu's rows. The story shown is the row whose Button is
+// not borderless (showing).
+func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, native bool) *chrome {
 	ch := &chrome{run: story.NewRun(), sent: map[string]string{}, entries: entries}
 	ch.run.Out = func(o a2ui.Outbound) {
 		if o.Action != nil {
@@ -76,9 +83,14 @@ func newChrome(entries []entry, rends []renditionOption, rend string, th string,
 	}
 	pick := []map[string]any{
 		obj("id", "root", "component", "Column", "children", []any{"view"}),
-		obj("id", "view", "component", map[bool]string{true: "Row", false: "Column"}[native], "children", []any{"rend", "theme_p"}),
+		obj("id", "view", "component", "Column", "children", map[bool][]any{true: {"top", "theme_p"}, false: {"rend", "keys_p", "theme_p"}}[native]),
+		obj("id", "top", "component", "Row", "children", []any{"rend", "keys_p"}),
 		obj("id", "rend", "component", "ChoicePicker", "label", "Rendition", "value", obj("@path", "/rendition"), "options", opts, "weight", 1),
 		obj("id", "theme_p", "component", "ChoicePicker", "label", "Theme", "value", obj("@path", "/theme"), "options", themes, "weight", 1),
+		obj("id", "keys_p", "component", "ChoicePicker", "label", "Keys", "value", obj("@path", "/keys"), "options", []any{
+			map[string]any{"label": "Terminal", "value": keysTerminal},
+			map[string]any{"label": "Default", "value": keysDefault},
+		}, "weight", 1),
 	}
 	nav := []map[string]any{obj("id", "root", "component", "Column", "children", []any{"list"})}
 	var list []any
@@ -95,7 +107,7 @@ func newChrome(entries []entry, rends []renditionOption, rend string, th string,
 	}
 	nav = append(nav, obj("id", "list", "component", "List", "children", list))
 	ch.feed(
-		create(pickID, map[string]any{"rendition": []any{rend}, "theme": []any{th}}),
+		create(pickID, map[string]any{"rendition": []any{rend}, "theme": []any{th}, "keys": []any{keys}}),
 		components(pickID, pick...),
 		create(navID, map[string]any{}),
 		components(navID, nav...),
@@ -158,18 +170,17 @@ func (ch *chrome) surface(id string) *story.Surface {
 }
 
 // theme is the theme picked.
-func (ch *chrome) theme() string {
-	v := ch.surface(pickID).S.Data.Value("/theme")
-	if l, ok := v.([]any); ok && len(l) > 0 {
-		s, _ := l[0].(string)
-		return s
-	}
-	return ""
-}
+func (ch *chrome) theme() string { return ch.picked("/theme") }
 
 // rendition is the rendition picked.
-func (ch *chrome) rendition() string {
-	v := ch.surface(pickID).S.Data.Value("/rendition")
+func (ch *chrome) rendition() string { return ch.picked("/rendition") }
+
+// keys is the keymap picked: keysTerminal or keysDefault.
+func (ch *chrome) keys() string { return ch.picked("/keys") }
+
+// picked is the value a select of pick has, at its path.
+func (ch *chrome) picked(path string) string {
+	v := ch.surface(pickID).S.Data.Value(path)
 	if l, ok := v.([]any); ok && len(l) > 0 {
 		s, _ := l[0].(string)
 		return s

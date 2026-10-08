@@ -151,7 +151,11 @@ type Element struct {
 	// Autofocus: the element takes the keyboard when the surface is
 	// first shown (io_neuroplast_hotty.autofocus).
 	Autofocus bool `json:"autofocus,omitempty"`
-	A11y      A11y `json:"a11y,omitzero"`
+	// Keys is the element's keymap for the text fields in it, itself if
+	// it is one (io_neuroplast_hotty.keys): SPEC §10.2's data-keys, which
+	// override the keymaps above it key by key (Surface.KeyChain).
+	Keys string `json:"keys,omitempty"`
+	A11y A11y   `json:"a11y,omitzero"`
 }
 
 // ChoiceOption is one of a Choice's options.
@@ -246,6 +250,41 @@ func (s *Surface) Walk(fn func(*Element) bool) {
 	if walk(s.Root) {
 		walk(s.Overlay)
 	}
+}
+
+// KeyChain is the keymaps (Element.Keys) of an element and those it is
+// in, the outermost first, as SPEC §10.2 resolves a field's keymap from
+// them: the field's own last. Empty ones are left out; nil when the
+// element is not there.
+func (s *Surface) KeyChain(id string) []string {
+	var path []*Element
+	var find func(e *Element) bool
+	find = func(e *Element) bool {
+		if e == nil {
+			return false
+		}
+		path = append(path, e)
+		if e.ID == id {
+			return true
+		}
+		for _, c := range e.Children {
+			if find(c) {
+				return true
+			}
+		}
+		path = path[:len(path)-1]
+		return false
+	}
+	if !find(s.Root) && !find(s.Overlay) {
+		return nil
+	}
+	var out []string
+	for _, e := range path {
+		if e.Keys != "" {
+			out = append(out, e.Keys)
+		}
+	}
+	return out
 }
 
 // Focusables lists the ids of the elements that take the keyboard, in

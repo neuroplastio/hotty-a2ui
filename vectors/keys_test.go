@@ -21,10 +21,12 @@ import (
 )
 
 type vector struct {
-	Name     string           `yaml:"name"`
-	Story    string           `yaml:"story"`
-	Messages []any            `yaml:"messages"`
-	Steps    []map[string]any `yaml:"steps"`
+	Name     string `yaml:"name"`
+	Story    string `yaml:"story"`
+	Messages []any  `yaml:"messages"`
+	// Keys is the surface's keymap, when given (SetKeys).
+	Keys  *string          `yaml:"keys"`
+	Steps []map[string]any `yaml:"steps"`
 }
 
 // player is one rendition as a vector plays it: the user's keys and
@@ -78,11 +80,15 @@ func play(t *testing.T, v vector, rendition string) {
 		}
 	}
 	s := run.Surfaces()[0]
+	keys := hotty.TerminalKeys
+	if v.Keys != nil {
+		keys = *v.Keys
+	}
 	var p player
 	if rendition == "cells" {
-		p = newCellsPlayer(t, s.C)
+		p = newCellsPlayer(t, s.C, keys)
 	} else {
-		p = newHostPlayer(t, s.C)
+		p = newHostPlayer(t, s.C, keys)
 	}
 	for i, st := range v.Steps {
 		where := fmt.Sprintf("step %d %v", i+1, st)
@@ -180,8 +186,9 @@ type cellsPlayer struct {
 	r *cells.Rendition
 }
 
-func newCellsPlayer(t *testing.T, c *view.Controller) *cellsPlayer {
+func newCellsPlayer(t *testing.T, c *view.Controller, keys string) *cellsPlayer {
 	p := &cellsPlayer{t: t, c: c, r: cells.New(c)}
+	p.r.SetKeys(keys)
 	p.r.Draw(80)
 	return p
 }
@@ -226,8 +233,9 @@ type hostPlayer struct {
 
 const surface = "story"
 
-func newHostPlayer(t *testing.T, c *view.Controller) *hostPlayer {
+func newHostPlayer(t *testing.T, c *view.Controller, keys string) *hostPlayer {
 	p := &hostPlayer{t: t, h: hottytest.New(t), r: html.New(c, surface)}
+	p.r.SetKeys(keys)
 	p.send(hotty.Doc(surface, p.r.Doc()), hotty.Place(surface, hotty.Placement{Cols: 80, Rows: 24}))
 	p.settle()
 	return p

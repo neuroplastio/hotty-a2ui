@@ -56,6 +56,11 @@
   background: var(--k-bg);
 }
 .k-surface[inert] { opacity: 0.5; }
+/* A surface the program sizes to its document (Rendition.SetFit): as tall
+   as its content, or the host's fit would never report fewer rows than
+   the surface has. Its colour still fills the surface's last row, by a
+   shadow, which takes no room. */
+.k-surface.k-fit { min-height: 0; box-shadow: 0 0 0 100vh var(--k-bg); }
 .k-emoji { font-family: var(--k-emoji); font-style: normal; font-weight: normal; }
 
 /* Layout */

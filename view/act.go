@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/neuroplastio/hotty-go"
+
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 )
 
@@ -266,26 +268,17 @@ func (c *Controller) Shortcut(key string) (ok bool, err error) {
 	return false, nil
 }
 
-// SameKey compares two keys as Shortcut writes them: modifiers in any
-// order; a letter's case only with Shift.
+// SameKey compares two keys as HOTTY names them (SPEC §10.4): modifiers
+// in any order, and a character with Shift in itself, so that Control+S
+// is Control+Shift+s, and Space is " ". A key that is no name there is
+// only itself.
 func SameKey(a, b string) bool {
-	norm := func(k string) string {
-		parts := strings.Split(k, "+")
-		if strings.HasSuffix(k, "++") || k == "+" {
-			parts = append(strings.Split(strings.TrimSuffix(k, "++"), "+"), "+")
-			if k == "+" {
-				parts = []string{"+"}
-			}
-		}
-		key := parts[len(parts)-1]
-		mods := slices.Clone(parts[:len(parts)-1])
-		slices.Sort(mods)
-		if len([]rune(key)) == 1 && !slices.Contains(mods, "Shift") {
-			key = strings.ToLower(key)
-		}
-		return strings.Join(append(mods, key), "+")
+	ca, oka := hotty.ParseKey(a)
+	cb, okb := hotty.ParseKey(b)
+	if !oka || !okb {
+		return a == b
 	}
-	return norm(a) == norm(b)
+	return ca == cb
 }
 
 // Focus gives the keyboard to an element, or takes it from the surface

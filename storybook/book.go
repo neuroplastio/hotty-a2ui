@@ -103,6 +103,7 @@ type Book struct {
 	run    *story.Run
 	stream *story.Run
 	rend   string
+	keys   string // the keymap picked: keysTerminal or keysDefault
 	gen    int
 	seq    map[*a2ui.Surface]int
 
@@ -121,7 +122,7 @@ type Book struct {
 // New is a Book. It starts once the terminal is known: on the Session's
 // ReadyMsg, or at the first View after it.
 func New(o Options) *Book {
-	b := &Book{o: o, theme: o.Theme, seq: map[*a2ui.Surface]int{}, panes: map[string]*pane{}}
+	b := &Book{o: o, theme: o.Theme, keys: keysTerminal, seq: map[*a2ui.Surface]int{}, panes: map[string]*pane{}}
 	if b.theme.Name == "" {
 		b.theme = theme.Default
 	}
@@ -150,7 +151,9 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 			b.status = "✗ the host: " + msg.Reply.Err().Error()
 		}
 	case tea.KeyPressMsg:
-		quit = b.key(keyValue(msg.Key()), h)
+		if k := hottytea.KeyName(msg.Key()); k != "" {
+			quit = b.key(k, h)
+		}
 	case tea.MouseClickMsg:
 		if msg.Button == tea.MouseLeft {
 			b.click(msg.X-b.at.X, msg.Y-b.at.Y)
@@ -237,7 +240,7 @@ func (b *Book) ready(mode hottytea.Mode) {
 		}
 	}
 	b.list = entries(b.stream != nil)
-	b.ch = newChrome(b.list, opts, b.rend, b.theme.Name, mode == hottytea.Native)
+	b.ch = newChrome(b.list, opts, b.rend, b.theme.Name, b.keys, mode == hottytea.Native)
 	b.open(cmp.Or(b.o.First, b.list[0].name))
 }
 
@@ -289,6 +292,9 @@ func (b *Book) settle() {
 	if t, ok := theme.ByName(b.ch.theme()); ok && t.Name != b.theme.Name {
 		b.theme = t
 		b.gen++
+	}
+	if k := b.ch.keys(); k != "" {
+		b.keys = k
 	}
 	if r := b.ch.rendition(); r != "" && r != b.rend {
 		b.rend = r
@@ -352,6 +358,8 @@ func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 		b.nextRendition()
 	case "F3":
 		b.nextTheme()
+	case "F4":
+		b.nextKeys()
 	case "q":
 		return b.focus == nil
 	}
@@ -465,6 +473,25 @@ func (b *Book) nextRendition() {
 func (b *Book) nextTheme() {
 	delete(b.ch.sent, pickID+"/theme")
 	b.ch.set(pickID, "/theme", []any{theme.Next(b.theme).Name})
+}
+
+// nextKeys picks the other keymap in pick.
+func (b *Book) nextKeys() {
+	next := keysDefault
+	if b.keys == keysDefault {
+		next = keysTerminal
+	}
+	delete(b.ch.sent, pickID+"/keys")
+	b.ch.set(pickID, "/keys", []any{next})
+}
+
+// keymap is the surface keymap of the renditions (SetKeys): the one
+// picked, over SPEC §10.2's default.
+func (b *Book) keymap() string {
+	if b.keys == keysDefault {
+		return ""
+	}
+	return hotty.TerminalKeys
 }
 
 // click is a primary click on the cells, in the Book: a list open on the
@@ -596,7 +623,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if b.o.Bars {
 		x := scr.put(0, 0, W, "HOTTY kit storybook", cells.Fg, cells.Bold)
 		scr.put(x, 0, W-x, " · "+b.cur+" · "+b.rend, cells.Muted, 0)
-		help := "Tab next · Esc leave · F2 rendition · Ctrl+C quit"
+		help := "Tab next · Esc leave · F2 rendition · F3 theme · F4 keys · Ctrl+C quit"
 		if b.status != "" {
 			help = b.status + " · " + help
 		}
@@ -685,6 +712,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	for _, p := range order {
 		switch p.kind {
 		case asCells:
+			p.cells.SetKeys(b.keymap())
 			p.frame = p.cells.Draw(p.rect.W)
 			p.top = scrollTo(p)
 			scr.blit(p.frame, p.rect, p.top)
@@ -697,6 +725,8 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			}
 		case asSurface:
 			p.html.SetTheme(b.theme)
+			p.html.SetKeys(b.keymap())
+			p.html.SetFit(p == pick)
 			p.html.Away = b.focus != nil && b.focus != p && b.focus.s == p.s
 			h.Send(p.html.Update()...)
 			at := p.rect

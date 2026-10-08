@@ -148,7 +148,7 @@ func (x *harness) check(r *Rendition) {
 	x.t.Helper()
 	got := x.h.Surface(r.name).HTML()
 	h2 := hottytest.New(x.t)
-	_, _ = io.WriteString(h2, hotty.Doc(r.name, (&Rendition{C: r.C, name: r.name}).Doc()))
+	_, _ = io.WriteString(h2, hotty.Doc(r.name, (&Rendition{C: r.C, name: r.name, keys: r.keys, fit: r.fit}).Doc()))
 	if want := h2.Surface(r.name).HTML(); got != want {
 		x.t.Errorf("%s: the deltas made\n%s\nthe document is\n%s", r.name, got, want)
 	}

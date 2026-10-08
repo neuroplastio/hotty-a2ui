@@ -82,6 +82,7 @@ storybook -html basic/06_music-player            # the document a HOTTY host get
 | <kbd>Esc</kbd> | leave a field, close a modal |
 | <kbd>F2</kbd> | surfaces, cells, text, or surfaces beside cells |
 | <kbd>F3</kbd> | the next theme |
+| <kbd>F4</kbd> | the fields' keys: Bubble Tea's (<kbd>Ctrl</kbd>+<kbd>A</kbd>, <kbd>Alt</kbd>+<kbd>B</kbd>, <kbd>Ctrl</kbd>+<kbd>W</kbd>…), or HOTTY's defaults alone |
 | <kbd>Ctrl</kbd>+<kbd>C</kbd> | quit |
 
 ## The storybook in your program

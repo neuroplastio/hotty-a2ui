@@ -46,6 +46,10 @@ type Rendition struct {
 	// theme is the colours the kit paints with; the zero theme is the
 	// host's own.
 	theme theme.Theme
+	// keys is the surface's keymap (SetKeys).
+	keys string
+	// fit: the program sizes the surface to its document (SetFit).
+	fit bool
 	// Away is set while the keyboard is in another rendition of the same
 	// surface (cells beside it): the host's surface gives it up, and its
 	// blur leaves the controller's keyboard where it is.
@@ -67,11 +71,27 @@ type keyboard struct {
 
 // New is the rendition of a controller's surface, as the host surface
 // name.
-func New(c *view.Controller, name string) *Rendition { return &Rendition{C: c, name: name} }
+func New(c *view.Controller, name string) *Rendition {
+	return &Rendition{C: c, name: name, keys: hotty.TerminalKeys}
+}
 
 // SetTheme paints the surface in a theme's colours from the next Doc or
 // Update on; the zero theme is the host's own.
 func (r *Rendition) SetTheme(th theme.Theme) { r.theme = th }
+
+// SetKeys sets the keymap of the surface's text fields from the next Doc
+// or Update on: a data-keys value on the surface's top elements (SPEC
+// §10.2), which a component's own (io_neuroplast_hotty.keys) overrides
+// key by key. New starts with hotty.TerminalKeys, so that fields edit as
+// Bubble Tea's do, and as the cells rendition's; "" leaves the host's
+// default keymap.
+func (r *Rendition) SetKeys(keys string) { r.keys = keys }
+
+// SetFit says, from the next Doc or Update on, whether the program sizes
+// the surface to its document, by the host's fit (SPEC §5.2): the document
+// is then as tall as its content, where it otherwise fills the surface,
+// which would hold the fit at the surface's height.
+func (r *Rendition) SetFit(fit bool) { r.fit = fit }
 
 // Name is the HOTTY surface's name.
 func (r *Rendition) Name() string { return r.name }
@@ -81,7 +101,7 @@ func (r *Rendition) Name() string { return r.name }
 // or the program deleted it off screen) has no focus, so the next Update
 // gives the host the keyboard again if the view has it.
 func (r *Rendition) Doc() string {
-	main, layer := surface(r.C.V, r.theme, r.openList())
+	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, r.openList())
 	r.sent = []*node{main, layer}
 	r.host = keyboard{}
 	return head + main.html() + layer.html()
@@ -93,7 +113,7 @@ func (r *Rendition) Update() []string {
 	if r.sent == nil {
 		return nil
 	}
-	main, layer := surface(r.C.V, r.theme, r.openList())
+	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, r.openList())
 	r.holdEdit(main)
 	out := diff(r.name, r.sent[0], main, nil)
 	out = diff(r.name, r.sent[1], layer, out)
@@ -243,13 +263,17 @@ func (r *Rendition) Event(ev hotty.Event) error {
 }
 
 // Key is a key the program read while the surface is the one keys apply
-// to, as a W3C key value with its modifiers ("Control+s", "Escape"). A
-// Shortcut takes it. While the surface has the keyboard, a field may
+// to, named as SPEC §10.4 has it ("Control+s", "Escape", "Space"): one
+// the focused field did not use (its keymap, SetKeys), or any while the
+// surface does not have the keyboard. A Shortcut takes it. While the surface has the keyboard, a field may
 // hold an edit the host has not committed, so Key sends a=blur and the
 // Shortcut runs when the blur comes back (Event), after the field's
 // change; then the keyboard goes back to the surface. Else Escape closes
 // an open Modal. ok reports whether the surface took the key.
 func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
+	if k, named := hotty.ParseKey(key); named {
+		key = k
+	}
 	c := r.C
 	if r.pending != "" {
 		// The blur never came: the host had given the keyboard back
@@ -421,7 +445,7 @@ func (r *Rendition) listKey(l *list, key string) (bool, error) {
 		l.hi = 0
 	case "End", "PageDown":
 		l.hi = n - 1
-	case " ", "Enter":
+	case "Space", "Enter":
 		r.list = nil
 		if l.hi < 0 || l.hi >= n {
 			return true, nil
@@ -447,7 +471,7 @@ func (r *Rendition) listKey(l *list, key string) (bool, error) {
 // or key is not one.
 func nextByLetter(e *view.Element, from int, key string) int {
 	n := len(e.Options)
-	if utf8.RuneCountInString(key) != 1 || key == " " {
+	if utf8.RuneCountInString(key) != 1 {
 		return -1
 	}
 	for k := 1; k <= n; k++ {
@@ -481,7 +505,7 @@ func (r *Rendition) selectKey(e *view.Element, key string) (bool, error) {
 		i = n - 1
 	default:
 		if i = nextByLetter(e, cur, key); i < 0 {
-			return utf8.RuneCountInString(key) == 1 && key != " ", nil
+			return utf8.RuneCountInString(key) == 1, nil
 		}
 	}
 	if i == cur {
