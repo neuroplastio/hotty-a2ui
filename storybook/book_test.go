@@ -1,12 +1,14 @@
 package storybook
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/neuroplastio/hotty-go"
 	"github.com/neuroplastio/hotty-go/hottytea"
 	"github.com/neuroplastio/hotty-go/hottytest"
 )
@@ -87,9 +89,9 @@ func TestInAProgram(t *testing.T) {
 	if col, row := h.Surface("sb-pick").At(); row != 1 || col != 0 {
 		t.Errorf("pick at row %d, col %d: want under the program's row", row, col)
 	}
-	eventually(t, "nav under pick", func() bool {
+	eventually(t, "nav under pick and its rule", func() bool {
 		_, row := h.Surface("sb-nav").At()
-		return row == 1+h.Surface("sb-pick").Placement().Rows
+		return row == 1+h.Surface("sb-pick").Placement().Rows+1
 	})
 	if h.Surface("nav") != nil {
 		t.Error("a surface without the prefix")
@@ -125,7 +127,8 @@ func TestInAProgramInCells(t *testing.T) {
 
 // TestPickStaysPut: the pickers are a surface of their own over nav, as
 // tall as they need, and nav, the list, is what scrolls. A select's open
-// list takes the column, over nav, until a pick closes it.
+// list is a surface of its own above the others, and pick and nav stay as
+// they are, until a pick closes it.
 func TestPickStaysPut(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))
 	run(t, h, Options{First: "hotty/form", Prefix: "sb-"})
@@ -133,22 +136,40 @@ func TestPickStaysPut(t *testing.T) {
 		p, n := h.Surface("sb-pick"), h.Surface("sb-nav")
 		return p != nil && n != nil && p.Placed() && n.Placed()
 	})
-	closed := h.Surface("sb-pick").Placement()
-	if closed.Rows >= 39/2 || closed.Z != 0 {
-		t.Fatalf("pick, closed: %+v", closed)
+	eventually(t, "pick as high as its fit, nav under it", func() bool {
+		fit := 0
+		for _, ev := range h.Events() {
+			var d struct{ R int }
+			if ev.Surface == "sb-pick" && ev.Kind == hotty.EventFit && json.Unmarshal(ev.Detail, &d) == nil {
+				fit = d.R
+			}
+		}
+		rows := h.Surface("sb-pick").Placement().Rows
+		_, row := h.Surface("sb-nav").At()
+		return rows == fit && row == 1+rows+1
+	})
+	pick, nav := h.Surface("sb-pick").Placement(), h.Surface("sb-nav").Placement()
+	if pick.Rows >= 39/2 || pick.Z != 0 {
+		t.Fatalf("pick, closed: %+v", pick)
 	}
 	if err := h.Click("sb-pick", "theme_p"); err != nil {
 		t.Fatal(err)
 	}
-	eventually(t, "the open list over nav", func() bool {
-		p := h.Surface("sb-pick").Placement()
-		return p.Rows == 39 && p.Z == 1
+	eventually(t, "the open list above the others", func() bool {
+		l := h.Surface("sb-pick-list")
+		return l != nil && l.Placed() && l.Placement().Z == 1
 	})
-	if err := h.Click("sb-pick", "theme_p~o3"); err != nil {
+	if _, row := h.Surface("sb-pick-list").At(); row <= 1 {
+		t.Errorf("the open list at row %d: want under the select", row)
+	}
+	if p, n := h.Surface("sb-pick").Placement(), h.Surface("sb-nav").Placement(); p != pick || n != nav {
+		t.Errorf("open, pick %+v and nav %+v: want %+v and %+v", p, n, pick, nav)
+	}
+	if err := h.Click("sb-pick-list", "theme_p~o3"); err != nil {
 		t.Fatal(err)
 	}
-	eventually(t, "pick closed again", func() bool {
-		p := h.Surface("sb-pick").Placement()
-		return p.Rows < 39/2 && p.Z == 0
+	eventually(t, "the list gone, the theme picked", func() bool {
+		l := h.Surface("sb-pick-list")
+		return (l == nil || !l.Placed()) && strings.Contains(h.Surface("sb-pick").Text(), "Nord")
 	})
 }

@@ -53,6 +53,9 @@ type pane struct {
 	rect  hottytea.Rect // in the Book, not on the screen
 	frame *cells.Frame
 	top   int // the frame's first row shown
+	// popRows is the rows the open list's surface needs (html.Popover),
+	// as the host's fit says; 0 until it does, and while none is open.
+	popRows int
 }
 
 // takesInput: text is for reading. Cells beside a surface take input as
@@ -464,11 +467,12 @@ func (b *Book) nextTheme() {
 	b.ch.set(pickID, "/theme", []any{theme.Next(b.theme).Name})
 }
 
-// click is a primary click on the cells, in the Book: in a cells pane,
-// the one drawn last where they overlap (pick's open list over nav), its
-// rendition takes it; anywhere else the keyboard goes back to the
-// storybook.
+// click is a primary click on the cells, in the Book: a list open on the
+// host closes; in a cells pane, the one drawn last where they overlap
+// (pick's open list over nav), its rendition takes it; anywhere else the
+// keyboard goes back to the storybook.
 func (b *Book) click(x, y int) {
+	b.closeLists(nil)
 	for _, p := range slices.Backward(b.order) {
 		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
 			continue
@@ -490,21 +494,35 @@ func (b *Book) click(x, y int) {
 	}
 }
 
-// event is what the user did in a surface on the host.
+// event is what the user did in a surface on the host: one of a pane's,
+// or the open list's of one (html.Popover).
 func (b *Book) event(ev hotty.Event) {
+	var d struct {
+		R int `json:"r"`
+	}
+	fit := ev.Kind == hotty.EventFit && json.Unmarshal(ev.Detail, &d) == nil && d.R > 0
 	p := b.panes[ev.Surface]
-	if p == nil || p.html == nil {
+	if p == nil {
+		if name, ok := strings.CutSuffix(ev.Surface, "-list"); ok {
+			if p = b.panes[name]; p != nil && p.html != nil {
+				b.fail(p.html.Event(ev))
+				if fit {
+					p.popRows = d.R
+				}
+			}
+		}
 		return
+	}
+	if p.html == nil {
+		return
+	}
+	if ev.Kind == hotty.EventClick || ev.Kind == hotty.EventFocus {
+		b.closeLists(p)
 	}
 	b.fail(p.html.Event(ev))
 	switch ev.Kind {
 	case hotty.EventFit:
-		// pick's height, while its lists are closed: open, it takes the
-		// column, and needs what it has.
-		var d struct {
-			R int `json:"r"`
-		}
-		if p.name == b.o.Prefix+pickID && !p.html.ListOpen() && json.Unmarshal(ev.Detail, &d) == nil && d.R > 0 {
+		if p.name == b.o.Prefix+pickID && fit {
 			b.pickRows = d.R
 		}
 	case hotty.EventFocus:
@@ -514,6 +532,17 @@ func (b *Book) event(ev hotty.Event) {
 		b.focus, b.last = p, p
 	case hotty.EventBlur:
 		b.last = p
+	}
+}
+
+// closeLists closes the lists open in panes other than p, where the user
+// went on: the program held the keyboard for them (html.Rendition.Key),
+// and the host has moved it, or has it nowhere.
+func (b *Book) closeLists(p *pane) {
+	for _, q := range b.order {
+		if q != p && q.kind == asSurface && q.html.ListOpen() {
+			q.s.C.St.Keyboard = false
+		}
 	}
 }
 
@@ -586,16 +615,18 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if native {
 		chromeKind = asSurface
 	}
-	// pick stays at the top of the left column, and nav scrolls under it.
-	// A select's open list needs more room than pick has: pick then takes
-	// the column, over nav, until the list closes.
+	// pick stays at the top of the left column, over a rule, and nav
+	// scrolls under them. On a host, a select's open list is a surface of
+	// its own (html.Popover); in cells, it pushes pick's frame down, which
+	// then covers nav until the list closes.
 	pick := b.pane(b.o.Prefix+pickID, b.ch.surface(pickID), chromeKind, hottytea.Rect{X: 0, Y: top, W: navW})
 	pickH, open := b.pickHeight(pick, bodyH)
 	pick.rect.H = pickH
 	if open {
 		pick.rect.H = bodyH
 	}
-	nav := b.pane(b.o.Prefix+navID, b.ch.surface(navID), chromeKind, hottytea.Rect{X: 0, Y: top + pickH, W: navW, H: bodyH - pickH})
+	scr.hrule(0, top+pickH, navW)
+	nav := b.pane(b.o.Prefix+navID, b.ch.surface(navID), chromeKind, hottytea.Rect{X: 0, Y: top + pickH + 1, W: navW, H: bodyH - pickH - 1})
 	order := []*pane{nav, pick}
 
 	kinds := map[string][]kind{rendSurfaces: {asSurface}, rendCells: {asCells}, rendText: {asText}, rendSide: {asSurface, asCells}}[b.rend]
@@ -673,11 +704,12 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			s := hottytea.Surface{Name: p.name, Rect: at, Doc: p.html.Doc, Scroll: hotty.ScrollVertical}
 			if p == pick {
 				s.Scroll, s.Fit = 0, true
-				if open {
-					s.Z = 1
-				}
 			}
 			want = append(want, s)
+			if pop, ok := b.popover(p, top, bodyH); ok {
+				pop.Rect.X, pop.Rect.Y = pop.Rect.X+r.X, pop.Rect.Y+r.Y
+				want = append(want, pop)
+			}
 		}
 	}
 	if f := b.focus; f != nil && f.kind == asCells && f.s.C.St.Keyboard && f.frame != nil {
@@ -692,7 +724,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 }
 
 // pickHeight is pick's height with its lists closed, at most half the
-// column, and whether one is open.
+// column, and whether a list is open in its cells.
 func (b *Book) pickHeight(p *pane, column int) (h int, open bool) {
 	switch p.kind {
 	case asCells:
@@ -701,12 +733,49 @@ func (b *Book) pickHeight(p *pane, column int) (h int, open bool) {
 			b.pickRows = p.cells.Draw(p.rect.W).Rows
 		}
 	case asSurface:
-		open = p.html.ListOpen()
 		if b.pickRows == 0 {
-			b.pickRows = 4 // until the host's fit says
+			b.pickRows = 3 // until the host's fit says
 		}
 	}
 	return min(b.pickRows, column/2), open
+}
+
+// popover is the surface of a list open in a pane on the host, in the
+// Book: under its select, as wide as its options, and as high as the
+// host's fit says, within the body (top, h rows). Where there is more room
+// above the select than under it, and too little under it, it opens
+// upwards. Without a click to say where the select is, it opens under
+// the pane.
+func (b *Book) popover(p *pane, top, h int) (hottytea.Surface, bool) {
+	po, ok := p.html.Popover()
+	if !ok {
+		p.popRows = 0
+		return hottytea.Surface{}, false
+	}
+	at := po.At
+	if !po.Placed {
+		at = hotty.Area{H: p.rect.H}
+	}
+	W := b.at.W
+	w := min(po.Cols, W)
+	x := max(0, min(p.rect.X+at.Col, W-w))
+	rows := cmp.Or(p.popRows, po.Rows)
+	below := p.rect.Y + at.Row + at.H
+	under, over := top+h-below, p.rect.Y+at.Row-top
+	y := below
+	if rows > under && over > under {
+		rows = min(rows, over)
+		y = p.rect.Y + at.Row - rows
+	} else {
+		rows = min(rows, under)
+	}
+	if rows <= 0 {
+		return hottytea.Surface{}, false
+	}
+	return hottytea.Surface{
+		Name: p.html.PopoverName(), Rect: hottytea.Rect{X: x, Y: y, W: w, H: rows},
+		Z: 1, Fit: true, Scroll: hotty.ScrollVertical, Doc: p.html.PopoverDoc,
+	}, true
 }
 
 // LaidOut is for after the program's Layout: a surface that has just got

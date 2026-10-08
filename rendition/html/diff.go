@@ -2,48 +2,48 @@ package html
 
 import "github.com/neuroplastio/hotty-go"
 
-// diff appends the deltas that make the host's element o into n (SPEC
-// §6), as small as the ids allow: attr and unattr for attributes, text for
+// diff appends the deltas that make the host's element o into n, in the
+// surface named name (SPEC §6), as small as the ids allow: attr and unattr for attributes, text for
 // an element whose content is one text, a recursion into children that
 // keep their ids and order, and inner, which morphs the children, for any
 // other change below. o and n have the same id.
-func (r *Rendition) diff(o, n *node, out []string) []string {
+func diff(name string, o, n *node, out []string) []string {
 	if o.tag != n.tag || o.id != n.id {
-		return append(out, hotty.MorphTo(r.name, o.id, n.html()))
+		return append(out, hotty.MorphTo(name, o.id, n.html()))
 	}
 	for _, a := range o.attrs {
 		if _, ok := n.attr(a.k); !ok {
-			out = append(out, hotty.RemoveAttr(r.name, n.id, a.k))
+			out = append(out, hotty.RemoveAttr(name, n.id, a.k))
 		}
 	}
 	for _, a := range n.attrs {
 		if v, ok := o.attr(a.k); !ok || v != a.v {
-			out = append(out, hotty.SetAttr(r.name, n.id, a.k, a.v))
+			out = append(out, hotty.SetAttr(name, n.id, a.k, a.v))
 		}
 	}
 	switch {
 	case o.raw || n.raw:
 		if o.raw != n.raw || o.text != n.text {
-			out = append(out, r.inner(n))
+			out = append(out, inner(name, n))
 		}
 	case textOnly(o) && textOnly(n):
 		if textOf(o) != textOf(n) {
-			out = append(out, hotty.SetText(r.name, n.id, textOf(n)))
+			out = append(out, hotty.SetText(name, n.id, textOf(n)))
 		}
 	case sameShape(o, n):
 		for i, k := range n.kids {
 			if k.id != "" {
-				out = r.diff(o.kids[i], k, out)
+				out = diff(name, o.kids[i], k, out)
 			}
 		}
 	default:
-		out = append(out, r.inner(n))
+		out = append(out, inner(name, n))
 	}
 	return out
 }
 
-func (r *Rendition) inner(n *node) string {
-	return hotty.Delta(r.name, hotty.OpInner, n.id, "", []byte(n.innerHTML()))
+func inner(name string, n *node) string {
+	return hotty.Delta(name, hotty.OpInner, n.id, "", []byte(n.innerHTML()))
 }
 
 // textOnly: the element holds one text, or nothing.

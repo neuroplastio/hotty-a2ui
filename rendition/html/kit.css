@@ -34,9 +34,9 @@
 }
 
 /* Colours made from others are made here, where a theme sets those
-   (markup.go puts it on these two), so they follow it; a theme's own value
-   of one of them wins. */
-.k-surface, .k-layer {
+   (markup.go puts it on these), so they follow it; a theme's own value of
+   one of them wins. */
+.k-surface, .k-layer, .k-popover {
   --k-muted: color-mix(in srgb, var(--k-fg) 62%, var(--k-bg));
   --k-surface: color-mix(in srgb, var(--k-fg) 5%, var(--k-bg));
   --k-tonal: color-mix(in srgb, var(--k-fg) 11%, var(--k-bg));
@@ -156,7 +156,7 @@
 .k-media { color: var(--k-link); white-space: nowrap; }
 
 /* Controls */
-:where(.k-surface, .k-layer) :is(input, textarea, select, button, output) {
+:where(.k-surface, .k-layer, .k-popover) :is(input, textarea, select, button, output) {
   font: inherit;
   line-height: inherit;
   color: inherit;
@@ -343,8 +343,9 @@ textarea.k-input { min-height: 5.5rem; }
   --k-tonal: color-mix(in srgb, var(--k-fg) 17%, var(--k-bg));
 }
 
-/* A select's open list: a menu under the select. Under it, the layer
-   takes a click anywhere else, which closes it. */
+/* A select's open list: a menu under the select, in a surface of its own
+   (.k-popover). In the select's surface, the layer takes a click anywhere
+   else, which closes it. */
 .k-dismiss { position: absolute; inset: 0; }
 .k-listbox {
   position: relative;
@@ -363,5 +364,10 @@ textarea.k-input { min-height: 5.5rem; }
   --k-tonal: color-mix(in srgb, var(--k-fg) 17%, var(--k-bg));
 }
 .k-listbox > .k-item { margin: 0; }
+/* The list in a surface of its own (Rendition.Popover), which the program
+   sizes to it: the page's colour shows past its rounded corners, as it
+   would around it in the surface. */
+.k-popover { background: var(--k-bg); }
+.k-popover > .k-listbox { min-width: 0; max-width: none; box-shadow: none; }
 .k-option[aria-selected=true] { background: var(--k-tonal); font-weight: 600; }
 .k-option.k-hi { outline: 1px solid var(--k-focus); outline-offset: -1px; }

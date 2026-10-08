@@ -49,10 +49,11 @@ type harness struct {
 	seen    int
 	actions []*a2ui.ActionMessage
 	deltas  int
+	pops    map[string]bool // the open lists' surfaces the host has
 }
 
 func newHarness(t *testing.T) *harness {
-	x := &harness{t: t, h: hottytest.New(t), rs: map[string]*Rendition{}}
+	x := &harness{t: t, h: hottytest.New(t), rs: map[string]*Rendition{}, pops: map[string]bool{}}
 	x.p = a2ui.NewProcessor(basic.Catalog(), hottycat.Catalog())
 	x.p.Send = func(o a2ui.Outbound) {
 		if o.Action != nil {
@@ -72,6 +73,23 @@ func (x *harness) send(cmds ...string) {
 	if errs := x.h.Errors(); len(errs) > 0 {
 		x.t.Fatalf("the host refused: %v", errs)
 	}
+}
+
+// update sends the host a rendition's deltas, and plays the program's
+// part for its open list: the list's surface while one is open
+// (Rendition.Popover), none after.
+func (x *harness) update(r *Rendition) {
+	x.t.Helper()
+	x.send(r.Update()...)
+	_, open := r.Popover()
+	name := r.PopoverName()
+	switch {
+	case open && !x.pops[name]:
+		x.send(hotty.Doc(name, r.PopoverDoc()), hotty.Place(name, hotty.Placement{Cols: 20, Rows: 8}))
+	case !open && x.pops[name]:
+		x.send(hotty.Del(name))
+	}
+	x.pops[name] = open
 }
 
 // process hands the processor messages, then shows each surface: its
@@ -118,7 +136,7 @@ func (x *harness) pump() {
 				if err := r.Event(ev); err != nil {
 					x.t.Fatalf("%s %s: %v", ev.Kind, ev.Target, err)
 				}
-				x.send(r.Update()...)
+				x.update(r)
 			}
 		}
 	}
@@ -495,8 +513,22 @@ func TestSelect(t *testing.T) {
 	x.process(msgs...)
 	r := x.rs["s"]
 	s := x.h.Surface(r.name)
-	open := func() bool { _, ok := s.Element(partID("size", partList)); return ok }
-	hi := func() string { v, _ := s.Attr(partID("size", partList), "aria-activedescendant"); return v }
+	// The open list is a surface of its own.
+	list := func() *hottytest.Surface { return x.h.Surface(r.PopoverName()) }
+	open := func() bool {
+		if l := list(); l != nil {
+			_, ok := l.Element(partID("size", partList))
+			return ok
+		}
+		return false
+	}
+	hi := func() string {
+		if l := list(); l != nil {
+			v, _ := l.Attr(partID("size", partList), "aria-activedescendant")
+			return v
+		}
+		return ""
+	}
 	size := func() string {
 		v, _ := r.C.S.Data.Value("/size").([]any)
 		if len(v) != 1 {
@@ -511,7 +543,7 @@ func TestSelect(t *testing.T) {
 		if !ok {
 			t.Fatalf("%s: not taken", k)
 		}
-		x.send(r.Update()...)
+		x.update(r)
 		x.pump()
 	}
 	closed := func(when string) {
@@ -560,7 +592,10 @@ func TestSelect(t *testing.T) {
 	}
 	must(t, x.h.Click(r.name, "size"))
 	x.pump()
-	must(t, x.h.Click(r.name, partID("size", partOption+"1")))
+	if _, ok := s.Element(partID("size", partList)); ok {
+		t.Error("the open list is in the select's surface too")
+	}
+	must(t, x.h.Click(r.PopoverName(), partID("size", partOption+"1")))
 	x.pump()
 	if size() != "m" {
 		t.Errorf("a click on Medium picked %v", size())

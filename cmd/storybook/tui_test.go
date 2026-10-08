@@ -242,17 +242,26 @@ func TestStream(t *testing.T) {
 	})
 }
 
-// pickRendition picks pick's ith rendition: the select opens its list.
+// pickRendition picks pick's ith rendition: the select opens its list, a
+// surface of its own.
 func pickRendition(t *testing.T, h *hottytest.Host, i int) {
 	t.Helper()
 	opt := "rend~o" + strconv.Itoa(i)
+	list := pickID + "-list"
 	eventually(t, "pick", func() bool { s := h.Surface(pickID); return s != nil && s.Placed() })
 	eventually(t, "pick's rendition", func() bool { _, ok := h.Surface(pickID).Element("rend"); return ok })
 	if err := h.Click(pickID, "rend"); err != nil {
 		t.Fatal(err)
 	}
-	eventually(t, "pick's renditions", func() bool { _, ok := h.Surface(pickID).Element(opt); return ok })
-	if err := h.Click(pickID, opt); err != nil {
+	eventually(t, "pick's renditions", func() bool {
+		s := h.Surface(list)
+		if s == nil || !s.Placed() {
+			return false
+		}
+		_, ok := s.Element(opt)
+		return ok
+	})
+	if err := h.Click(list, opt); err != nil {
 		t.Fatal(err)
 	}
 }

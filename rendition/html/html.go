@@ -55,6 +55,9 @@ type Rendition struct {
 	back bool
 	// list is the select whose list is open, nil when none is.
 	list *list
+	// pop is the open list's surface as the host has it (Popover); nil
+	// before its document is sent, and once the list closes.
+	pop *node
 }
 
 type keyboard struct {
@@ -92,9 +95,17 @@ func (r *Rendition) Update() []string {
 	}
 	main, layer := surface(r.C.V, r.theme, r.openList())
 	r.holdEdit(main)
-	out := r.diff(r.sent[0], main, nil)
-	out = r.diff(r.sent[1], layer, out)
+	out := diff(r.name, r.sent[0], main, nil)
+	out = diff(r.name, r.sent[1], layer, out)
 	r.sent = []*node{main, layer}
+	if r.pop != nil {
+		if n := popover(r.C.V, r.theme, r.openList()); n != nil {
+			out = diff(r.PopoverName(), r.pop, n, out)
+			r.pop = n
+		} else {
+			r.pop = nil
+		}
+	}
 	// The keyboard, when the controller moved it: autofocus, the focus
 	// and blur functions, the end of a Shortcut (Key).
 	// While a select's list is open, the program has the keyboard (Key):
@@ -123,6 +134,9 @@ func (r *Rendition) Update() []string {
 // and Update then makes the deltas. Events of other surfaces, and of kinds
 // it does not know, do nothing.
 func (r *Rendition) Event(ev hotty.Event) error {
+	if ev.Surface == r.PopoverName() {
+		return r.popoverEvent(ev)
+	}
 	if ev.Surface != r.name {
 		return nil
 	}
@@ -283,9 +297,68 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	return nil, false, nil
 }
 
-// ListOpen reports whether a select's list is open. The kit draws it in
-// the surface, under the select, so it needs the room there.
+// ListOpen reports whether a select's list is open. It shows in a surface
+// of its own (Popover).
 func (r *Rendition) ListOpen() bool { return r.openList() != nil }
+
+// Popover is where a select's open list goes, which the program shows as
+// a surface of its own, PopoverName, above the others: a list inside the
+// surface would be cut at its edges, and a surface grown to hold it would
+// hide what it covered. Under the select, which covers At in the
+// surface's cells when Placed (the click said where); Cols wide at least,
+// for its longest option; Rows high, a guess until the host's fit says.
+type Popover struct {
+	At     hotty.Area
+	Placed bool
+	Cols   int
+	Rows   int
+}
+
+// Popover is where the open list goes; ok is false while none is open.
+func (r *Rendition) Popover() (p Popover, ok bool) {
+	l := r.openList()
+	if l == nil {
+		return Popover{}, false
+	}
+	e := r.C.V.Find(l.id)
+	p = Popover{At: l.at, Placed: l.placed, Rows: 2*len(e.Options) + 1}
+	for _, o := range e.Options {
+		p.Cols = max(p.Cols, utf8.RuneCountInString(o.Label)+6)
+	}
+	if l.placed {
+		p.Cols = max(p.Cols, l.at.W)
+	}
+	return p, true
+}
+
+// PopoverName is the open list's surface's name: the surface's, and
+// "-list".
+func (r *Rendition) PopoverName() string { return r.name + "-list" }
+
+// PopoverDoc is the open list's document, for a=doc of PopoverName; Update
+// brings it up to date from then on, until the list closes.
+func (r *Rendition) PopoverDoc() string {
+	r.pop = popover(r.C.V, r.theme, r.openList())
+	if r.pop == nil {
+		r.pop = el("div", "id", popoverID, "class", "k-popover")
+	}
+	return head + r.pop.html()
+}
+
+// popoverEvent is what the user did in the open list's surface: a click
+// on an option picks it, as in the surface (clickSelect), and Update gives
+// the select the keyboard back, which the host has nowhere now. The host's
+// focus and blur there are not the view's.
+func (r *Rendition) popoverEvent(ev hotty.Event) error {
+	l := r.openList()
+	id, part, ok := viewID(ev.Target)
+	if ev.Kind != hotty.EventClick || l == nil || !ok || id != l.id || part == "" {
+		return nil
+	}
+	err := r.clickSelect(r.C.V.Find(id), part, ev)
+	r.host = keyboard{}
+	return err
+}
 
 // openList is the open select's list, while the select is still there,
 // a select, and has the keyboard, as in cells (profile §3.7); else none.

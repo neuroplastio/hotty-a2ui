@@ -32,6 +32,7 @@ const (
 	backdropID = "~d"
 	dialogID   = "~g"
 	dismissID  = "~c" // under an open list: a click there closes it
+	popoverID  = "~p" // an open list's own surface (Rendition.Popover)
 )
 
 func domID(id string) string {

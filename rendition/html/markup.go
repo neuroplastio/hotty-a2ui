@@ -53,10 +53,29 @@ func surface(v *view.Surface, th theme.Theme, l *list) (main, layer *node) {
 	}
 	if l != nil {
 		if e := v.Find(l.id); e != nil && isSelect(e) {
-			layer.add(el("div", "id", dismissID, "class", "k-dismiss", "data-on", "click"), m.listbox(e, l))
+			layer.add(el("div", "id", dismissID, "class", "k-dismiss", "data-on", "click"))
 		}
 	}
 	return main, layer
+}
+
+// popover is an open select's list as a document of its own, which the
+// program places over the rest (Rendition.Popover): out of the surface,
+// it is not cut at the surface's edges, and hides nothing it doesn't
+// cover. Nil when no list is open.
+func popover(v *view.Surface, th theme.Theme, l *list) *node {
+	if l == nil {
+		return nil
+	}
+	e := v.Find(l.id)
+	if e == nil || !isSelect(e) {
+		return nil
+	}
+	n := el("div", "id", popoverID, "class", "k-popover")
+	if css := themeCSS(th); css != "" {
+		n.set("style", css)
+	}
+	return n.add((&markup{list: l}).listbox(e, l))
 }
 
 // isSelect reports whether a Choice is a select: one value, its options
@@ -66,18 +85,11 @@ func isSelect(e *view.Element) bool { return e.Kind == view.Choice && len(e.Chil
 // listbox is a select's open list: a row an option, the picked one filled
 // and the one the keys are on (hi) marked, as focus would be. The options
 // are out of the Tab order: the program has the keyboard (Rendition.Key).
-// It is a cell under the select, as wide as it at least, and scrolls when
-// it would go past the surface's foot.
+// It fills its popover, and scrolls when the program makes that shorter.
 func (m *markup) listbox(e *view.Element, l *list) *node {
 	n := el("div", "id", partID(e.ID, partList), "class", "k-listbox", "role", "listbox")
 	if e.Label != "" {
 		n.set("aria-labelledby", partID(e.ID, partLabel))
-	}
-	if a := l.at; l.placed {
-		cells := func(k int) string { return "calc(" + strconv.Itoa(k) + " * var(--hotty-cell-w, 0.6em))" }
-		rows := func(k int) string { return "calc(" + strconv.Itoa(k) + " * var(--hotty-cell-h, 1.25em))" }
-		n.set("style", "position: absolute; left: "+cells(max(a.Col, 0))+"; top: "+rows(a.Row+a.H)+
-			"; min-width: "+cells(a.W)+"; max-height: calc(100vh - "+rows(a.Row+a.H)+" - 0.5rem)")
 	}
 	picked, _ := e.Value.([]string)
 	for i, o := range e.Options {

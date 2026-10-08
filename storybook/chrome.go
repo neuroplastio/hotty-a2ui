@@ -75,11 +75,10 @@ func newChrome(entries []entry, rends []renditionOption, rend string, th string,
 		themes = append(themes, map[string]any{"label": t.Name, "value": t.Name})
 	}
 	pick := []map[string]any{
-		obj("id", "root", "component", "Column", "children", []any{"view", "rule"}),
+		obj("id", "root", "component", "Column", "children", []any{"view"}),
 		obj("id", "view", "component", map[bool]string{true: "Row", false: "Column"}[native], "children", []any{"rend", "theme_p"}),
 		obj("id", "rend", "component", "ChoicePicker", "label", "Rendition", "value", obj("@path", "/rendition"), "options", opts, "weight", 1),
 		obj("id", "theme_p", "component", "ChoicePicker", "label", "Theme", "value", obj("@path", "/theme"), "options", themes, "weight", 1),
-		obj("id", "rule", "component", "Divider"),
 	}
 	nav := []map[string]any{obj("id", "root", "component", "Column", "children", []any{"list"})}
 	var list []any

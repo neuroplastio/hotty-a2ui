@@ -87,7 +87,7 @@ so that an error comes and goes as a text delta.
 | Button | `button type=button`, `disabled` while its checks fail. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing |
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
 | CheckBox | `input type=checkbox` |
-| ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a caret, whose list opens in the layer (below); else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9) |
+| ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a caret, whose list opens in a surface of its own (below); else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9) |
 | Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output` as wide as the widest value (§3.3's), in `ch`. The track is cut into notches with `data-on=drag`, one a step and one each end (at most 41; twenty steps without a `step`), so a drag sets the value of the notch under the pointer. Hosts draw `input type=range` unevenly (Blitz not at all) |
 | DateTimeInput | `input type=text` with the ISO 8601 value, its form as the placeholder, as in cells (§3.5). Hosts draw date and time inputs unevenly (Blitz not at all), and none takes an offset such as `Z` |
 | Tabs | a `tablist` of `button role=tab`, then the tab shown |
@@ -119,11 +119,16 @@ while the user edits the field: the host has it, and an echo arrives a key
 late. Once the field is left, the view's value goes out, and the
 program's wins (SPEC.md §6.2).
 
-**A select's list** is the rendition's, as cells' is (§3.8). It opens in
-the layer, a cell under the select by the `area` the click reports, as
-wide as the select at least (in the middle when the click has none), and
-scrolls past the surface's foot. Its options are `button role=option`,
-out of the Tab order, the picked one filled. While it is open the program
+**A select's list** is the rendition's, as cells' is (§3.8). It is a
+surface of its own, `<surface>-list`, which the program places above the
+others: under the select by the `area` the click reports, as wide as the
+select at least, and as high as the host's fit says, within the program's
+screen (above the select when there is more room there). Inside the
+select's surface, the list would be cut at its edges, and a surface grown
+to hold it would hide what it covers. In the select's surface, the layer
+takes a click anywhere else, which closes the list; so does the keyboard
+going to another surface. Its options are `button role=option`, out of
+the Tab order, the picked one filled. While it is open the program
 has the keyboard: the renderer sends `a=blur` and the controller keeps
 the select focused, since a host scrolls with the arrows a focused button
 leaves (SPEC.md §5.3), and they would never reach the program. The keys
