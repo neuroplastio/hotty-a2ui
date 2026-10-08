@@ -132,7 +132,11 @@
 .k-fit-none { object-fit: none; }
 .k-fit-scaleDown { object-fit: scale-down; }
 .k-v-icon { width: 1.5rem; height: 1.5rem; border-radius: 0.25rem; margin: 0; }
-.k-v-avatar { width: 2.5rem; height: 2.5rem; border-radius: 50%; margin: 0; }
+/* An avatar is mostly a face, high in its picture: a crop keeps the top. */
+.k-v-avatar { width: 2.5rem; height: 2.5rem; border-radius: 50%; margin: 0; object-position: 50% 15%; }
+/* A picture is filled until it comes, and stays so if it never does
+   (Blitz draws nothing for one that fails); an icon may be transparent. */
+.k-img:not(.k-v-icon) { background: var(--k-field); }
 .k-v-smallFeature { width: 4rem; height: 4rem; }
 .k-v-mediumFeature { width: 6rem; height: 6rem; }
 .k-v-largeFeature { width: 100%; height: 12rem; }

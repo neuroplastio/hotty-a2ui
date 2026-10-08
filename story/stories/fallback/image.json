@@ -26,8 +26,9 @@
           {
             "id": "avatar",
             "component": "Image",
-            "url": "https://example.com/ada.png",
+            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Ada_Lovelace_portrait.jpg/120px-Ada_Lovelace_portrait.jpg",
             "description": "Ada's portrait",
+            "fit": "cover",
             "variant": "avatar"
           },
           {
