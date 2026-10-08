@@ -1,8 +1,11 @@
 package cells
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 )
 
 // Role is what a cell's colour means: NEIO-4's role names, which a theme
@@ -122,13 +125,26 @@ func (f *Frame) Plain() string {
 // false (NO_COLOR) only the attributes are written. Trailing blank cells
 // with no attributes are left out; every row ends with its styles reset.
 func (f *Frame) ANSI(colors bool) string {
+	if colors {
+		return f.Themed(theme.Default)
+	}
+	return f.render(nil)
+}
+
+// Themed is the frame as terminal output in a theme's colours: each role
+// its theme colour (truecolor), a theme's background under every cell, so
+// nothing is left out at the end of a row. A role the theme leaves to the
+// terminal keeps the ANSI-16 floor.
+func (f *Frame) Themed(th theme.Theme) string { return f.render(&th) }
+
+func (f *Frame) render(th *theme.Theme) string {
 	var b strings.Builder
 	for y, row := range f.Cells {
 		if y > 0 {
 			b.WriteByte('\n')
 		}
 		end := len(row)
-		for end > 0 && row[end-1].Text == " " && row[end-1].Attr == 0 && row[end-1].Link == "" {
+		for end > 0 && row[end-1].Text == " " && row[end-1].Attr == 0 && row[end-1].Link == "" && (th == nil || th.Bg == "") {
 			end--
 		}
 		style, link := "", ""
@@ -136,7 +152,7 @@ func (f *Frame) ANSI(colors bool) string {
 			if c.Width == 0 && c.Text == "" {
 				continue
 			}
-			if s := c.style(colors); s != style {
+			if s := c.style(th); s != style {
 				if s == "" {
 					b.WriteString("\x1b[0m")
 				} else {
@@ -160,16 +176,37 @@ func (f *Frame) ANSI(colors bool) string {
 	return b.String()
 }
 
-// style is a cell's SGR parameters.
-func (c Cell) style(colors bool) string {
+// style is a cell's SGR parameters; th nil is no colour at all.
+func (c Cell) style(th *theme.Theme) string {
 	var p []string
 	for i, s := range sgr {
 		if c.Attr&(1<<i) != 0 {
 			p = append(p, s)
 		}
 	}
-	if colors && int(c.Role) < len(ansi16) && ansi16[c.Role] != "" {
+	if th == nil {
+		return strings.Join(p, ";")
+	}
+	if hex := th.Colour(roleNames[c.Role]); hex != "" {
+		p = append(p, truecolour("38", hex))
+	} else if int(c.Role) < len(ansi16) && ansi16[c.Role] != "" {
 		p = append(p, ansi16[c.Role])
 	}
+	if th.Bg != "" {
+		p = append(p, truecolour("48", th.Bg))
+	}
 	return strings.Join(p, ";")
+}
+
+// truecolour is the SGR for a "#rrggbb" colour, foreground (38) or
+// background (48); a colour that is not one is the terminal's.
+func truecolour(layer, hex string) string {
+	if len(hex) != 7 || hex[0] != '#' {
+		return ""
+	}
+	v, err := strconv.ParseUint(hex[1:], 16, 24)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%s;2;%d;%d;%d", layer, v>>16, v>>8&0xff, v&0xff)
 }
