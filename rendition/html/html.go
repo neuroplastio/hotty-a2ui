@@ -12,6 +12,7 @@ package html
 import (
 	_ "embed"
 	"slices"
+	"strconv"
 
 	"github.com/neuroplastio/hotty-go"
 
@@ -186,6 +187,14 @@ func (r *Rendition) Event(ev hotty.Event) error {
 	case hotty.EventSubmit:
 		if e.Kind == view.Form {
 			return c.Submit(id)
+		}
+	case hotty.EventDragStart, hotty.EventDrag, hotty.EventDragEnd:
+		if e.Kind == view.Slider && len(part) > 1 && part[0] == partNotch[0] {
+			i, err := strconv.Atoi(part[1:])
+			if err != nil {
+				return nil
+			}
+			return c.SetValue(id, notchValue(e, i))
 		}
 	}
 	return nil

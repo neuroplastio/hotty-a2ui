@@ -26,6 +26,7 @@ type Rendition struct {
 	hits  []hit
 	panel *hit           // the open Modal's panel, as last drawn
 	boxes map[string]box // the cells each element covers, as last drawn
+	drag  string         // the Slider a click on its track started dragging
 }
 
 // box is a rectangle of cells.
@@ -172,15 +173,46 @@ func (r *Rendition) Click(col, row int) error {
 		return nil
 	case e.Kind == view.Slider:
 		if t := h.track; t != nil && col >= t.x && col < t.x+t.n {
-			f := 0.0
-			if t.n > 1 {
-				f = float64(col-t.x) / float64(t.n-1)
-			}
-			return c.SetValue(e.ID, e.Min+f*(e.Max-e.Min))
+			r.drag = e.ID
+			return r.slideTo(e, t, col)
 		}
 		return nil
 	}
 	return c.Activate(e.ID)
+}
+
+// Drag is the pointer at a cell with the primary button still down,
+// after a Click: a Slider whose track the click landed on follows it,
+// clamped to the track's ends, as last drawn. After any other click it
+// does nothing.
+func (r *Rendition) Drag(col, row int) error {
+	if r.drag == "" {
+		return nil
+	}
+	e := r.c.V.Find(r.drag)
+	if e == nil || e.Kind != view.Slider {
+		r.drag = ""
+		return nil
+	}
+	for _, h := range r.hits {
+		if h.id == e.ID && h.track != nil {
+			return r.slideTo(e, h.track, col)
+		}
+	}
+	return nil
+}
+
+// Release is the primary button let go: a drag ends.
+func (r *Rendition) Release() { r.drag = "" }
+
+// slideTo sets a Slider to the value at a column of its track:
+// min + (max − min) × column / (track − 1), clamped and stepped.
+func (r *Rendition) slideTo(e *view.Element, t *trackArea, col int) error {
+	f := 0.0
+	if t.n > 1 {
+		f = float64(min(max(col-t.x, 0), t.n-1)) / float64(t.n-1)
+	}
+	return r.c.SetValue(e.ID, e.Min+f*(e.Max-e.Min))
 }
 
 // toggleList opens a select's list, its value highlighted, or closes it.

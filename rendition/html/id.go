@@ -10,8 +10,9 @@ import (
 // key has brackets and '#' ("row[/items/0]#2"). Letters, digits and
 // "-_./" stay; every other byte is "~" and two upper-case hex digits.
 // The parts an element draws besides itself (its label, its error) add
-// "~" and a lower-case letter, which no escape has; the rendition's own
-// elements are "~" and a letter alone, which no element's id is.
+// "~" and a lower-case letter, which no escape has, and a number for one
+// of several (a Slider's notches, "~k3"); the rendition's own elements
+// are "~" and a letter alone, which no element's id is.
 const (
 	partWrap   = "w" // the box around a control, its label and its error
 	partLabel  = "l"
@@ -20,6 +21,7 @@ const (
 	partRange  = "r" // a Slider's track, buttons and value
 	partLess   = "m" // a Slider's − button
 	partMore   = "n" // a Slider's + button
+	partNotch  = "k" // a Slider's notches, "k0" to "kN": where a drag sets it
 	partTabs   = "t" // a Tabs' bar
 	partPanel  = "p" // a Tabs' content
 	partSubmit = "s" // a Form's hidden submit button
@@ -55,10 +57,11 @@ func viewID(dom string) (id, part string, ok bool) {
 			continue
 		}
 		if i+1 < len(dom) && 'a' <= dom[i+1] && dom[i+1] <= 'z' {
-			if i+2 != len(dom) || b.Len() == 0 {
+			part := dom[i+1:]
+			if b.Len() == 0 || strings.Trim(part[1:], "0123456789") != "" {
 				return "", "", false
 			}
-			return b.String(), dom[i+1:], true
+			return b.String(), part, true
 		}
 		if i+2 >= len(dom) {
 			return "", "", false

@@ -271,3 +271,51 @@ func TestBox(t *testing.T) {
 		t.Error("a box for an id not drawn")
 	}
 }
+
+// TestSliderDrag: a click on a Slider's track sets it, and the pointer
+// moved with the button down drags it, clamped to the track's ends; after
+// the release, moves do nothing. Arrows step it.
+func TestSliderDrag(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	if err := p.ProcessJSON([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"v":0}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[{"id":"root","component":"Slider","min":0,"max":10,"value":{"@path":"/v"}}]}}]`)); err != nil {
+		t.Fatal(err)
+	}
+	s := p.Surface("s")
+	c := view.NewController(s)
+	r := New(c)
+	r.Draw(20)
+	b, ok := r.boxes["root"]
+	if !ok {
+		t.Fatal("no box for the slider")
+	}
+	var tr *trackArea
+	for _, h := range r.hits {
+		if h.id == "root" && h.track != nil {
+			tr = h.track
+		}
+	}
+	if tr == nil {
+		t.Fatal("no track drawn")
+	}
+	v := func() any { return s.Data.Value("/v") }
+	if err := r.Click(tr.x, b.y); err != nil || v() != 0.0 {
+		t.Fatalf("a click on the track's start: %v %v", err, v())
+	}
+	r.Draw(20)
+	if err := r.Drag(tr.x+tr.n-1, b.y); err != nil || v() != 10.0 {
+		t.Fatalf("dragged to the track's end: %v %v", err, v())
+	}
+	r.Draw(20)
+	if err := r.Drag(-5, b.y+3); err != nil || v() != 0.0 {
+		t.Fatalf("dragged past the start: %v %v", err, v())
+	}
+	r.Release()
+	if err := r.Drag(tr.x+tr.n-1, b.y); err != nil || v() != 0.0 {
+		t.Fatalf("a move after the release: %v %v", err, v())
+	}
+	keys(t, r, "ArrowRight", "ArrowRight")
+	if v() != 1.0 {
+		t.Errorf("two steps right of 0: %v", v())
+	}
+}

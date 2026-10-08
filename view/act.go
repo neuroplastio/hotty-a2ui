@@ -159,11 +159,7 @@ func (c *Controller) SetValue(id string, v any) error {
 		if math.IsNaN(f) {
 			return nil
 		}
-		f = math.Max(e.Min, math.Min(e.Max, f))
-		if e.Step > 0 {
-			f = e.Min + math.Round((f-e.Min)/e.Step)*e.Step
-		}
-		v = f
+		v = e.snap(f)
 	case Choice:
 		if s, ok := v.(string); ok {
 			v = []string{s}
@@ -364,4 +360,32 @@ func parentAndIndex(id string) (string, int) {
 	n, _ := strconv.Atoi(id[i+1:])
 	j := strings.LastIndex(id[:i], "/")
 	return id[:j], n
+}
+
+// snap clamps a Slider's value to its range and puts it on its steps: its
+// Step, else a hundredth of its range. It is rounded to as many decimals
+// as the step and Min have, so that 0.45 less two steps of 0.05 is 0.35,
+// not 0.35000000000000003.
+func (e *Element) snap(f float64) float64 {
+	f = math.Max(e.Min, math.Min(e.Max, f))
+	q := e.Step
+	if q <= 0 {
+		q = (e.Max - e.Min) / 100
+	}
+	if q <= 0 || math.IsInf(q, 0) {
+		return f
+	}
+	f = e.Min + math.Round((f-e.Min)/q)*q
+	p := math.Pow(10, float64(min(max(decimals(q), decimals(e.Min)), 12)))
+	return math.Max(e.Min, math.Min(e.Max, math.Round(f*p)/p))
+}
+
+// decimals is how many digits a number has after the point, written as
+// briefly as it reads back.
+func decimals(f float64) int {
+	s := strconv.FormatFloat(math.Abs(f), 'f', -1, 64)
+	if i := strings.IndexByte(s, '.'); i >= 0 {
+		return len(s) - i - 1
+	}
+	return 0
 }

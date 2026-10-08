@@ -190,8 +190,9 @@ func parseTimestamp(s string) (instant, wall time.Time, ok bool) {
 }
 
 // FormatDate formats an ISO 8601 timestamp with a TR35 pattern (the tokens
-// yyyy yy MMMM MMM MM M EEEE E dd d HH H hh h mm ss a; other text is
-// copied), in the wall-clock time it was written in. The pattern "ISO" is
+// yyyy yy MMMM MMM MM M EEEE E dd d HH H hh h mm ss a; text in single
+// quotes is copied as it is, ” is a quote, and other text is copied), in
+// the wall-clock time it was written in. The pattern "ISO" is
 // the UTC instant as JavaScript's toISOString writes it. A value that is
 // no timestamp is "".
 func FormatDate(value, pattern any) string {
@@ -222,48 +223,85 @@ func FormatDate(value, pattern any) string {
 		}
 		return strconv.Itoa(n)
 	}
-	return dateTokens.ReplaceAllStringFunc(format, func(tok string) string {
-		switch tok {
-		case "yyyy":
-			return strconv.Itoa(t.Year())
-		case "yy":
-			return pad(t.Year() % 100)
-		case "MMMM":
-			return t.Month().String()
-		case "MMM":
-			return t.Month().String()[:3]
-		case "MM":
-			return pad(int(t.Month()))
-		case "M":
-			return strconv.Itoa(int(t.Month()))
-		case "EEEE":
-			return t.Weekday().String()
-		case "E":
-			return t.Weekday().String()[:3]
-		case "dd":
-			return pad(t.Day())
-		case "d":
-			return strconv.Itoa(t.Day())
-		case "HH":
-			return pad(t.Hour())
-		case "H":
-			return strconv.Itoa(t.Hour())
-		case "hh":
-			return pad(h12)
-		case "h":
-			return strconv.Itoa(h12)
-		case "mm":
-			return pad(t.Minute())
-		case "ss":
-			return pad(t.Second())
-		case "a":
-			if t.Hour() < 12 {
-				return "AM"
+	return unquoted(format, func(part string) string {
+		return dateTokens.ReplaceAllStringFunc(part, func(tok string) string {
+			switch tok {
+			case "yyyy":
+				return strconv.Itoa(t.Year())
+			case "yy":
+				return pad(t.Year() % 100)
+			case "MMMM":
+				return t.Month().String()
+			case "MMM":
+				return t.Month().String()[:3]
+			case "MM":
+				return pad(int(t.Month()))
+			case "M":
+				return strconv.Itoa(int(t.Month()))
+			case "EEEE":
+				return t.Weekday().String()
+			case "E":
+				return t.Weekday().String()[:3]
+			case "dd":
+				return pad(t.Day())
+			case "d":
+				return strconv.Itoa(t.Day())
+			case "HH":
+				return pad(t.Hour())
+			case "H":
+				return strconv.Itoa(t.Hour())
+			case "hh":
+				return pad(h12)
+			case "h":
+				return strconv.Itoa(h12)
+			case "mm":
+				return pad(t.Minute())
+			case "ss":
+				return pad(t.Second())
+			case "a":
+				if t.Hour() < 12 {
+					return "AM"
+				}
+				return "PM"
 			}
-			return "PM"
-		}
-		return tok
+			return tok
+		})
 	})
+}
+
+// unquoted is a TR35 pattern with f applied to its text outside quotes:
+// quoted text is copied as it is, without its quotes, and ” is a quote,
+// in quotes or out. A quote left open runs to the end.
+func unquoted(pattern string, f func(string) string) string {
+	var b, run strings.Builder
+	quoted := false
+	for i := 0; i < len(pattern); i++ {
+		c := pattern[i]
+		if c != '\'' {
+			if quoted {
+				b.WriteByte(c)
+			} else {
+				run.WriteByte(c)
+			}
+			continue
+		}
+		if i+1 < len(pattern) && pattern[i+1] == '\'' {
+			if quoted {
+				b.WriteByte('\'')
+			} else {
+				run.WriteByte('\'')
+			}
+			i++
+			continue
+		}
+		if !quoted {
+			b.WriteString(f(run.String()))
+			run.Reset()
+		}
+		quoted = !quoted
+	}
+	b.WriteString(f(run.String()))
+	return b.String()
 }
 
 // Pluralize picks the form for a count: an explicit zero, one or two for

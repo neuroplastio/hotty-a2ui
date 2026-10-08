@@ -409,6 +409,38 @@ func TestSliderAndDate(t *testing.T) {
 		t.Errorf("the track says %q", v)
 	}
 	x.check(r)
+
+	// A drag: pressed on a notch near the start, moved across the track
+	// to its last notch, past its end (nothing under the pointer), and let
+	// go there. 0..10 has 21 notches (a twentieth, 0.5, each).
+	if err := x.h.DragStart(r.name, partID("v", "k2"), 4, 2); err != nil {
+		t.Fatal(err)
+	}
+	x.pump()
+	if got := r.C.S.Data.Value("/v"); got != 1.0 {
+		t.Errorf("pressed on notch 2: %v", got)
+	}
+	for _, step := range []struct {
+		id   string
+		want float64
+	}{{partID("v", "k9"), 4.5}, {partID("v", "k20"), 10}, {"", 10}} {
+		if err := x.h.DragMove(step.id, 30, 2); err != nil {
+			t.Fatal(err)
+		}
+		x.pump()
+		if got := r.C.S.Data.Value("/v"); got != step.want {
+			t.Errorf("dragged onto %q: %v, want %v", step.id, got, step.want)
+		}
+	}
+	if err := x.h.DragEnd("", 40, 2); err != nil {
+		t.Fatal(err)
+	}
+	x.pump()
+	if got := r.C.S.Data.Value("/v"); got != 10.0 {
+		t.Errorf("let go past the end: %v", got)
+	}
+	x.check(r)
+
 	if typ, _ := x.h.Surface(r.name).Attr("due", "type"); typ != "text" {
 		t.Errorf("the date is an input of type %q", typ)
 	}

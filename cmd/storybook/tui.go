@@ -124,6 +124,14 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Button == tea.MouseLeft {
 			m.click(msg.X, msg.Y)
 		}
+	case tea.MouseMotionMsg:
+		if p := m.focus; msg.Button == tea.MouseLeft && p != nil && p.kind == asCells {
+			m.fail(p.cells.Drag(msg.X-p.rect.X, msg.Y-p.rect.Y+p.top))
+		}
+	case tea.MouseReleaseMsg:
+		if p := m.focus; p != nil && p.kind == asCells {
+			p.cells.Release()
+		}
 	case streamMsg:
 		if err := m.stream.Feed(msg.raw); err != nil {
 			m.status = "✗ " + strings.TrimPrefix(err.Error(), "a2ui: ")

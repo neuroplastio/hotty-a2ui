@@ -100,3 +100,35 @@ func TestControls(t *testing.T) {
 		t.Error("Tab past the last element keeps the keyboard")
 	}
 }
+
+// TestSliderSnaps: a Slider's value is on its steps and reads as the step
+// does: two steps of 0.05 down from 0.45 is 0.35, not 0.35000000000000003.
+func TestSliderSnaps(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"v":0.45}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[{"id":"root","component":"Slider","min":0,"max":1,"value":{"@path":"/v"}}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	if err := p.Process(msgs); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surfaces()[0])
+	for _, step := range []struct {
+		n    int
+		want float64
+	}{{-1, 0.4}, {-1, 0.35}, {1, 0.4}, {-20, 0}, {3, 0.15}} {
+		if err := c.StepSlider("root", step.n, ""); err != nil {
+			t.Fatal(err)
+		}
+		if got := c.S.Data.Value("/v"); got != step.want {
+			t.Fatalf("after %+d steps: %v, want %v", step.n, got, step.want)
+		}
+	}
+	if err := c.SetValue("root", 0.123456); err != nil {
+		t.Fatal(err)
+	}
+	if got := c.S.Data.Value("/v"); got != 0.12 {
+		t.Errorf("a free value set to %v, want 0.12 (a hundredth of the range)", got)
+	}
+}

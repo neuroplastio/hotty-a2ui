@@ -70,13 +70,14 @@ with a template item's path in brackets (`row[/items/0]`). Letters,
 digits and `-_./` stay; every other byte is `~` and two upper-case hex
 digits, so an id is always a valid control value (SPEC.md §3.2). The
 parts a component draws besides itself add `~` and a lower-case letter:
-its wrapper `~w`, label `~l`, error `~e`. A control comes wrapped with its
+its wrapper `~w`, label `~l`, error `~e`, a Slider's notches `~k0`,
+`~k1`, …. A control comes wrapped with its
 label and its error, which is always there (empty while there is none),
 so that an error comes and goes as a text delta.
 
 | component | element |
 | --- | --- |
-| Row, Column, List | `div`, a flex row or column; List scrolls |
+| Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures); a Row of columns or cards shrinks them instead |
 | Card | `div`, a raised fill and a rounded border |
 | Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9) |
 | Image | `img`, sized by its variant in `rem` |
@@ -87,7 +88,7 @@ so that an error comes and goes as a text delta.
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | a `select` for one of several shown as checkboxes; else its options, as checkboxes (several) or chips (`button aria-pressed`) |
-| Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output`. Hosts draw `input type=range` unevenly (Blitz not at all) |
+| Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output`. The track is cut into notches with `data-on=drag`, one a step and one each end (at most 41; twenty steps without a `step`), so a drag sets the value of the notch under the pointer. Hosts draw `input type=range` unevenly (Blitz not at all) |
 | DateTimeInput | `input type=text` with the ISO 8601 value, its form as the placeholder, as in cells (§3.5). Hosts draw date and time inputs unevenly (Blitz not at all), and none takes an offset such as `Z` |
 | Tabs | a `tablist` of `button role=tab`, then the tab shown |
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
@@ -109,6 +110,7 @@ renderer's own state: a tab shown, a Modal opened.
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
 | `click` | a Button runs its action; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it |
 | `submit` | the Form submits (§6.2) |
+| `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it |
 | `focus`, `blur` | the surface has the keyboard, or not |
 
 Typing reaches the data model at every key (`data-on=input`), as A2UI's
@@ -387,8 +389,11 @@ In the output:
   - The list closes when the select loses the keyboard.
 - **A Slider** steps by Left and Down (back) and Right and Up, and goes
   to its ends by Home and End. A step is its `step`, else a twentieth of
-  its range, clamped. On a host the slider is a button, which leaves these
-  keys to the program (SPEC.md §10.2), so the renderer steps it there too.
+  its range, clamped. Whatever sets it, a Slider's value lands on a step
+  from its min (a hundredth of its range without a `step`), rounded to
+  the step's decimals: 0.45 less 0.05 is 0.4, not 0.39999999999999997.
+  On a host the slider is a button, which leaves these keys to the
+  program (SPEC.md §10.2), so the renderer steps it there too.
 - **Space and Enter** activate a Button, a Tabs' title, an option, a
   CheckBox, a Media link, or a Modal trigger that is not a control.
 - **Tab and Shift+Tab** move the keyboard in tree order.
@@ -405,7 +410,8 @@ In the output:
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
   - a click on a Slider's track sets the value at that column:
-    min + (max − min) × column / (track − 1), stepped and clamped;
+    min + (max − min) × column / (track − 1), stepped and clamped, and
+    the value follows the pointer while the button stays down;
   - anything else is activated.
 - **A disabled Button** does not take the keyboard, but the click still
   activates it, as in rendition/html; the controller decides what that

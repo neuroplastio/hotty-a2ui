@@ -137,6 +137,16 @@ func (m *markup) element(e *view.Element) *node {
 			el("span", "class", "k-fill", "style", "width: "+at),
 			el("span", "class", "k-knob", "style", "left: "+at),
 		)
+		// A drag reports the element under the pointer, not where on it
+		// (SPEC §9.1), so the track is cut into notches across it, each
+		// a drag target: pressing one sets its value, crossing them moves
+		// it.
+		k := notches(e)
+		w := 100 / float64(k)
+		for i := range k {
+			n.add(el("span", "id", partID(e.ID, partNotch+strconv.Itoa(i)), "class", "k-notch", "data-on", "drag",
+				"style", "left: "+strconv.FormatFloat(float64(i)*w, 'f', 3, 64)+"%; width: "+strconv.FormatFloat(w, 'f', 3, 64)+"%"))
+		}
 		less := el("button", "id", partID(e.ID, partLess), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "less").add(txt("−"))
 		more := el("button", "id", partID(e.ID, partMore), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "more").add(txt("+"))
 		out := el("output", "id", partID(e.ID, partOutput), "for", id).add(txt(a2ui.NumberString(f)))
@@ -282,7 +292,49 @@ func stackClass(e *view.Element) string {
 	if e.Scroll {
 		c = append(c, "k-scroll")
 	}
+	if e.Dir == view.Horizontal && wraps(e) {
+		c = append(c, "k-wrap")
+	}
 	return strings.Join(c, " ")
+}
+
+// wraps: a Row wraps, as a page's inline content does, rather than cut
+// what it cannot fit, when it holds a form field (squeezed, its value
+// would be cut) or holds only inline things: texts, icons, buttons, small
+// pictures. A Row of columns or cards shrinks them instead.
+func wraps(e *view.Element) bool {
+	field, inline := false, true
+	for _, k := range e.Children {
+		switch k.Kind {
+		case view.TextField, view.DateTime, view.Slider:
+			field = true
+		case view.Choice:
+			field = field || len(k.Children) == 0
+		case view.Text, view.Icon, view.Button, view.Media, view.Placeholder:
+		case view.Image:
+			inline = inline && (k.Variant == "icon" || k.Variant == "avatar")
+		default:
+			inline = false
+		}
+	}
+	return field || inline && len(e.Children) > 1
+}
+
+// notches is how many a Slider's track is cut into: one for each of its
+// steps and its two ends, at most 41 (a twentieth of the range when it
+// has no step).
+func notches(e *view.Element) int {
+	steps := 20.0
+	if q := e.SliderStep(); q > 0 {
+		steps = math.Round((e.Max - e.Min) / q)
+	}
+	return int(math.Min(math.Max(steps, 1), 40)) + 1
+}
+
+// notchValue is the value a Slider's notch sets.
+func notchValue(e *view.Element, i int) float64 {
+	k := notches(e)
+	return e.Min + float64(min(max(i, 0), k-1))/float64(k-1)*(e.Max-e.Min)
 }
 
 func boolString(b bool) string {

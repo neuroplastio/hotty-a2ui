@@ -48,6 +48,11 @@ func TestFormatDate(t *testing.T) {
 		{"2026-09-04T23:30:00-05:00", "ISO", "2026-09-05T04:30:00.000Z"},
 		{"2026-02-30", "yyyy", ""},
 		{"nope", "yyyy", ""},
+		// Quoted text is copied; '' is a quote, in quotes or out.
+		{"2025-07-15T19:00:00Z", "EEEE, MMMM d, yyyy 'at' h:mm a", "Tuesday, July 15, 2025 at 7:00 PM"},
+		{"2025-07-15T19:00:00Z", "h 'o''clock' a", "7 o'clock PM"},
+		{"2025-07-15T19:00:00Z", "''yy", "'25"},
+		{"2025-07-15T19:00:00Z", "'open", "open"},
 	} {
 		if got := FormatDate(c.v, c.f); got != c.want {
 			t.Errorf("FormatDate(%q, %q) = %q, want %q", c.v, c.f, got, c.want)
