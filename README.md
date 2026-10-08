@@ -24,7 +24,8 @@ private, and nothing in it is published.
 | [`rendition/theme/`](rendition/theme) | the themes both renditions paint with: colours by role, and on a host the shapes |
 | [`vectors/`](vectors) | keys and focus, one set of vectors run against the cells rendition and against the HTML one on a host |
 | [`story/`](story) | the stories (A2UI's basic examples, the hotty catalog's, the fallbacks) and a story as it runs |
-| [`cmd/storybook/`](cmd/storybook) | the storybook: every story in the rendition picked, live, with its actions, data model and messages; or what an agent streams |
+| [`storybook/`](storybook) | the storybook: every story in the rendition picked, live, with its actions, data model and messages; or what an agent streams. A program shows it in a part of its screen, over its own HOTTY session (hotty-demo's storybook app) |
+| [`cmd/storybook/`](cmd/storybook) | the storybook on the whole screen, as plain text in a pipe, or a story's HTML |
 | [`third_party/a2ui/`](third_party/a2ui) | A2UI at one commit ([`REV`](third_party/a2ui/REV)): the v1.0 schemas, the basic catalog and its examples, the conformance suites |
 
 ## The storybook

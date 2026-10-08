@@ -13,11 +13,18 @@ import (
 	"github.com/neuroplastio/hotty-go/hottytest"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/storybook"
 )
 
-// storybook runs the interactive storybook on a test host until the test
+// The storybook's own surfaces, as the host has them.
+const (
+	navID   = "nav"
+	panelID = "panel"
+)
+
+// runBook runs the interactive storybook on a test host until the test
 // ends, and returns what the renderer sent the agent so far.
-func storybook(t *testing.T, h *hottytest.Host, first string, stream bool) func() []a2ui.Outbound {
+func runBook(t *testing.T, h *hottytest.Host, first string, stream bool) func() []a2ui.Outbound {
 	sent, _ := storybookProgram(t, h, first, stream)
 	return sent
 }
@@ -26,11 +33,11 @@ func storybookProgram(t *testing.T, h *hottytest.Host, first string, stream bool
 	t.Helper()
 	var mu sync.Mutex
 	var sent []a2ui.Outbound
-	m := newModel(first, stream, "a test", func(o a2ui.Outbound) {
+	m := newModel(storybook.Options{First: first, Stream: stream, Source: "a test", Out: func(o a2ui.Outbound) {
 		mu.Lock()
 		defer mu.Unlock()
 		sent = append(sent, o)
-	})
+	}})
 	p := tea.NewProgram(m, tea.WithInput(h), tea.WithOutput(m.s.Watch(h)), tea.WithWindowSize(120, 40),
 		tea.WithoutSignalHandler(), tea.WithEnvironment([]string{"TERM=xterm-256color"}))
 	m.s.Attach(p.Send)
@@ -68,7 +75,7 @@ func eventually(t *testing.T, what string, cond func() bool) {
 // Enter reach the agent as the Form's action, and the panel lists it.
 func TestOnHost(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))
-	sent := storybook(t, h, "hotty/form", false)
+	sent := runBook(t, h, "hotty/form", false)
 	eventually(t, "nav, the story and panel on the host", func() bool {
 		return h.Surface(navID) != nil && h.Surface(panelID) != nil && h.Surface("s1-0-h") != nil
 	})
@@ -117,7 +124,7 @@ func TestOnHost(t *testing.T) {
 // everything in cells, and the keyboard goes from pane to pane by Tab.
 func TestInCells(t *testing.T) {
 	h := hottytest.New(t, hottytest.Text(), hottytest.Size(120, 40))
-	sent := storybook(t, h, "hotty/shortcut-press", false)
+	sent := runBook(t, h, "hotty/shortcut-press", false)
 	eventually(t, "the story in cells", func() bool { return strings.Contains(h.Screen(), "A note") })
 	screen := h.Screen()
 	for _, want := range []string{"HOTTY kit storybook", "Rendition", "Actions"} {
@@ -159,7 +166,7 @@ func itoa(n int) string { return strconv.Itoa(n) }
 // in it; then in cells alone, the surface leaves the host.
 func TestRenditionSwitch(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))
-	storybook(t, h, "hotty/form", false)
+	runBook(t, h, "hotty/form", false)
 	eventually(t, "the story on the host", func() bool { return h.Surface("s1-0-h") != nil })
 	if err := h.Fill("s1-0-h", "name", "Ada Lovelace"); err != nil {
 		t.Fatal(err)
@@ -181,7 +188,7 @@ func TestRenditionSwitch(t *testing.T) {
 // gives it up, and what is typed shows on the host as well.
 func TestSideInput(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))
-	storybook(t, h, "hotty/form", false)
+	runBook(t, h, "hotty/form", false)
 	eventually(t, "the story on the host", func() bool { return h.Surface("s1-0-h") != nil && h.Surface(navID) != nil })
 	pickRendition(t, h, 3)
 	eventually(t, "the cells beside the surface", func() bool { return lineOf(h.Screen(), "Name") >= 0 })

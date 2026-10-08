@@ -34,6 +34,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/rendition/text"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/story"
+	"github.com/neuroplastio/hotty-a2ui/storybook"
 )
 
 func main() {
@@ -152,9 +153,7 @@ func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Th
 	if source == "-" {
 		source = "stdin"
 	}
-	m := newModel(first, in != nil, source, out)
-	m.want = rend
-	m.theme = th
+	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th})
 	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)))
 	m.s.Attach(p.Send)
 	if in != nil {

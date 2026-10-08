@@ -74,10 +74,13 @@ func (r *Rendition) SetTheme(th theme.Theme) { r.theme = th }
 func (r *Rendition) Name() string { return r.name }
 
 // Doc is the whole document of the view as it is now, for a=doc; the host
-// has it from then on.
+// has it from then on. A document sent again (the host lost the surface,
+// or the program deleted it off screen) has no focus, so the next Update
+// gives the host the keyboard again if the view has it.
 func (r *Rendition) Doc() string {
 	main, layer := surface(r.C.V, r.theme, r.openList())
 	r.sent = []*node{main, layer}
+	r.host = keyboard{}
 	return head + main.html() + layer.html()
 }
 

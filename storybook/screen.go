@@ -1,4 +1,4 @@
-package main
+package storybook
 
 import (
 	"github.com/clipperhouse/uax29/v2/graphemes"
