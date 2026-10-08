@@ -2,6 +2,7 @@ package html
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"strings"
@@ -402,6 +403,105 @@ func TestListRows(t *testing.T) {
 			t.Errorf("%s's class is %q, want %q", id, got, want)
 		}
 	}
+}
+
+// TestSelect: a select is a button, and a click opens its list in the
+// layer with the picked option highlighted. While it is open the program
+// has the keyboard: a host would scroll with the arrows (SPEC §5.3). The
+// arrows and letters move the highlight, Enter picks it, Escape closes
+// the list without picking, and a click picks an option or, outside the
+// list, closes it; the select has the keyboard again. Closed, the arrows
+// and letters pick.
+func TestSelect(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"size":["m"]}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["size"]},
+ {"id":"size","component":"ChoicePicker","label":"Size","value":{"@path":"/size"},
+  "options":[{"label":"Small","value":"s"},{"label":"Medium","value":"m"},{"label":"Large","value":"l"}]}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	open := func() bool { _, ok := s.Element(partID("size", partList)); return ok }
+	hi := func() string { v, _ := s.Attr(partID("size", partList), "aria-activedescendant"); return v }
+	size := func() string {
+		v, _ := r.C.S.Data.Value("/size").([]any)
+		if len(v) != 1 {
+			return fmt.Sprint(v)
+		}
+		return fmt.Sprint(v[0])
+	}
+	key := func(k string) {
+		t.Helper()
+		_, ok, err := r.Key(k)
+		must(t, err)
+		if !ok {
+			t.Fatalf("%s: not taken", k)
+		}
+		x.send(r.Update()...)
+		x.pump()
+	}
+	closed := func(when string) {
+		t.Helper()
+		if open() || s.Focused() != "size" {
+			t.Errorf("%s: open %v, the keyboard on %q", when, open(), s.Focused())
+		}
+	}
+
+	must(t, x.h.Click(r.name, "size"))
+	x.pump()
+	if !open() || hi() != partID("size", partOption+"1") {
+		t.Fatalf("a click: open %v, highlight %q", open(), hi())
+	}
+	if s.Focused() != "" || !r.C.St.Keyboard {
+		t.Errorf("open, the host's keyboard is on %q, the controller's %v", s.Focused(), r.C.St.Keyboard)
+	}
+	key("ArrowDown")
+	if got, want := hi(), partID("size", partOption+"2"); got != want {
+		t.Errorf("ArrowDown: highlight %q, want %q", got, want)
+	}
+	key("s")
+	key("Enter")
+	if size() != "s" {
+		t.Errorf("s and Enter picked %v", size())
+	}
+	closed("after Enter")
+	x.check(r)
+
+	key("ArrowDown")
+	if size() != "m" {
+		t.Errorf("ArrowDown on the closed select picked %v", size())
+	}
+	key("l")
+	if size() != "l" {
+		t.Errorf("l on the closed select picked %v", size())
+	}
+
+	must(t, x.h.Click(r.name, "size"))
+	x.pump()
+	key("Home")
+	key("Escape")
+	closed("after Escape")
+	if size() != "l" {
+		t.Errorf("Escape picked %v", size())
+	}
+	must(t, x.h.Click(r.name, "size"))
+	x.pump()
+	must(t, x.h.Click(r.name, partID("size", partOption+"1")))
+	x.pump()
+	if size() != "m" {
+		t.Errorf("a click on Medium picked %v", size())
+	}
+	closed("after a click on an option")
+	must(t, x.h.Click(r.name, "size"))
+	x.pump()
+	must(t, x.h.Click(r.name, dismissID))
+	x.pump()
+	closed("after a click outside")
+	x.check(r)
 }
 
 // TestSliderAndDate: a Slider is a track the host can draw, stepped by

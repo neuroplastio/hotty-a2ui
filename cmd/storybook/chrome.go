@@ -48,17 +48,17 @@ type chrome struct {
 	// entries are nav's stories; cur is the one shown.
 	entries []entry
 	cur     string
-	rends   []renditionOption
 }
 
 type renditionOption struct{ value, label string }
 
-// newChrome makes nav and panel. nav is two pickers, each a line that
-// opens its chips in a Modal, over the stories in their groups: a List of
-// Buttons, which the kit draws as a menu's rows. The story shown is the
-// row whose Button is not borderless (showing).
-func newChrome(entries []entry, rends []renditionOption, rend string, th string) *chrome {
-	ch := &chrome{run: story.NewRun(), sent: map[string]string{}, entries: entries, rends: rends}
+// newChrome makes nav and panel. nav is two selects, the rendition and
+// the theme, over the stories in their groups: a List of Buttons, which
+// the kit draws as a menu's rows. The story shown is the row whose Button
+// is not borderless (showing). The selects are side by side on a host
+// (native), one over the other in cells, whose Row does not wrap.
+func newChrome(entries []entry, rends []renditionOption, rend string, th string, native bool) *chrome {
+	ch := &chrome{run: story.NewRun(), sent: map[string]string{}, entries: entries}
 	ch.run.Out = func(o a2ui.Outbound) {
 		if o.Action != nil {
 			ch.acts = append(ch.acts, o.Action)
@@ -73,11 +73,12 @@ func newChrome(entries []entry, rends []renditionOption, rend string, th string)
 		themes = append(themes, map[string]any{"label": t.Name, "value": t.Name})
 	}
 	nav := []map[string]any{
-		obj("id", "root", "component", "Column", "children", []any{"rend_row", "theme_p_row", "rule", "list"}),
+		obj("id", "root", "component", "Column", "children", []any{"view", "rule", "list"}),
+		obj("id", "view", "component", map[bool]string{true: "Row", false: "Column"}[native], "children", []any{"rend", "theme_p"}),
+		obj("id", "rend", "component", "ChoicePicker", "label", "Rendition", "value", obj("@path", "/rendition"), "options", opts, "weight", 1),
+		obj("id", "theme_p", "component", "ChoicePicker", "label", "Theme", "value", obj("@path", "/theme"), "options", themes, "weight", 1),
 		obj("id", "rule", "component", "Divider"),
 	}
-	nav = append(nav, picker("rend", "Rendition", "/rendition", opts)...)
-	nav = append(nav, picker("theme_p", "Theme", "/theme", themes)...)
 	var list []any
 	group := "-"
 	for i, e := range entries {
@@ -92,7 +93,7 @@ func newChrome(entries []entry, rends []renditionOption, rend string, th string)
 	}
 	nav = append(nav, obj("id", "list", "component", "List", "children", list))
 	ch.feed(
-		create(navID, map[string]any{"rendition": []any{rend}, "theme": []any{th}, "shown": map[string]any{}}),
+		create(navID, map[string]any{"rendition": []any{rend}, "theme": []any{th}}),
 		components(navID, nav...),
 		create(panelID, map[string]any{"head": "", "actions": "", "data": "", "messages": ""}),
 		components(panelID,
@@ -109,21 +110,6 @@ func newChrome(entries []entry, rends []renditionOption, rend string, th string)
 		),
 	)
 	return ch
-}
-
-// picker is a ChoicePicker's chips in a Modal, opened by a line that
-// names it and says what is picked (/shown, which shown sets).
-func picker(id, label, path string, opts []any) []map[string]any {
-	return []map[string]any{
-		obj("id", id+"_row", "component", "Row", "justify", "spaceBetween", "align", "center", "children", []any{id + "_l", id + "_m"}),
-		obj("id", id+"_l", "component", "Text", "variant", "caption", "text", label),
-		obj("id", id+"_m", "component", "Modal", "trigger", id+"_b", "content", id),
-		obj("id", id+"_b", "component", "Button", "variant", "borderless", "child", id+"_bt",
-			"action", obj("event", obj("name", "pick", "context", obj("picker", label)))),
-		obj("id", id+"_bt", "component", "Text", "text", obj("@path", "/shown"+path)),
-		obj("id", id, "component", "ChoicePicker", "label", label, "displayStyle", "chips",
-			"value", obj("@path", path), "options", opts),
-	}
 }
 
 func itemID(i int) string { return "story_" + strconv.Itoa(i) }
@@ -185,18 +171,6 @@ func (ch *chrome) rendition() string {
 		return s
 	}
 	return ""
-}
-
-// shown says on nav's pickers' lines what they have picked.
-func (ch *chrome) shown() {
-	rend := ch.rendition()
-	for _, o := range ch.rends {
-		if o.value == rend {
-			rend = o.label
-		}
-	}
-	ch.set(navID, "/shown/rendition", rend+" ▾")
-	ch.set(navID, "/shown/theme", ch.theme()+" ▾")
 }
 
 // showing marks the story shown in nav, its row's Button not borderless,

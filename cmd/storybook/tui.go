@@ -173,7 +173,7 @@ func (m *model) ready(mode hottytea.Mode) {
 		}
 	}
 	m.list = entries(m.stream != nil)
-	m.ch = newChrome(m.list, opts, m.rend, m.theme.Name)
+	m.ch = newChrome(m.list, opts, m.rend, m.theme.Name, mode == hottytea.Native)
 	first := m.first
 	if first == "" {
 		first = m.list[0].name
@@ -236,7 +236,6 @@ func (m *model) settle() {
 			m.focus = nil
 		}
 	}
-	m.ch.shown()
 	if m.focus != nil && !m.focus.s.C.St.Keyboard {
 		m.focus = nil
 	}

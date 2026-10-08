@@ -206,6 +206,12 @@
   cursor: pointer;
 }
 .k-chip[aria-pressed=true] { background: var(--k-accent); color: var(--k-on-accent); border-color: var(--k-accent); }
+/* A select is a field-like button with its value and a caret; its list
+   opens in the layer, under it (markup.go listbox). */
+.k-select { display: flex; align-items: center; column-gap: var(--k-2); text-align: start; cursor: pointer; }
+.k-select > .k-value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.k-none { color: var(--k-muted); }
+.k-caret { color: var(--k-muted); font-size: 0.875em; }
 .k-check, .k-opt { display: flex; align-items: center; column-gap: var(--k-2); }
 .k-check input, .k-opt input { width: 1.125rem; height: 1.125rem; margin: 0; accent-color: var(--k-focus); }
 .k-check > .k-label, .k-opt { font-size: 1rem; font-weight: 400; color: inherit; }
@@ -319,3 +325,26 @@ textarea.k-input { min-height: 5.5rem; }
   --k-field: color-mix(in srgb, var(--k-fg) 13%, var(--k-bg));
   --k-tonal: color-mix(in srgb, var(--k-fg) 17%, var(--k-bg));
 }
+
+/* A select's open list: a menu under the select. Under it, the layer
+   takes a click anywhere else, which closes it. */
+.k-dismiss { position: absolute; inset: 0; }
+.k-listbox {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.125rem;
+  box-sizing: border-box;
+  min-width: 10rem;
+  max-width: calc(100vw - 1rem);
+  overflow: auto;
+  padding: var(--k-1);
+  background: var(--k-surface);
+  border: 1px solid var(--k-line);
+  border-radius: var(--k-r-card);
+  box-shadow: 0 0.5rem 1.5rem color-mix(in srgb, black 35%, transparent);
+  --k-tonal: color-mix(in srgb, var(--k-fg) 17%, var(--k-bg));
+}
+.k-listbox > .k-item { margin: 0; }
+.k-option[aria-selected=true] { background: var(--k-tonal); font-weight: 600; }
+.k-option.k-hi { outline: 1px solid var(--k-focus); outline-offset: -1px; }

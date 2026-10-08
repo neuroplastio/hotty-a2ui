@@ -25,10 +25,13 @@ const (
 	partTabs   = "t" // a Tabs' bar
 	partPanel  = "p" // a Tabs' content
 	partSubmit = "s" // a Form's hidden submit button
+	partList   = "x" // a select's open list
+	partOption = "o" // a select's options in its list, "o0" to "oN"
 	surfaceID  = "~s"
-	layerID    = "~o" // the overlay an open Modal shows its content in
+	layerID    = "~o" // the overlay an open Modal or list shows in
 	backdropID = "~d"
 	dialogID   = "~g"
+	dismissID  = "~c" // under an open list: a click there closes it
 )
 
 func domID(id string) string {

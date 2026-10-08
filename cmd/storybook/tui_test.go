@@ -234,15 +234,13 @@ func TestStream(t *testing.T) {
 	})
 }
 
-// pickRendition picks nav's ith rendition: its line opens the chips.
+// pickRendition picks nav's ith rendition: the select opens its list.
 func pickRendition(t *testing.T, h *hottytest.Host, i int) {
 	t.Helper()
-	opt := "rend/option/" + strconv.Itoa(i)
-	eventually(t, "nav", func() bool { _, ok := h.Surface(navID).Element("rend_b"); return ok })
-	if _, ok := h.Surface(navID).Element(opt); !ok {
-		if err := h.Click(navID, "rend_b"); err != nil {
-			t.Fatal(err)
-		}
+	opt := "rend~o" + strconv.Itoa(i)
+	eventually(t, "nav", func() bool { _, ok := h.Surface(navID).Element("rend"); return ok })
+	if err := h.Click(navID, "rend"); err != nil {
+		t.Fatal(err)
 	}
 	eventually(t, "nav's renditions", func() bool { _, ok := h.Surface(navID).Element(opt); return ok })
 	if err := h.Click(navID, opt); err != nil {

@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/neuroplastio/hotty-go"
+
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/view"
@@ -18,12 +20,24 @@ type markup struct {
 	// forms is how many forms enclose the element: HTML cannot nest them,
 	// so an inner Form is a group, and Enter submits the outer one.
 	forms int
+	// list is the select whose list is open, if one is.
+	list *list
+}
+
+// list is an open select's list: the rendition's, as cells' is (profile
+// §3.8). It goes in the layer, under the select where a click said the
+// select is (SPEC §9), else in the middle; hi is the option focused.
+type list struct {
+	id     string
+	at     hotty.Area
+	placed bool
+	hi     int
 }
 
 // surface is the surface's two top elements: the view, and the layer an
 // open Modal's content shows in.
-func surface(v *view.Surface, th theme.Theme) (main, layer *node) {
-	var m markup
+func surface(v *view.Surface, th theme.Theme, l *list) (main, layer *node) {
+	m := markup{list: l}
 	main = el("div", "id", surfaceID, "class", "k-surface").add(m.element(v.Root))
 	layer = el("div", "id", layerID, "class", "k-layer")
 	if css := themeCSS(th); css != "" {
@@ -37,7 +51,45 @@ func surface(v *view.Surface, th theme.Theme) (main, layer *node) {
 			el("div", "id", dialogID, "class", "k-dialog", "role", "dialog", "aria-modal", "true").add(m.element(v.Overlay)),
 		)
 	}
+	if l != nil {
+		if e := v.Find(l.id); e != nil && isSelect(e) {
+			layer.add(el("div", "id", dismissID, "class", "k-dismiss", "data-on", "click"), m.listbox(e, l))
+		}
+	}
 	return main, layer
+}
+
+// isSelect reports whether a Choice is a select: one value, its options
+// in a list (the checkbox display).
+func isSelect(e *view.Element) bool { return e.Kind == view.Choice && len(e.Children) == 0 }
+
+// listbox is a select's open list: a row an option, the picked one filled
+// and the one the keys are on (hi) marked, as focus would be. The options
+// are out of the Tab order: the program has the keyboard (Rendition.Key).
+// It is a cell under the select, as wide as it at least, and scrolls when
+// it would go past the surface's foot.
+func (m *markup) listbox(e *view.Element, l *list) *node {
+	n := el("div", "id", partID(e.ID, partList), "class", "k-listbox", "role", "listbox")
+	if e.Label != "" {
+		n.set("aria-labelledby", partID(e.ID, partLabel))
+	}
+	if a := l.at; l.placed {
+		cells := func(k int) string { return "calc(" + strconv.Itoa(k) + " * var(--hotty-cell-w, 0.6em))" }
+		rows := func(k int) string { return "calc(" + strconv.Itoa(k) + " * var(--hotty-cell-h, 1.25em))" }
+		n.set("style", "position: absolute; left: "+cells(max(a.Col, 0))+"; top: "+rows(a.Row+a.H)+
+			"; min-width: "+cells(a.W)+"; max-height: calc(100vh - "+rows(a.Row+a.H)+" - 0.5rem)")
+	}
+	picked, _ := e.Value.([]string)
+	for i, o := range e.Options {
+		class := "k-item k-btn k-borderless k-option"
+		if i == l.hi {
+			class += " k-hi"
+			n.set("aria-activedescendant", partID(e.ID, partOption+strconv.Itoa(i)))
+		}
+		n.add(el("button", "id", partID(e.ID, partOption+strconv.Itoa(i)), "type", "button", "class", class, "tabindex", "-1",
+			"role", "option", "aria-selected", boolString(contains(picked, o.Value))).add(texts(o.Label)...))
+	}
+	return n
 }
 
 func (m *markup) all(es []*view.Element) []*node {
@@ -157,14 +209,25 @@ func (m *markup) element(e *view.Element) *node {
 	case view.Choice:
 		picked, _ := e.Value.([]string)
 		if len(e.Children) == 0 {
-			n = el("select", "id", id, "class", "k-input")
-			if len(picked) == 0 {
-				// Nothing is picked yet: a select shows its first option,
-				// which the user could then not pick.
-				n.add(el("option", "value", "", "disabled", "", "selected", "").add(txt("…")))
-			}
+			// A select is a button with the picked option's label; its
+			// list opens in the layer (listbox). Hosts draw select unevenly
+			// (Blitz not at all), and the list is the program's to place
+			// (SPEC §9).
+			value := el("span", "class", "k-value")
 			for _, o := range e.Options {
-				n.add(el("option", "value", o.Value).flag("selected", contains(picked, o.Value)).add(txt(o.Label)))
+				if contains(picked, o.Value) {
+					value.add(texts(o.Label)...)
+					break
+				}
+			}
+			if len(value.kids) == 0 {
+				value.set("class", "k-value k-none").add(txt("…"))
+			}
+			open := m.list != nil && m.list.id == e.ID
+			n = el("button", "id", id, "type", "button", "class", "k-input k-select", "aria-haspopup", "listbox",
+				"aria-expanded", boolString(open)).add(value, el("span", "class", "k-caret", "aria-hidden", "true").add(txt("▾")))
+			if open {
+				n.set("aria-controls", partID(e.ID, partList))
 			}
 			outer = m.field(e, "k-field", label(e), n)
 			break
