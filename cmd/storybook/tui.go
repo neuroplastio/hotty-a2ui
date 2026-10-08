@@ -69,7 +69,7 @@ type model struct {
 	theme  theme.Theme // the colours the cells and the kit paint with
 
 	ch     *chrome
-	list   [][2]string
+	list   []entry
 	first  string // the story to open first
 	cur    string
 	run    *story.Run
@@ -176,7 +176,7 @@ func (m *model) ready(mode hottytea.Mode) {
 	m.ch = newChrome(m.list, opts, m.rend, m.theme.Name)
 	first := m.first
 	if first == "" {
-		first = m.list[0][0]
+		first = m.list[0].name
 	}
 	m.open(first)
 }
@@ -210,7 +210,7 @@ func (m *model) open(name string) {
 	m.cur = name
 	m.gen++
 	m.seq = map[*a2ui.Surface]int{}
-	m.ch.showing(m.list, name, head)
+	m.ch.showing(name, head)
 }
 
 // settle does what the last message left to do: the storybook's own
@@ -236,6 +236,7 @@ func (m *model) settle() {
 			m.focus = nil
 		}
 	}
+	m.ch.shown()
 	if m.focus != nil && !m.focus.s.C.St.Keyboard {
 		m.focus = nil
 	}

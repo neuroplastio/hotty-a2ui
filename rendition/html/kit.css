@@ -171,6 +171,23 @@
 .k-col > :is(.k-btn, .k-trigger) { align-self: flex-start; }
 .k-a-center > :is(.k-btn, .k-trigger) { align-self: center; }
 .k-a-end > :is(.k-btn, .k-trigger) { align-self: flex-end; }
+/* A Button that is an item of a List is a row of it, as a menu's are: as
+   wide as the list, its label at the start. Its variant only fills it, so
+   picking a row or focusing one moves nothing. */
+.k-item.k-btn {
+  align-self: stretch;
+  justify-content: flex-start;
+  min-height: 2rem;
+  padding: 0.25rem var(--k-3);
+  font-weight: 500;
+  text-align: start;
+}
+.k-item.k-borderless { background: transparent; }
+.k-item:not(.k-borderless) { font-weight: 600; }
+.k-item:focus-visible { outline: 1px solid var(--k-focus); outline-offset: -1px; }
+/* Rows sit close, as a menu's do; a text between them heads a group. */
+.k-item + .k-item { margin-top: calc(0.125rem - var(--k-2)); }
+.k-item + .k-text { margin-top: var(--k-2); }
 .k-trigger { background: none; border: 0; padding: 0; color: inherit; text-align: start; cursor: pointer; }
 
 .k-options { display: flex; flex-wrap: wrap; gap: var(--k-2); }
@@ -295,4 +312,10 @@ textarea.k-input { min-height: 5.5rem; }
   border: 1px solid var(--k-line);
   border-radius: 1rem;
   padding: var(--k-5);
+}
+/* The dialog is a tone above the surface; what fills a field or a chip
+   goes a tone above it. */
+.k-dialog {
+  --k-field: color-mix(in srgb, var(--k-fg) 13%, var(--k-bg));
+  --k-tonal: color-mix(in srgb, var(--k-fg) 17%, var(--k-bg));
 }

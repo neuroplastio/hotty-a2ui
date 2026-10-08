@@ -36,8 +36,14 @@ func init() {
 				Children: b.Children(n.Props["children"])}
 		},
 		"List": func(b *Builder, n *a2ui.Node) *Element {
-			return &Element{Kind: Stack, Dir: Axis(b.Enum(n, "direction", "vertical")), Justify: "start", Align: b.Enum(n, "align", "stretch"),
+			e := &Element{Kind: Stack, Dir: Axis(b.Enum(n, "direction", "vertical")), Justify: "start", Align: b.Enum(n, "align", "stretch"),
 				Scroll: true, Children: b.Children(n.Props["children"])}
+			for _, c := range e.Children {
+				if c != nil && c.Kind == Button && e.Dir != Horizontal {
+					c.Item = true
+				}
+			}
+			return e
 		},
 		"Card": func(b *Builder, n *a2ui.Node) *Element {
 			return &Element{Kind: Card, Children: b.Children(n.Props["child"])}

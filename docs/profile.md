@@ -84,7 +84,7 @@ so that an error comes and goes as a text delta.
 | Icon | `span` with a colour emoji where one says the name plainly, else the glyph cells draw |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
-| Button | `button type=button`, `disabled` while its checks fail |
+| Button | `button type=button`, `disabled` while its checks fail. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing |
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | a `select` for one of several shown as checkboxes; else its options, as checkboxes (several) or chips (`button aria-pressed`) |
@@ -187,7 +187,7 @@ Natural widths:
 | element | natural width |
 | --- | --- |
 | Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0 |
-| Button | the label + 4 (`[ ` and ` ]`); borderless, the label |
+| Button | the label + 4 (`[ ` and ` ]`); borderless, the label; a List's, the label + 2 |
 | TextField, DateTime | the label's width, at least 20 (an HTML input's size) |
 | CheckBox | 3 for the box, plus 1 and the label when it has one |
 | a select | `label: `, the widest option's label, ` ▸` |
@@ -267,7 +267,7 @@ How the containers lay their children out:
 | Icon | its glyph (`view.IconGlyph`, width 1; `◇` for an unknown name) |
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
 | Divider, Card, Tabs | §3.3 |
-| Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. |
+| Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. A vertical List's Button is its row: ` label `, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
 | TextField, DateTime | a label line in `muted`, then the value on a row underlined across the box (§3.5), then the error |
 | CheckBox | `[x] label` or `[ ] label`, then the error |
 | a select (one value, `checkbox` display) | `label: value ▸`: the label in `muted`, then the picked option's label, or `…` in `muted` when none is picked. While its list is open (§3.7), the options follow one a row: `  ● label` for the picked one and `  ○ label` for the others. Then the error. |

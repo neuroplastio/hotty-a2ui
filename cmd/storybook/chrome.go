@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -14,17 +16,26 @@ import (
 
 // The storybook's own surfaces are A2UI too, rendered by the kit like the
 // stories (NEIO-11's Q6, leaning to the kit): the storybook is their
-// agent. nav lists the stories and picks the rendition; panel shows the
-// story's actions, data model and messages.
+// agent. nav lists the stories and picks the rendition and the theme;
+// panel shows the story's actions, data model and messages.
 const (
 	navID   = "nav"
 	panelID = "panel"
 	// streamName is the stream's entry among the stories.
 	streamName = "stream"
-	// indent stands where the current story's ▸ goes: spaces that
-	// Markdown keeps.
-	indent = "\u00a0\u00a0"
 )
+
+// entry is a story in nav: its handle, its title, and the group it is
+// listed under.
+type entry struct{ name, label, group string }
+
+// groupTitles head nav's groups.
+var groupTitles = map[string]string{
+	"":             "Live",
+	story.Basic:    "A2UI basic catalog",
+	story.Hotty:    "HOTTY catalog",
+	story.Fallback: "Fallbacks",
+}
 
 // chrome is the storybook as the agent of its own surfaces.
 type chrome struct {
@@ -34,20 +45,24 @@ type chrome struct {
 	acts []*a2ui.ActionMessage
 	// sent are the values last set by path, so only changes go out.
 	sent map[string]string
+	// entries are nav's stories; cur is the one shown.
+	entries []entry
+	cur     string
+	rends   []renditionOption
 }
 
 type renditionOption struct{ value, label string }
 
-func newChrome(entries [][2]string, rends []renditionOption, rend string, th string) *chrome {
-	ch := &chrome{run: story.NewRun(), sent: map[string]string{}}
+// newChrome makes nav and panel. nav is two pickers, each a line that
+// opens its chips in a Modal, over the stories in their groups: a List of
+// Buttons, which the kit draws as a menu's rows. The story shown is the
+// row whose Button is not borderless (showing).
+func newChrome(entries []entry, rends []renditionOption, rend string, th string) *chrome {
+	ch := &chrome{run: story.NewRun(), sent: map[string]string{}, entries: entries, rends: rends}
 	ch.run.Out = func(o a2ui.Outbound) {
 		if o.Action != nil {
 			ch.acts = append(ch.acts, o.Action)
 		}
-	}
-	var items []any
-	for _, e := range entries {
-		items = append(items, map[string]any{"name": e[0], "label": indent + e[1]})
 	}
 	var opts []any
 	for _, r := range rends {
@@ -57,20 +72,28 @@ func newChrome(entries [][2]string, rends []renditionOption, rend string, th str
 	for _, t := range theme.All {
 		themes = append(themes, map[string]any{"label": t.Name, "value": t.Name})
 	}
+	nav := []map[string]any{
+		obj("id", "root", "component", "Column", "children", []any{"rend_row", "theme_p_row", "rule", "list"}),
+		obj("id", "rule", "component", "Divider"),
+	}
+	nav = append(nav, picker("rend", "Rendition", "/rendition", opts)...)
+	nav = append(nav, picker("theme_p", "Theme", "/theme", themes)...)
+	var list []any
+	group := "-"
+	for i, e := range entries {
+		if e.group != group {
+			group = e.group
+			id := "group_" + cmp.Or(group, "live")
+			list = append(list, id)
+			nav = append(nav, obj("id", id, "component", "Text", "variant", "caption", "text", groupTitles[group]))
+		}
+		list = append(list, itemID(i))
+		nav = append(nav, ch.item(i, false), obj("id", itemID(i)+"_t", "component", "Text", "text", e.label))
+	}
+	nav = append(nav, obj("id", "list", "component", "List", "children", list))
 	ch.feed(
-		create(navID, map[string]any{"rendition": []any{rend}, "theme": []any{th}, "stories": items}),
-		components(navID,
-			obj("id", "root", "component", "Column", "children", []any{"title", "rend", "theme_p", "list"}),
-			obj("id", "title", "component", "Text", "text", "**HOTTY kit** · stories"),
-			obj("id", "rend", "component", "ChoicePicker", "label", "Rendition", "displayStyle", "chips",
-				"value", obj("@path", "/rendition"), "options", opts),
-			obj("id", "theme_p", "component", "ChoicePicker", "label", "Theme", "displayStyle", "chips",
-				"value", obj("@path", "/theme"), "options", themes),
-			obj("id", "list", "component", "List", "children", obj("componentId", "item", "path", "/stories")),
-			obj("id", "item", "component", "Button", "variant", "borderless", "child", "item_t",
-				"action", obj("event", obj("name", "open", "context", obj("name", obj("@path", "name"))))),
-			obj("id", "item_t", "component", "Text", "text", obj("@path", "label")),
-		),
+		create(navID, map[string]any{"rendition": []any{rend}, "theme": []any{th}, "shown": map[string]any{}}),
+		components(navID, nav...),
 		create(panelID, map[string]any{"head": "", "actions": "", "data": "", "messages": ""}),
 		components(panelID,
 			obj("id", "root", "component", "Column", "children", []any{"head", "tabs"}),
@@ -86,6 +109,33 @@ func newChrome(entries [][2]string, rends []renditionOption, rend string, th str
 		),
 	)
 	return ch
+}
+
+// picker is a ChoicePicker's chips in a Modal, opened by a line that
+// names it and says what is picked (/shown, which shown sets).
+func picker(id, label, path string, opts []any) []map[string]any {
+	return []map[string]any{
+		obj("id", id+"_row", "component", "Row", "justify", "spaceBetween", "align", "center", "children", []any{id + "_l", id + "_m"}),
+		obj("id", id+"_l", "component", "Text", "variant", "caption", "text", label),
+		obj("id", id+"_m", "component", "Modal", "trigger", id+"_b", "content", id),
+		obj("id", id+"_b", "component", "Button", "variant", "borderless", "child", id+"_bt",
+			"action", obj("event", obj("name", "pick", "context", obj("picker", label)))),
+		obj("id", id+"_bt", "component", "Text", "text", obj("@path", "/shown"+path)),
+		obj("id", id, "component", "ChoicePicker", "label", label, "displayStyle", "chips",
+			"value", obj("@path", path), "options", opts),
+	}
+}
+
+func itemID(i int) string { return "story_" + strconv.Itoa(i) }
+
+// item is a story's row in nav: borderless, but for the story shown.
+func (ch *chrome) item(i int, shown bool) map[string]any {
+	variant := "borderless"
+	if shown {
+		variant = "default"
+	}
+	return obj("id", itemID(i), "component", "Button", "variant", variant, "child", itemID(i)+"_t",
+		"action", obj("event", obj("name", "open", "context", obj("name", ch.entries[i].name))))
 }
 
 func (ch *chrome) feed(msgs ...any) {
@@ -137,14 +187,32 @@ func (ch *chrome) rendition() string {
 	return ""
 }
 
-// showing marks the story shown in nav, and says what it is in panel.
-func (ch *chrome) showing(entries [][2]string, name, head string) {
-	for i, e := range entries {
-		mark := indent
-		if e[0] == name {
-			mark = "▸ "
+// shown says on nav's pickers' lines what they have picked.
+func (ch *chrome) shown() {
+	rend := ch.rendition()
+	for _, o := range ch.rends {
+		if o.value == rend {
+			rend = o.label
 		}
-		ch.set(navID, fmt.Sprintf("/stories/%d/label", i), mark+e[1])
+	}
+	ch.set(navID, "/shown/rendition", rend+" ▾")
+	ch.set(navID, "/shown/theme", ch.theme()+" ▾")
+}
+
+// showing marks the story shown in nav, its row's Button not borderless,
+// and says what it is in panel.
+func (ch *chrome) showing(name, head string) {
+	if name != ch.cur {
+		var rows []map[string]any
+		for i, e := range ch.entries {
+			if e.name == ch.cur || e.name == name {
+				rows = append(rows, ch.item(i, e.name == name))
+			}
+		}
+		ch.cur = name
+		if len(rows) > 0 {
+			ch.feed(components(navID, rows...))
+		}
 	}
 	ch.set(panelID, "/head", head)
 }
@@ -194,19 +262,15 @@ func orNone(s string, n int, none string) string {
 	return s
 }
 
-// entries are the storybook's list: its stories, and the stream first
-// when there is one.
-func entries(stream bool) [][2]string {
-	var out [][2]string
+// entries are the storybook's list: its stories by group, and the stream
+// first when there is one.
+func entries(stream bool) []entry {
+	var out []entry
 	if stream {
-		out = append(out, [2]string{streamName, "The stream"})
+		out = append(out, entry{streamName, "The stream", ""})
 	}
 	for _, st := range story.All() {
-		label := st.Title
-		if st.Group != story.Basic {
-			label = st.Group + " · " + label
-		}
-		out = append(out, [2]string{st.Name, label})
+		out = append(out, entry{st.Name, st.Title, st.Group})
 	}
 	return out
 }

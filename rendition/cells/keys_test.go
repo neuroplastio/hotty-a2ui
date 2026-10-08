@@ -319,3 +319,44 @@ func TestSliderDrag(t *testing.T) {
 		t.Errorf("two steps right of 0: %v", v())
 	}
 }
+
+// TestListRows: a List's Buttons are its rows, as wide as it, whatever
+// their variant; a click anywhere on a row presses its Button.
+func TestListRows(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	var acts []string
+	p.Send = func(o a2ui.Outbound) {
+		if o.Action != nil {
+			acts = append(acts, o.Action.Name)
+		}
+	}
+	if err := p.ProcessJSON([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"List","children":["a","b"]},
+	 {"id":"a","component":"Button","variant":"borderless","child":"at","action":{"event":{"name":"a"}}},
+	 {"id":"at","component":"Text","text":"One"},
+	 {"id":"b","component":"Button","child":"bt","action":{"event":{"name":"b"}}},
+	 {"id":"bt","component":"Text","text":"Two"}]}}]`)); err != nil {
+		t.Fatal(err)
+	}
+	r := New(view.NewController(p.Surface("s")))
+	f := r.Draw(12)
+	var rows []string
+	for l := range strings.Lines(f.Plain()) {
+		rows = append(rows, strings.TrimRight(l, " \n"))
+	}
+	if want := []string{" One", " Two"}; !slices.Equal(rows, want) {
+		t.Errorf("rows %q, want %q", rows, want)
+	}
+	for _, id := range []string{"a", "b"} {
+		if b := r.boxes[id]; b.w != 12 {
+			t.Errorf("%s's row is %d wide, want 12", id, b.w)
+		}
+	}
+	if err := r.Click(10, r.boxes["b"].y); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(acts, []string{"b"}) {
+		t.Errorf("a click at the row's end sent %v, want [b]", acts)
+	}
+}

@@ -379,6 +379,31 @@ func TestEmoji(t *testing.T) {
 	}
 }
 
+// TestListRows: a List's Buttons are its rows (k-item), whatever their
+// variant; a Row's are not.
+func TestListRows(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["list","row"]},
+ {"id":"list","component":"List","children":["a","b"]},
+ {"id":"row","component":"Row","children":["c"]},
+ {"id":"a","component":"Button","variant":"borderless","child":"t","action":{"event":{"name":"a"}}},
+ {"id":"b","component":"Button","child":"t","action":{"event":{"name":"b"}}},
+ {"id":"c","component":"Button","child":"t","action":{"event":{"name":"c"}}},
+ {"id":"t","component":"Text","text":"Go"}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	for id, want := range map[string]string{"a": "k-btn k-borderless k-item", "b": "k-btn k-default k-item", "c": "k-btn k-default"} {
+		if got, _ := s.Attr(id, "class"); got != want {
+			t.Errorf("%s's class is %q, want %q", id, got, want)
+		}
+	}
+}
+
 // TestSliderAndDate: a Slider is a track the host can draw, stepped by
 // its − and + buttons; a DateTime is a text field with its form as the
 // placeholder, which shows a value with an offset.

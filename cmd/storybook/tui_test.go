@@ -101,7 +101,7 @@ func TestOnHost(t *testing.T) {
 	})
 
 	// Another story, from nav: its surface replaces this one's.
-	if err := h.Click(navID, "item~5B/stories/0~5D"); err != nil {
+	if err := h.Click(navID, "story_0"); err != nil {
 		t.Fatal(err)
 	}
 	eventually(t, "the first story", func() bool {
@@ -164,17 +164,12 @@ func TestRenditionSwitch(t *testing.T) {
 	if err := h.Fill("s1-0-h", "name", "Ada Lovelace"); err != nil {
 		t.Fatal(err)
 	}
-	eventually(t, "nav's renditions", func() bool { _, ok := h.Surface(navID).Element("rend/option/3"); return ok })
-	if err := h.Click(navID, "rend/option/3"); err != nil {
-		t.Fatal(err)
-	}
+	pickRendition(t, h, 3)
 	eventually(t, "the cells beside the surface", func() bool { return strings.Contains(h.Screen(), "Ada Lovelace") })
 	if h.Surface("s1-0-h") == nil {
 		t.Fatal("side by side lost the surface")
 	}
-	if err := h.Click(navID, "rend/option/1"); err != nil {
-		t.Fatal(err)
-	}
+	pickRendition(t, h, 1)
 	eventually(t, "cells alone", func() bool { return h.Surface("s1-0-h") == nil })
 	if !strings.Contains(h.Screen(), "Ada Lovelace") {
 		t.Errorf("the cells lost the name:\n%s", h.Screen())
@@ -188,10 +183,7 @@ func TestSideInput(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))
 	storybook(t, h, "hotty/form", false)
 	eventually(t, "the story on the host", func() bool { return h.Surface("s1-0-h") != nil && h.Surface(navID) != nil })
-	eventually(t, "nav's renditions", func() bool { _, ok := h.Surface(navID).Element("rend/option/3"); return ok })
-	if err := h.Click(navID, "rend/option/3"); err != nil {
-		t.Fatal(err)
-	}
+	pickRendition(t, h, 3)
 	eventually(t, "the cells beside the surface", func() bool { return lineOf(h.Screen(), "Name") >= 0 })
 	// Take the keyboard on the host first: the cells must win it back.
 	if err := h.Fill("s1-0-h", "email", "ada@example.com"); err != nil {
@@ -240,4 +232,20 @@ func TestStream(t *testing.T) {
 		}
 		return false
 	})
+}
+
+// pickRendition picks nav's ith rendition: its line opens the chips.
+func pickRendition(t *testing.T, h *hottytest.Host, i int) {
+	t.Helper()
+	opt := "rend/option/" + strconv.Itoa(i)
+	eventually(t, "nav", func() bool { _, ok := h.Surface(navID).Element("rend_b"); return ok })
+	if _, ok := h.Surface(navID).Element(opt); !ok {
+		if err := h.Click(navID, "rend_b"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	eventually(t, "nav's renditions", func() bool { _, ok := h.Surface(navID).Element(opt); return ok })
+	if err := h.Click(navID, opt); err != nil {
+		t.Fatal(err)
+	}
 }

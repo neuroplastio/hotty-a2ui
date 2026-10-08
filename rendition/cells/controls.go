@@ -115,10 +115,13 @@ func fieldRows(e *view.Element) int {
 	return min(max(len(splitClusters(clusters(v))), 3), 8)
 }
 
-// buttonFace is a Button as drawn: "[ label ]", or the label alone when
-// borderless.
+// buttonFace is a Button as drawn: "[ label ]", the label alone when
+// borderless, and " label " as a List's item, whatever its variant.
 func buttonFace(e *view.Element, st style) []glyph {
 	label := line(buttonLabel(e), st)
+	if e.Item {
+		return concat(glyphs(" ", st), label, glyphs(" ", st))
+	}
 	if e.Variant == "borderless" {
 		return label
 	}

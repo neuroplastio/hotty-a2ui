@@ -2,6 +2,7 @@ package cells
 
 import (
 	"math"
+	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/view"
@@ -125,15 +126,19 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		case l.r.focused(e.ID):
 			st = style{role: Accent, attr: Reverse}
 		}
-		switch e.Variant {
-		case "primary":
-			st.attr |= Bold
-		case "borderless":
+		switch {
+		case e.Variant == "borderless" && !e.Item:
 			st.attr |= Underline
+		case e.Variant == "primary", e.Item && e.Variant != "borderless":
+			st.attr |= Bold
 		}
 		face := buttonFace(e, st)
 		if width(face) > w {
 			face = fitButton(e, st, w)
+		}
+		if e.Item {
+			// A row: its style (focus, say) goes across the List.
+			face = concat(face, glyphs(strings.Repeat(" ", max(w-width(face), 0)), st))
 		}
 		n := cv.write(x, y, w, face)
 		l.r.boxes[e.ID] = box{x, y, n, 1}
@@ -189,7 +194,7 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 // fitButton is a Button's face cut to w: the label loses columns first.
 func fitButton(e *view.Element, st style, w int) []glyph {
 	label := line(buttonLabel(e), st)
-	if e.Variant == "borderless" || w < 5 {
+	if e.Variant == "borderless" || e.Item || w < 5 {
 		return fit(buttonFace(e, st), w)
 	}
 	return concat(glyphs("[ ", st), fit(label, w-4), glyphs(" ]", st))

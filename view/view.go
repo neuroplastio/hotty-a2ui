@@ -140,6 +140,10 @@ type Element struct {
 	// Clickable: a Modal whose trigger has no control takes the keyboard
 	// and a click itself.
 	Clickable bool `json:"clickable,omitempty"`
+	// Item: a Button that is an item of a vertical List is a row of it, as
+	// a menu's are: as wide as the List, its variant marking the row (the
+	// one picked, say) rather than shaping it.
+	Item bool `json:"item,omitempty"`
 
 	// Placeholder: State is the node's (pending, unknown, cyclic).
 	State a2ui.NodeState `json:"state,omitempty"`

@@ -90,6 +90,9 @@ func (m *markup) element(e *view.Element) *node {
 		if len(e.Children) == 1 && e.Children[0].Kind == view.Icon {
 			class += " k-icon-btn"
 		}
+		if e.Item {
+			class += " k-item"
+		}
 		n = el("button", "id", id, "type", "button", "class", class).flag("disabled", e.Disabled).add(m.all(e.Children)...)
 	case view.TextField:
 		v, _ := e.Value.(string)
