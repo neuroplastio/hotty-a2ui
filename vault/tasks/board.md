@@ -74,6 +74,15 @@ As of 2026-10-09, from the hotty agent:
 
 ### Legs
 
+- [ ] **KIT-SEL** — The select keeps its arrows by binding them to
+  `program` on its button (`data-keys`, SPEC §10.2 "Keys for the program",
+  hotty 3c9b169; hotty-go 1dc9bea), instead of handing over with `a=blur`
+  and `a=focus`. That also fixes the closed select, whose arrows a
+  scrolling host takes. Decide Tab first: without the handover the kit
+  doesn't hear it. Either the list stays open until a pick, Escape, or a
+  click or keyboard loss elsewhere, or the handover stays just for Tab.
+  Hosts need hotty-blitz 33b2f9c or later (from the hotty agent,
+  2026-10-09).
 - [ ] **KIT-02h** — Progress: a smooth bar.
 - [ ] **KIT-03h** — Spinner: frames or a CSS animation.
 - [ ] **KIT-01h** — Table: a real table, a sticky header, hover, sorting by

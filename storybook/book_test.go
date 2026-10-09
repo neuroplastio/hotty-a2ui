@@ -127,6 +127,31 @@ func TestInAProgramInCells(t *testing.T) {
 	eventually(t, "the typing in the field", func() bool { return strings.Contains(h.Screen(), "hello") })
 }
 
+// TestNoSurfaceLeftBehind: a story's surfaces go when another story
+// opens, and when the rendition moves to cells: the host keeps only the
+// chrome's.
+func TestNoSurfaceLeftBehind(t *testing.T) {
+	h := hottytest.New(t, hottytest.Size(120, 40))
+	run(t, h, Options{First: "hotty/form", Prefix: "sb-"})
+	eventually(t, "the first story on the host", func() bool { return h.Surface("sb-s1-0-h") != nil })
+	if err := h.Click("sb-nav", "story_0"); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "the next story on the host", func() bool { return h.Surface("sb-s2-0-h") != nil })
+	if h.Surface("sb-s1-0-h") != nil {
+		t.Error("the first story's surface stayed after the next opened")
+	}
+	h.Type("\x1bOQ") // F2: the next rendition, cells
+	eventually(t, "only the chrome on the host", func() bool {
+		for _, s := range h.Surfaces() {
+			if !slices.Contains([]string{"sb-nav", "sb-pick", "sb-panel"}, s.Name()) {
+				return false
+			}
+		}
+		return true
+	})
+}
+
 // TestSpinnersMove: with the Book's Tick among its commands, a program's
 // cells move by themselves: a spinner's frame changes with no input.
 func TestSpinnersMove(t *testing.T) {

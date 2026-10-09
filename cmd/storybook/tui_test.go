@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 	"unicode/utf8"
@@ -264,4 +266,17 @@ func pickRendition(t *testing.T, h *hottytest.Host, i int) {
 	if err := h.Click(list, opt); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// TestSignalDeletesSurfaces: kill's TERM ends the storybook as Control+C
+// does, its surfaces deleted from the host first.
+func TestSignalDeletesSurfaces(t *testing.T) {
+	h := hottytest.New(t, hottytest.Size(120, 40))
+	_, p := storybookProgram(t, h, "hotty/form", false)
+	endOnSignal(p)
+	eventually(t, "the storybook on the host", func() bool { return h.Surface(navID) != nil && len(h.Surfaces()) > 3 })
+	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "no surface left", func() bool { return len(h.Surfaces()) == 0 })
 }

@@ -167,8 +167,9 @@ func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Th
 		source = "stdin"
 	}
 	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th})
-	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)))
+	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)), tea.WithoutSignalHandler())
 	m.s.Attach(p.Send)
+	endOnSignal(p)
 	if in != nil {
 		go readStream(in, p.Send)
 	}

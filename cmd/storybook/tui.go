@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/neuroplastio/hotty-go/hottytea"
@@ -14,7 +16,25 @@ import (
 type (
 	streamMsg struct{ raw json.RawMessage }
 	streamEnd struct{ err error }
+	// endSignal is a signal to end (endOnSignal).
+	endSignal struct{}
 )
+
+// endOnSignal ends the program on TERM (kill's), HUP (the terminal gone)
+// or INT (Control+C with no terminal to make it a key) as Control+C does:
+// its surfaces deleted first. Bubble Tea's own handling quits at once and
+// leaves them on the host, where they stay until something deletes them
+// (SPEC.md §5.4). A second signal ends the program as it would without
+// this.
+func endOnSignal(p *tea.Program) {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
+	go func() {
+		<-sig
+		signal.Stop(sig)
+		p.Send(endSignal{})
+	}()
+}
 
 // model is the interactive storybook: the Book on the whole screen.
 type model struct {
@@ -42,6 +62,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.b.Feed(msg.raw)
 	case streamEnd:
 		m.b.End(msg.err)
+	case endSignal:
+		return m, tea.Sequence(m.s.Close(), tea.Quit)
 	default:
 		if m.b.Update(msg, m.s) {
 			return m, tea.Sequence(m.s.Close(), tea.Quit)
