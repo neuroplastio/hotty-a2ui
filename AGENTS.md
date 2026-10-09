@@ -3,6 +3,8 @@
 This repository is the proof of concept of HOTTY's UI kit on A2UI (gov
 NEIO-11): an A2UI v1.0 core in Go, a HOTTY renderer and a storybook.
 
+- **The vault is where the work comes from.** `vault/README.md` maps it:
+  the roadmap, the board, feedback and questions.
 - **NEIO-11 is the brief.** Its exit criteria say when this is done. Its
   open questions are the maintainer's; don't settle them in code.
 - **Only A2UI's extension points.** Custom catalogs mixed component by
