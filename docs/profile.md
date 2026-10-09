@@ -95,6 +95,7 @@ so that an error comes and goes as a text delta.
 | HottyForm | `form` with a hidden submit button out of the Tab order, so Enter submits |
 | HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track sweeps across it with the clock (§3.4): the element's `--k-at` is where it starts, so that a tick is one attribute's delta |
 | HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h |
+| HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`. Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type and the item under the pointer are vault KIT-04h |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 
 **Updates are deltas.** The document goes once. After it, the renderer
@@ -111,7 +112,7 @@ renderer's own state: a tab shown, a Modal opened.
 | event | does |
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
-| `click` | a Button runs its action; a Table's row is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
+| `click` | a Button runs its action; a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
 | `submit` | the HottyForm submits (§6.2) |
 | `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it |
 | `focus`, `blur` | the surface has the keyboard, or not |
@@ -222,6 +223,7 @@ Natural widths:
 | HottyProgress | its label's width or 25 (a bar of 20 and ` 100%`), whichever is wider |
 | HottySpinner | its set's widest frame, plus 1 and the label when it has one |
 | HottyTable | its columns' widths, each a column's `width`, else its header's or its widest cell's, whichever is wider, plus 2 for each column (a column of padding each side) |
+| HottyList | 2 for the indent, plus its widest line: its title + 2, its status line, its empty text, `Filter: ` + 1 when it filters, each item's label and description |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -240,6 +242,7 @@ Minimums:
 - A HottyProgress's is its label's longest word, and at least 8: a bar of 3
   and the percentage.
 - A HottyTable's is its columns', each at most 3 wide, with their padding.
+- A HottyList's is its indent and 4.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -251,9 +254,9 @@ How the containers lay their children out:
   and the content of a Card or a tab.
   - Its children are stacked with no rows between them, except for one
     blank row between two controls (fields, Buttons that are not a
-    List's rows, HottyProgress, HottySpinner and HottyTable) when either
-    has a title row (§3.4; a HottyProgress's label is one, and a
-    HottyTable's header), or when one is a field and the other is not: huh's space between its fields, and bubbles'
+    List's rows, HottyProgress, HottySpinner, HottyTable and HottyList)
+    when either has a title row (§3.4; a HottyProgress's label is one, a
+    HottyTable's header, and a HottyList's status line), or when one is a field and the other is not: huh's space between its fields, and bubbles'
     before a form's button. A stack of CheckBoxes, of Buttons, or of
     HottySpinners stays tight. Through a Row, a Column or a HottyForm, the
     rule sees its first child (or, before it, its last).
@@ -314,6 +317,7 @@ How the containers lay their children out:
 | Slider | past the gutter, `label ━━━━●──── 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `●` at round((value − min) / (max − min) × (track − 1)), and after it the track is `─` in `border`. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
 | HottyProgress | its label on a row, when it has one, then the bar and the percentage on the next: ` 42%`, five columns (`%3.0f%%` after a space, half to even). The bar takes the columns before them, filled in eighths of a cell: `█` for each full cell, then one of `▏▎▍▌▋▊▉` for a cell part filled, blending from `info` into `accent` across the bar (§3.6), or `success` alone once full. The rest is `░` in `border`. Without a value, a segment of a quarter of the bar (at least one cell) is `█` in `info`, moving with the clock (below), and the percentage's columns are blank. When the bar would be shorter than 3, the percentage is dropped. |
 | HottyTable | a header row, bold; a rule of `─` in `border`; then a row for each row the body shows, a cell for each column: its text, padded a column each side, cut with `…` when wider than its column, at the start, the centre (rounded down) or the end as `align` says. The columns take their natural widths; while the table is too wide, a column at a time comes off the widest that is wider than 3 (the first of equals), and once none is, off the widest. The body shows `height` rows, or all of them (one, `No rows` in `muted`, when it has none): from the first it showed, moved as little as brings the selected row into view, never past the last (the view's `Top`, the same in both renditions). While it scrolls, the rule ends with ` 4–10 of 12 ` in `muted` and one more `─`. The selected row is reversed across the table, in `accent` while the table has the keyboard and in `muted` otherwise. |
+| HottyList | as bubbles' list with its default delegate, every line 2 columns in: its title, ` Title ` in `accent` reversed, and a blank row (neither without a title); its status line in `muted` and a blank row; then the items of the page that shows, each its label and, under it, its description in `muted` (one row an item, with no blank rows between, when none has a description; else two, a blank row between). The selected item's first two columns are `│ `: in `accent` with its label and description while the list has the keyboard, and in `muted` otherwise, its text plain. A label too wide is cut with `…`; its characters that matched the filter are underlined. With a `height`, a page shows that many items, from the page that holds the selected one, and the body keeps their rows on every page; after it, while the items take more than a page, a blank row and a dot for each page (`•`, the page shown's in `fg`, the others in `border`; `3/10` in `muted` when the dots do not fit), whose two rows stay while a filter leaves one page. The status line is `12 items` (`1 item`, `No items`); while a filter applies, `“query” 7 items`, or `Nothing matched`, then ` • 5 filtered`. While the filter is typed, `Filter: ` in `accent` and the text take the title's row, with the cursor after them. With no items, the empty text shows in `muted` in the body. |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
@@ -474,6 +478,18 @@ In the output:
   first. Enter acts on the selected row (§6.8). On a host the table is a
   focused box, which leaves every key to the program, so the renderer
   moves it there too, with the same rules (`view.Controller.TableKey`).
+- **A HottyList** takes keys as bubbles' list does
+  (`view.Controller.ListKey`, in both renditions): ArrowUp and ArrowDown
+  (k and j) move its selection an item; ArrowLeft and ArrowRight (h and l,
+  PageUp and PageDown) turn a page, to the same place on it, clamped to
+  its items, and not past the first page or the last; Home and End (g and
+  G) go to its first item and its last. With none selected, each selects
+  the first. Enter acts on the selected item, while it shows (§6.9). With
+  `filterable`, `/` starts the filter: then a character, Space among them,
+  adds to it, Backspace takes the last off, ArrowUp and ArrowDown still
+  move, Enter applies it (and drops it when it leaves nothing), and Escape
+  drops it. Escape also drops a filter that applies. Each change to the
+  filter selects the first item it leaves, as bubbles' does.
 - **Space and Enter** activate a Button, a Tabs' title, a chip, a Media
   link, or a Modal trigger that is not a control.
 - **A CheckBox, and an option shown as a box,** is a checkbox on a host,
@@ -494,7 +510,8 @@ In the output:
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
   - a click on a HottyTable's row selects it, and a click on its selected
-    row acts on it (§6.8); a click on its header only focuses it;
+    row acts on it (§6.8); a click on its header only focuses it; so too
+    a HottyList's items (§6.9), and its title and status line;
   - a click on a Slider's track sets the value at that column:
     min + (max − min) × column / (track − 1), stepped and clamped, and
     the value follows the pointer while the button stays down;
@@ -541,6 +558,10 @@ reference is `rendition/text`.
 - A HottyTable is its header and every row, whatever its `height`: the
   columns two spaces apart, each as wide as its widest cell and aligned as
   it says, after `> ` for the selected row and two spaces for the others.
+- A HottyList is its title, its status line, and every item its filter
+  leaves, whatever its `height`: its label, ` — ` and its description,
+  after `> ` for the selected item and two spaces for the others; its
+  empty text when it has no items.
 - Tabs are their titles, the one shown in brackets, then its content.
 - An error is `✗ message`, on the line after its control.
 - Image, Icon, Video, AudioPlayer and placeholders are as §7 has them.
@@ -711,6 +732,32 @@ a row is selected, then acted on: Enter, or a click on the selected row,
 runs `onActivate`, whose context reads the selection from where
 `selected` is bound. With no row selected it does nothing. `height`
 fixes the body's rows; the rest scroll under the header.
+
+### 6.9 HottyList
+
+Items to pick from, a label and a line of description each, one selected
+at a time, as bubbles' list with its default delegate: an optional
+`title` above, and a status line that counts them. `items` are objects
+with a `label`, an optional `description` and a `value`, literal or best
+bound to the data model, so that the agent changes them with
+`updateDataModel`. An item is identified by its `value`, as text, or by
+its index without one; `selected` (a DynamicString) is the selected
+item's, as a HottyTable's is (§6.8), and the page that shows follows it.
+Enter, or a click on the selected item, runs `onActivate`, whose context
+reads the selection from where `selected` is bound (vault a2ui-limits
+L2); with no item selected, or the selected one filtered out, it does
+nothing.
+
+`height` is the items a page shows; the rest go on pages, which the
+arrows left and right turn. With `filterable`, `/` starts a filter: the
+items narrow, as the user types, to those whose label holds its
+characters in order, ignoring case, ranked as bubbles' list ranks them
+(sahilm/fuzzy, MIT: matches at the start, after a separator, at a capital
+and next to each other first; fewer unmatched characters first). The
+filter is the renderer's state, not the data model's: the agent sees the
+selection, not the query. `emptyText` shows when there are no items
+(`No items.` by default). The help line bubbles draws under its list is
+vault KIT-08's key hints.
 
 ## 7. Fallbacks
 

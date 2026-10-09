@@ -219,6 +219,8 @@ func (m *markup) element(e *view.Element) *node {
 		}
 	case view.Table:
 		n = table(e)
+	case view.RichList:
+		n = richList(e)
 	case view.Divider:
 		if e.Dir == view.Vertical {
 			n = el("div", "id", id, "class", "k-vr", "role", "separator", "aria-orientation", "vertical")

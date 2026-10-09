@@ -388,3 +388,25 @@
     - expect: {focused: table, actions: [openCity], context: {city: Tokyo}}
     - key: Tab
     - expect: {focused: null}
+
+- name: A HottyList's keys move its selection and turn its pages; / types a filter, Enter applies it and acts, Escape drops it
+  story: hotty/list
+  steps:
+    - focus: things
+    - expect: {focused: things, data: {/selected: raspberry-pis}}
+    - key: ArrowDown
+    - expect: {data: {/selected: nutella}}
+    - key: ArrowRight
+    - expect: {data: {/selected: plantasia-the-album}}
+    - key: End
+    - expect: {data: {/selected: business-school}}
+    - key: Home
+    - expect: {data: {/selected: raspberry-pis}}
+    - type: /no
+    - expect: {focused: things, data: {/selected: noguchi-lamps}, actions: []}
+    - key: Enter
+    - expect: {data: {/selected: noguchi-lamps}, actions: []}
+    - key: Enter
+    - expect: {focused: things, actions: [openThing], context: {thing: noguchi-lamps}}
+    - key: Escape
+    - expect: {focused: things, data: {/selected: raspberry-pis}}

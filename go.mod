@@ -17,6 +17,7 @@ require (
 	github.com/neuroplastio/hotty-go/hottyedit v0.0.0-20261008213647-69317402c65e
 	github.com/neuroplastio/hotty-go/hottytea v0.0.0-20261008213647-69317402c65e
 	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261008213647-69317402c65e
+	github.com/sahilm/fuzzy v0.1.3
 	github.com/yuin/goldmark v1.8.6
 )
 

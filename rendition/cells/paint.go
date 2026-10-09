@@ -14,8 +14,8 @@ import (
 type hit struct {
 	x, y, w, h int
 	id         string
-	// opt is the option of an open select's row, or a Table's row; -1
-	// otherwise.
+	// opt is the option of an open select's row, a Table's row, or a
+	// HottyList's item; -1 otherwise.
 	opt int
 	// field is a text control's value area; track a Slider's.
 	field *fieldArea
@@ -176,6 +176,8 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		l.paintSpinner(cv, e, x, y, w)
 	case view.Table:
 		l.paintTable(cv, e, x, y, w)
+	case view.RichList:
+		l.paintList(cv, e, x, y, w)
 	default:
 		l.paintColumn(cv, shown(e.Children), "start", "stretch", x, y, w, h)
 	}

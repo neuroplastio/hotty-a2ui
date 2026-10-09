@@ -418,3 +418,34 @@ textarea.k-input { min-height: 5.5rem; }
 .k-table .k-sel { background: var(--k-tonal); }
 .k-table:focus .k-sel { background: color-mix(in srgb, var(--k-focus) 35%, var(--k-bg)); }
 .k-table-note { color: var(--k-muted); font-size: 0.875rem; padding: var(--k-1) var(--k-3); text-align: end; }
+
+/* HottyList: a baseline (phase 1), the page cells shows, as bubbles'
+   list lays it out: the title, the status line, the items, a label and a
+   description each, and a page's dots. The selected item has a bar at its
+   start, muted, and the focus colour while the list has the keyboard, as
+   a Table's selected row is tinted (cells' accent; --k-accent is the
+   strong colour of a primary button); its filter, while typed, has a
+   caret then. A paged list keeps its height while a filter leaves fewer
+   items, as in cells: hidden rows (k-rich-gap) stand in for them, and
+   for the dots. Two-line rows in proportional type and hover are
+   KIT-04h. The bar is 3px: a 1px straight edge drops out at a fractional
+   scale. */
+.k-rich { display: flex; flex-direction: column; align-self: stretch; outline: none; }
+.k-rich-title { font-weight: 600; padding: var(--k-1) var(--k-3); }
+.k-rich-filter { padding: var(--k-1) var(--k-3); display: flex; column-gap: 0.5ch; align-items: baseline; }
+.k-rich-prompt { color: var(--k-focus); }
+.k-caret { display: inline-block; width: 0.55ch; height: 1.1em; align-self: center; background: var(--k-fg); visibility: hidden; }
+.k-rich:focus .k-caret { visibility: visible; }
+.k-rich-status { color: var(--k-muted); font-size: 0.875rem; padding: 0 var(--k-3) var(--k-2); }
+.k-rich-item { padding: var(--k-1) var(--k-3); border-left: 3px solid transparent; cursor: pointer; }
+.k-rich-item + .k-rich-item { margin-top: var(--k-1); }
+.k-rich-desc { color: var(--k-muted); font-size: 0.875rem; }
+.k-rich-item.k-sel { border-left-color: var(--k-border); background: var(--k-tonal); }
+.k-rich:focus .k-rich-item.k-sel { border-left-color: var(--k-focus); }
+.k-rich:focus .k-rich-item.k-sel .k-rich-label, .k-rich:focus .k-rich-item.k-sel .k-rich-desc { color: var(--k-focus); }
+.k-rich-gap { visibility: hidden; }
+.k-match { text-decoration: underline; }
+.k-rich-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
+.k-rich-pages { padding: var(--k-2) var(--k-3) 0; letter-spacing: 0.2em; }
+.k-dot { color: var(--k-border); }
+.k-dot.k-on { color: var(--k-fg); }

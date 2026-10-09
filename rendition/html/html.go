@@ -239,10 +239,16 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		if isSelect(e) {
 			return r.clickSelect(e, part, ev)
 		}
-		if e.Kind == view.Table {
+		if e.Kind == view.Table || e.Kind == view.RichList {
+			// A row (a Table's) or an item (a HottyList's) is selected by a
+			// click, and acted on by another.
 			c.Focus(id)
 			r.host = keyboard{true, id}
-			if i, err := strconv.Atoi(strings.TrimPrefix(part, partRow)); err == nil && strings.HasPrefix(part, partRow) {
+			prefix := partRow
+			if e.Kind == view.RichList {
+				prefix = partItem
+			}
+			if i, err := strconv.Atoi(strings.TrimPrefix(part, prefix)); err == nil && strings.HasPrefix(part, prefix) {
 				if i == e.SelectedRow() {
 					return c.Activate(id)
 				}
@@ -331,6 +337,14 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	}
 	if l := r.openList(); l != nil {
 		if ok, err := r.listKey(l, key); ok {
+			return nil, true, err
+		}
+	}
+	// A focused HottyList is a box on the host too: it moves, turns pages
+	// and filters by the keys (view.Controller.ListKey). Its filter takes
+	// Escape before an open Modal does.
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.RichList {
+		if ok, err := c.ListKey(e.ID, key); ok {
 			return nil, true, err
 		}
 	}

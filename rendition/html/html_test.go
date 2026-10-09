@@ -847,3 +847,77 @@ func TestTableOnHost(t *testing.T) {
 		t.Errorf("c's row is not selected after ArrowDown")
 	}
 }
+
+// TestListOnHost: a HottyList is a focusable box holding its title, its
+// status line, a page of options and the page's dots. A click on an item
+// selects it, and a second acts on it. The program's keys move it, turn
+// its pages and type its filter, whose line takes the title's place; the
+// host follows by deltas.
+func TestListOnHost(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"sel":""}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyList","catalogId":"`+hottycat.ID+`","title":"Snacks","selected":{"@path":"/sel"},"filterable":true,"height":2,
+  "items":[{"label":"Nutella","description":"It's good on toast","value":"nutella"},{"label":"Bitter melon","value":"melon"},{"label":"Nuts","value":"nuts"}],
+  "onActivate":{"event":{"name":"eat","context":{"snack":{"@path":"/sel"}}}}}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	for _, want := range [][3]string{{"root", "tabindex", "0"}, {"root", "role", "listbox"}, {"root", "aria-label", "Snacks"}, {"root", "data-keys", listKeys}} {
+		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
+			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
+		}
+	}
+	item := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
+	if _, ok := s.Element(item(2)); ok {
+		t.Error("the third item is on a page of two")
+	}
+	if got := s.TextOf(partID("root", partStatus)); got != "3 items" {
+		t.Errorf("the status line reads %q", got)
+	}
+	if v, _ := s.Attr(partID("root", partDots), "aria-label"); v != "Page 1 of 2" {
+		t.Errorf("the dots say %q", v)
+	}
+	must(t, x.h.Click(r.name, item(1)))
+	x.pump()
+	if got := r.C.S.Data.Value("/sel"); got != "melon" || !r.C.St.Keyboard || r.C.St.Focus != "root" {
+		t.Fatalf("a click on Bitter melon: selected %v, keyboard %v on %q", got, r.C.St.Keyboard, r.C.St.Focus)
+	}
+	if v, _ := s.Attr(item(1), "aria-selected"); v != "true" {
+		t.Errorf("Bitter melon is not selected on the host")
+	}
+	must(t, x.h.Click(r.name, item(1)))
+	x.pump()
+	if len(x.actions) != 1 || x.actions[0].Name != "eat" || x.actions[0].Context["snack"] != "melon" {
+		t.Fatalf("a second click: %+v", x.actions)
+	}
+	key := func(k string) {
+		t.Helper()
+		if _, ok, err := r.Key(k); !ok || err != nil {
+			t.Fatalf("%s: %v %v", k, ok, err)
+		}
+		x.update(r)
+		x.check(r)
+	}
+	key("ArrowDown")
+	if _, ok := s.Element(item(0)); ok || r.C.S.Data.Value("/sel") != "nuts" {
+		t.Errorf("ArrowDown: the first page still shows, or %v is selected", r.C.S.Data.Value("/sel"))
+	}
+	key("/")
+	key("n")
+	key("u")
+	if got := s.TextOf(partID("root", partTitle)); got != "Filter:nu" {
+		t.Errorf("the filter line reads %q", got)
+	}
+	if got := s.TextOf(partID("root", partStatus)); got != "2 items • 1 filtered" {
+		t.Errorf("filtered, the status line reads %q", got)
+	}
+	if !strings.Contains(s.HTML(), `<span class="k-match">Nu</span>`) {
+		t.Errorf("the matched characters are not marked:\n%s", s.HTML())
+	}
+	key("Escape")
+	if got := s.TextOf(partID("root", partTitle)); got != "Snacks" {
+		t.Errorf("Escape left the title as %q", got)
+	}
+}

@@ -211,6 +211,8 @@ func (r *Rendition) Click(col, row int) error {
 		return nil
 	case e.Kind == view.Table:
 		return r.clickTable(e, h.opt)
+	case e.Kind == view.RichList:
+		return r.clickList(e, h.opt)
 	case e.Kind == view.Slider:
 		if t := h.track; t != nil && col >= t.x && col < t.x+t.n {
 			r.drag = e.ID

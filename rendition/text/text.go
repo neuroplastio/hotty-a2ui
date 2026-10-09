@@ -122,6 +122,8 @@ func element(e *view.Element) []string {
 		return []string{field(e.Label, "…")}
 	case view.Table:
 		return table(e)
+	case view.RichList:
+		return richList(e)
 	case view.Spinner:
 		if e.Active {
 			return []string{field(e.Label, "…")}
@@ -227,6 +229,34 @@ func table(e *view.Element) []string {
 	}
 	if len(e.Cells) == 0 {
 		out = append(out, "  No rows")
+	}
+	return out
+}
+
+// richList is a HottyList as text: its title, its status line, then
+// every item the filter leaves, its label and its description after a
+// dash, "> " marking the selected one; its empty text when it has none.
+func richList(e *view.Element) []string {
+	var out []string
+	if e.Label != "" {
+		out = append(out, e.Label)
+	}
+	out = append(out, e.ListStatus())
+	sel := e.SelectedRow()
+	for _, i := range e.Shown {
+		it := e.Items[i]
+		mark := "  "
+		if i == sel {
+			mark = "> "
+		}
+		s := mark + it.Label
+		if it.Description != "" {
+			s += " — " + it.Description
+		}
+		out = append(out, s)
+	}
+	if len(e.Items) == 0 {
+		out = append(out, "  "+e.Placeholder)
 	}
 	return out
 }

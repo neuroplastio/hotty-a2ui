@@ -29,6 +29,10 @@ const (
 	partOption = "o" // a select's options in its list, "o0" to "oN"
 	partRow    = "y" // a Table's rows, "y0" to "yN", by their index
 	partFrame  = "f" // a Spinner's frame
+	partTitle  = "h" // a HottyList's title, or its filter while typed
+	partStatus = "u" // a HottyList's status line
+	partItem   = "i" // a HottyList's items, "i0" to "iN", by their index
+	partDots   = "d" // a HottyList's page dots
 	surfaceID  = "~s"
 	layerID    = "~o" // the overlay an open Modal or list shows in
 	backdropID = "~d"

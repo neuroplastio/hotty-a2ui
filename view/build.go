@@ -26,13 +26,16 @@ type State struct {
 	// error shows once either is so.
 	Touched   map[string]bool
 	Submitted map[string]bool
-	// Scroll is the first row each Table with a height shows, by its id.
+	// Scroll is the first row each Table with a height shows, and the
+	// first item of the page each HottyList with a height shows, by id.
 	Scroll map[string]int
+	// Query is each HottyList's filter, by its id.
+	Query map[string]Query
 }
 
 // NewState is a surface's state before the user does anything.
 func NewState() *State {
-	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}}
+	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}, Query: map[string]Query{}}
 }
 
 // Mapper makes an element of a node, children included; nil when the

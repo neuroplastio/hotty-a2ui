@@ -1,0 +1,124 @@
+{
+  "name": "HottyList",
+  "description": "Bubbles' list example, My Fave Things: five items to a page, a dot for each page. The arrows, j and k move the selection, which is written to /selected; the left and right arrows, h and l turn pages; / filters the items by their labels as you type, best first, Enter applies it and Escape drops it. Enter, or a second click on the selected item, sends openThing with it.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "list",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "things": [
+            {
+              "label": "Raspberry Pi’s",
+              "description": "I have ’em all over my house",
+              "value": "raspberry-pis"
+            },
+            {
+              "label": "Nutella",
+              "description": "It's good on toast",
+              "value": "nutella"
+            },
+            {
+              "label": "Bitter melon",
+              "description": "It cools you down",
+              "value": "bitter-melon"
+            },
+            {
+              "label": "Nice socks",
+              "description": "And by that I mean socks without holes",
+              "value": "nice-socks"
+            },
+            {
+              "label": "Eight hours of sleep",
+              "description": "I had this once",
+              "value": "eight-hours-of-sleep"
+            },
+            {
+              "label": "Cats",
+              "description": "Usually",
+              "value": "cats"
+            },
+            {
+              "label": "Plantasia, the album",
+              "description": "My plants love it too",
+              "value": "plantasia-the-album"
+            },
+            {
+              "label": "Pour over coffee",
+              "description": "It takes forever to make though",
+              "value": "pour-over-coffee"
+            },
+            {
+              "label": "VR",
+              "description": "Virtual reality...what is there to say?",
+              "value": "vr"
+            },
+            {
+              "label": "Noguchi Lamps",
+              "description": "Such pleasing organic forms",
+              "value": "noguchi-lamps"
+            },
+            {
+              "label": "Linux",
+              "description": "Pretty much the best OS",
+              "value": "linux"
+            },
+            {
+              "label": "Business school",
+              "description": "Just kidding",
+              "value": "business-school"
+            }
+          ],
+          "selected": "raspberry-pis"
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "list",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "things",
+              "help"
+            ]
+          },
+          {
+            "id": "things",
+            "component": "HottyList",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "title": "My Fave Things",
+            "items": {
+              "@path": "/things"
+            },
+            "selected": {
+              "@path": "/selected"
+            },
+            "filterable": true,
+            "height": 5,
+            "onActivate": {
+              "event": {
+                "name": "openThing",
+                "context": {
+                  "thing": {
+                    "@path": "/selected"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "help",
+            "component": "Text",
+            "text": "↑ ↓ move · ← → page · / filter · Enter opens",
+            "variant": "caption"
+          }
+        ]
+      }
+    }
+  ]
+}

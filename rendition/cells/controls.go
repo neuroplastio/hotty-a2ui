@@ -36,7 +36,7 @@ func isField(e *view.Element) bool {
 
 // isControlElement reports whether an element is a control a Column may
 // set a blank row apart from (separator): a field, a Button that is not a
-// List's row, a Progress, a Spinner or a Table.
+// List's row, a Progress, a Spinner, a Table or a HottyList.
 func isControlElement(e *view.Element) bool {
 	if isField(e) {
 		return true
@@ -47,16 +47,16 @@ func isControlElement(e *view.Element) bool {
 	case e.Kind == view.Button:
 		return !e.Item
 	}
-	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Table
+	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Table || e.Kind == view.RichList
 }
 
 // hasTitle reports whether an element has a title row of its own: a text
-// field, a DateTime, a Choice or a Progress with a label, and a Table, its
-// header. A CheckBox's, a Slider's and a Spinner's labels are on their one
+// field, a DateTime, a Choice or a Progress with a label, a Table, its
+// header, and a HottyList, its status line. A CheckBox's, a Slider's and a Spinner's labels are on their one
 // row.
 func hasTitle(e *view.Element) bool {
 	switch e.Kind {
-	case view.Table:
+	case view.Table, view.RichList:
 		return true
 	case view.TextField, view.DateTime, view.Choice, view.Progress:
 		return e.Label != ""
@@ -148,6 +148,8 @@ func controlWidth(e *view.Element) int {
 		return n
 	case view.Table:
 		return tableWidth(columnWidths(e))
+	case view.RichList:
+		return listWidth(e)
 	case view.Image:
 		return Width(imageText(e))
 	case view.Icon:
@@ -181,6 +183,8 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 		}
 	case view.Table:
 		h = 2 + bodyRows(e)
+	case view.RichList:
+		h = listHeight(e)
 	case view.Choice:
 		switch {
 		case isSelect(e):

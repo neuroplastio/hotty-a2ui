@@ -69,6 +69,13 @@ const (
 	// row), Value (the selected row's id, a string; "" for none), Height
 	// (the body's rows, 0 for all of them) and Top (the first shown).
 	Table Kind = "table"
+	// RichList is items to pick from, a label and a description each
+	// (HottyList): Label (its title), Items, RowIDs (each item's id), Value
+	// (the selected item's id), Filter (whether it filters), Query, Shown
+	// (the items the query leaves, best first) and Matched, Height (the
+	// items a page shows, 0 for all of them), Top (the page's first, in
+	// Shown) and Placeholder (what shows when no item does).
+	RichList Kind = "richlist"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -169,6 +176,15 @@ type Element struct {
 	Height  int        `json:"height,omitempty"`
 	Top     int        `json:"top,omitempty"`
 
+	// RichList: its items; the query that filters them; the items it
+	// leaves, by index, best first; and where each of those matched it,
+	// the byte offsets of its label's matched characters (nil without a
+	// query). Its RowIDs, Height and Top are a Table's, Top in Shown.
+	Items   []Entry `json:"items,omitempty"`
+	Query   Query   `json:"query,omitzero"`
+	Shown   []int   `json:"shown,omitempty"`
+	Matched [][]int `json:"matched,omitempty"`
+
 	// Placeholder: State is the node's (pending, unknown, cyclic).
 	State a2ui.NodeState `json:"state,omitempty"`
 
@@ -214,7 +230,7 @@ func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList:
 		return true
 	case Choice:
 		return len(e.Children) == 0
@@ -351,7 +367,8 @@ func (e *Element) Fraction() (f float64, ok bool) {
 	return min(max(v/e.Max, 0), 1), true
 }
 
-// SelectedRow is the index of a Table's selected row, or -1.
+// SelectedRow is the index of a Table's selected row, or a HottyList's
+// selected item, or -1.
 func (e *Element) SelectedRow() int {
 	v, _ := e.Value.(string)
 	if v == "" {

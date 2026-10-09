@@ -5,8 +5,9 @@ Last updated: 2026-10-09
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** a look at KIT-LOOK (journal 2026-10-09.4):
 fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
-2026-10-09.5): progress bars and spinners; and at KIT-01c (journal
-2026-10-09.7): the table. Phase 1 is a go (2026-10-09). New names
+2026-10-09.5): progress bars and spinners; at KIT-01c (journal
+2026-10-09.7): the table; and at KIT-04c (journal 2026-10-09.9): the
+list. Phase 1 is a go (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Legend
@@ -19,8 +20,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-04c** — Rich list: title and description rows, the `/` filter,
-  pagination dots, a status line, an empty state.
 - [ ] **KIT-08c** — Key hints from the Shortcuts and the focused field's
   keymap, short and full (`?`).
 - [ ] **KIT-07c** — Scroll view: a scrollbar column, following the tail, the
@@ -125,6 +124,20 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-04c** — `HottyList` in cells, as bubbles' list (journal
+  2026-10-09.9, awaiting the maintainer's look).
+  - A title, a status line, and items of a label and a description,
+    literal or bound. The selection is an item's `value`, written to the
+    bound `selected`; Enter or a second click runs `onActivate` (L2).
+  - `height` gives pages, with dots; the arrows (and j, k, h, l, g, G)
+    move and turn pages as bubbles' do.
+  - `filterable`: `/` types a filter, ranked as bubbles ranks it
+    (sahilm/fuzzy), with matched characters underlined; Enter applies it,
+    Escape drops it. The query is the renderer's state, not the data
+    model's.
+  - The HTML baseline shows the same page. The filter is typed through
+    the program's keys there too, since a focused box uses none. A key
+    vector covers both renditions.
 - [x] **KIT-02h** and **KIT-03h** — Progress and Spinner move on a host,
   taken ahead of phase 2 because the maintainer saw the indexing bar stand
   still there (journal 2026-10-09.8).

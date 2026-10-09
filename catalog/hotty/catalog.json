@@ -5,7 +5,7 @@
   "title": "HOTTY Catalog",
   "description": "Keys, forms and focus for A2UI surfaces shown in a terminal: the hotty catalog of the HOTTY profile of A2UI. Mix it with the basic catalog component by component. Its names start with Hotty (components) and hotty (functions), so that none can be one A2UI adds later.",
   "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
-  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.\n\n8. HottyTable shows rows of data: give `columns` (each a `key` into the rows, a `header`, and `align`: \"end\" for numbers) and `rows`, a list of objects, best bound to the data model. Set `rowKey` to the field that identifies a row, and bind `selected` to a path: the user's selection is written there. To act on the selected row, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `height` to scroll long tables.",
+  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.\n\n8. HottyTable shows rows of data: give `columns` (each a `key` into the rows, a `header`, and `align`: \"end\" for numbers) and `rows`, a list of objects, best bound to the data model. Set `rowKey` to the field that identifies a row, and bind `selected` to a path: the user's selection is written there. To act on the selected row, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `height` to scroll long tables.\n\n9. HottyList shows items to pick from, a label and a line under it each: give `items`, a list of objects with `label`, `description` and `value` (what identifies the item), best bound to the data model, and bind `selected` to a path: the user's pick is written there. To act on it, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `filterable` to let the user type / and narrow the items by their labels, and `height` to show long lists a page at a time.",
   "components": {
     "HottyShortcut": {
       "type": "object",
@@ -243,6 +243,83 @@
         "columns",
         "rows"
       ]
+    },
+    "HottyList": {
+      "type": "object",
+      "description": "A list of items to pick from: each a label, with a line of description under it, one selected at a time, under an optional title and a status line that counts them. The user moves the selection with the arrow keys or a click and turns pages, and, when it is filterable, types / and then text to narrow the items by their labels. Enter (or a click on the selected item) runs onActivate. It takes the keyboard.",
+      "properties": {
+        "component": {
+          "const": "HottyList"
+        },
+        "title": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "The list's title, above it."
+        },
+        "items": {
+          "description": "The items: objects with a `label`, an optional `description` and a `value` that identifies the item. Bind it to a list in the data model, so that items change with updateDataModel.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "description": "What the item is called: its first line, and what a filter matches."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "A line under the label."
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "What identifies the item, such as an id. The selection is this value, so it stays on its item as items come and go. Without it, an item is identified by its index (\"0\", \"1\", …)."
+                  }
+                },
+                "required": [
+                  "label"
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "selected": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "The selected item's value. Bind it to the data model: the user's selection is written there, and onActivate's context reads it from there."
+        },
+        "onActivate": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Runs when the user presses Enter on the selected item, or clicks it again. Its context should read the selection from the path selected is bound to."
+        },
+        "filterable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the user can type / to filter the items by their labels, as they type. The best matches come first, and Escape shows every item again."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many items the list shows at once; the rest go on pages, which the arrow keys turn. By default, all of them."
+        },
+        "emptyText": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "What shows in place of the items when there are none. By default, \"No items.\"."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column, as CSS 'flex-grow'."
+        }
+      },
+      "required": [
+        "component",
+        "items"
+      ]
     }
   },
   "functions": {
@@ -306,6 +383,9 @@
         },
         {
           "$ref": "#/components/HottyTable"
+        },
+        {
+          "$ref": "#/components/HottyList"
         }
       ],
       "discriminator": {

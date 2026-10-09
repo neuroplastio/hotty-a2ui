@@ -48,7 +48,7 @@ and the cells beside it follow, and the other way round.
   both the cells and the HTML rendition.
 - 🔌 **A hotty catalog**, through A2UI's extension points only:
   `HottyShortcut`, `HottyForm`, `HottyProgress`, `HottySpinner`,
-  `HottyTable`, `hottyFocus`, `hottyBlur`, autofocus and keys. Its names carry the prefix
+  `HottyTable`, `HottyList`, `hottyFocus`, `hottyBlur`, autofocus and keys. Its names carry the prefix
   so that none can be one A2UI adds later.
 - 🎨 **Seven themes**: Terminal, Material dark and light, Nord, Dracula,
   Gruvbox and Solarized light.
@@ -113,7 +113,7 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 | [`docs/profile.md`](docs/profile.md) | the HOTTY profile of A2UI, a draft: renditions, keys and focus, the hotty catalog, fallbacks |
 | [`a2ui/`](a2ui) | an A2UI v1.0 core in Go: the data model, expressions and functions, catalogs checked against the spec's JSON Schemas, node resolution, and the message processor with the agent's function calls |
 | [`catalog/basic/`](catalog/basic) | A2UI's basic catalog, its functions implemented (en-US formatting) |
-| [`catalog/hotty/`](catalog/hotty) | the hotty catalog: `HottyShortcut`, `HottyForm`, `HottyProgress`, `HottySpinner`, `HottyTable`, `hottyFocus`, `hottyBlur` |
+| [`catalog/hotty/`](catalog/hotty) | the hotty catalog: `HottyShortcut`, `HottyForm`, `HottyProgress`, `HottySpinner`, `HottyTable`, `HottyList`, `hottyFocus`, `hottyBlur` |
 | [`view/`](view) | the renderer's model of a surface: its nodes made into a few kinds of element, with the renderer's own state (focus, the tab shown, the modal open), and the controller the user's acts go through |
 | [`rendition/html/`](rendition/html) | surfaces on a HOTTY host: a document, then deltas, and the host's events back as the user's acts |
 | [`rendition/cells/`](rendition/cells) | cells in a terminal that is not a host, laid out by the profile's rules (§3), with keys and clicks as SPEC §10 has them |
