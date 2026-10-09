@@ -157,6 +157,28 @@
     - key: Enter
     - expect: {focused: email, actions: [signUp], context: {name: Ada, email: ada@example.com, plan: [free]}}
 
+- name: Space on a CheckBox toggles it, and Enter submits its HottyForm, as a host takes a checkbox
+  story: hotty/form
+  steps:
+    - focus: name
+    - type: Ada
+    - focus: email
+    - type: ada@example.com
+    - focus: agree
+    - key: Enter
+    - expect: {focused: agree, actions: [], data: {/agree: false}}
+    - key: Space
+    - expect: {focused: agree, data: {/agree: true}}
+    - key: Enter
+    - expect: {focused: agree, actions: [signUp], data: {/agree: true}}
+
+- name: Enter on a CheckBox outside a HottyForm does nothing
+  messages: *controls
+  steps:
+    - focus: agree
+    - key: Enter
+    - expect: {focused: agree, actions: [], data: {/agree: false}}
+
 - name: arrows step a focused Slider, Home and End go to its ends
   messages: *controls
   steps:

@@ -93,8 +93,19 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 		}
 		return false, nil
 	}
+	if r.isBox(e) {
+		// As a host takes them (SPEC §10.2, a checkbox): Space checks it,
+		// and Enter submits its HottyForm, or does nothing outside one.
+		switch name {
+		case "Space":
+			return true, r.c.Activate(e.ID)
+		case "Enter":
+			return true, r.c.Enter(e.ID)
+		}
+		return false, nil
+	}
 	switch e.Kind {
-	case view.Button, view.Tab, view.Option, view.CheckBox:
+	case view.Button, view.Tab, view.Option:
 	case view.Media:
 		if e.URL == "" {
 			return false, nil
@@ -208,6 +219,19 @@ func (r *Rendition) selectKey(e *view.Element, name string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+// isBox reports whether an element is a checkbox on a host: a CheckBox,
+// or an option of a Choice shown as boxes (not chips, which are buttons).
+func (r *Rendition) isBox(e *view.Element) bool {
+	switch e.Kind {
+	case view.CheckBox:
+		return true
+	case view.Option:
+		anc := r.c.Ancestors(e.ID)
+		return len(anc) > 0 && anc[len(anc)-1].Variant != "chips"
+	}
+	return false
 }
 
 // hasPrefixFold reports whether s starts with prefix, case aside.

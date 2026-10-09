@@ -436,8 +436,11 @@ In the output:
   the step's decimals: 0.45 less 0.05 is 0.4, not 0.39999999999999997.
   On a host the slider is a button, which leaves these keys to the
   program (SPEC.md §10.2), so the renderer steps it there too.
-- **Space and Enter** activate a Button, a Tabs' title, an option, a
-  CheckBox, a Media link, or a Modal trigger that is not a control.
+- **Space and Enter** activate a Button, a Tabs' title, a chip, a Media
+  link, or a Modal trigger that is not a control.
+- **A CheckBox, and an option shown as a box,** is a checkbox on a host,
+  and takes keys as one (SPEC §10.2): Space toggles it, and Enter submits
+  its HottyForm, or does nothing outside one, as huh's Enter moves on.
 - **Tab and Shift+Tab** move the keyboard in tree order.
 - **Any other key**, Escape among them, goes to the surface's
   HottyShortcuts.
