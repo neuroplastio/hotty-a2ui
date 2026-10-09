@@ -16,8 +16,8 @@ import (
 // §10.2, editKey); another kind those of SPEC §10.2's table, unmodified or
 // with Shift only. Tab and Shift+Tab move focus. Any other key, Escape
 // among them, goes to the surface's Shortcuts; without the keyboard only
-// they are tried. Then, as rendition/html does, Escape closes an open
-// Modal. handled reports whether the surface took the key: when it did
+// they are tried. Then ? switches a HottyKeyHints' views, and, as
+// rendition/html does, Escape closes an open Modal. handled reports whether the surface took the key: when it did
 // not, the key is the program's.
 func (r *Rendition) Key(key string) (handled bool, err error) {
 	if k, ok := hotty.ParseKey(key); ok {
@@ -47,6 +47,10 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	}
 	if ok, err := c.Shortcut(key); ok {
 		return true, err
+	}
+	// ? that nothing took switches the key hints' views (HottyKeyHints).
+	if name == "?" && shiftOnly && c.ToggleHints() {
+		return true, nil
 	}
 	if key == "Escape" && c.St.Modal != "" {
 		r.list = ""

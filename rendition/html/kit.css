@@ -449,3 +449,15 @@ textarea.k-input { min-height: 5.5rem; }
 .k-rich-pages { padding: var(--k-2) var(--k-3) 0; letter-spacing: 0.2em; }
 .k-dot { color: var(--k-border); }
 .k-dot.k-on { color: var(--k-fg); }
+
+/* HottyKeyHints: a baseline (phase 1), as cells draws it, bubbles' help:
+   keys muted, what they do fainter, the separators fainter still (cells'
+   faint); the full view's groups in columns 4ch apart, each a grid of
+   keys and what they do. A line too long is cut. Keycaps are KIT-08h. */
+.k-hints { font-family: var(--k-mono); font-size: 0.875rem; }
+.k-hints-short { white-space: nowrap; overflow: hidden; }
+.k-hints-full { display: flex; column-gap: 4ch; overflow: hidden; }
+.k-hints-col { display: grid; grid-template-columns: auto auto; column-gap: 1ch; align-content: start; white-space: nowrap; }
+.k-hint-key { font: inherit; color: var(--k-muted); }
+.k-hint-desc { color: color-mix(in srgb, var(--k-muted) 65%, var(--k-bg)); }
+.k-hint-sep { color: color-mix(in srgb, var(--k-border) 55%, var(--k-bg)); }

@@ -1,0 +1,165 @@
+{
+  "name": "HottyKeyHints follows the keyboard",
+  "description": "A help line, as bubbles' help draws one: the keys of what has the keyboard, then the surface's HottyShortcuts that have a label. Tab through the note and watch it change. ? shows every key in columns, a text field's editing keys among them, and ? again hides them; in a field, ? is typed. Control+s saves, Control+d discards.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "note",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true,
+        "dataModel": {
+          "title": "",
+          "body": "",
+          "pinned": false
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "note",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "form",
+              "hints",
+              "save_key",
+              "discard_key"
+            ]
+          },
+          {
+            "id": "form",
+            "component": "HottyForm",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "child": "fields",
+            "onSubmit": {
+              "event": {
+                "name": "save",
+                "context": {
+                  "title": {
+                    "@path": "/title"
+                  },
+                  "body": {
+                    "@path": "/body"
+                  },
+                  "pinned": {
+                    "@path": "/pinned"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "fields",
+            "component": "Column",
+            "children": [
+              "heading",
+              "title",
+              "body",
+              "pinned",
+              "save"
+            ]
+          },
+          {
+            "id": "heading",
+            "component": "Text",
+            "text": "## A new note"
+          },
+          {
+            "id": "title",
+            "component": "TextField",
+            "label": "Title",
+            "value": {
+              "@path": "/title"
+            },
+            "checks": [
+              {
+                "condition": {
+                  "@call": "required",
+                  "args": {
+                    "value": {
+                      "@path": "/title"
+                    }
+                  }
+                },
+                "message": "A title, please"
+              }
+            ]
+          },
+          {
+            "id": "body",
+            "component": "TextField",
+            "label": "Body",
+            "value": {
+              "@path": "/body"
+            },
+            "variant": "longText"
+          },
+          {
+            "id": "pinned",
+            "component": "CheckBox",
+            "label": "Pin it",
+            "value": {
+              "@path": "/pinned"
+            }
+          },
+          {
+            "id": "save",
+            "component": "Button",
+            "child": "save_t",
+            "variant": "primary",
+            "action": {
+              "event": {
+                "name": "save",
+                "context": {
+                  "title": {
+                    "@path": "/title"
+                  },
+                  "body": {
+                    "@path": "/body"
+                  },
+                  "pinned": {
+                    "@path": "/pinned"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "save_t",
+            "component": "Text",
+            "text": "Save"
+          },
+          {
+            "id": "hints",
+            "component": "HottyKeyHints",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+          },
+          {
+            "id": "save_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "key": "Control+s",
+            "press": "save",
+            "label": "save"
+          },
+          {
+            "id": "discard_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "key": "Control+d",
+            "action": {
+              "event": {
+                "name": "discard"
+              }
+            },
+            "label": "discard"
+          }
+        ]
+      }
+    }
+  ]
+}

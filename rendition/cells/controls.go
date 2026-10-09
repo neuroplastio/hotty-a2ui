@@ -185,6 +185,8 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 		h = 2 + bodyRows(e)
 	case view.RichList:
 		h = listHeight(e)
+	case view.KeyHints:
+		h = len(l.r.keyHints(e, w))
 	case view.Choice:
 		switch {
 		case isSelect(e):

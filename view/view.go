@@ -76,6 +76,10 @@ const (
 	// items a page shows, 0 for all of them), Top (the page's first, in
 	// Shown) and Placeholder (what shows when no item does).
 	RichList Kind = "richlist"
+	// KeyHints shows the keys its surface takes now (HottyKeyHints), as
+	// Controller.KeyHints has them: Open while the full view shows, Active
+	// when ? switches views.
+	KeyHints Kind = "keyhints"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its

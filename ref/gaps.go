@@ -26,7 +26,7 @@ func init() {
 	register("table", "hotty/table", "bubbles: table (KIT-01)", func() tea.Model {
 		return screen{newTable()}
 	})
-	register("list", "hotty/list", "bubbles: list (KIT-04)", func() tea.Model {
+	register("list", "hotty/list", "bubbles: list and its help (KIT-04, KIT-08)", func() tea.Model {
 		return screen{newList()}
 	})
 }

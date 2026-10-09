@@ -124,6 +124,9 @@ func element(e *view.Element) []string {
 		return table(e)
 	case view.RichList:
 		return richList(e)
+	case view.KeyHints:
+		// A pipe takes no keys.
+		return nil
 	case view.Spinner:
 		if e.Active {
 			return []string{field(e.Label, "…")}

@@ -109,6 +109,9 @@ func (l *layout) minimum(e *view.Element) int {
 		n = tableMinimum(e)
 	case view.RichList:
 		n = listMinimum(e)
+	case view.KeyHints:
+		// It cuts what does not fit (shortHints).
+		n = 1
 	default:
 		n = l.natural(e)
 	}
@@ -172,6 +175,8 @@ func (l *layout) measure(e *view.Element) int {
 		return n
 	case view.Divider:
 		return 1
+	case view.KeyHints:
+		return l.r.hintsWidth(e)
 	}
 	return controlWidth(e)
 }
@@ -247,13 +252,17 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 // separator is the blank rows a Column puts before its child i: one
 // between two controls when either has a title row, as huh puts between
 // its fields, or when one is a field and the other a Button, as bubbles
-// sets a form's button apart; else none, so that a stack of CheckBoxes or
-// of Buttons stays tight.
+// sets a form's button apart; before a HottyKeyHints, as bubbles' help
+// sits a row under what it is for; else none, so that a stack of
+// CheckBoxes or of Buttons stays tight.
 func separator(kids []*view.Element, i int) int {
 	if i == 0 {
 		return 0
 	}
 	a, b := edge(kids[i-1], false), edge(kids[i], true)
+	if b.Kind == view.KeyHints {
+		return 1
+	}
 	if !isControlElement(a) || !isControlElement(b) {
 		return 0
 	}

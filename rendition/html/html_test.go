@@ -921,3 +921,39 @@ func TestListOnHost(t *testing.T) {
 		t.Errorf("Escape left the title as %q", got)
 	}
 }
+
+// A HottyKeyHints on a host is the line cells draws, a kbd for each key;
+// it follows the element the program knows has the keyboard, and ?, which
+// reaches the program from a box, shows the full view's groups as columns.
+func TestKeyHintsOnHost(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["l","help","save_key"]},
+ {"id":"l","component":"HottyList","catalogId":"`+hottycat.ID+`","filterable":true,"items":[{"label":"Nutella"},{"label":"Nuts"}]},
+ {"id":"help","component":"HottyKeyHints","catalogId":"`+hottycat.ID+`"},
+ {"id":"save_key","component":"HottyShortcut","catalogId":"`+hottycat.ID+`","key":"Control+s","action":{"event":{"name":"save"}},"label":"save"}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	if got := s.TextOf("help"); got != "ctrl+s save • ? more" {
+		t.Errorf("without the keyboard: %q", got)
+	}
+	if !strings.Contains(s.HTML(), `<kbd class="k-hint-key">ctrl+s</kbd>`) {
+		t.Errorf("the key is not a kbd:\n%s", s.HTML())
+	}
+	must(t, x.h.Click(r.name, partID("l", partItem+"1")))
+	x.pump()
+	if got := s.TextOf("help"); got != "↑/k up • ↓/j down • / filter • ctrl+s save • ? more" {
+		t.Errorf("the list clicked: %q", got)
+	}
+	if _, ok, err := r.Key("?"); !ok || err != nil {
+		t.Fatalf("?: %v %v", ok, err)
+	}
+	x.update(r)
+	x.check(r)
+	if !strings.Contains(s.HTML(), `class="k-hints-full"`) || strings.Count(s.HTML(), `class="k-hints-col"`) != 4 {
+		t.Errorf("? did not show four columns (the list's moves, its filter, the shortcut, the general keys):\n%s", s.HTML())
+	}
+}

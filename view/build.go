@@ -31,6 +31,8 @@ type State struct {
 	Scroll map[string]int
 	// Query is each HottyList's filter, by its id.
 	Query map[string]Query
+	// FullHints: the surface's HottyKeyHints show their full view (?).
+	FullHints bool
 }
 
 // NewState is a surface's state before the user does anything.

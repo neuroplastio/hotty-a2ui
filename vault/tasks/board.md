@@ -6,8 +6,9 @@ Last updated: 2026-10-09
 **Waiting on the maintainer:** a look at KIT-LOOK (journal 2026-10-09.4):
 fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
 2026-10-09.5): progress bars and spinners; at KIT-01c (journal
-2026-10-09.7): the table; and at KIT-04c (journal 2026-10-09.9): the
-list. Phase 1 is a go (2026-10-09). New names
+2026-10-09.7): the table; at KIT-04c (journal 2026-10-09.9): the list;
+and at KIT-08c (journal 2026-10-09.10): the key hints. Phase 1 is a go
+(2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Legend
@@ -20,8 +21,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-08c** — Key hints from the Shortcuts and the focused field's
-  keymap, short and full (`?`).
 - [ ] **KIT-07c** — Scroll view: a scrollbar column, following the tail, the
   wheel, PgUp and PgDn, and a `scrollTo` renderer function (L8). Lines
   arrive as chunks (L4).
@@ -83,7 +82,12 @@ As of 2026-10-09, from the hotty agent:
 - [ ] **KIT-01h** — Table: a real table, a sticky header, hover, sorting by
   header click.
 - [ ] **KIT-04h** — Rich list: two-line rows in proportional type, hover.
-- [ ] **KIT-08h** — Key hints as keycaps.
+- [ ] **KIT-08h** — Key hints as keycaps, following the host's focus. On
+  a host the hints leave out what the host works itself (fields, boxes,
+  Buttons), since it moves focus without telling the renderer (journal
+  2026-10-09.10). Probe whether Blitz restyles `:has(:focus)` on a focus
+  change; the other way, a host that names the focused element, is a
+  SPEC change and so the maintainer's call.
 - [ ] **KIT-07h** — Scroll view on the host's scrolling (SPEC §8).
 - [ ] **KIT-05h** — Code: highlight spans. Selectable text and a copy
   button wait for the clipboard.
@@ -124,6 +128,18 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-08c** — `HottyKeyHints` in cells, as bubbles' help (journal
+  2026-10-09.10, awaiting the maintainer's look).
+  - The keys of what has the keyboard, then the labelled HottyShortcuts,
+    then `? more`; `?` shows the full view in columns, a text field's
+    editing keys among them, from its keymap.
+  - It follows the keyboard; the agent places it once. `toggle` turns
+    `?` off where the surface needs it.
+  - The list story's help line is one now. A new story, hotty/keyhints,
+    tabs through a note form.
+  - The HTML baseline draws the same line with `kbd`s. On a host only a
+    Table's, a list's, a Slider's and a select's keys show (KIT-08h).
+  - The Table takes k, j, g and G, as bubbles' does.
 - [x] **KIT-04c** — `HottyList` in cells, as bubbles' list (journal
   2026-10-09.9, awaiting the maintainer's look).
   - A title, a status line, and items of a label and a description,

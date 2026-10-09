@@ -216,11 +216,12 @@ func (c *Controller) SelectRow(id string, i int) error {
 	return err
 }
 
-// TableKey works a Table by a key, named as SPEC §10.4 has it: the
-// arrows move its selection a row, Page Up and Page Down by the rows its
-// body shows, Home and End to the first row and the last; from no
-// selection, each of them selects the first row. Enter acts on the
-// selected row (Activate). ok reports whether the key is one of those.
+// TableKey works a Table by a key, named as SPEC §10.4 has it, as
+// bubbles' table takes them: the arrows (k and j) move its selection a
+// row, Page Up and Page Down by the rows its body shows, Home and End (g
+// and G) to the first row and the last; from no selection, each of them
+// selects the first row. Enter acts on the selected row (Activate). ok
+// reports whether the key is one of those.
 func (c *Controller) TableKey(id, key string) (ok bool, err error) {
 	e := c.V.Find(id)
 	if e == nil || e.Kind != Table {
@@ -234,17 +235,17 @@ func (c *Controller) TableKey(id, key string) (ok bool, err error) {
 	switch key {
 	case "Enter":
 		return true, c.Activate(id)
-	case "ArrowUp":
+	case "ArrowUp", "k":
 		to = cur - 1
-	case "ArrowDown":
+	case "ArrowDown", "j":
 		to = cur + 1
 	case "PageUp":
 		to = cur - page
 	case "PageDown":
 		to = cur + page
-	case "Home":
+	case "Home", "g":
 		to = 0
-	case "End":
+	case "End", "G":
 		to = len(e.RowIDs) - 1
 	default:
 		return false, nil

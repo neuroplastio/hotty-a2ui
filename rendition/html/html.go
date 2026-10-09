@@ -95,7 +95,8 @@ func (r *Rendition) markup() *markup {
 	if r.Clock != nil {
 		now = r.Clock
 	}
-	return &markup{list: r.openList(), now: now()}
+	short, full := r.C.KeyHints(r.keys, true)
+	return &markup{list: r.openList(), now: now(), short: short, full: full}
 }
 
 // SetTheme paints the surface in a theme's colours from the next Doc or
@@ -312,7 +313,7 @@ func (r *Rendition) Event(ev hotty.Event) error {
 // hold an edit the host has not committed, so Key sends a=blur and the
 // Shortcut runs when the blur comes back (Event), after the field's
 // change; then the keyboard goes back to the surface. Else Escape closes
-// an open Modal. ok reports whether the surface took the key.
+// an open Modal, and ? switches a HottyKeyHints' views. ok reports whether the surface took the key.
 func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	if k, named := hotty.ParseKey(key); named {
 		key = k
@@ -376,6 +377,12 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 		case "Home", "End":
 			return nil, true, c.StepSlider(e.ID, 0, key)
 		}
+	}
+	// ? that nothing took switches the key hints' views (HottyKeyHints): a
+	// focused field types it, so it reaches the program only from
+	// elsewhere.
+	if view.SameKey(key, "?") && c.ToggleHints() {
+		return nil, true, nil
 	}
 	return nil, false, nil
 }

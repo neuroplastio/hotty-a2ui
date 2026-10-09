@@ -259,7 +259,8 @@ func TestTable(t *testing.T) {
 	for _, step := range []struct {
 		key      string
 		sel, top int
-	}{{"", 0, 0}, {"ArrowDown", 1, 0}, {"ArrowDown", 2, 1}, {"PageDown", 4, 3}, {"ArrowDown", 4, 3}, {"Home", 0, 0}, {"End", 4, 3}, {"PageUp", 2, 2}} {
+	}{{"", 0, 0}, {"ArrowDown", 1, 0}, {"ArrowDown", 2, 1}, {"PageDown", 4, 3}, {"ArrowDown", 4, 3}, {"Home", 0, 0}, {"End", 4, 3},
+		{"g", 0, 0}, {"G", 4, 3}, {"k", 3, 3}, {"j", 4, 3}, {"PageUp", 2, 2}} {
 		if step.key != "" {
 			if ok, err := c.TableKey("t", step.key); !ok || err != nil {
 				t.Fatalf("%s: %v %v", step.key, ok, err)

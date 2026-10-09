@@ -29,6 +29,10 @@ type markup struct {
 	now time.Time
 	// anim is how soon what it made changes by itself (Rendition.Animating).
 	anim time.Duration
+	// short and full are the surface's key hints (view.Controller.KeyHints),
+	// which a HottyKeyHints shows.
+	short []view.Hint
+	full  [][]view.Hint
 }
 
 // animate notes that the markup changes again after d.
@@ -221,6 +225,8 @@ func (m *markup) element(e *view.Element) *node {
 		n = table(e)
 	case view.RichList:
 		n = richList(e)
+	case view.KeyHints:
+		n = m.keyHints(e)
 	case view.Divider:
 		if e.Dir == view.Vertical {
 			n = el("div", "id", id, "class", "k-vr", "role", "separator", "aria-orientation", "vertical")
