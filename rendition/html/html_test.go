@@ -995,6 +995,18 @@ func TestScrollViewOnHost(t *testing.T) {
 	if role, ok := s.Attr("doc", "role"); ok {
 		t.Errorf("a document is a %q", role)
 	}
+	// bubbles' letters scroll the box on a host (SPEC §10.2, Scrolling
+	// keys): each binding one a host keeps, h and l only where lines are
+	// cut.
+	for id, want := range map[string]int{"log": 14, "doc": 12} {
+		keys, _ := s.Attr(id, "data-keys")
+		if got := len(strings.Fields(hotty.ParseKeymap(keys).Format())); got != want || len(strings.Fields(keys)) != want {
+			t.Errorf("%s's keys: %d of %q parse, want %d", id, got, keys, want)
+		}
+	}
+	if keys, _ := s.Attr("doc", "data-keys"); strings.Contains(keys, "h=") {
+		t.Errorf("a wrapping box scrolls sideways with h: %q", keys)
+	}
 	if got := strings.Count(s.HTML(), `class="k-line"`); got != 3 {
 		t.Errorf("%d lines, an empty one too:\n%s", got, s.HTML())
 	}

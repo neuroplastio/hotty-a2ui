@@ -387,7 +387,13 @@ func (m *markup) element(e *view.Element) *node {
 	}
 	accessible(n, e)
 	if e.Keys != "" {
-		n.set("data-keys", e.Keys)
+		// After the keys the element binds itself, which its own override
+		// key by key, as a later binding does (SPEC §10.2).
+		keys := e.Keys
+		if own, ok := n.attr("data-keys"); ok {
+			keys = own + " " + keys
+		}
+		n.set("data-keys", keys)
 	}
 	if outer == nil {
 		outer = n

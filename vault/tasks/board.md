@@ -92,11 +92,11 @@ As of 2026-10-09, from the hotty agent:
   Blitz draws it at its end, but whether it then scrolls and stays at the
   end as lines are appended is unchecked. Otherwise following the tail
   is a SPEC change, the maintainer's call. The wheel over a host's box is
-  the host's. bubbles' letter keys (j, k, b, f, u, d, g, G) do nothing on
-  a host either: the arrows work because the host scrolls with them, and a
-  keymap outside a text field gives only `program` (SPEC §10.2). Reported
-  by the maintainer 2026-10-09; the fix proposed is scroll actions in the
-  keymap, a SPEC change.
+  the host's. Done 2026-10-09: bubbles' letter keys scroll the box on a host
+  too, bound to the scroll actions the maintainer approved after reporting
+  that j and k did nothing there (SPEC §10.2, *Scrolling keys*, hotty
+  c8bc64f). Hosts have them since hottyterm 26.10.09-dev.0aeeed0, hotty-blitz
+  f22faf4 and xterm-addon-hotty 83febf2.
 - [ ] **KIT-05h** — Code: highlight spans. Selectable text and a copy
   button wait for the clipboard.
 - [ ] **KIT-06h** — Diff: split view in columns, acting on hunks.
