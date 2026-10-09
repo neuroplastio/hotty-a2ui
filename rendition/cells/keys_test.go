@@ -24,7 +24,7 @@ func form(t *testing.T) (c *view.Controller, data func() map[string]any, actions
 	}
 	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"name":"","note":"","agree":false,"size":["m"]}}},
 	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
-	 {"id":"root","component":"Form","catalogId":"` + hotty.ID + `","child":"col","onSubmit":{"event":{"name":"send"}}},
+	 {"id":"root","component":"HottyForm","catalogId":"` + hotty.ID + `","child":"col","onSubmit":{"event":{"name":"send"}}},
 	 {"id":"col","component":"Column","children":["name","note","agree","size","go","save","quit"]},
 	 {"id":"name","component":"TextField","label":"Name","value":{"@path":"/name"}},
 	 {"id":"note","component":"TextField","label":"Note","variant":"longText","value":{"@path":"/note"}},
@@ -33,8 +33,8 @@ func form(t *testing.T) (c *view.Controller, data func() map[string]any, actions
 	  {"label":"Small","value":"s"},{"label":"Medium","value":"m"},{"label":"Large","value":"l"}]},
 	 {"id":"go","component":"Button","child":"go_t","action":{"event":{"name":"go"}}},
 	 {"id":"go_t","component":"Text","text":"Go"},
-	 {"id":"save","component":"Shortcut","catalogId":"` + hotty.ID + `","key":"Control+s","press":"go"},
-	 {"id":"quit","component":"Shortcut","catalogId":"` + hotty.ID + `","key":"q","action":{"event":{"name":"quit"}}}]}}]`
+	 {"id":"save","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"Control+s","press":"go"},
+	 {"id":"quit","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"q","action":{"event":{"name":"quit"}}}]}}]`
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
 	}

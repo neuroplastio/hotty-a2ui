@@ -1,6 +1,6 @@
 {
-  "name": "Form submits on Enter",
-  "description": "Enter in any field submits the Form: its onSubmit runs once every check inside passes, and until then the failing ones show.",
+  "name": "HottyForm submits on Enter",
+  "description": "Enter in any field submits the HottyForm: its onSubmit runs once every check inside passes, and until then the failing ones show.",
   "messages": [
     {
       "version": "v1.0",
@@ -25,7 +25,7 @@
         "components": [
           {
             "id": "root",
-            "component": "Form",
+            "component": "HottyForm",
             "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
             "child": "fields",
             "onSubmit": {

@@ -92,7 +92,7 @@
     - key: Space
     - expect: {actions: [inTwo]}
 
-- name: A Shortcut presses its Button, with the field just typed in current, and the field keeps the keyboard
+- name: A HottyShortcut presses its Button, with the field just typed in current, and the field keeps the keyboard
   story: hotty/shortcut-press
   steps:
     - key: Control+s
@@ -102,14 +102,14 @@
     - key: Control+s
     - expect: {focused: note, actions: [save], context: {note: hello}}
 
-- name: A Shortcut presses its Button only when the Button's checks pass
+- name: A HottyShortcut presses its Button only when the Button's checks pass
   story: hotty/shortcut-press
   steps:
     - focus: note
     - key: Control+s
     - expect: {focused: note, actions: []}
 
-- name: A Shortcut runs its own Action, the keyboard anywhere or nowhere
+- name: A HottyShortcut runs its own Action, the keyboard anywhere or nowhere
   story: hotty/shortcut-action
   steps:
     - key: Control+r
@@ -118,7 +118,7 @@
     - key: Control+r
     - expect: {focused: filter/option/1, actions: [refresh, refresh]}
 
-- name: A bare key is the field's while a text control has the keyboard, else the Shortcut's
+- name: A bare key is the field's while a text control has the keyboard, else the HottyShortcut's
   messages:
     - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {q: ""}}}
     - version: v1.0
@@ -129,7 +129,7 @@
           - {id: q, component: TextField, label: Search, value: {"@path": /q}}
           - {id: go, component: Button, child: go_t, action: {event: {name: search, context: {q: {"@path": /q}}}}}
           - {id: go_t, component: Text, text: Search}
-          - {id: help, component: Shortcut, catalogId: "https://neuroplast.io/hotty/a2ui/v1/catalog.json", key: "?", action: {event: {name: help}}}
+          - {id: help, component: HottyShortcut, catalogId: "https://neuroplast.io/hotty/a2ui/v1/catalog.json", key: "?", action: {event: {name: help}}}
   steps:
     - focus: q
     - type: "why?"
@@ -140,7 +140,7 @@
     - key: Enter
     - expect: {actions: [help, search], context: {q: "why?"}}
 
-- name: Enter in a field submits its Form, which runs only when every check inside passes
+- name: Enter in a field submits its HottyForm, which runs only when every check inside passes
   story: hotty/form
   steps:
     - focus: name
@@ -173,7 +173,7 @@
     - key: Home
     - expect: {focused: level, data: {/level: 0}}
 
-- name: focus and blur move the keyboard; autofocus takes it at the start
+- name: hottyFocus and hottyBlur move the keyboard; autofocus takes it at the start
   story: hotty/focus-blur
   steps:
     - expect: {focused: name}
@@ -320,7 +320,7 @@
         components:
           - {id: root, component: Column, children: [form, clear]}
           - id: form
-            component: Form
+            component: HottyForm
             catalogId: "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
             child: fields
             onSubmit: {event: {name: send, context: {name: {"@path": /name}}}}
@@ -332,7 +332,7 @@
             label: Note
             value: {"@path": /note}
             metadata: {extensions: {io_neuroplast_hotty: {keys: "Control+k=delete-to-line-end"}}}
-          - {id: clear, component: Shortcut, catalogId: "https://neuroplast.io/hotty/a2ui/v1/catalog.json", key: Control+k, action: {event: {name: clear}}}
+          - {id: clear, component: HottyShortcut, catalogId: "https://neuroplast.io/hotty/a2ui/v1/catalog.json", key: Control+k, action: {event: {name: clear}}}
   steps:
     - focus: name
     - type: Ada

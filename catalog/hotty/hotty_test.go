@@ -13,27 +13,27 @@ func TestCatalog(t *testing.T) {
 	if c.ID != hotty.ID {
 		t.Errorf("id %q", c.ID)
 	}
-	if k := c.Components["Shortcut"].Props["press"].Kind; k != a2ui.Static {
+	if k := c.Components["HottyShortcut"].Props["press"].Kind; k != a2ui.Static {
 		t.Errorf("Shortcut.press is %v, want a plain id", k)
 	}
-	if k := c.Components["Form"].Props["child"].Kind; k != a2ui.ChildRef {
+	if k := c.Components["HottyForm"].Props["child"].Kind; k != a2ui.ChildRef {
 		t.Errorf("Form.child is %v, want a child", k)
 	}
 	for _, tc := range []struct {
 		def string
 		ok  bool
 	}{
-		{`{"id":"s","component":"Shortcut","key":"Control+s","press":"save"}`, true},
-		{`{"id":"s","component":"Shortcut","key":"Escape","action":{"event":{"name":"close"}},"label":"Close"}`, true},
-		{`{"id":"s","component":"Shortcut","key":"Control++","press":"zoom"}`, true},
-		{`{"id":"s","component":"Shortcut","key":"Control+s"}`, false},
-		{`{"id":"s","component":"Shortcut","key":"Control+s","press":"save","action":{"event":{"name":"x"}}}`, false},
-		{`{"id":"s","component":"Shortcut","key":"Hyper+s","press":"save"}`, false},
-		{`{"id":"f","component":"Form","child":"col","onSubmit":{"event":{"name":"send"}}}`, true},
-		{`{"id":"f","component":"Form","child":"col","onSubmit":{"functionCall":{"@call":"focus","args":{"id":"name"}}}}`, true},
-		{`{"id":"f","component":"Form","child":"col","onSubmit":{"functionCall":{"@call":"blur"}}}`, true},
-		{`{"id":"f","component":"Form","child":"col","onSubmit":{"functionCall":{"@call":"focus"}}}`, false},
-		{`{"id":"f","component":"Form","child":"col"}`, false},
+		{`{"id":"s","component":"HottyShortcut","key":"Control+s","press":"save"}`, true},
+		{`{"id":"s","component":"HottyShortcut","key":"Escape","action":{"event":{"name":"close"}},"label":"Close"}`, true},
+		{`{"id":"s","component":"HottyShortcut","key":"Control++","press":"zoom"}`, true},
+		{`{"id":"s","component":"HottyShortcut","key":"Control+s"}`, false},
+		{`{"id":"s","component":"HottyShortcut","key":"Control+s","press":"save","action":{"event":{"name":"x"}}}`, false},
+		{`{"id":"s","component":"HottyShortcut","key":"Hyper+s","press":"save"}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"event":{"name":"send"}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyFocus","args":{"id":"name"}}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyBlur"}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyFocus"}}}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col"}`, false},
 	} {
 		var d map[string]any
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {

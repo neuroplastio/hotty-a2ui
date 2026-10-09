@@ -145,4 +145,4 @@ composed Table or Tree may contain. A renderer reports `UNALLOWED_PARENT` and
 | KIT-20 QR code | `value` | Fits |
 
 The prop names above are sketches. Each phase-1 leg settles its component's
-props, under the names [Q-0001](../questions/Q-0001-catalog-naming.md) settles.
+props, under `Hotty` names ([catalog-naming](catalog-naming.md)).

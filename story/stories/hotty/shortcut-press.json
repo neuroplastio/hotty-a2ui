@@ -1,5 +1,5 @@
 {
-  "name": "Shortcut presses a Button",
+  "name": "HottyShortcut presses a Button",
   "description": "Control+s presses Save, as a click would, and only when Save's checks pass. It works from the field too: the field commits first.",
   "messages": [
     {
@@ -85,7 +85,7 @@
           },
           {
             "id": "save_key",
-            "component": "Shortcut",
+            "component": "HottyShortcut",
             "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
             "key": "Control+s",
             "press": "save",

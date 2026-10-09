@@ -107,13 +107,13 @@ func init() {
 		Register(basic.ID, typ, m)
 	}
 
-	Register(hotty.ID, "Form", func(b *Builder, n *a2ui.Node) *Element {
+	Register(hotty.ID, "HottyForm", func(b *Builder, n *a2ui.Node) *Element {
 		valid, _ := b.Checks(n)
 		e := &Element{Kind: Form, Disabled: !valid}
 		b.InForm(n.Key, func() { e.Children = b.Children(n.Props["child"]) })
 		return e
 	})
-	Register(hotty.ID, "Shortcut", func(b *Builder, n *a2ui.Node) *Element {
+	Register(hotty.ID, "HottyShortcut", func(b *Builder, n *a2ui.Node) *Element {
 		b.AddShortcut(Shortcut{ID: n.Key, Key: b.String(n, "key"), Press: b.String(n, "press"), Label: b.String(n, "label")})
 		b.out.nodes[n.Key] = n
 		return nil

@@ -3,16 +3,16 @@
   "$id": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
   "protocolVersion": "1.0",
   "title": "HOTTY Catalog",
-  "description": "Keys, forms and focus for A2UI surfaces shown in a terminal: the hotty catalog of the HOTTY profile of A2UI. Mix it with the basic catalog component by component.",
+  "description": "Keys, forms and focus for A2UI surfaces shown in a terminal: the hotty catalog of the HOTTY profile of A2UI. Mix it with the basic catalog component by component. Its names start with Hotty (components) and hotty (functions), so that none can be one A2UI adds later.",
   "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
-  "instructions": "These components come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog.\n\n1. Shortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. Form wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a Form is still an ordinary Button.\n\n3. To move the keyboard to a component, call focus(id) from a Button's action, or send callRendererFunction. blur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to Shortcuts.",
+  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.",
   "components": {
-    "Shortcut": {
+    "HottyShortcut": {
       "type": "object",
       "description": "Binds a key to its surface and draws nothing. When the key is pressed while its surface is the active one, it presses the Button named by `press`, as a click would and only if that Button's checks pass, or it runs `action`. A key that types a character with no modifier but Shift does nothing while a text control has the keyboard.",
       "properties": {
         "component": {
-          "const": "Shortcut"
+          "const": "HottyShortcut"
         },
         "key": {
           "type": "string",
@@ -21,7 +21,7 @@
         },
         "press": {
           "type": "string",
-          "description": "The id of a Button on this surface. The key presses it as a click would. A plain id, not a ComponentId: the Shortcut does not contain the Button."
+          "description": "The id of a Button on this surface. The key presses it as a click would. A plain id, not a ComponentId: the HottyShortcut does not contain the Button."
         },
         "action": {
           "$ref": "common_types.json#/$defs/Action",
@@ -32,15 +32,26 @@
           "description": "What the key does, in a word or two, for a renderer that lists the keys a surface takes."
         }
       },
-      "required": ["component", "key"],
+      "required": [
+        "component",
+        "key"
+      ],
       "oneOf": [
-        {"required": ["press"]},
-        {"required": ["action"]}
+        {
+          "required": [
+            "press"
+          ]
+        },
+        {
+          "required": [
+            "action"
+          ]
+        }
       ]
     },
-    "Form": {
+    "HottyForm": {
       "type": "object",
-      "description": "A container of fields. Enter in a text field inside it runs `onSubmit`, if the Form's checks pass. Fields inside it commit their values before `onSubmit`'s context is resolved.",
+      "description": "A container of fields. Enter in a text field inside it runs `onSubmit`, if the HottyForm's checks pass. Fields inside it commit their values before `onSubmit`'s context is resolved.",
       "allOf": [
         {
           "$ref": "common_types.json#/$defs/Checkable"
@@ -49,7 +60,7 @@
           "type": "object",
           "properties": {
             "component": {
-              "const": "Form"
+              "const": "HottyForm"
             },
             "child": {
               "$ref": "common_types.json#/$defs/Child",
@@ -64,20 +75,24 @@
               "description": "The relative weight of this component within a Row or Column, as CSS 'flex-grow'."
             }
           },
-          "required": ["component", "child", "onSubmit"]
+          "required": [
+            "component",
+            "child",
+            "onSubmit"
+          ]
         }
       ]
     }
   },
   "functions": {
-    "focus": {
+    "hottyFocus": {
       "type": "object",
       "description": "Gives the keyboard to a component of the surface: the user's next keys go to it. On a HOTTY host it is a=focus.",
       "returnType": "void",
       "allowedCallers": "rendererOrAgent",
       "properties": {
         "@call": {
-          "const": "focus"
+          "const": "hottyFocus"
         },
         "args": {
           "type": "object",
@@ -87,30 +102,41 @@
               "description": "The id of the component to focus. A template's component takes the instance in the caller's scope."
             }
           },
-          "required": ["id"],
+          "required": [
+            "id"
+          ],
           "unevaluatedProperties": false
         }
       },
-      "required": ["@call", "args"]
+      "required": [
+        "@call",
+        "args"
+      ]
     },
-    "blur": {
+    "hottyBlur": {
       "type": "object",
       "description": "Gives the keyboard back to the terminal. A field that had it commits its value first. On a HOTTY host it is a=blur.",
       "returnType": "void",
       "allowedCallers": "rendererOrAgent",
       "properties": {
         "@call": {
-          "const": "blur"
+          "const": "hottyBlur"
         }
       },
-      "required": ["@call"]
+      "required": [
+        "@call"
+      ]
     }
   },
   "$defs": {
     "anyComponent": {
       "oneOf": [
-        {"$ref": "#/components/Shortcut"},
-        {"$ref": "#/components/Form"}
+        {
+          "$ref": "#/components/HottyShortcut"
+        },
+        {
+          "$ref": "#/components/HottyForm"
+        }
       ],
       "discriminator": {
         "propertyName": "component"
@@ -118,8 +144,12 @@
     },
     "anyFunction": {
       "oneOf": [
-        {"$ref": "#/functions/focus"},
-        {"$ref": "#/functions/blur"}
+        {
+          "$ref": "#/functions/hottyFocus"
+        },
+        {
+          "$ref": "#/functions/hottyBlur"
+        }
       ]
     }
   }

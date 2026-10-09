@@ -1,8 +1,22 @@
-# Q-0001 — How do the kit's components get names A2UI won't take later?
+# Catalog naming (was Q-0001)
 
-Status: open
-Blocks: KIT-00, and the name of every component on the board (phase 1)
-Raised: 2026-10-09
+Status: answered 2026-10-09: option A, the `Hotty` prefix ("Hotty prefix
+sounds good"). Applied in KIT-00.
+
+## The rule
+
+- Every component of the hotty catalog is `Hotty` and the plain noun A2UI
+  would use: `HottyTable`, `HottyProgress`.
+- Every function is `hotty` and the verb: `hottyFocus`, `hottyScrollTo`.
+- Extension keys stay under `io_neuroplast_hotty`.
+- The catalog id stays `https://neuroplast.io/hotty/a2ui/v1/catalog.json`.
+- When A2UI adds a component that does what one of ours does, the renderer
+  maps theirs onto the same view kind, and ours gets `deprecated` and
+  `x-deprecated-reason` (or both stay, if they differ).
+
+profile.md §6 states the rule, as does the catalog's `instructions`.
+
+The question as it was asked follows.
 
 ## What I need decided
 

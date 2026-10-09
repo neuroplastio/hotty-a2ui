@@ -15,7 +15,7 @@ their style.
 
 A phase-1 leg (`KIT-NNc`) is done when it has all of these:
 - **Catalog.** The component (or function) is in the hotty catalog under the
-  names Q-0001 settles, with its description and a line in the catalog's
+  `Hotty` names ([catalog-naming](knowledge/catalog-naming.md)), with its description and a line in the catalog's
   `instructions`. Any L2, L4 or L5 rule that applies is in that line
   ([a2ui-limits](knowledge/a2ui-limits.md)).
 - **Renditions.**

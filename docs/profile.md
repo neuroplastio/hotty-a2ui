@@ -92,7 +92,7 @@ so that an error comes and goes as a text delta.
 | DateTimeInput | `input type=text` with the ISO 8601 value, its form as the placeholder, as in cells (§3.5). Hosts draw date and time inputs unevenly (Blitz not at all), and none takes an offset such as `Z` |
 | Tabs | a `tablist` of `button role=tab`, then the tab shown |
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
-| Form | `form` with a hidden submit button out of the Tab order, so Enter submits |
+| HottyForm | `form` with a hidden submit button out of the Tab order, so Enter submits |
 
 **Updates are deltas.** The document goes once. After it, the renderer
 diffs the elements it sent against the elements the view makes now, and
@@ -109,7 +109,7 @@ renderer's own state: a tab shown, a Modal opened.
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
 | `click` | a Button runs its action; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
-| `submit` | the Form submits (§6.2) |
+| `submit` | the HottyForm submits (§6.2) |
 | `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it |
 | `focus`, `blur` | the surface has the keyboard, or not |
 
@@ -140,8 +140,8 @@ picks with them as cells does; a host that scrolls takes the arrows for
 that first.
 
 **The keyboard.** The renderer gives the host the keyboard it has in mind
-when they differ: `a=focus` at the element `autofocus` (§6.4) or `focus`
-(§6.3) names, `a=blur` for `blur`. Within the surface, Tab moves focus
+when they differ: `a=focus` at the element `autofocus` (§6.4) or `hottyFocus`
+(§6.3) names, `a=blur` for `hottyBlur`. Within the surface, Tab moves focus
 where the program does not see it (SPEC.md §9), so the renderer knows the
 element last clicked or edited, not always the one focused.
 
@@ -220,7 +220,7 @@ Natural widths:
 | Divider | 1 |
 | Card | its content + 4 |
 | Row | its children's, plus one column between each two |
-| Column, Form, Modal | its widest child's |
+| Column, HottyForm, Modal | its widest child's |
 | Tabs | its titles two columns apart, or its content, whichever is wider |
 
 Minimums:
@@ -233,12 +233,12 @@ Minimums:
   that is wider.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
-  between them; a Column, a Form, a Modal and a Tabs take their widest
+  between them; a Column, a HottyForm, a Modal and a Tabs take their widest
   child's; a Card takes its content's plus 4.
 
 How the containers lay their children out:
 
-- **Column** covers a Column, a vertical List, a Form, a Modal's trigger,
+- **Column** covers a Column, a vertical List, a HottyForm, a Modal's trigger,
   and the content of a Card or a tab.
   - Its children are stacked with no rows between them.
   - Across: with `align` stretch, a child gets the full width. With start,
@@ -399,8 +399,8 @@ In the output:
   its lines, and a longText's page is the rows it shows.
   - A number field takes every printable character but keeps only
     `0-9 . , - + e E`.
-  - `submit` (Enter, in a single-line field) submits the field's Form,
-    if it is in one. In a longText, Enter types a line break.
+  - `submit` (Enter, in a single-line field) submits the field's
+    HottyForm, if it is in one. In a longText, Enter types a line break.
   - Every edit writes the value at once.
 - **A select** works in two states:
   - Closed, ArrowUp and ArrowDown pick the previous and next option.
@@ -421,11 +421,12 @@ In the output:
 - **Space and Enter** activate a Button, a Tabs' title, an option, a
   CheckBox, a Media link, or a Modal trigger that is not a control.
 - **Tab and Shift+Tab** move the keyboard in tree order.
-- **Any other key**, Escape among them, goes to the surface's Shortcuts.
-  - Without the keyboard, only the Shortcuts are tried.
+- **Any other key**, Escape among them, goes to the surface's
+  HottyShortcuts.
+  - Without the keyboard, only the HottyShortcuts are tried.
   - A key a focused text field uses, a character it types or a key its
-    keymap binds to an edit, never reaches a Shortcut.
-- **Escape** that no Shortcut takes closes an open Modal, as on a host.
+    keymap binds to an edit, never reaches a HottyShortcut.
+- **Escape** that no HottyShortcut takes closes an open Modal, as on a host.
 
 **A click** lands on the topmost thing drawn at its cell:
 - **Something that takes focus** gets the keyboard, and then:
@@ -486,9 +487,9 @@ Keys and focus are HOTTY SPEC.md §10 in both renditions. On a host the
 terminal implements them. In cells the renderer does, by the same rules:
 
 - **Who has the keyboard.** A surface has it when the user clicks a
-  component that takes focus, or something gives it: the `focus` function
-  (§6.3), or `autofocus` (§6.4). A click elsewhere, Escape handled by the
-  program, or `blur` gives it back.
+  component that takes focus, or something gives it: the `hottyFocus`
+  function (§6.3), or `autofocus` (§6.4). A click elsewhere, Escape handled
+  by the program, or `hottyBlur` gives it back.
 - **Keys** go to the focused component as SPEC.md §10.2's table says. Tab
   and Shift+Tab move focus in tree order; past the last component or before
   the first, the surface loses the keyboard. Escape, and every key the
@@ -502,7 +503,7 @@ terminal implements them. In cells the renderer does, by the same rules:
   keymap alone). A component's `keys` (§6.5) overrides it key by key for
   the fields inside. The cells rendition resolves the same keymap
   (`hotty.Resolve`), so a key does the same in both.
-- **Shortcuts** (§6.1) take the keys that reach the program, for the
+- **HottyShortcuts** (§6.1) take the keys that reach the program, for the
   surface that is active: the one that has the keyboard, or when none has
   it, the one the program says is current.
 
@@ -532,7 +533,17 @@ as SPEC.md §10.2 has a host take them.
 `https://neuroplast.io/hotty/a2ui/v1/catalog.json`, in
 [catalog/hotty/catalog.json](../catalog/hotty/catalog.json).
 
-### 6.1 Shortcut
+**Names.** Every component's name starts with `Hotty` and every function's
+with `hotty`: the plain noun or verb A2UI would use, after the prefix
+(`HottyForm`, `hottyFocus`). A2UI scopes a name by its catalog, so a
+`Form` in another catalog would be legal, but a prompt that holds both
+catalogs, or a composite catalog made of them, would mix the two up. A2UI
+reserves no component prefix, so this one can never be taken. When A2UI
+adds a component that does what one of these does, the renderer maps it
+onto the same view, and this one is deprecated (`deprecated`,
+`x-deprecated-reason`). Extension keys stay under `io_neuroplast_hotty`.
+
+### 6.1 HottyShortcut
 
 Binds a key to its surface, and draws nothing. `key` is a key as HOTTY
 SPEC.md §10.4 names it: a W3C UI Events key value after its modifiers
@@ -541,33 +552,33 @@ SPEC.md §10.4 names it: a W3C UI Events key value after its modifiers
 character carries Shift in itself, so `Control+S` is Control and Shift
 with s. Tab and Shift+Tab move focus and cannot be bound.
 
-When a key reaches the program (§5) while the Shortcut's surface is the
-one keys apply to, the Shortcut either presses the Button `press` names,
+When a key reaches the program (§5) while the HottyShortcut's surface is
+the one keys apply to, the HottyShortcut either presses the Button `press` names,
 as a click would and only if the Button's checks pass, or runs its
-`action`. `press` is a plain id, not a ComponentId: a Shortcut does not
-contain its Button; in a template, the first instance in tree order is
-pressed. A key a focused text field uses never reaches a Shortcut: a
+`action`. `press` is a plain id, not a ComponentId: a HottyShortcut does
+not contain its Button; in a template, the first instance in tree order is
+pressed. A key a focused text field uses never reaches a HottyShortcut: a
 character it types, or a key its keymap binds to an edit (§5, SPEC.md
-§10.2). Give Shortcuts keys the keymap leaves alone, such as Control+s,
+§10.2). Give HottyShortcuts keys the keymap leaves alone, such as Control+s,
 or bind the key to `program` for the fields (§6.5).
 
-### 6.2 Form
+### 6.2 HottyForm
 
 A container whose `onSubmit` runs on Enter in a text field inside it (on a
-host, HOTTY's `submit`). It runs only when the Form's own checks and those
+host, HOTTY's `submit`). It runs only when the HottyForm's own checks and those
 of every control inside pass; otherwise each failing control shows its
 error, and nothing goes to the agent. A control's error shows once the
-user has changed it, or tried its Form. Fields commit first (§5), so
-`onSubmit`'s context has what was typed. Forms do not nest on a host: an
-inner Form is a group, and Enter submits the outer one.
+user has changed it, or tried its HottyForm. Fields commit first (§5), so
+`onSubmit`'s context has what was typed. HottyForms do not nest on a host:
+an inner HottyForm is a group, and Enter submits the outer one.
 
-### 6.3 focus and blur
+### 6.3 hottyFocus and hottyBlur
 
 Renderer functions that a Button or the agent may call
-(`allowedCallers: rendererOrAgent`). `focus({id})` gives the keyboard to
+(`allowedCallers: rendererOrAgent`). `hottyFocus({id})` gives the keyboard to
 a component of the surface: a template's component, to the instance in
 the caller's scope. Called by the agent (`callRendererFunction` names no
-surface), it focuses the first surface that has the component. `blur()`
+surface), it focuses the first surface that has the component. `hottyBlur()`
 gives the keyboard back: from the caller's surface, or from every surface
 when the agent calls it. On a host they are `a=focus` and `a=blur`; a
 field that had the keyboard commits first.

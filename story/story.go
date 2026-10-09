@@ -130,8 +130,8 @@ type Run struct {
 }
 
 // NewRun is a run with nothing fed yet. Its processor has the catalogs
-// the kit renders, basic and hotty, and hotty's focus and blur move the
-// keyboard in the run's views.
+// the kit renders, basic and hotty, and hotty's hottyFocus and hottyBlur
+// move the keyboard in the run's views.
 func NewRun() *Run {
 	r := &Run{}
 	h := hotty.Catalog()

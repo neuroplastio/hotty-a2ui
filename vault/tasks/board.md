@@ -3,9 +3,8 @@
 Last updated: 2026-10-09
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** [Q-0001](../questions/Q-0001-catalog-naming.md),
-the naming rule. It blocks KIT-00 and the names of the phase-1 components.
-KIT-REF and KIT-LOOK don't wait for it.
+**Waiting on the maintainer:** nothing. Phase 1 is a go (2026-10-09).
+New names follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Legend
 
@@ -17,9 +16,6 @@ KIT-REF and KIT-LOOK don't wait for it.
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-00** — Names per Q-0001. Rename the existing components and
-  functions to the rule, and write the rule into profile §6 and the
-  catalog's `instructions`. Blocked: Q-0001.
 - [ ] **KIT-REF** — Reference shots.
   - A `ref/` directory, as its own Go module so bubbles, huh and lipgloss
     stay out of the kit's go.mod. It holds one small program per gap, with
@@ -134,4 +130,6 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
-(none yet)
+- [x] **KIT-00** — The `Hotty` prefix: HottyShortcut, HottyForm, hottyFocus
+  and hottyBlur, with the rule in profile §6 and the catalog's
+  `instructions` (journal 2026-10-09.2).

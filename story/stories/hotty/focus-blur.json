@@ -1,6 +1,6 @@
 {
-  "name": "focus and blur",
-  "description": "The name field takes the keyboard when the surface shows (autofocus). The buttons move it with the focus and blur functions: on a host, a=focus and a=blur.",
+  "name": "hottyFocus and hottyBlur",
+  "description": "The name field takes the keyboard when the surface shows (autofocus). The buttons move it with the hottyFocus and hottyBlur functions: on a host, a=focus and a=blur.",
   "messages": [
     {
       "version": "v1.0",
@@ -71,7 +71,7 @@
             "child": "to_city_t",
             "action": {
               "functionCall": {
-                "@call": "focus",
+                "@call": "hottyFocus",
                 "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
                 "args": {
                   "id": "city"
@@ -90,7 +90,7 @@
             "child": "done_t",
             "action": {
               "functionCall": {
-                "@call": "blur",
+                "@call": "hottyBlur",
                 "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
               }
             }

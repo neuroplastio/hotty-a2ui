@@ -1,6 +1,6 @@
 {
-  "name": "Shortcut runs an Action",
-  "description": "Control+r asks the agent to refresh, with no Button: the Shortcut's own action.",
+  "name": "HottyShortcut runs an Action",
+  "description": "Control+r asks the agent to refresh, with no Button: the HottyShortcut's own action.",
   "messages": [
     {
       "version": "v1.0",
@@ -72,7 +72,7 @@
           },
           {
             "id": "refresh_key",
-            "component": "Shortcut",
+            "component": "HottyShortcut",
             "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
             "key": "Control+r",
             "label": "Refresh",

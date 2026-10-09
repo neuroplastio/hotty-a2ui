@@ -205,7 +205,7 @@ func TestExamplesStream(t *testing.T) {
 
 const controls = `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"name":"","agree":false}}},
 {"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
- {"id":"root","component":"Form","catalogId":"` + hottycat.ID + `","child":"col","onSubmit":{"event":{"name":"send","context":{"name":{"@path":"/name"}}}}},
+ {"id":"root","component":"HottyForm","catalogId":"` + hottycat.ID + `","child":"col","onSubmit":{"event":{"name":"send","context":{"name":{"@path":"/name"}}}}},
  {"id":"col","component":"Column","children":["name","agree","go","tabs","key","more"]},
  {"id":"name","component":"TextField","label":"Name","value":{"@path":"/name"},"checks":[{"condition":{"@call":"required","args":{"value":{"@path":"/name"}}},"message":"Name, please"}]},
  {"id":"agree","component":"CheckBox","label":"Agree","value":{"@path":"/agree"}},
@@ -213,7 +213,7 @@ const controls = `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId
  {"id":"go_t","component":"Text","text":"Go"},
  {"id":"tabs","component":"Tabs","tabs":[{"title":"A","child":"ta"},{"title":"B","child":"tb"}]},
  {"id":"ta","component":"Text","text":"in A"},{"id":"tb","component":"Text","text":"in B"},
- {"id":"key","component":"Shortcut","catalogId":"` + hottycat.ID + `","key":"Control+Enter","press":"go"},
+ {"id":"key","component":"HottyShortcut","catalogId":"` + hottycat.ID + `","key":"Control+Enter","press":"go"},
  {"id":"more","component":"Modal","trigger":"more_b","content":"more_t"},
  {"id":"more_b","component":"Button","child":"more_bt","action":{"event":{"name":"noop"}}},
  {"id":"more_bt","component":"Text","text":"More"},
