@@ -70,6 +70,29 @@ KIT-REF and KIT-LOOK don't wait for it.
 
 ## Phase 2 — The HOTTY layer
 
+### The host
+
+As of 2026-10-09, from the hotty agent:
+- **Higher z.** Placement `z` is in the spec (§5.2). Surfaces with equal z
+  go by creation order. Toasts, tooltips and suggestion lists use it.
+- **No popover.** A dedicated popover is parked by the maintainer, so
+  don't design for one. A separate surface at a higher z is the tool,
+  as the select's list already is.
+- **Scrolling is live.** §5.3 and §8 work in hotty-blitz, hottyterm and the
+  addon: `scroll` on a=doc, overlay scrollbars, and `area`.
+- **No clipboard yet.** This is the parked clipboard problem: hotty-blitz
+  has no clipboard, and a paste goes to the program, not to the focused
+  field. KIT-12h and KIT-05h's copy button wait for the maintainer.
+- **SVG.** Inline SVG and SVG in `<img>` render in hotty-blitz, with two
+  gaps:
+  - CSS paint inside inline SVG is incomplete, so use presentation
+    attributes.
+  - Thin rounded borders drop out at fractional scales.
+
+  Check SVG with `hotty render`, headless at 1.6x.
+
+### Legs
+
 - [ ] **KIT-02h** — Progress: a smooth bar.
 - [ ] **KIT-03h** — Spinner: frames or a CSS animation.
 - [ ] **KIT-01h** — Table: a real table, a sticky header, hover, sorting by
@@ -77,14 +100,15 @@ KIT-REF and KIT-LOOK don't wait for it.
 - [ ] **KIT-04h** — Rich list: two-line rows in proportional type, hover.
 - [ ] **KIT-08h** — Key hints as keycaps.
 - [ ] **KIT-07h** — Scroll view on the host's scrolling (SPEC §8).
-- [ ] **KIT-05h** — Code: highlight spans, selectable text, a copy button.
+- [ ] **KIT-05h** — Code: highlight spans. Selectable text and a copy
+  button wait for the clipboard.
 - [ ] **KIT-06h** — Diff: split view in columns, acting on hunks.
 - [ ] **KIT-09h** — Tree: disclosure triangles, guides.
-- [ ] **KIT-10h** — Chart as SVG.
-- [ ] **KIT-11h** — Suggestions in a popover surface.
-- [ ] **KIT-12h** — Selection and copy: the host's own.
-- [ ] **KIT-13h** — Toast as a higher-Z surface, tooltip as a popover
-  surface.
+- [ ] **KIT-10h** — Chart as SVG, with presentation attributes, not CSS.
+- [ ] **KIT-11h** — Suggestions in a surface at a higher z.
+- [ ] **KIT-12h** — Selection and copy: the host's own. Blocked: the
+  clipboard is parked by the maintainer.
+- [ ] **KIT-13h** — Toast and tooltip, each as a surface at a higher z.
 - [ ] **KIT-14h** — Timer and stopwatch in display type.
 - [ ] **KIT-15h** — Paginator.
 - [ ] **KIT-16h** — Confirm.

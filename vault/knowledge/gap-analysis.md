@@ -54,22 +54,22 @@ they're built.
 | KIT-02 | **Progress** | bubbles progress | High | A bar filled in eighths (`▏`…`█`), a percentage, lipgloss's gradient, and an indeterminate segment that moves | A smooth bar with its label, animated where the host animates |
 | KIT-03 | **Spinner** | bubbles spinner, OpenTUI animation | High | bubbles' frame sets (dots, line, minidot, pulse, points, meter…) ticked by the renderer, and a label. It also draws A2UI's pending state for async function values | The same frames, or a CSS animation |
 | KIT-04 | **Rich list**: items with descriptions, a filter, a status line | bubbles list, huh select and multiselect, OpenTUI Select | High | Title and description rows, a highlight bar, a filter as you type (`/`), pagination dots, a status line, an empty state | Two-line rows in proportional type, the row under the mouse |
-| KIT-05 | **Code** | OpenTUI Code and LineNumbers | High for coding agents | Syntax highlighting, a line-number gutter, marked lines, wrapping or horizontal scrolling. Text's fenced code blocks use it too | `pre` with highlight spans, selectable text, a copy button |
+| KIT-05 | **Code** | OpenTUI Code and LineNumbers | High for coding agents | Syntax highlighting, a line-number gutter, marked lines, wrapping or horizontal scrolling. Text's fenced code blocks use it too | `pre` with highlight spans. Selectable text and a copy button wait for the host's clipboard (board, *The host*) |
 | KIT-06 | **Diff** | OpenTUI Diff | High for coding agents | Unified and split views from a unified diff or from two texts: `+`/`-` gutters, line numbers, changed words marked, hunk headers, unchanged runs folded | A split view in real columns, word-level marks, acting on a hunk (select-then-act, see a2ui-limits L2) |
 | KIT-07 | **Scroll view** | bubbles viewport, OpenTUI ScrollBox and ScrollBar | Medium–High | A box of fixed height with a scrollbar column. It follows the tail while you're at the bottom, and scrolls with the wheel, PgUp and PgDn | The host's own scrolling (SPEC §8 area and scroll) with a native scrollbar |
 | KIT-08 | **Key hints** | bubbles help and key | Medium, cheap | A line built from the surface's Shortcuts and the focused field's keymap, short and full (`?`) | Keys drawn as keycaps |
 | KIT-09 | **Tree** | bubbles tree, lipgloss tree | Medium | `├──` `└──` guides, folding with ← →, a selected node | Disclosure triangles and indentation guides |
-| KIT-10 | **Chart**: sparkline, line, bar | OpenTUI FrameBuffer. hotty-go has chart, braille and series | Medium | Sparklines (`▁▂▃▄▅▆▇█`), line charts in braille, bars in eighths, axes and labels | SVG |
-| KIT-11 | **Suggestions** (autocomplete) | bubbles textinput's suggestions | Medium | Ghost text after the caret that Tab or → accepts, and a list under the field | The list as a popover surface (as the select's) |
-| KIT-12 | **Selection and copy** | OpenTUI selection and clipboard | Medium | Dragging the mouse selects text in cells. Copy goes through OSC 52 | The host's own selection in HTML |
-| KIT-13 | **Toast and tooltip** | OpenTUI notifications, console | Low–Medium | A toast is a box in a corner, over the surface, that times out. A tooltip is a component's `accessibility.description`, shown in a status line | A toast is a surface at a higher Z. A tooltip is a popover surface at the hovered area |
+| KIT-10 | **Chart**: sparkline, line, bar | OpenTUI FrameBuffer. hotty-go has chart, braille and series | Medium | Sparklines (`▁▂▃▄▅▆▇█`), line charts in braille, bars in eighths, axes and labels | SVG, checked with `hotty render` at 1.6x |
+| KIT-11 | **Suggestions** (autocomplete) | bubbles textinput's suggestions | Medium | Ghost text after the caret that Tab or → accepts, and a list under the field | The list as a surface at a higher z, as the select's is |
+| KIT-12 | **Selection and copy** | OpenTUI selection and clipboard | Medium | Dragging the mouse selects text in cells. Copy goes through OSC 52 | The host's own selection and copy. This waits for the host's clipboard (board, *The host*) |
+| KIT-13 | **Toast and tooltip** | OpenTUI notifications, console | Low–Medium | A toast is a box in a corner, over the surface, that times out. A tooltip is a component's `accessibility.description`, shown in a status line | A toast is a surface at a higher Z. A tooltip is a surface at a higher z, at the hovered area |
 | KIT-14 | **Timer and stopwatch** | bubbles timer and stopwatch | Low | A countdown or elapsed time that ticks, and an action when time is up | The same, set in display type |
 | KIT-15 | **Paginator** | bubbles paginator | Low | Dots (`• ○`) or `3/10`, moved with ← → | The same |
 | KIT-16 | **Confirm** | huh confirm | Low | Yes and No inline, with the y and n keys | The same. It may turn out to be a pattern made of Buttons, not a component |
 | KIT-17 | **File picker** | bubbles filepicker, huh filepicker | Low | A directory listing walked with ↑ ↓ ← →. It shows only the roots the program grants (a2ui-limits L10) | The same, with icons |
 | KIT-18 | **Terminal** | OpenTUI EmbeddedTerminal | Low, large | A VT pane that runs only commands the program has registered, never a command line from the agent (L10) | To be decided |
 | KIT-19 | **Big text** | OpenTUI ASCIIFont | Low | figlet-style block letters | Large display type |
-| KIT-20 | **QR code** | OpenTUI QR | Low | Half blocks (`▀▄█`) | SVG |
+| KIT-20 | **QR code** | OpenTUI QR | Low | Half blocks (`▀▄█`) | SVG, checked with `hotty render` at 1.6x |
 | KIT-21 | **3D and audio** | OpenTUI three.js and audio | Parked | Not for a terminal UI kit. AudioPlayer is already a labelled link. Media is gov R-2's research | — |
 
 ## What "parity" means here

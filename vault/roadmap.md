@@ -42,9 +42,11 @@ The same components on a HOTTY host, using what HTML gives:
 - proportional type;
 - SVG;
 - real tables;
-- popover and higher-Z surfaces;
-- the host's own scrolling and selection;
+- surfaces at a higher z (SPEC §5.2), as the select's list already is;
+- the host's own scrolling (SPEC §5.3, §8);
 - hover.
+
+What the host has, and doesn't, is under *The host* on the board.
 
 A phase-2 leg (`KIT-NNh`) is done when its html rendition has been judged in
 hottyterm (26.10.09 or later, which has the §10.2 field keymaps) and in the
