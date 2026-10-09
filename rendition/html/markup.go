@@ -301,8 +301,9 @@ func (m *markup) element(e *view.Element) *node {
 		// A drag reports the element under the pointer, not where on it
 		// (SPEC §9.1), so the track is cut into notches across it, each
 		// a drag target: pressing one sets its value, crossing them moves
-		// it. A touch drags nothing (it scrolls, SPEC §9.1), but a tap is
-		// a click: a notch clicked sets its value too.
+		// it. A finger drags them along the track, whose touch-action
+		// (kit.css) leaves only vertical pans (SPEC §9.1). A tap is a
+		// click: a notch clicked sets its value too.
 		k := notches(e)
 		w := 100 / float64(k)
 		for i := range k {

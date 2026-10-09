@@ -275,8 +275,8 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			return c.StepSlider(id, n, "")
 		}
 		if e.Kind == view.Slider && len(part) > 1 && part[0] == partNotch[0] {
-			// A tap on the track (a touch drags nothing, SPEC §9.1), or
-			// the click a mouse's drag ends with where it began.
+			// A tap on the track, or the click a drag ends with where it
+			// began (SPEC §9.1).
 			return r.notch(e, part)
 		}
 		if part != "" {

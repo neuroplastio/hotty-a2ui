@@ -272,6 +272,10 @@ textarea.k-input { min-height: 5.5rem; }
   border-radius: 999px;
   background: transparent;
   cursor: pointer;
+  /* A finger moving along the track drags it, and one moving up or down
+     scrolls (SPEC §9.1: a touch drags where touch-action allows no pan its
+     way). */
+  touch-action: pan-y;
 }
 .k-rail, .k-fill {
   position: absolute;

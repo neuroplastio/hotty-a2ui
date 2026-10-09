@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -676,8 +677,12 @@ func TestSliderAndDate(t *testing.T) {
 	}
 	x.check(r)
 
-	// A tap: a touch drags nothing (SPEC §9.1), but its click on a notch
+	// A finger: it drags as the mouse does where touch-action allows no pan
+	// its way (SPEC §9.1), along the track, and a tap's click on a notch
 	// sets the value there.
+	if !regexp.MustCompile(`\.k-track \{[^}]*touch-action: pan-y;`).MatchString(kitCSS) {
+		t.Error("the track leaves a finger a horizontal pan: kit.css has no touch-action: pan-y for .k-track")
+	}
 	if err := x.h.Click(r.name, partID("v", "k4")); err != nil {
 		t.Fatal(err)
 	}
