@@ -16,6 +16,7 @@ steer it. Start here, then read [`/AGENTS.md`](../AGENTS.md) and
 | [`knowledge/gap-analysis.md`](knowledge/gap-analysis.md) | The kit against Bubble Tea and OpenTUI: every gap, with its ticket |
 | [`knowledge/a2ui-limits.md`](knowledge/a2ui-limits.md) | What A2UI v1.0 can and cannot carry for those components |
 | [`knowledge/catalog-naming.md`](knowledge/catalog-naming.md) | The `Hotty` prefix: how the catalog's names stay clear of A2UI's |
+| [`knowledge/host-motion.md`](knowledge/host-motion.md) | CSS animations and transitions in hotty-blitz: why motion on a host is the program's deltas |
 
 ## The loop
 

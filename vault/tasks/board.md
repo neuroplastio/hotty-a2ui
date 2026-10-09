@@ -135,8 +135,10 @@ As of 2026-10-09, from the hotty agent:
     Spinner's frame's text (`~f`). `html.Rendition` has `Clock` and
     `Animating`, and `Book.Tick` counts the surfaces it placed.
   - The bar steps 2.5% of the track at 10 ticks a second, as cells
-    does. A CSS animation would be smoother but would leave the shared
-    clock. It isn't tried yet.
+    does. A CSS animation would be smoother, but hotty-blitz can't run
+    one yet (journal 2026-10-09.8, knowledge/host-motion.md).
+  - hotty-demo returns `Book.Tick` since a4afa21, so the site's
+    storybook moves too.
 - [x] **KIT-01c** — `HottyTable` in cells (journal 2026-10-09.7, awaiting
   the maintainer's look).
   - Columns with widths, alignment and `…` cuts. Rows come as data,
