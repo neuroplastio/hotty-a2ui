@@ -93,7 +93,11 @@ As of 2026-10-09, from the hotty agent:
   Blitz draws it at its end, but whether it then scrolls and stays at the
   end as lines are appended is unchecked. Otherwise following the tail
   is a SPEC change, the maintainer's call. The wheel over a host's box is
-  the host's.
+  the host's. bubbles' letter keys (j, k, b, f, u, d, g, G) do nothing on
+  a host either: the arrows work because the host scrolls with them, and a
+  keymap outside a text field gives only `program` (SPEC §10.2). Reported
+  by the maintainer 2026-10-09; the fix proposed is scroll actions in the
+  keymap, a SPEC change.
 - [ ] **KIT-05h** — Code: highlight spans. Selectable text and a copy
   button wait for the clipboard.
 - [ ] **KIT-06h** — Diff: split view in columns, acting on hunks.
