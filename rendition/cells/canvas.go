@@ -16,9 +16,12 @@ type style struct {
 	role Role
 	attr Attr
 	link string
-	// to and mix blend the colour toward another role's (Cell.To).
-	to  Role
-	mix uint8
+	// to and mix blend the colour toward another role's (Cell.To); back
+	// and backMix tint the background (Cell.Back).
+	to      Role
+	mix     uint8
+	back    Role
+	backMix uint8
 }
 
 // glyphs splits s into styled grapheme clusters: a tab is a space, a line
@@ -145,10 +148,10 @@ func (cv *canvas) set(x, y int, g glyph) {
 		g = glyph{text: " ", width: 1, style: g.style}
 	}
 	cv.unwide(x, y)
-	row[x] = Cell{Text: g.text, Width: g.width, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix}
+	row[x] = Cell{Text: g.text, Width: g.width, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix, Back: g.back, BackMix: g.backMix}
 	if g.width == 2 {
 		cv.unwide(x+1, y)
-		row[x+1] = Cell{Width: 0, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix}
+		row[x+1] = Cell{Width: 0, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix, Back: g.back, BackMix: g.backMix}
 	}
 }
 

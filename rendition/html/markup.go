@@ -230,6 +230,8 @@ func (m *markup) element(e *view.Element) *node {
 		n = m.keyHints(e)
 	case view.ScrollView:
 		n = m.scrollView(e)
+	case view.Listing:
+		n = m.code(e)
 	case view.Divider:
 		if e.Dir == view.Vertical {
 			n = el("div", "id", id, "class", "k-vr", "role", "separator", "aria-orientation", "vertical")

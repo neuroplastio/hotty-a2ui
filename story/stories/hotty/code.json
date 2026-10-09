@@ -1,0 +1,86 @@
+{
+  "name": "HottyCode: highlighted source",
+  "description": "Source code as a code viewer shows it, highlighted for its language with the theme's roles: Go with line numbers and marked lines (a highlighted range, an error), an excerpt of a change to a Python file from line 40 (a removed and an added line, cut at the edge rather than wrapped; on a host it scrolls sideways), and a fenced TypeScript block in a Text. HottyCode has no height of its own: a long listing goes in a HottyScrollView.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "code",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "code",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "go_title",
+              "go",
+              "py_title",
+              "py",
+              "prose"
+            ]
+          },
+          {
+            "id": "go_title",
+            "component": "Text",
+            "text": "**api/handler.go**"
+          },
+          {
+            "id": "go",
+            "component": "HottyCode",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "code": "package api\n\nimport (\n\t\"errors\"\n\t\"net/http\"\n)\n\n// Handle serves a request, or says why it cannot.\nfunc Handle(w http.ResponseWriter, r *http.Request) error {\n\tif r.Method != http.MethodGet {\n\t\treturn errors.New(\"only GET\")\n\t}\n\tw.WriteHeader(http.StatusOK)\n\t_, err := w.Write([]byte(\"ok\\n\"))\n\treturn err\n}\n",
+            "language": "go",
+            "lineNumbers": true,
+            "marks": [
+              {
+                "line": 10,
+                "end": 12,
+                "kind": "highlight"
+              },
+              {
+                "line": 14,
+                "kind": "error"
+              }
+            ]
+          },
+          {
+            "id": "py_title",
+            "component": "Text",
+            "text": "**A change to fetch.py**"
+          },
+          {
+            "id": "py",
+            "component": "HottyCode",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "code": "def fetch(url, tries=3):\n    for attempt in range(tries):\n        try:\n            return requests.get(url, timeout=5)\n            return requests.get(url, timeout=5, headers={\"User-Agent\": \"hotty-a2ui/0.1 (+https://hotty.neuroplast.io)\"})\n        except requests.Timeout:\n            time.sleep(2 ** attempt)\n    raise RuntimeError(f\"gave up on {url} after {tries} tries\")\n",
+            "language": "fetch.py",
+            "lineNumbers": true,
+            "startLine": 40,
+            "wrap": false,
+            "marks": [
+              {
+                "line": 43,
+                "kind": "removed"
+              },
+              {
+                "line": 44,
+                "kind": "added"
+              }
+            ]
+          },
+          {
+            "id": "prose",
+            "component": "Text",
+            "text": "Code in prose stays a fenced block in a Text, highlighted the same way:\n\n```ts\nexport function greet(name: string): string {\n  return `hello, ${name}` // a template literal\n}\n```"
+          }
+        ]
+      }
+    }
+  ]
+}

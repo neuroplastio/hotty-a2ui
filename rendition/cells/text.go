@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/neuroplastio/hotty-a2ui/highlight"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -12,6 +13,9 @@ type tline struct {
 	gs   []glyph
 	rule bool
 }
+
+// codeIndent is the columns a Text's code block sits in from its prose.
+const codeIndent = 2
 
 // markdown is a Text's lines at width w (profile §3.4): each block of its
 // Markdown wrapped, a line a row; unwrapped when w is noWrap.
@@ -47,8 +51,20 @@ func markdown(e *view.Element, w int) []tline {
 			first = glyphs(strings.Repeat("▎ ", b.Level+1), style{role: Border})
 			rest = first
 		case view.CodeBlock:
-			for _, l := range strings.Split(b.Runs[0].Text, "\n") {
-				out = append(out, chars(glyphs(l, style{role: Muted}), w)...)
+			// Highlighted as its fence says (profile §3.4), two columns
+			// in, as glamour sets a code block off from the prose.
+			indent := min(codeIndent, max(w-1, 0))
+			if w == noWrap {
+				indent = codeIndent
+			}
+			for _, l := range highlight.Lines(b.Runs[0].Text, b.Lang) {
+				cw := w
+				if w != noWrap {
+					cw = w - indent
+				}
+				for _, t := range chars(tokenGlyphs(l, base.role), cw) {
+					out = append(out, tline{gs: concat(repeat(" ", indent, base), t.gs)})
+				}
 			}
 			continue
 		case view.Rule:

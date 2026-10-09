@@ -76,6 +76,12 @@ type Cell struct {
 	// (a Progress bar's gradient); else Role's. Mix 0 is Role's alone.
 	To  Role
 	Mix uint8
+	// Back and BackMix tint the cell's background: BackMix/255 of the way
+	// from the theme's background to Back's colour (a marked line of
+	// code), where the theme has both as "#rrggbb"; BackMix 0 is no tint,
+	// and so is a theme that keeps the terminal's background.
+	Back    Role
+	BackMix uint8
 }
 
 var blank = Cell{Text: " ", Width: 1}
@@ -202,7 +208,11 @@ func (c Cell) style(th *theme.Theme) string {
 		p = append(p, ansi16[c.Role])
 	}
 	if th.Bg != "" {
-		p = append(p, truecolour("48", th.Bg))
+		bg := th.Bg
+		if c.BackMix > 0 {
+			bg = blend(th.Bg, th.Colour(roleNames[c.Back]), c.BackMix)
+		}
+		p = append(p, truecolour("48", bg))
 	}
 	return strings.Join(p, ";")
 }

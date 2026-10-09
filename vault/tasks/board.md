@@ -7,8 +7,9 @@ Last updated: 2026-10-09
 fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
 2026-10-09.5): progress bars and spinners; at KIT-01c (journal
 2026-10-09.7): the table; at KIT-04c (journal 2026-10-09.9): the list;
-at KIT-08c (journal 2026-10-09.10): the key hints; and at KIT-07c
-(journal 2026-10-09.11): the scroll view. Phase 1 is a go
+at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
+(journal 2026-10-09.11): the scroll view; and at KIT-05c (journal
+2026-10-09.12): code and its colours. Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
@@ -22,8 +23,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-05c** — Code: syntax highlighting, a line-number gutter, marked
-  lines, wrapping. Text's fenced code blocks use it too.
 - [ ] **KIT-06c** — Diff: unified and split views, gutters, word marks, hunk
   headers, folded runs. Select-then-act on a hunk (L2).
 - [ ] **KIT-09c** — Tree: guides, folding, a selected node.
@@ -137,6 +136,17 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-05c** — `HottyCode` in cells, held against glamour's code
+  blocks (journal 2026-10-09.12, awaiting the maintainer's look).
+  - chroma lexes; each token kind takes a role, so every theme and the
+    terminal's own palette colour code. 37 languages come with the kit
+    (`highlight/lexers`). A program that wants all of chroma's imports
+    `highlight/all`.
+  - Line numbers, `startLine`, marks (highlight, added, removed, error,
+    warning) as a sign and a tinted row, and wrapping or cutting.
+  - Text's fenced code blocks are highlighted too, in both renditions.
+  - The HTML baseline is the same rows, with token spans and tints.
+  - It costs the site's storybook module 185 KB brotli.
 - [x] **KIT-07c** — `HottyScrollView` in cells, as bubbles' viewport
   (journal 2026-10-09.11, awaiting the maintainer's look).
   - A box `height` rows tall of a `child` or of `lines` (L4: an agent

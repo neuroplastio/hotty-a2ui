@@ -15,6 +15,7 @@ import (
 	"charm.land/bubbles/v2/table"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/glamour/v2"
 	"charm.land/lipgloss/v2"
 )
 
@@ -36,6 +37,9 @@ func init() {
 	})
 	register("viewport", "hotty/scroll", "bubbles: viewport (KIT-07)", func() tea.Model {
 		return screen{newViewports()}
+	})
+	register("code", "hotty/code", "glamour: code blocks (KIT-05)", func() tea.Model {
+		return screen{&codeRef{}}
 	})
 }
 
@@ -320,4 +324,71 @@ func (m *viewportsRef) View() string {
 	return bold.Render("Build log") + "\n" + m.vp[0].View() + "\n\n" +
 		bold.Render("A document") + "\n" + m.vp[1].View() + "\n\n" +
 		m.help.ShortHelpView([]key.Binding{km.Up, km.Down, km.PageDown, km.PageUp})
+}
+
+// code: the story's code as glamour renders Markdown's fenced code
+// blocks, which is how code looks in a Charm app (bubbles has no code
+// component): chroma's colours, a block's margin, no line numbers and no
+// marks. The story is read as viewport's is, from the repository's root.
+type codeRef struct{ out string }
+
+func (m *codeRef) Init() tea.Cmd { return nil }
+
+func (m *codeRef) Update(msg tea.Msg) tea.Cmd {
+	if ws, ok := msg.(tea.WindowSizeMsg); ok {
+		r, err := glamour.NewTermRenderer(glamour.WithStandardStyle("dark"), glamour.WithWordWrap(ws.Width))
+		if err != nil {
+			m.out = err.Error()
+			return nil
+		}
+		if m.out, err = r.Render(codeMarkdown()); err != nil {
+			m.out = err.Error()
+		}
+	}
+	return nil
+}
+
+func (m *codeRef) View() string { return m.out }
+
+// codeMarkdown is the story hotty/code as Markdown: each HottyCode a
+// fenced block under its title, then the Text.
+func codeMarkdown() string {
+	b, err := os.ReadFile("story/stories/hotty/code.json")
+	if err != nil {
+		return "ref code runs from the repository's root: " + err.Error()
+	}
+	var s struct {
+		Messages []struct {
+			UpdateComponents *struct {
+				Components []struct{ ID, Text, Code, Language string }
+			}
+		}
+	}
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err.Error()
+	}
+	byID := map[string]struct{ text, code, lang string }{}
+	for _, msg := range s.Messages {
+		if msg.UpdateComponents != nil {
+			for _, c := range msg.UpdateComponents.Components {
+				byID[c.ID] = struct{ text, code, lang string }{c.Text, c.Code, c.Language}
+			}
+		}
+	}
+	// glamour knows a language by its name, not a file's.
+	lang := map[string]string{"fetch.py": "python"}
+	var out strings.Builder
+	for _, id := range []string{"go_title", "go", "py_title", "py", "prose"} {
+		c := byID[id]
+		if c.code != "" {
+			l := c.lang
+			if v, ok := lang[l]; ok {
+				l = v
+			}
+			fmt.Fprintf(&out, "```%s\n%s```\n\n", l, c.code)
+			continue
+		}
+		out.WriteString(c.text + "\n\n")
+	}
+	return out.String()
 }

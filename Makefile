@@ -4,7 +4,7 @@ GOFMT       ?= mise x -- gofmt
 # staticcheck 2026.2.1, the first that knows Go 1.26.
 STATICCHECK ?= honnef.co/go/tools/cmd/staticcheck@v0.8.1
 
-.PHONY: check fmt tidy vet lint test ref shot a2ui gif clean
+.PHONY: check fmt tidy vet lint test ref shot a2ui lexers gif clean
 
 check: fmt tidy vet lint test ref   ## the gate
 
@@ -35,6 +35,9 @@ shot:   ## .shots/NAME.png: ref NAME beside its story (NAME=form; KIT_KEYS, REF_
 
 a2ui:   ## third_party/a2ui at REV, a full A2UI commit (scripts/a2ui.sh)
 	sh scripts/a2ui.sh $(REV)
+
+lexers:   ## highlight/lexers from the chroma go.mod requires (scripts/lexers.sh)
+	sh scripts/lexers.sh
 
 # The README's GIF: the storybook in xterm.js, driven with Playwright from
 # a checkout of neuroplastio/xterm-addon-hotty (ADDON, built: npm run build),

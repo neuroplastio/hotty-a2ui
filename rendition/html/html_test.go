@@ -1054,3 +1054,34 @@ func TestTableKeepsWidth(t *testing.T) {
 		t.Errorf("scrolled to the end, the header changed:\n%s", head())
 	}
 }
+
+// TestCodeOnHost: a HottyCode is a box of rows, each its number (hidden
+// from a screen reader), its mark's sign and its code, a span for each
+// token that is not plain; a marked row has the mark's class. Code that
+// changes is changed by deltas, and what the host has is the document.
+func TestCodeOnHost(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"src":"x := 1\nreturn x"}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyCode","catalogId":"`+hottycat.ID+`","code":{"@path":"/src"},"language":"go","lineNumbers":true,"startLine":9,"wrap":false,
+  "marks":[{"line":10,"kind":"removed"}]}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	h := s.HTML()
+	for _, want := range []string{`class="k-code k-nowrap"`, `data-lang="go"`, `style="--k-ln: 2ch"`,
+		`<div class="k-cl"><span class="k-ln" aria-hidden="true">9</span><span class="k-sign"></span><span class="k-src">x := <span class="k-t-literal">1</span></span></div>`,
+		`<div class="k-cl k-m-removed"><span class="k-ln" aria-hidden="true">10</span><span class="k-sign" aria-label="removed">-</span><span class="k-src"><span class="k-t-keyword">return</span> x</span></div>`} {
+		if !strings.Contains(h, want) {
+			t.Errorf("no %s in\n%s", want, h)
+		}
+	}
+	var set []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/src","value":"x := 2\nreturn x\n// done"}}]`), &set))
+	x.process(set...)
+	x.check(r)
+	if got := strings.Count(s.HTML(), `class="k-cl`); got != 3 {
+		t.Errorf("%d rows after the update", got)
+	}
+}

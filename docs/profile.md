@@ -98,6 +98,7 @@ so that an error comes and goes as a text delta.
 | HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`. Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type and the item under the pointer are vault KIT-04h |
 | HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h |
 | HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there. For the same reason bubbles' letter keys (j, k, b, f, u, d, g, G, h, l) are cells' only: on a host they reach the program, which cannot scroll the box, and a keymap outside a text field gives only `program` (SPEC.md §10.2). Following the tail and the letters on a host are vault KIT-07h |
+| HottyCode | `div` in the mono face, filled with `--k-tonal` as a Text's code block is, a flex row (`k-cl`) for each line: its number, right-aligned as wide as the widest (`--k-ln`), in `--k-muted` and `aria-hidden`; its mark's sign, when the code has marks; then its code (`k-src`), a span for each token that is not plain, of class `k-t-` and its kind, which the sheet colours with the roles cells uses (§3.4). A marked row has `k-m-` and its kind: a highlighted one is filled with `--k-selection`, the others with a sixth of their role's colour (`color-mix`). Lines wrap, `pre-wrap`; with `wrap` false they do not, and the box scrolls sideways, which the host does itself (SPEC.md §5.3), every row as wide as the widest so that a tint reaches the end. A Text's fenced code block is goldmark's `pre` and `code`, its tokens in the same spans |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 
 **Updates are deltas.** The document goes once. After it, the renderer
@@ -229,6 +230,7 @@ Natural widths:
 | HottyList | 2 for the indent, plus its widest line: its title + 2, its status line, its empty text, `Filter: ` + 1 when it filters, each item's label and description |
 | HottyKeyHints | its short line, or in the full view its columns, uncut |
 | HottyScrollView | its widest line unwrapped (whether it wraps them or not), or its child's natural width, plus 2 for the scrollbar |
+| HottyCode | its gutter (§3.4) and its widest line |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -251,6 +253,8 @@ Minimums:
 - A HottyKeyHints's is 1: it cuts what does not fit (§3.4).
 - A HottyScrollView's is its child's, or 1 for its lines (it cuts them or
   wraps them), plus 2 for the scrollbar.
+- A HottyCode's is its gutter and 8 columns of code, or its widest line
+  when that is narrower.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -271,7 +275,7 @@ How the containers lay their children out:
     whatever comes before, as bubbles' help sits a row under its list.
     A HottyScrollView has one after it, whatever comes after: its box
     draws no edge but the scrollbar, so what follows would read as its
-    content. Before it, the rule for controls applies, so a title above
+    content. So does a HottyCode, which draws no edge at all. Before it, the rule for controls applies, so a title above
     it stays on the row before its box.
     Through a Row, a Column or a HottyForm, the rule sees its first child
     (or, before it, its last).
@@ -335,6 +339,7 @@ How the containers lay their children out:
 | HottyList | as bubbles' list with its default delegate, every line 2 columns in: its title, ` Title ` in `accent` reversed, and a blank row (neither without a title); its status line in `muted` and a blank row; then the items of the page that shows, each its label and, under it, its description in `muted` (one row an item, with no blank rows between, when none has a description; else two, a blank row between). The selected item's first two columns are `│ `: in `accent` with its label and description while the list has the keyboard, and in `muted` otherwise, its text plain. A label too wide is cut with `…`; its characters that matched the filter are underlined. With a `height`, a page shows that many items, from the page that holds the selected one, and the body keeps their rows on every page; after it, while the items take more than a page, a blank row and a dot for each page (`•`, the page shown's in `fg`, the others in `border`; `3/10` in `muted` when the dots do not fit), whose two rows stay while a filter leaves one page. The status line is `12 items` (`1 item`, `No items`); while a filter applies, `“query” 7 items`, or `Nothing matched`, then ` • 5 filtered`. While the filter is typed, `Filter: ` in `accent` and the text take the title's row, with the cursor after them. With no items, the empty text shows in `muted` in the body. |
 | HottyKeyHints | as bubbles' help draws it: the short view one line, each key in `muted`, a space, what it does in `muted` faint, and ` • ` in `border` faint between them (bubbles' three steps; the Terminal theme's `muted` and `border` are one colour); the hints that do not fit go, and ` …` ends the line where it fits. The full view (after `?`, §3.7) is its groups (§6.10) as columns four apart, each a row a key, the keys padded to the widest, then a space and what they do; a group that does not fit goes, and ` …` follows the first row where it fits. |
 | HottyScrollView | a box `height` rows tall, as bubbles' viewport: its content, 2 columns narrower than the box, then a blank column and the scrollbar down the last. Its lines are a row each, cut at the box and scrolled sideways six columns at a time, or with `wrap` broken between characters into the rows they take; a child is laid out at the content's width, and shows through the box at the rows scrolled to: what it hides takes no click, and the element with the keyboard inside it is scrolled into sight. It starts at its top, or with `follow` at its end, where it stays as lines arrive until the user scrolls up, and follows again once back at the end. The scrollbar, while the content is taller than the box, is a track of `│` in `border` faint and on it a thumb of `┃` as long as the share that shows (at least a row), where it shows, in `muted`, and in `accent` while the box has the keyboard. bubbles' viewport draws no scrollbar: without one, a box with no edge gives no sign that it scrolls |
+| HottyCode | a row for each line, or with `wrap` (the default) as many as the line takes, broken by cluster under the code: first its number, right-aligned as wide as the widest, in `muted`, and a space, when `lineNumbers` is on; then, when the code has marks, the line's sign and a space (`▎` in `info` for highlight, `+` in `success` for added, `-` and `✗` in `error` for removed and error, `!` in `warning`); then the code. Continuation rows leave the gutter blank. Without `wrap` a long line is cut with `…`. Each token is coloured by its kind (package `highlight`): keywords `info` and bold, types and builtins `info`, functions' names bold, strings `success`, numbers and constants `warning`, as are preprocessor lines, decorators and attributes, comments `muted` and italic, a diff's added and removed lines `success` and `error`, its hunk headers `info` and bold, and the rest `fg`. Not `accent`, which marks only focus (§3.6). A marked line's rows are tinted across the width (§3.6): toward `selection` itself for highlight, a sixth of the way toward `success`, `error` or `warning` for the others. As OpenTUI's Code and LineNumbers; glamour, the reference shot's, draws code blocks with neither numbers nor marks |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
@@ -344,8 +349,11 @@ How the containers lay their children out:
 - A list item is indented two columns a level. Its marker is `• `, `1. `,
   or `☐ ` / `✓ ` for a task. Continuation lines align with the text.
 - A quote starts every line with `▎ `, once per level, in `border`.
-- A code block is `muted`, its lines broken by cluster at the width rather
-  than wrapped.
+- A code block is two columns in, as glamour sets one off from the
+  prose, its lines broken by cluster at the width rather than wrapped. It
+  is highlighted as its fence says (```` ```go ````), its tokens coloured as a
+  HottyCode's, its plain ones in the Text's colour; without a language, or
+  with one no lexer knows, it is plain.
 - A rule is `─` across, in `border`.
 - Inline: bold, italic and strikethrough are attributes, and code is
   `muted`. A link is underlined and its cells carry the URL (OSC 8).
@@ -435,6 +443,11 @@ from the first to the second, which is, channel by channel, p + (q − p) ×
 k / 255 in integers, truncated. It takes effect where the theme colours
 both roles; elsewhere, and at the ANSI-16 floor, the cell is the first
 role's.
+
+A cell's background may be tinted (a HottyCode's marked line): k/255 of
+the way from the theme's `bg` to a role's colour, as above. It takes
+effect where the theme colours both; with the terminal's background, and
+at the ANSI-16 floor, there is no tint, and the line's sign says it alone.
 
 The attributes are bold (1), faint (2), italic (3), underline (4), reverse
 (7) and strikethrough (9). Under NO_COLOR, the attributes are written and
@@ -601,6 +614,9 @@ reference is `rendition/text`.
   empty text when it has no items.
 - A HottyScrollView is all of its content, whatever its `height`: its
   lines, a line each, or its child.
+- A HottyCode is its code as it is, each line after its number when the
+  numbers show, and its mark's sign when it has marks (`>` for highlight,
+  `+`, `-`, `✗`, `!`), as a pipe reads a diff.
 - Tabs are their titles, the one shown in brackets, then its content.
 - A HottyKeyHints says nothing: a pipe takes no keys.
 - An error is `✗ message`, on the line after its control.
@@ -859,6 +875,29 @@ its end a view with `follow` follows the tail again; one without is at
 its end once, and stays where it is as lines arrive. On a host it does
 nothing: a program cannot set where a host has scrolled (SPEC.md §5.3),
 so there a box starts at its top, `follow` or not (§2, vault KIT-07h).
+
+### 6.12 HottyCode
+
+Source code, as a code viewer shows it: `code`, highlighted for its
+`language`, a language's name or alias (`go`, `Python`, `ts`) or a file
+name (`main.go`, `Dockerfile`); without one, or for one no lexer knows,
+it is plain. `lineNumbers` shows the lines' numbers, counted from
+`startLine` (1 by default) for an excerpt of a longer file. `marks` point
+at lines, each `{line, kind}`, or `{line, end, kind}` for a range, in the
+same numbers: `highlight` (a line to look at), `added` and `removed` (a
+change), `error` and `warning` (a problem); a later mark over the same
+line wins, and one past the code marks nothing. `wrap`, on by default,
+wraps long lines; off, they are cut in cells and scroll sideways on a
+host. It has no height: a HottyScrollView scrolls a long listing. It takes
+no focus; selecting and copying it are KIT-12's.
+
+The renderer lexes it (package `highlight`, chroma's lexers) into tokens
+of a few kinds, which each rendition colours with roles (§3.4), so every
+theme and the terminal's own palette colour code. The kit carries the
+lexers of the languages coding agents write most (`highlight/lexers`,
+copied from chroma by `make lexers`); a program that wants every language
+chroma knows imports `highlight/all`, at the size those take. A Text's
+fenced code blocks are highlighted the same way.
 
 ## 7. Fallbacks
 

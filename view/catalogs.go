@@ -135,6 +135,7 @@ func init() {
 	Register(hotty.ID, "HottyList", mapList)
 	Register(hotty.ID, "HottyKeyHints", mapKeyHints)
 	Register(hotty.ID, "HottyScrollView", mapScrollView)
+	Register(hotty.ID, "HottyCode", mapCode)
 	Register(hotty.ID, "HottyShortcut", func(b *Builder, n *a2ui.Node) *Element {
 		b.AddShortcut(Shortcut{ID: n.Key, Key: b.String(n, "key"), Press: b.String(n, "press"), Label: b.String(n, "label")})
 		b.out.nodes[n.Key] = n

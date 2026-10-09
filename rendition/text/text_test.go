@@ -91,3 +91,22 @@ func TestScrollView(t *testing.T) {
 		t.Errorf("got\n%s\nwant\n%s", got, want)
 	}
 }
+
+// TestCode: code reads as it is, after its line numbers when they show
+// and its marks' signs when it has any.
+func TestCode(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["a","b"]},
+	 {"id":"a","component":"HottyCode","catalogId":"` + hotty.ID + `","code":"one\n\ttwo\nthree","lineNumbers":true,"startLine":9,
+	  "marks":[{"line":10,"kind":"added"},{"line":11,"kind":"highlight"}]},
+	 {"id":"b","component":"HottyCode","catalogId":"` + hotty.ID + `","code":"plain"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	if want := " 9   one\n10 +     two\n11 > three\nplain\n"; got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}

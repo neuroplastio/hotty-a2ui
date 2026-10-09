@@ -5,6 +5,7 @@ package text
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -133,6 +134,8 @@ func element(e *view.Element) []string {
 			return children(e)
 		}
 		return e.Lines
+	case view.Listing:
+		return listing(e)
 	case view.Spinner:
 		if e.Active {
 			return []string{field(e.Label, "…")}
@@ -266,6 +269,36 @@ func richList(e *view.Element) []string {
 	}
 	if len(e.Items) == 0 {
 		out = append(out, "  "+e.Placeholder)
+	}
+	return out
+}
+
+// listing is a HottyCode as text: each line as it is, after its number
+// when the numbers show, and its mark's sign when it has marks (+, -, ✗,
+// ! and > for a highlighted line), as a pipe would want to read a diff.
+func listing(e *view.Element) []string {
+	numbers := 0
+	if e.Numbers {
+		numbers = max(len(strconv.Itoa(e.FirstLine)), len(strconv.Itoa(e.FirstLine+len(e.Code)-1)))
+	}
+	signs := map[view.Mark]string{view.MarkHighlight: ">", view.MarkAdded: "+", view.MarkRemoved: "-", view.MarkError: "✗", view.MarkWarning: "!"}
+	out := make([]string, 0, len(e.Code))
+	for i, l := range e.Code {
+		var b strings.Builder
+		if numbers > 0 {
+			fmt.Fprintf(&b, "%*d ", numbers, e.FirstLine+i)
+		}
+		if len(e.Marks) > 0 {
+			sign := signs[e.Marks[e.FirstLine+i]]
+			if sign == "" {
+				sign = " "
+			}
+			b.WriteString(sign + " ")
+		}
+		for _, t := range l {
+			b.WriteString(t.Text)
+		}
+		out = append(out, strings.TrimRight(b.String(), " "))
 	}
 	return out
 }

@@ -480,3 +480,40 @@ textarea.k-input { min-height: 5.5rem; }
 .k-scroll:focus { outline: 2px solid var(--k-focus); outline-offset: -2px; }
 .k-lines { font-family: var(--k-mono); line-height: var(--hotty-cell-h, 1.25rem); white-space: pre; overflow: hidden; }
 .k-lines.k-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* HottyCode (profile §2, §6.12): a box in the terminal's font, filled
+   as a Text's code block is, a flex row for each line: its number, right
+   aligned in --k-ln columns, in muted; its mark's sign; then its code.
+   A marked line is tinted across the box: a highlighted one with the
+   selection colour, the others with a sixth of their role's. Lines that
+   do not wrap make the box scroll sideways, each row as wide as the
+   widest, so that a tint reaches the end. */
+.k-code { font-family: var(--k-mono); line-height: var(--hotty-cell-h, 1.25rem); background: var(--k-tonal);
+  border-radius: var(--k-r-field); padding: var(--k-1) 0; overflow-x: auto;
+  scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }
+.k-cl { display: flex; min-height: var(--hotty-cell-h, 1.25rem); padding: 0 var(--k-2); }
+.k-nowrap .k-cl { width: max-content; min-width: 100%; box-sizing: border-box; }
+.k-ln { flex: none; width: var(--k-ln); padding-right: 1ch; text-align: right; color: var(--k-muted); user-select: none; }
+.k-sign { flex: none; width: 2ch; user-select: none; }
+.k-src { flex: 1 1 auto; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.k-nowrap .k-src { white-space: pre; overflow-wrap: normal; }
+.k-m-highlight { background: var(--k-selection, var(--k-line)); }
+.k-m-highlight .k-sign { color: var(--k-info, var(--hotty-ansi-6, var(--k-link))); }
+.k-m-added { background: color-mix(in srgb, var(--k-success) 16%, transparent); }
+.k-m-added .k-sign { color: var(--k-success); }
+.k-m-removed, .k-m-error { background: color-mix(in srgb, var(--k-error) 16%, transparent); }
+.k-m-removed .k-sign, .k-m-error .k-sign { color: var(--k-error); }
+.k-m-warning { background: color-mix(in srgb, var(--k-warning) 16%, transparent); }
+.k-m-warning .k-sign { color: var(--k-warning); }
+
+/* Tokens (package highlight), in a HottyCode and in a Text's fenced code
+   block: the roles cells colours them with (profile §3.4). Keywords are
+   info and bold, types info: accent marks only focus (§3.6). Info is the
+   theme's, or the host's cyan in the Terminal theme. */
+.k-t-comment { color: var(--k-muted); font-style: italic; }
+.k-t-keyword, .k-t-type, .k-t-heading { color: var(--k-info, var(--hotty-ansi-6, var(--k-link))); }
+.k-t-keyword, .k-t-heading { font-weight: 600; }
+.k-t-function { font-weight: 600; }
+.k-t-string, .k-t-inserted { color: var(--k-success); }
+.k-t-literal, .k-t-meta { color: var(--k-warning); }
+.k-t-deleted, .k-t-invalid { color: var(--k-error); }

@@ -114,6 +114,8 @@ func (l *layout) minimum(e *view.Element) int {
 		n = 1
 	case view.ScrollView:
 		n = l.scrollMinimum(e)
+	case view.Listing:
+		n = codeMinimum(e)
 	default:
 		n = l.natural(e)
 	}
@@ -181,6 +183,8 @@ func (l *layout) measure(e *view.Element) int {
 		return l.r.hintsWidth(e)
 	case view.ScrollView:
 		return l.scrollWidth(e)
+	case view.Listing:
+		return codeWidth(e)
 	}
 	return controlWidth(e)
 }
@@ -223,6 +227,8 @@ func (l *layout) measureHeight(e *view.Element, w int) int {
 		return len(l.lines(e, w))
 	case view.ScrollView:
 		return e.Height
+	case view.Listing:
+		return len(codeRows(e, w))
 	}
 	return l.controlHeight(e, w)
 }
@@ -260,15 +266,15 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 // its fields, or when one is a field and the other a Button, as bubbles
 // sets a form's button apart; before a HottyKeyHints, as bubbles' help
 // sits a row under what it is for; after a HottyScrollView, whose box
-// draws no edge but its scrollbar, so that what follows does not read as
-// its content; else none, so that a stack of CheckBoxes or of Buttons
-// stays tight.
+// draws no edge but its scrollbar, or a HottyCode, which draws none, so
+// that what follows does not read as its content; else none, so that a
+// stack of CheckBoxes or of Buttons stays tight.
 func separator(kids []*view.Element, i int) int {
 	if i == 0 {
 		return 0
 	}
 	a, b := edge(kids[i-1], false), edge(kids[i], true)
-	if b.Kind == view.KeyHints || a.Kind == view.ScrollView {
+	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing {
 		return 1
 	}
 	if !isControlElement(a) || !isControlElement(b) {

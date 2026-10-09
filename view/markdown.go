@@ -15,6 +15,8 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
+
+	"github.com/neuroplastio/hotty-a2ui/highlight"
 )
 
 // A Text's content is Markdown, which goldmark reads (GitHub's flavour).
@@ -23,12 +25,68 @@ import (
 
 // md is the Markdown every rendition reads: GFM, raw HTML left out (a
 // Text has none), links opened by the terminal (target=_blank makes a
-// link a hyperlink, SPEC §9), and an ordered item's number written out.
+// link a hyperlink, SPEC §9), an ordered item's number written out, and
+// fenced code highlighted.
 var md = goldmark.New(
 	goldmark.WithExtensions(extension.GFM),
 	goldmark.WithParserOptions(parser.WithASTTransformers(util.Prioritized(hyperlinks{}, 100))),
-	goldmark.WithRendererOptions(renderer.WithNodeRenderers(util.Prioritized(numbers{}, 100))),
+	goldmark.WithRendererOptions(renderer.WithNodeRenderers(util.Prioritized(numbers{}, 100), util.Prioritized(fences{}, 100))),
 )
+
+// fences writes a fenced code block as goldmark does, <pre><code
+// class="language-go">, but its code highlighted (package highlight): a
+// span for each token but plain ones, of class TokenClass, which the
+// kit's sheet colours.
+type fences struct{}
+
+func (fences) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
+	reg.Register(ast.KindFencedCodeBlock, func(w util.BufWriter, src []byte, n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+		f := n.(*ast.FencedCodeBlock)
+		lang := string(f.Language(src))
+		var code strings.Builder
+		for i := 0; i < f.Lines().Len(); i++ {
+			seg := f.Lines().At(i)
+			code.Write(seg.Value(src))
+		}
+		_, _ = w.WriteString("<pre><code")
+		if lang != "" {
+			_, _ = w.WriteString(` class="language-` + escapeAttr(lang) + `"`)
+		}
+		_ = w.WriteByte('>')
+		for _, line := range highlight.Lines(code.String(), lang) {
+			_, _ = w.WriteString(TokensHTML(line))
+			_ = w.WriteByte('\n')
+		}
+		_, _ = w.WriteString("</code></pre>\n")
+		return ast.WalkSkipChildren, nil
+	})
+}
+
+// TokenClass is the class of a token's span on a host, "k-t-" and its
+// kind ("k-t-keyword"); "" for a plain one, which has no span.
+func TokenClass(k highlight.Kind) string {
+	if k == highlight.Plain {
+		return ""
+	}
+	return "k-t-" + k.String()
+}
+
+// TokensHTML is a line of tokens as HTML: each a span of TokenClass, or
+// its text alone when plain.
+func TokensHTML(line []highlight.Token) string {
+	var b strings.Builder
+	for _, t := range line {
+		if c := TokenClass(t.Kind); c != "" {
+			b.WriteString(`<span class="` + c + `">` + escapeText(t.Text) + "</span>")
+			continue
+		}
+		b.WriteString(escapeText(t.Text))
+	}
+	return b.String()
+}
 
 // numbers writes an ordered list item's number as <span class="k-n">3.</span>
 // first in the item, for the kit's sheet to place. A host draws the
@@ -87,6 +145,10 @@ func escapeText(s string) string {
 	return strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;").Replace(s)
 }
 
+func escapeAttr(s string) string {
+	return strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", `"`, "&quot;").Replace(s)
+}
+
 // A Block is one block of a Text: a paragraph, a heading, a list item, a
 // quote, a code block or a rule, with its inline runs.
 type Block struct {
@@ -99,6 +161,9 @@ type Block struct {
 	// Task is a task list item's box: 0 none, 1 open, 2 ticked.
 	Task int   `json:"task,omitempty"`
 	Runs []Run `json:"runs,omitempty"`
+	// Lang is a fenced code block's language, its info string's first
+	// word: what highlight lexes it as.
+	Lang string `json:"lang,omitempty"`
 }
 
 // BlockKind is what a Block is.
@@ -208,7 +273,11 @@ func (w *walker) block(n ast.Node, depth int) {
 			seg := lines.At(i)
 			b.Write(seg.Value(w.src))
 		}
-		w.out = append(w.out, Block{Kind: CodeBlock, Runs: []Run{{Text: strings.TrimRight(b.String(), "\n"), Style: Code}}})
+		blk := Block{Kind: CodeBlock, Runs: []Run{{Text: strings.TrimRight(b.String(), "\n"), Style: Code}}}
+		if f, ok := n.(*ast.FencedCodeBlock); ok {
+			blk.Lang = string(f.Language(w.src))
+		}
+		w.out = append(w.out, blk)
 	case *ast.ThematicBreak:
 		w.out = append(w.out, Block{Kind: Rule})
 	case *east.Table:

@@ -5,7 +5,10 @@
 // catalog maps its components onto them once.
 package view
 
-import "github.com/neuroplastio/hotty-a2ui/a2ui"
+import (
+	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/highlight"
+)
 
 // Kind is what an element is, for the renditions.
 type Kind string
@@ -86,6 +89,10 @@ const (
 	// scrolled to its end, and Tail, whether it does now; Wrap, whether
 	// long lines wrap.
 	ScrollView Kind = "scrollview"
+	// Listing is source code (HottyCode): Code, its lines as tokens;
+	// Lang; Numbers, whether its line numbers show, from FirstLine; Marks,
+	// by line number; Wrap, whether long lines wrap.
+	Listing Kind = "code"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -202,6 +209,16 @@ type Element struct {
 	Wrap  bool     `json:"wrap,omitempty"`
 	Left  int      `json:"left,omitempty"`
 	Tail  bool     `json:"tail,omitempty"`
+
+	// Code: its lines as tokens (highlight.Lines, shared: not to be
+	// changed), the language they were lexed as, whether the line numbers
+	// show, the first line's number, and the marked lines, by number
+	// (Mark). Its Wrap is a ScrollView's.
+	Code      [][]highlight.Token `json:"code,omitempty"`
+	Lang      string              `json:"lang,omitempty"`
+	Numbers   bool                `json:"numbers,omitempty"`
+	FirstLine int                 `json:"firstLine,omitempty"`
+	Marks     map[int]Mark        `json:"marks,omitempty"`
 
 	// Placeholder: State is the node's (pending, unknown, cyclic).
 	State a2ui.NodeState `json:"state,omitempty"`
