@@ -16,14 +16,6 @@ New names follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-REF** — Reference shots.
-  - A `ref/` directory, as its own Go module so bubbles, huh and lipgloss
-    stay out of the kit's go.mod. It holds one small program per gap, with
-    the same content as the gap's story.
-  - A script that shoots each reference and the kit's story side by side in
-    tmux at 80×24.
-  - OpenTUI references only where Bubble Tea has no equivalent: Code, Diff,
-    QR and big text.
 - [ ] **KIT-LOOK** — The existing components' cells look, held against huh
   and bubbles.
   - What to compare: focus marker, prompt, placeholder, caret, selection and
@@ -130,6 +122,12 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-REF** — Reference shots: `ref/` (its own module), `storybook
+  -bare`, and `make shot NAME=…` (journal 2026-10-09.3). It has references
+  for form, textarea, progress, spinner, table and list. Each later leg adds
+  its own reference to `ref/gaps.go` with its story. OpenTUI references are
+  used only where Bubble Tea has no equivalent (Code, Diff, QR, big text),
+  and that leg adds them.
 - [x] **KIT-00** — The `Hotty` prefix: HottyShortcut, HottyForm, hottyFocus
   and hottyBlur, with the rule in profile §6 and the catalog's
   `instructions` (journal 2026-10-09.2).

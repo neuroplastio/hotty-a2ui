@@ -10,6 +10,7 @@
 //	storybook -text 36_modal | cat    a story as plain text
 //	storybook -html 36_modal          a story as the document a host gets
 //	storybook -theme nord             in a theme (storybook -list names them)
+//	storybook -bare hotty/keys        a story's surfaces alone, in cells
 //	storybook -list                   the stories' names
 //
 // With no terminal on stdout, or with -text, it prints each surface as
@@ -45,6 +46,7 @@ func main() {
 	stream := flag.String("stream", "", "read A2UI from `file` (- for stdin) instead of a story")
 	rend := flag.String("rendition", "", "start in this `rendition`: surfaces, cells, text or side (surfaces beside cells)")
 	out := flag.String("out", "", "write what the renderer sends the agent (actions, errors, function calls) to `file` as JSON lines (- for stdout)")
+	bare := flag.Bool("bare", false, "show one story's surfaces alone, in cells, on the whole screen: no list, pickers or panel")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: storybook [flags] [story]")
 		flag.PrintDefaults()
@@ -69,6 +71,17 @@ func main() {
 	}
 	if *doc {
 		if err := printHTML(os.Stdout, args, th); err != nil {
+			fmt.Fprintln(os.Stderr, "storybook:", err)
+			os.Exit(1)
+		}
+		return
+	}
+	if *bare {
+		var st *story.Story
+		if len(args) == 1 {
+			st = story.Find(args[0])
+		}
+		if err := runBare(st, th); err != nil {
 			fmt.Fprintln(os.Stderr, "storybook:", err)
 			os.Exit(1)
 		}

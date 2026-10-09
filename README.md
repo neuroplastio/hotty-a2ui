@@ -75,6 +75,7 @@ storybook -theme dracula                         # in a theme
 storybook -text basic/36_modal                   # as plain text
 agent | storybook -stream - -out actions.jsonl   # what an agent streams, and the user's actions back
 storybook -html basic/06_music-player            # the document a HOTTY host gets
+storybook -bare hotty/keys                       # a story's surfaces alone, in cells
 ```
 
 | Key | |
@@ -122,6 +123,8 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 | [`story/`](story) | the stories (A2UI's basic examples, the hotty catalog's, the fallbacks), and a story as it runs |
 | [`storybook/`](storybook) | the storybook, for a program to show in a part of its screen |
 | [`cmd/storybook/`](cmd/storybook) | the storybook on the whole screen, as plain text in a pipe, or a story's HTML |
+| [`ref/`](ref) | what the kit is held against: Bubble Tea's bubbles, huh and lipgloss, with the kit's stories' content (a module of its own) |
+| [`vault/`](vault/README.md) | the work: the gap analysis, the board, questions and the journal |
 | [`third_party/a2ui/`](third_party/a2ui) | A2UI at one commit ([`REV`](third_party/a2ui/REV)): the v1.0 schemas, the basic catalog and its examples, the conformance suites |
 
 ## Develop
@@ -143,6 +146,10 @@ what the kit and its tests read:
 ```sh
 make a2ui REV=<full A2UI commit>
 ```
+
+`make shot NAME=form` sets Bubble Tea's component beside the kit's story,
+both in the same terminal, as one picture in `.shots/form.png`
+(`bin/ref -list` names them). It needs vhs and ImageMagick.
 
 `make gif` records the GIF above again. It drives the storybook in xterm.js
 with Playwright, from a checkout of

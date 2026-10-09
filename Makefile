@@ -4,9 +4,9 @@ GOFMT       ?= mise x -- gofmt
 # staticcheck 2026.2.1, the first that knows Go 1.26.
 STATICCHECK ?= honnef.co/go/tools/cmd/staticcheck@v0.8.1
 
-.PHONY: check fmt tidy vet lint test a2ui gif clean
+.PHONY: check fmt tidy vet lint test ref shot a2ui gif clean
 
-check: fmt tidy vet lint test   ## the gate
+check: fmt tidy vet lint test ref   ## the gate
 
 fmt:   ## fails, listing them, when gofmt would change files
 	@out="$$($(GOFMT) -l $$(git ls-files -co --exclude-standard '*.go'))"; \
@@ -24,6 +24,15 @@ lint:   ## staticcheck, pinned
 test:   ## the tests (A2UI's conformance suites among them), with the race detector
 	$(GO) test -race ./...
 
+ref:   ## the references (ref/, a module of its own): tidy, vetted, built
+	cd ref && $(GO) mod tidy -diff && $(GO) vet ./... && $(GO) build -o ../bin/ref .
+
+# A reference shot: Bubble Tea's component beside the kit's story, as one
+# picture in .shots/NAME.png (scripts/ref-shot.sh; vhs and ImageMagick).
+# Not in the gate.
+shot:   ## .shots/NAME.png: ref NAME beside its story (NAME=form; KIT_KEYS, REF_KEYS)
+	sh scripts/ref-shot.sh $(NAME) $(STORY)
+
 a2ui:   ## third_party/a2ui at REV, a full A2UI commit (scripts/a2ui.sh)
 	sh scripts/a2ui.sh $(REV)
 
@@ -37,4 +46,4 @@ gif:   ## docs/storybook.gif, recorded again: needs ADDON and ffmpeg
 	cd $(ADDON) && mise x -- node $(CURDIR)/scripts/storybook-gif.mjs $(CURDIR)/.gif/storybook $(CURDIR)/docs/storybook.gif
 
 clean:
-	rm -f coverage.out
+	rm -rf coverage.out bin .shots
