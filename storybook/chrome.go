@@ -1,7 +1,6 @@
 package storybook
 
 import (
-	"bytes"
 	"cmp"
 	"encoding/json"
 	"fmt"
@@ -59,9 +58,9 @@ type chrome struct {
 	logged []logged
 }
 
-// logged is a log entry as panel shows it: the message under a comment
-// that says which way it went and what it is, and its error after it. An
-// action is also shown alone, indented.
+// logged is a log entry as panel shows it: the message, pretty, under a
+// comment that says which way it went and what it is, and its error after
+// it. An action is also shown alone.
 type logged struct {
 	message string
 	failed  bool
@@ -286,8 +285,8 @@ func (ch *chrome) report(run *story.Run) {
 	}
 	var data []string
 	for _, s := range run.Surfaces() {
-		b, _ := json.MarshalIndent(s.S.Data.Root(), "", "  ")
-		data = append(data, "// "+s.S.ID+"\n"+string(b))
+		b, _ := json.Marshal(s.S.Data.Root())
+		data = append(data, "// "+s.S.ID+"\n"+pretty(b))
 	}
 	ch.set(panelID, "/actions", orNone(strings.Join(acts, "\n\n"), len(acts), "No action yet: the user's go here, as the agent gets them."))
 	ch.set(panelID, "/data", orNone(strings.Join(data, "\n\n"), len(data), "No surface."))
@@ -316,22 +315,13 @@ func logEntry(e story.Entry) logged {
 	if e.Out {
 		arrow = "←"
 	}
-	// A message on its line, however it came.
-	var one bytes.Buffer
-	if json.Compact(&one, e.JSON) != nil {
-		one.Reset()
-		one.WriteString(oneLine(string(e.JSON)))
-	}
-	l := logged{message: "// " + arrow + " " + kind + "\n" + one.String()}
+	l := logged{message: "// " + arrow + " " + kind + "\n" + pretty(e.JSON)}
 	if e.Err != nil {
 		l.failed = true
 		l.message += "\n// ✗ " + oneLine(strings.TrimPrefix(e.Err.Error(), "a2ui: "))
 	}
 	if e.Out && top["action"] != nil {
-		var b bytes.Buffer
-		if json.Indent(&b, e.JSON, "", "  ") == nil {
-			l.action = b.String()
-		}
+		l.action = pretty(e.JSON)
 	}
 	return l
 }

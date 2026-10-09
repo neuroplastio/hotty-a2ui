@@ -422,10 +422,10 @@ func TestTabsKeepTheStory(t *testing.T) {
 	}
 }
 
-// TestPanelJSON: panel's tabs are JSON in HottyCode. The actions are
-// indented, newest first. Each message is on its line under a comment
-// that says which way it went and what it is, and a failed one is marked,
-// with its error after it. Each surface's data model is under its id.
+// TestPanelJSON: panel's tabs are pretty JSON in HottyCode. The actions
+// come newest first. Each message is under a comment that says which way
+// it went and what it is, and a failed one is marked, with its error after
+// it. Each surface's data model is under its id.
 func TestPanelJSON(t *testing.T) {
 	ch := newChrome(entries(false), []renditionOption{{rendCells, "Cells"}}, rendCells, "Terminal", keysTerminal, false)
 	run := story.NewRun()
@@ -439,30 +439,45 @@ func TestPanelJSON(t *testing.T) {
 	ch.report(run)
 
 	data := ch.surface(panelID).S.Data
-	if got, want := data.Value("/actions"), "{\n  \"version\": \"v1.0\",\n  \"action\": {\n    \"name\": \"go\",\n    \"surfaceId\": \"s\"\n  }\n}"; got != want {
+	if got, want := data.Value("/actions"), `{"version": "v1.0", "action": {"name": "go", "surfaceId": "s"}}`; got != want {
 		t.Errorf("actions:\n%v\nwant\n%s", got, want)
 	}
-	msgs, _ := data.Value("/messages").(string)
-	lines := strings.Split(msgs, "\n")
 	// The renderer's error back to the agent comes before the message
 	// that failed.
-	want := []string{
-		"// ← action",
-		`{"version":"v1.0","action":{"name":"go","surfaceId":"s"}}`,
-		"// ← error",
-		`{"version":"v1.0","error":{"code":"INTEGRITY_ERROR","message":"Surface not found for message: nope","surfaceId":"nope"}}`,
-		"// → updateDataModel",
-		`{"version":"v1.0","updateDataModel":{"surfaceId":"nope","path":"/n","value":2}}`,
-		"// ✗ Surface not found for message: nope",
-		"// → createSurface",
+	want := `// ← action
+{"version": "v1.0", "action": {"name": "go", "surfaceId": "s"}}
+// ← error
+{
+  "version": "v1.0",
+  "error": {
+    "code": "INTEGRITY_ERROR",
+    "message": "Surface not found for message: nope",
+    "surfaceId": "nope"
+  }
+}
+// → updateDataModel
+{
+  "version": "v1.0",
+  "updateDataModel": {"surfaceId": "nope", "path": "/n", "value": 2}
+}
+// ✗ Surface not found for message: nope
+// → createSurface
+{
+  "version": "v1.0",
+  "createSurface": {
+    "surfaceId": "s",
+    "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+    "dataModel": {"n": 1}
+  }
+}`
+	if got := data.Value("/messages"); got != want {
+		t.Errorf("messages:\n%v\nwant\n%s", got, want)
 	}
-	if len(lines) != 9 || !slices.Equal(lines[:8], want) {
-		t.Errorf("messages:\n%s", msgs)
-	}
-	if got := ch.sent[panelID+"#marks"]; got != `[{"end":7,"kind":"error","line":6}]` {
+	// The failed message, and its error.
+	if got := ch.sent[panelID+"#marks"]; got != `[{"end":17,"kind":"error","line":13}]` {
 		t.Errorf("the failed message's marks: %s", got)
 	}
-	if got, want := data.Value("/data"), "// s\n{\n  \"n\": 1\n}"; got != want {
+	if got, want := data.Value("/data"), "// s\n{\"n\": 1}"; got != want {
 		t.Errorf("data:\n%v\nwant\n%s", got, want)
 	}
 
