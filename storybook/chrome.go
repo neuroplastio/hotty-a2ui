@@ -10,6 +10,7 @@ import (
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
+	hottycat "github.com/neuroplastio/hotty-a2ui/catalog/hotty"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/story"
 )
@@ -20,7 +21,7 @@ import (
 // which lists the stories and scrolls; together they are the sidebar.
 // panel is the right column's tabs: the story's preview, which the Book
 // draws under the tab bar, then what the story is, and its actions, data
-// model and messages.
+// model and messages, as JSON in HottyCode.
 const (
 	pickID  = "pick"
 	navID   = "nav"
@@ -52,6 +53,19 @@ type chrome struct {
 	// entries are nav's stories; cur is the one shown.
 	entries []entry
 	cur     string
+	// logged is what report made of logRun's log so far, an entry each:
+	// a log only grows.
+	logRun *story.Run
+	logged []logged
+}
+
+// logged is a log entry as panel shows it: the message under a comment
+// that says which way it went and what it is, and its error after it. An
+// action is also shown alone, indented.
+type logged struct {
+	message string
+	failed  bool
+	action  string
 }
 
 type renditionOption struct{ value, label string }
@@ -143,9 +157,9 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 			// story's surfaces go under its bar.
 			obj("id", "preview", "component", "Column", "children", []any{}),
 			obj("id", "head", "component", "Text", "text", obj("@path", "/head")),
-			obj("id", "actions", "component", "Text", "text", obj("@path", "/actions")),
-			obj("id", "data", "component", "Text", "text", obj("@path", "/data")),
-			obj("id", "messages", "component", "Text", "text", obj("@path", "/messages")),
+			jsonCode("actions", nil),
+			jsonCode("data", nil),
+			jsonCode("messages", nil),
 		),
 	)
 	return ch
@@ -248,44 +262,97 @@ func (ch *chrome) showing(name, head string) {
 // report fills panel from a run: newest first, so what fits is what
 // just happened.
 func (ch *chrome) report(run *story.Run) {
+	if run != ch.logRun || len(run.Log) < len(ch.logged) {
+		ch.logRun, ch.logged = run, nil
+	}
+	for _, e := range run.Log[len(ch.logged):] {
+		ch.logged = append(ch.logged, logEntry(e))
+	}
 	var acts, msgs []string
-	for i := len(run.Log) - 1; i >= 0 && len(msgs) < 200; i-- {
-		e := run.Log[i]
-		line := string(e.JSON)
-		if e.Out && bytes.Contains(e.JSON, []byte(`"action":`)) {
-			acts = append(acts, line)
+	var marks []any
+	line := 1
+	for i := len(ch.logged) - 1; i >= 0 && len(msgs) < 200; i-- {
+		l := ch.logged[i]
+		if l.action != "" {
+			acts = append(acts, l.action)
 		}
-		arrow := "→ "
-		if e.Out {
-			arrow = "← "
+		n := strings.Count(l.message, "\n") + 1
+		if l.failed {
+			// The message and its error, under the comment.
+			marks = append(marks, obj("line", line+1, "end", line+n-1, "kind", "error"))
 		}
-		if e.Err != nil {
-			line += "  ✗ " + strings.TrimPrefix(e.Err.Error(), "a2ui: ")
-		}
-		msgs = append(msgs, arrow+line)
+		msgs = append(msgs, l.message)
+		line += n
 	}
 	var data []string
 	for _, s := range run.Surfaces() {
 		b, _ := json.MarshalIndent(s.S.Data.Root(), "", "  ")
-		data = append(data, "**"+s.S.ID+"**\n\n"+code(string(b)))
+		data = append(data, "// "+s.S.ID+"\n"+string(b))
 	}
-	ch.set(panelID, "/actions", orNone(code(strings.Join(acts, "\n")), len(acts), "No action yet: the user's go here, as the agent gets them."))
+	ch.set(panelID, "/actions", orNone(strings.Join(acts, "\n\n"), len(acts), "No action yet: the user's go here, as the agent gets them."))
 	ch.set(panelID, "/data", orNone(strings.Join(data, "\n\n"), len(data), "No surface."))
-	ch.set(panelID, "/messages", orNone(code(strings.Join(msgs, "\n")), len(msgs), "No message."))
-}
-
-// code is a Markdown code block that no line of s can close.
-func code(s string) string {
-	fence := "```"
-	for strings.Contains(s, fence) {
-		fence += "`"
+	ch.set(panelID, "/messages", orNone(strings.Join(msgs, "\n"), len(msgs), "No message."))
+	// Marks are the component's, not its data's: it goes again when they
+	// change.
+	b, _ := json.Marshal(marks)
+	if key := panelID + "#marks"; ch.sent[key] != string(b) {
+		ch.sent[key] = string(b)
+		ch.feed(components(panelID, jsonCode("messages", marks)))
 	}
-	return fence + "\n" + s + "\n" + fence
 }
 
+// logEntry is how panel shows a log entry.
+func logEntry(e story.Entry) logged {
+	var kind string
+	var top map[string]json.RawMessage
+	if json.Unmarshal(e.JSON, &top) == nil {
+		for k := range top {
+			if k != "version" {
+				kind = k
+			}
+		}
+	}
+	arrow := "→"
+	if e.Out {
+		arrow = "←"
+	}
+	// A message on its line, however it came.
+	var one bytes.Buffer
+	if json.Compact(&one, e.JSON) != nil {
+		one.Reset()
+		one.WriteString(oneLine(string(e.JSON)))
+	}
+	l := logged{message: "// " + arrow + " " + kind + "\n" + one.String()}
+	if e.Err != nil {
+		l.failed = true
+		l.message += "\n// ✗ " + oneLine(strings.TrimPrefix(e.Err.Error(), "a2ui: "))
+	}
+	if e.Out && top["action"] != nil {
+		var b bytes.Buffer
+		if json.Indent(&b, e.JSON, "", "  ") == nil {
+			l.action = b.String()
+		}
+	}
+	return l
+}
+
+// oneLine keeps a comment on its line.
+func oneLine(s string) string { return strings.Join(strings.Fields(s), " ") }
+
+// jsonCode is panel's tab id: its data at /id, as JSON, with marks. It
+// is the hotty catalog's in panel's basic one, as a story mixes them.
+func jsonCode(id string, marks []any) map[string]any {
+	c := obj("id", id, "component", "HottyCode", "catalogId", hottycat.ID, "code", obj("@path", "/"+id), "language", "json")
+	if len(marks) > 0 {
+		c["marks"] = marks
+	}
+	return c
+}
+
+// orNone is s, or a comment that says there is nothing yet.
 func orNone(s string, n int, none string) string {
 	if n == 0 {
-		return "*" + none + "*"
+		return "// " + none
 	}
 	return s
 }

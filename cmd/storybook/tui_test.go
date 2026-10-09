@@ -152,8 +152,8 @@ func TestInCells(t *testing.T) {
 		}
 		return false
 	})
-	h.Type("\x1b[15~\x1b[15~") // F5 twice: Actions
-	eventually(t, "the action in the panel", func() bool { return strings.Contains(h.Screen(), `"name":"save"`) })
+	h.Type("\x1b[15~\x1b[15~") // F5 twice: Actions, as indented JSON
+	eventually(t, "the action in the panel", func() bool { return strings.Contains(h.Screen(), `"name": "save"`) })
 }
 
 func lineOf(screen, s string) int {

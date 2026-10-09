@@ -55,8 +55,8 @@ and the cells beside it follow, and the other way round.
 - 🛟 **Fallbacks** for what a terminal can't show: images, video, a
   component that contains itself, a child still to come.
 - 📚 **A storybook made with the kit**: its list of stories, and the tabs
-  beside the preview (the story's actions, data model and messages), are
-  A2UI surfaces too.
+  beside the preview (the story's actions, data model and messages, as
+  JSON in a `HottyCode`), are A2UI surfaces too.
 
 ## Quick start
 
