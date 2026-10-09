@@ -26,9 +26,15 @@ type State struct {
 	// error shows once either is so.
 	Touched   map[string]bool
 	Submitted map[string]bool
-	// Scroll is the first row each Table with a height shows, and the
-	// first item of the page each HottyList with a height shows, by id.
+	// Scroll is the first row each Table with a height shows, the first
+	// item of the page each HottyList with a height shows, and the first
+	// row each HottyScrollView shows, by id.
 	Scroll map[string]int
+	// Left is the first column each HottyScrollView of lines that do not
+	// wrap shows; Tail whether it follows the tail, once the user or the
+	// agent moved it (its follow prop until then).
+	Left map[string]int
+	Tail map[string]bool
 	// Query is each HottyList's filter, by its id.
 	Query map[string]Query
 	// FullHints: the surface's HottyKeyHints show their full view (?).
@@ -37,7 +43,8 @@ type State struct {
 
 // NewState is a surface's state before the user does anything.
 func NewState() *State {
-	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}, Query: map[string]Query{}}
+	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}, Query: map[string]Query{},
+		Left: map[string]int{}, Tail: map[string]bool{}}
 }
 
 // Mapper makes an element of a node, children included; nil when the

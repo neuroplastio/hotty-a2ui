@@ -116,9 +116,9 @@ func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
 	case e.Query.Editing:
 		gs := concat(line(listFilter, style{role: Accent}), line(e.Query.Text, style{}))
 		n := cv.write(in, row, iw, fit(gs, iw))
-		if focused && n < iw && in+n < cv.f.Cols && row < cv.f.Rows {
+		if focused && n < iw && in+n < cv.f.Cols && row < cv.f.Rows && cv.in(in+n, row) {
 			cv.f.Cells[row][in+n].Attr |= Reverse
-			cv.f.cursorCol, cv.f.cursorRow, cv.f.cursor = in+n, row, true
+			cv.cursorAt(in+n, row)
 		}
 		row += 2
 	case e.Label != "":

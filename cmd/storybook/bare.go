@@ -13,6 +13,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/story"
+	"github.com/neuroplastio/hotty-a2ui/storybook"
 )
 
 // bareModel is one story's surfaces alone, in cells, on the whole screen:
@@ -88,6 +89,11 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.give(p)
 			p.press = true
 			m.fail(p.r.Click(msg.X, row))
+		}
+	case tea.MouseWheelMsg:
+		if p, row := m.at(msg.Y); p != nil {
+			dx, dy := storybook.WheelDelta(msg)
+			p.r.Wheel(msg.X, row, dx, dy)
 		}
 	case tea.MouseMotionMsg:
 		if p := m.keyboard(); p != nil && p.press && msg.Button == tea.MouseLeft {

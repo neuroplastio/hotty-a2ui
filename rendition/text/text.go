@@ -127,6 +127,12 @@ func element(e *view.Element) []string {
 	case view.KeyHints:
 		// A pipe takes no keys.
 		return nil
+	case view.ScrollView:
+		// All of it, whatever its height, as a Table's rows.
+		if len(e.Children) > 0 {
+			return children(e)
+		}
+		return e.Lines
 	case view.Spinner:
 		if e.Active {
 			return []string{field(e.Label, "…")}

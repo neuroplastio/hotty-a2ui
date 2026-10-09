@@ -131,11 +131,11 @@ type Run struct {
 
 // NewRun is a run with nothing fed yet. Its processor has the catalogs
 // the kit renders, basic and hotty, and hotty's hottyFocus and hottyBlur
-// move the keyboard in the run's views.
+// move the keyboard in the run's views, and hottyScrollTo scrolls them.
 func NewRun() *Run {
 	r := &Run{}
 	h := hotty.Catalog()
-	hotty.Implement(h, r.focus, r.blur)
+	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo})
 	r.P = a2ui.NewProcessor(basic.Catalog(), h)
 	r.P.Send = func(o a2ui.Outbound) {
 		b, _ := json.Marshal(o)
@@ -245,6 +245,21 @@ func (r *Run) focus(s *a2ui.Surface, scope a2ui.Scope, id string) error {
 		}
 	}
 	return fmt.Errorf("no component '%s' to focus", id)
+}
+
+// scrollTo scrolls a HottyScrollView of the caller's surface, or for the
+// agent's call, of any surface: the instance in the caller's scope.
+func (r *Run) scrollTo(s *a2ui.Surface, scope a2ui.Scope, id, to string) error {
+	for _, x := range r.surfaces {
+		if s != nil && x.S != s {
+			continue
+		}
+		if el := x.C.FindComponent(id, scope); el != "" {
+			x.C.ScrollTo(el, to)
+			return nil
+		}
+	}
+	return fmt.Errorf("no component '%s' to scroll", id)
 }
 
 // blur takes the keyboard from the caller's surface, or for the agent's

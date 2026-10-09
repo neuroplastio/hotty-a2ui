@@ -35,8 +35,12 @@ type Rendition struct {
 	hits  []hit
 	panel *hit           // the open Modal's panel, as last drawn
 	boxes map[string]box // the cells each element covers, as last drawn
-	drag  string         // the Slider a click on its track started dragging
-	anim  time.Duration  // how soon the last Draw changes again (Animating)
+	// scrolls are the HottyScrollViews as last drawn, scrollOrder their
+	// ids in the order painted, the innermost last (Wheel).
+	scrolls     map[string]scrolled
+	scrollOrder []string
+	drag        string        // the Slider a click on its track started dragging
+	anim        time.Duration // how soon the last Draw changes again (Animating)
 
 	// Clock is the time a Draw paints at: a Spinner's frame, an
 	// indeterminate Progress's place. New sets time.Now.
@@ -127,6 +131,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 	f := newFrame(cols, rows)
 	cv := &canvas{f: f}
 	r.hits, r.panel, r.boxes, r.anim = nil, nil, map[string]box{}, 0
+	r.scrolls, r.scrollOrder = map[string]scrolled{}, nil
 	if root != nil {
 		l.paint(cv, root, 0, 0, cols, rootH)
 	}

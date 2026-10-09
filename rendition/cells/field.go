@@ -161,9 +161,9 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff
-		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows {
+		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows && cv.in(cx, cy) {
 			cv.f.Cells[cy][cx].Attr |= Reverse
-			cv.f.cursorCol, cv.f.cursorRow, cv.f.cursor = cx, cy, true
+			cv.cursorAt(cx, cy)
 		}
 	}
 	r.hits = append(r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + rows, id: e.ID, opt: -1, field: area})

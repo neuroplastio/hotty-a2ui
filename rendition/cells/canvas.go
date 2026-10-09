@@ -101,16 +101,43 @@ func repeat(s string, n int, st style) []glyph {
 	return glyphs(strings.Repeat(s, n), st)
 }
 
-// canvas paints glyphs into a frame.
+// canvas paints glyphs into a frame, within clip when it is set: a
+// HottyScrollView's window, which its content is painted through.
 type canvas struct {
-	f *Frame
+	f    *Frame
+	clip *box
+}
+
+// in reports whether (x, y) is inside the clip.
+func (cv *canvas) in(x, y int) bool {
+	c := cv.clip
+	return c == nil || x >= c.x && x < c.x+c.w && y >= c.y && y < c.y+c.h
+}
+
+// clipTo narrows the clip to b, and returns the clip before, to restore.
+func (cv *canvas) clipTo(b box) *box {
+	was := cv.clip
+	if was != nil {
+		x0, y0 := max(b.x, was.x), max(b.y, was.y)
+		x1, y1 := min(b.x+b.w, was.x+was.w), min(b.y+b.h, was.y+was.h)
+		b = box{x0, y0, max(x1-x0, 0), max(y1-y0, 0)}
+	}
+	cv.clip = &b
+	return was
+}
+
+// cursorAt puts the frame's cursor at (x, y), if that is inside the clip.
+func (cv *canvas) cursorAt(x, y int) {
+	if cv.in(x, y) {
+		cv.f.cursorCol, cv.f.cursorRow, cv.f.cursor = x, y, true
+	}
 }
 
 // set paints one glyph at (x, y). A wide glyph that does not fit before
 // the frame's edge is a space; a wide glyph it cuts in half is blanked.
 func (cv *canvas) set(x, y int, g glyph) {
 	f := cv.f
-	if y < 0 || y >= f.Rows || x < 0 || x >= f.Cols {
+	if y < 0 || y >= f.Rows || x < 0 || x >= f.Cols || !cv.in(x, y) {
 		return
 	}
 	row := f.Cells[y]
@@ -167,6 +194,9 @@ func (cv *canvas) fill(x, y, w, h int) {
 func (cv *canvas) restyle(x, y, w, h int, fn func(c *Cell)) {
 	for j := max(y, 0); j < min(y+h, cv.f.Rows); j++ {
 		for i := max(x, 0); i < min(x+w, cv.f.Cols); i++ {
+			if !cv.in(i, j) {
+				continue
+			}
 			fn(&cv.f.Cells[j][i])
 		}
 	}

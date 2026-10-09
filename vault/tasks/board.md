@@ -7,7 +7,8 @@ Last updated: 2026-10-09
 fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
 2026-10-09.5): progress bars and spinners; at KIT-01c (journal
 2026-10-09.7): the table; at KIT-04c (journal 2026-10-09.9): the list;
-and at KIT-08c (journal 2026-10-09.10): the key hints. Phase 1 is a go
+at KIT-08c (journal 2026-10-09.10): the key hints; and at KIT-07c
+(journal 2026-10-09.11): the scroll view. Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
@@ -21,9 +22,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-07c** — Scroll view: a scrollbar column, following the tail, the
-  wheel, PgUp and PgDn, and a `scrollTo` renderer function (L8). Lines
-  arrive as chunks (L4).
 - [ ] **KIT-05c** — Code: syntax highlighting, a line-number gutter, marked
   lines, wrapping. Text's fenced code blocks use it too.
 - [ ] **KIT-06c** — Diff: unified and split views, gutters, word marks, hunk
@@ -88,7 +86,14 @@ As of 2026-10-09, from the hotty agent:
   2026-10-09.10). Probe whether Blitz restyles `:has(:focus)` on a focus
   change; the other way, a host that names the focused element, is a
   SPEC change and so the maintainer's call.
-- [ ] **KIT-07h** — Scroll view on the host's scrolling (SPEC §8).
+- [ ] **KIT-07h** — Scroll view on the host's scrolling (SPEC §8). The
+  baseline box scrolls natively but starts at its top: a program cannot
+  set a host's scroll offset (SPEC §5.3), so `follow` and `hottyScrollTo`
+  do nothing there (journal 2026-10-09.11). Probe a `column-reverse` box:
+  Blitz draws it at its end, but whether it then scrolls and stays at the
+  end as lines are appended is unchecked. Otherwise following the tail
+  is a SPEC change, the maintainer's call. The wheel over a host's box is
+  the host's.
 - [ ] **KIT-05h** — Code: highlight spans. Selectable text and a copy
   button wait for the clipboard.
 - [ ] **KIT-06h** — Diff: split view in columns, acting on hunks.
@@ -128,6 +133,18 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-07c** — `HottyScrollView` in cells, as bubbles' viewport
+  (journal 2026-10-09.11, awaiting the maintainer's look).
+  - A box `height` rows tall of a `child` or of `lines` (L4: an agent
+    writes each line to the next index), cut and scrolled sideways, or
+    wrapped. `follow` keeps the tail in view until the user scrolls up.
+  - A scrollbar column, which bubbles lacks; the keys and the wheel as
+    bubbles' viewport takes them; the hints are its help.
+  - `hottyScrollTo(id, start|end)` (L8).
+  - A child shows through the box: hidden parts take no click, and the
+    focused element is scrolled into sight.
+  - The HTML baseline is a box the host scrolls. A new line is an
+    `append` delta. `follow` and `hottyScrollTo` wait on KIT-07h.
 - [x] **KIT-08c** — `HottyKeyHints` in cells, as bubbles' help (journal
   2026-10-09.10, awaiting the maintainer's look).
   - The keys of what has the keyboard, then the labelled HottyShortcuts,

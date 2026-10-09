@@ -36,7 +36,8 @@ func isField(e *view.Element) bool {
 
 // isControlElement reports whether an element is a control a Column may
 // set a blank row apart from (separator): a field, a Button that is not a
-// List's row, a Progress, a Spinner, a Table or a HottyList.
+// List's row, a Progress, a Spinner, a Table, a HottyList or a
+// HottyScrollView.
 func isControlElement(e *view.Element) bool {
 	if isField(e) {
 		return true
@@ -47,7 +48,7 @@ func isControlElement(e *view.Element) bool {
 	case e.Kind == view.Button:
 		return !e.Item
 	}
-	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Table || e.Kind == view.RichList
+	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.ScrollView
 }
 
 // hasTitle reports whether an element has a title row of its own: a text

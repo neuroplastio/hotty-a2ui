@@ -32,6 +32,10 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 			if ok, err := r.editKey(e, key); ok {
 				return true, err
 			}
+		case e != nil && e.Kind == view.ScrollView:
+			if ok, err := r.scrollKey(e, key); ok {
+				return true, err
+			}
 		case e != nil && shiftOnly:
 			if ok, err := r.elementKey(e, name); ok {
 				return true, err

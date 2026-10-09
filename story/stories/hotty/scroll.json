@@ -1,0 +1,128 @@
+{
+  "name": "HottyScrollView: a log and a document",
+  "description": "A box of a fixed height whose content scrolls, as bubbles' viewport. The log is lines bound to /log, as an agent adds them (an index each; the data model has no append), and follows its tail: it starts at the end. Its long lines are cut, and ← and → scroll them. The document is a Text child. Tab into either: the arrows, j and k, Page Up and Page Down (b, f, Space), u and d, Home and End (g, G) scroll it, and so does the wheel.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "scroll",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "log": [
+            "12:00:01  build  resolving modules",
+            "12:00:04  fetch  downloading charm.land/bubbletea/v2",
+            "12:00:09  test   downloading github.com/neuroplastio/hotty-go",
+            "12:00:11  build  compiling a2ui",
+            "12:00:15  fetch  compiling view",
+            "12:00:16  test   compiling rendition/cells",
+            "12:00:19  build  compiling rendition/html",
+            "12:00:19  warn   a line long enough to run past the box's right edge, so that it is cut there unless the view wraps its lines, and the left and right arrows scroll it",
+            "12:00:24  fetch  compiling rendition/text",
+            "12:00:26  test   compiling story",
+            "12:00:30  build  compiling storybook",
+            "12:00:31  fetch  linking cmd/storybook",
+            "12:00:34  test   running view tests",
+            "12:00:39  build  running cells tests",
+            "12:00:41  fetch  running html tests",
+            "12:00:41  warn   a line long enough to run past the box's right edge, so that it is cut there unless the view wraps its lines, and the left and right arrows scroll it",
+            "12:00:45  test   running the conformance suites",
+            "12:00:46  build  running the key vectors",
+            "12:00:49  fetch  resolving modules",
+            "12:00:54  test   downloading charm.land/bubbletea/v2",
+            "12:00:56  build  downloading github.com/neuroplastio/hotty-go",
+            "12:01:00  fetch  compiling a2ui",
+            "12:01:01  test   compiling view",
+            "12:01:01  warn   a line long enough to run past the box's right edge, so that it is cut there unless the view wraps its lines, and the left and right arrows scroll it",
+            "12:01:04  build  compiling rendition/cells",
+            "12:01:09  fetch  compiling rendition/html",
+            "12:01:11  test   compiling rendition/text",
+            "12:01:15  build  compiling story",
+            "12:01:16  fetch  compiling storybook",
+            "12:01:19  test   linking cmd/storybook",
+            "12:01:24  build  running view tests",
+            "12:01:24  warn   a line long enough to run past the box's right edge, so that it is cut there unless the view wraps its lines, and the left and right arrows scroll it",
+            "12:01:26  fetch  running cells tests",
+            "12:01:30  test   running html tests",
+            "12:01:31  build  running the conformance suites",
+            "12:01:34  fetch  running the key vectors",
+            "12:01:39  test   resolving modules",
+            "12:01:41  build  downloading charm.land/bubbletea/v2",
+            "12:01:45  fetch  downloading github.com/neuroplastio/hotty-go",
+            "12:01:45  warn   a line long enough to run past the box's right edge, so that it is cut there unless the view wraps its lines, and the left and right arrows scroll it",
+            "12:01:46  test   compiling a2ui",
+            "12:01:49  build  compiling view",
+            "12:01:54  fetch  compiling rendition/cells",
+            "12:01:56  test   compiling rendition/html",
+            "12:02:00  build  compiling rendition/text",
+            "12:02:01  fetch  compiling story",
+            "12:02:04  test   compiling storybook",
+            "12:02:04  warn   a line long enough to run past the box's right edge, so that it is cut there unless the view wraps its lines, and the left and right arrows scroll it",
+            "12:02:09  build  linking cmd/storybook",
+            "12:02:11  fetch  running view tests",
+            "12:02:15  test   running cells tests",
+            "12:02:16  build  running html tests",
+            "12:02:19  fetch  running the conformance suites",
+            "12:02:24  test   running the key vectors",
+            "12:02:25  done   ok, 48 steps"
+          ]
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "scroll",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "log_title",
+              "log",
+              "doc_title",
+              "doc",
+              "hints"
+            ]
+          },
+          {
+            "id": "log_title",
+            "component": "Text",
+            "text": "**Build log**"
+          },
+          {
+            "id": "log",
+            "component": "HottyScrollView",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "lines": {
+              "@path": "/log"
+            },
+            "height": 8,
+            "follow": true
+          },
+          {
+            "id": "doc_title",
+            "component": "Text",
+            "text": "**A document**"
+          },
+          {
+            "id": "doc",
+            "component": "HottyScrollView",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "child": "doc_text",
+            "height": 10
+          },
+          {
+            "id": "doc_text",
+            "component": "Text",
+            "text": "## Scrolling in a terminal\n\nA terminal app shows more than fits by scrolling a part of the screen, not the whole of it. A **pager** shows a document a screen at a time; a **log** keeps its newest lines in view as they arrive.\n\n### The keys\n\n- ↑ and ↓, or k and j, move a line.\n- Page Up and Page Down, or b and f, move a page; Space moves a page down.\n- u and d move half a page.\n- Home and End, or g and G, go to the ends.\n\n### Following the tail\n\nA log that follows its tail starts at the end and stays there as lines come. Scroll up to read, and it stays where you are; scroll back down, and it follows again.\n\n### On a HOTTY host\n\nThere the host scrolls the box itself, with its own scrollbar, the wheel, the touchpad and its keys, as a page scrolls in a browser.\n\n### In cells\n\nHere the kit draws the box and its scrollbar: a track down its right edge, and a thumb as long as the share of the content that shows."
+          },
+          {
+            "id": "hints",
+            "component": "HottyKeyHints",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+          }
+        ]
+      }
+    }
+  ]
+}

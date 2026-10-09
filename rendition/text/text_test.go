@@ -72,3 +72,22 @@ func TestTable(t *testing.T) {
 		t.Errorf("got\n%s\nwant\n%s", got, want)
 	}
 }
+
+// TestScrollView: a scroll view reads as all of its content, whatever its
+// height: its lines, or its child.
+func TestScrollView(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["log","doc"]},
+	 {"id":"log","component":"HottyScrollView","catalogId":"` + hotty.ID + `","lines":["one","two","three"],"height":1,"follow":true},
+	 {"id":"doc","component":"HottyScrollView","catalogId":"` + hotty.ID + `","child":"t","height":1},
+	 {"id":"t","component":"Text","text":"# Title\n\nA paragraph."}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	if want := "one\ntwo\nthree\nTitle\nA paragraph.\n"; got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}

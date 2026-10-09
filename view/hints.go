@@ -129,6 +129,18 @@ func (c *Controller) elementHints(e *Element, keys string) (short []Hint, groups
 			pages = append(pages, Hint{"enter", "choose"})
 		}
 		return short, [][]Hint{moves, pages}
+	case ScrollView:
+		// bubbles' viewport's words. A host scrolls the box itself (SPEC
+		// §5.3), so on one these never show (programKeys).
+		short = []Hint{{"↑/k", "up"}, {"↓/j", "down"}, {"f/pgdn", "page down"}, {"b/pgup", "page up"}}
+		groups = [][]Hint{
+			{{"↑/k", "up"}, {"↓/j", "down"}, {"g/home", "go to start"}, {"G/end", "go to end"}},
+			{{"f/pgdn", "page down"}, {"b/pgup", "page up"}, {"d", "½ page down"}, {"u", "½ page up"}},
+		}
+		if len(e.Children) == 0 && !e.Wrap {
+			groups = append(groups, []Hint{{"←/h", "move left"}, {"→/l", "move right"}})
+		}
+		return short, groups
 	case TextField, DateTime:
 		long := e.Kind == TextField && e.Variant == "longText"
 		if enter && !long {

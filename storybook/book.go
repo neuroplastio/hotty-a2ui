@@ -173,6 +173,8 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 		if msg.Button == tea.MouseLeft {
 			b.click(msg.X-b.at.X, msg.Y-b.at.Y)
 		}
+	case tea.MouseWheelMsg:
+		b.wheel(msg.X-b.at.X, msg.Y-b.at.Y, msg)
 	case tea.MouseMotionMsg:
 		if p := b.focus; msg.Button == tea.MouseLeft && p != nil && p.kind == asCells {
 			b.fail(p.cells.Drag(msg.X-b.at.X-p.rect.X, msg.Y-b.at.Y-p.rect.Y+p.top))
@@ -555,6 +557,41 @@ func (b *Book) click(x, y int) {
 		f.s.C.St.Keyboard = false
 		b.focus = nil
 	}
+}
+
+// wheel is a notch of the wheel over the cells, in the Book: the cells
+// pane under it, the one drawn last where they overlap, scrolls a
+// HottyScrollView under it. Over a surface the host scrolls it (SPEC
+// §5.3).
+func (b *Book) wheel(x, y int, msg tea.MouseWheelMsg) {
+	dx, dy := WheelDelta(msg)
+	for _, p := range slices.Backward(b.order) {
+		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
+			continue
+		}
+		p.cells.Wheel(x-p.rect.X, y-p.rect.Y+p.top, dx, dy)
+		return
+	}
+}
+
+// WheelDelta is a notch of the wheel as columns and rows, for
+// cells.Rendition.Wheel: Shift turns it sideways, as bubbles' viewport
+// takes it.
+func WheelDelta(msg tea.MouseWheelMsg) (dx, dy int) {
+	switch msg.Button {
+	case tea.MouseWheelUp:
+		dy = -1
+	case tea.MouseWheelDown:
+		dy = 1
+	case tea.MouseWheelLeft:
+		dx = -1
+	case tea.MouseWheelRight:
+		dx = 1
+	}
+	if msg.Mod.Contains(tea.ModShift) {
+		dx, dy = dy, 0
+	}
+	return dx, dy
 }
 
 // event is what the user did in a surface on the host: one of a pane's,

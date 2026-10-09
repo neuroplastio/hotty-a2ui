@@ -461,3 +461,18 @@ textarea.k-input { min-height: 5.5rem; }
 .k-hint-key { font: inherit; color: var(--k-muted); }
 .k-hint-desc { color: color-mix(in srgb, var(--k-muted) 65%, var(--k-bg)); }
 .k-hint-sep { color: color-mix(in srgb, var(--k-border) 55%, var(--k-bg)); }
+
+/* HottyScrollView: a baseline (phase 1), the host's own scrolling (SPEC
+   §5.3): a box --k-rows terminal rows tall, filled as a field is so that
+   it shows where it ends, that scrolls its overflow with the host's
+   scrollbar, a thin one in the border colour. Lines are a row
+   each, in the terminal's font, cut at the box's edge unless they wrap.
+   With the keyboard it has a 2px ring in the focus colour, inside it (a
+   1px edge drops out at a fractional scale). Following the tail is
+   KIT-07h. */
+.k-scroll { box-sizing: content-box; height: calc(var(--k-rows) * var(--hotty-cell-h, 1.25rem)); padding: var(--k-1) var(--k-2);
+  overflow-y: auto; outline: none; background: var(--k-tonal); border-radius: var(--k-r-field);
+  scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }
+.k-scroll:focus { outline: 2px solid var(--k-focus); outline-offset: -2px; }
+.k-lines { font-family: var(--k-mono); line-height: var(--hotty-cell-h, 1.25rem); white-space: pre; overflow: hidden; }
+.k-lines.k-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }

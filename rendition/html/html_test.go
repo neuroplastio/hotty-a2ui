@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -955,5 +956,54 @@ func TestKeyHintsOnHost(t *testing.T) {
 	x.check(r)
 	if !strings.Contains(s.HTML(), `class="k-hints-full"`) || strings.Count(s.HTML(), `class="k-hints-col"`) != 4 {
 		t.Errorf("? did not show four columns (the list's moves, its filter, the shortcut, the general keys):\n%s", s.HTML())
+	}
+}
+
+// TestScrollViewOnHost: a HottyScrollView is a focusable box as many
+// rows tall as its height, which the host scrolls; its lines are a row
+// each, a log's a role=log, and a line that arrives is appended, not the
+// whole box sent again.
+func TestScrollViewOnHost(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"log":["one","","three"]}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["log","doc"]},
+ {"id":"log","component":"HottyScrollView","catalogId":"`+hottycat.ID+`","lines":{"@path":"/log"},"height":4,"follow":true},
+ {"id":"doc","component":"HottyScrollView","catalogId":"`+hottycat.ID+`","child":"text","wrap":true},
+ {"id":"text","component":"Text","text":"A document"}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	for _, want := range [][3]string{{"log", "class", "k-scroll"}, {"log", "tabindex", "0"}, {"log", "style", "--k-rows: 4"}, {"log", "role", "log"},
+		{partID("log", partLines), "class", "k-lines"}, {"doc", "style", "--k-rows: 10"}} {
+		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
+			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
+		}
+	}
+	if role, ok := s.Attr("doc", "role"); ok {
+		t.Errorf("a document is a %q", role)
+	}
+	if got := strings.Count(s.HTML(), `class="k-line"`); got != 3 {
+		t.Errorf("%d lines, an empty one too:\n%s", got, s.HTML())
+	}
+	if !strings.Contains(s.TextOf("doc"), "A document") {
+		t.Errorf("the child: %q", s.TextOf("doc"))
+	}
+
+	var set []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/log/3","value":"four"}}]`), &set))
+	before := len(x.h.Commands())
+	x.process(set...)
+	x.check(r)
+	var ops []string
+	for _, m := range x.h.Commands()[before:] {
+		ops = append(ops, m.Get("op"))
+	}
+	if !slices.Equal(ops, []string{string(hotty.OpAppend)}) {
+		t.Errorf("a line arrived as %q", ops)
+	}
+	if !strings.Contains(s.TextOf("log"), "four") {
+		t.Errorf("the log reads %q", s.TextOf("log"))
 	}
 }

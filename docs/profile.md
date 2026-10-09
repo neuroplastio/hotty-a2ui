@@ -97,14 +97,16 @@ so that an error comes and goes as a text delta.
 | HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h |
 | HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`. Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type and the item under the pointer are vault KIT-04h |
 | HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h |
+| HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there: following the tail on a host is vault KIT-07h |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 
 **Updates are deltas.** The document goes once. After it, the renderer
 diffs the elements it sent against the elements the view makes now, and
 sends the smallest deltas the ids allow (SPEC.md §6): `attr` and `unattr`
 for an attribute, `text` for an element whose content is one text, a
-recursion into children that keep their ids and order, and `inner`
-(which morphs) for any other change below an element. `updateComponents`
+recursion into children that keep their ids and order, `append` for
+children added after them, and `inner` (which morphs) for any other
+change below an element. `updateComponents`
 and `updateDataModel` change a surface this way, and so does the
 renderer's own state: a tab shown, a Modal opened.
 
@@ -226,6 +228,7 @@ Natural widths:
 | HottyTable | its columns' widths, each a column's `width`, else its header's or its widest cell's, whichever is wider, plus 2 for each column (a column of padding each side) |
 | HottyList | 2 for the indent, plus its widest line: its title + 2, its status line, its empty text, `Filter: ` + 1 when it filters, each item's label and description |
 | HottyKeyHints | its short line, or in the full view its columns, uncut |
+| HottyScrollView | its widest line unwrapped (whether it wraps them or not), or its child's natural width, plus 2 for the scrollbar |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -246,6 +249,8 @@ Minimums:
 - A HottyTable's is its columns', each at most 3 wide, with their padding.
 - A HottyList's is its indent and 4.
 - A HottyKeyHints's is 1: it cuts what does not fit (§3.4).
+- A HottyScrollView's is its child's, or 1 for its lines (it cuts them or
+  wraps them), plus 2 for the scrollbar.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -257,12 +262,17 @@ How the containers lay their children out:
   and the content of a Card or a tab.
   - Its children are stacked with no rows between them, except for one
     blank row between two controls (fields, Buttons that are not a
-    List's rows, HottyProgress, HottySpinner, HottyTable and HottyList)
+    List's rows, HottyProgress, HottySpinner, HottyTable, HottyList and
+    HottyScrollView)
     when either has a title row (§3.4; a HottyProgress's label is one, a
     HottyTable's header, and a HottyList's status line), or when one is a field and the other is not: huh's space between its fields, and bubbles'
     before a form's button. A stack of CheckBoxes, of Buttons, or of
     HottySpinners stays tight. A HottyKeyHints has a blank row before it,
     whatever comes before, as bubbles' help sits a row under its list.
+    A HottyScrollView has one after it, whatever comes after: its box
+    draws no edge but the scrollbar, so what follows would read as its
+    content. Before it, the rule for controls applies, so a title above
+    it stays on the row before its box.
     Through a Row, a Column or a HottyForm, the rule sees its first child
     (or, before it, its last).
   - Across: with `align` stretch, a child gets the full width. With start,
@@ -324,6 +334,7 @@ How the containers lay their children out:
 | HottyTable | a header row, bold; a rule of `─` in `border`; then a row for each row the body shows, a cell for each column: its text, padded a column each side, cut with `…` when wider than its column, at the start, the centre (rounded down) or the end as `align` says. The columns take their natural widths; while the table is too wide, a column at a time comes off the widest that is wider than 3 (the first of equals), and once none is, off the widest. The body shows `height` rows, or all of them (one, `No rows` in `muted`, when it has none): from the first it showed, moved as little as brings the selected row into view, never past the last (the view's `Top`, the same in both renditions). While it scrolls, the rule ends with ` 4–10 of 12 ` in `muted` and one more `─`. The selected row is reversed across the table, in `accent` while the table has the keyboard and in `muted` otherwise. |
 | HottyList | as bubbles' list with its default delegate, every line 2 columns in: its title, ` Title ` in `accent` reversed, and a blank row (neither without a title); its status line in `muted` and a blank row; then the items of the page that shows, each its label and, under it, its description in `muted` (one row an item, with no blank rows between, when none has a description; else two, a blank row between). The selected item's first two columns are `│ `: in `accent` with its label and description while the list has the keyboard, and in `muted` otherwise, its text plain. A label too wide is cut with `…`; its characters that matched the filter are underlined. With a `height`, a page shows that many items, from the page that holds the selected one, and the body keeps their rows on every page; after it, while the items take more than a page, a blank row and a dot for each page (`•`, the page shown's in `fg`, the others in `border`; `3/10` in `muted` when the dots do not fit), whose two rows stay while a filter leaves one page. The status line is `12 items` (`1 item`, `No items`); while a filter applies, `“query” 7 items`, or `Nothing matched`, then ` • 5 filtered`. While the filter is typed, `Filter: ` in `accent` and the text take the title's row, with the cursor after them. With no items, the empty text shows in `muted` in the body. |
 | HottyKeyHints | as bubbles' help draws it: the short view one line, each key in `muted`, a space, what it does in `muted` faint, and ` • ` in `border` faint between them (bubbles' three steps; the Terminal theme's `muted` and `border` are one colour); the hints that do not fit go, and ` …` ends the line where it fits. The full view (after `?`, §3.7) is its groups (§6.10) as columns four apart, each a row a key, the keys padded to the widest, then a space and what they do; a group that does not fit goes, and ` …` follows the first row where it fits. |
+| HottyScrollView | a box `height` rows tall, as bubbles' viewport: its content, 2 columns narrower than the box, then a blank column and the scrollbar down the last. Its lines are a row each, cut at the box and scrolled sideways six columns at a time, or with `wrap` broken between characters into the rows they take; a child is laid out at the content's width, and shows through the box at the rows scrolled to: what it hides takes no click, and the element with the keyboard inside it is scrolled into sight. It starts at its top, or with `follow` at its end, where it stays as lines arrive until the user scrolls up, and follows again once back at the end. The scrollbar, while the content is taller than the box, is a track of `│` in `border` faint and on it a thumb of `┃` as long as the share that shows (at least a row), where it shows, in `muted`, and in `accent` while the box has the keyboard. bubbles' viewport draws no scrollbar: without one, a box with no edge gives no sign that it scrolls |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
@@ -497,6 +508,15 @@ In the output:
   move, Enter applies it (and drops it when it leaves nothing), and Escape
   drops it. Escape also drops a filter that applies. Each change to the
   filter selects the first item it leaves, as bubbles' does.
+- **A HottyScrollView** scrolls as bubbles' viewport does: ArrowUp and
+  ArrowDown (k and j) a row; PageUp (b) and PageDown (f, Space) a page;
+  u and d (Control+u, Control+d) half a page; Home and End (g and G) to
+  its ends; and ArrowLeft and ArrowRight (h and l) six columns, while its
+  lines are wider than the box and do not wrap (else they fall through).
+  Each is clamped, and the box takes the others even at an end, as
+  bubbles' does. Its child's controls take keys as they would anywhere;
+  the box is a stop of its own in the Tab order. On a host it is a box the
+  host scrolls itself (§2), so the renderer leaves these keys to it.
 - **Space and Enter** activate a Button, a Tabs' title, a chip, a Media
   link, or a Modal trigger that is not a control.
 - **A CheckBox, and an option shown as a box,** is a checkbox on a host,
@@ -530,6 +550,12 @@ In the output:
   does.
 - **A click on nothing that takes focus** gives the keyboard back.
 - **A click outside an open Modal's panel** closes the Modal.
+
+**The wheel** scrolls the innermost HottyScrollView under the pointer
+that can still move that way: three rows a notch, or with Shift six
+columns sideways, as bubbles' viewport takes it. A notch past an end goes
+to the box around it, if any. The storybook passes the wheel to the story
+under the pointer; a program without mouse reports has no wheel.
 
 ### 3.8 What cells keep
 
@@ -571,6 +597,8 @@ reference is `rendition/text`.
   leaves, whatever its `height`: its label, ` — ` and its description,
   after `> ` for the selected item and two spaces for the others; its
   empty text when it has no items.
+- A HottyScrollView is all of its content, whatever its `height`: its
+  lines, a line each, or its child.
 - Tabs are their titles, the one shown in brackets, then its content.
 - A HottyKeyHints says nothing: a pipe takes no keys.
 - An error is `✗ message`, on the line after its control.
@@ -781,8 +809,9 @@ so the agent places it once and never updates it. The renderer builds it
    while its filter is typed, `enter apply filter`, `esc cancel`), a
    HottyTable's the same without the filter, a field's `enter submit` in
    a HottyForm, a CheckBox's `space toggle`, a Button's `enter press`, a
-   Slider's `←/→ adjust`, a select's `enter open`; and `esc close` while
-   a Modal is open.
+   Slider's `←/→ adjust`, a select's `enter open`, a HottyScrollView's
+   `↑/k up`, `↓/j down`, `f/pgdn page down`, `b/pgup page up`; and
+   `esc close` while a Modal is open.
 2. The surface's HottyShortcuts that have a `label` (§6.1), each its key
    as bubbles writes keys (`ctrl+s`, `alt+←`, `pgdn`) and the label.
 3. In the short view, `? more` while `toggle` is on.
@@ -792,15 +821,42 @@ default; turn it off where `?` is the surface's own key), shows those as
 groups in columns, as bubbles' full help: the component's keys, more of
 them, in a column or two as bubbles splits them (a list's moves, its
 pages, `g/home` and `G/end`, then its filter and Enter; a table's rows,
-then its pages; a text field's moves, then its edits, from its keymap,
-§5, two keys an action at most); the HottyShortcuts; then `tab next`,
+then its pages; a scroll view's rows and ends, then its pages and half
+pages, then `←/h move left` and `→/l move right` for lines that do not
+wrap, as bubbles' viewport's; a text field's moves, then its edits, from
+its keymap, §5, two keys an action at most); the HottyShortcuts; then `tab next`,
 `shift+tab back` and `? close help`.
 Which view shows is the renderer's state, shared by the surface's
 renditions. It takes no focus and sends nothing.
 
 On a host, the component's keys are those of a HottyTable, a HottyList,
 a Slider or a select, whose keys the program works; the host moves focus
-among the others without telling the renderer (§2, the keyboard).
+among the others without telling the renderer (§2, the keyboard). A
+HottyScrollView's keys are the host's own there, so it has none.
+
+### 6.11 HottyScrollView
+
+A box `height` rows tall (10 by default) whose content scrolls, as
+bubbles' viewport: a `child`, laid out at the box's width, or `lines`, a
+list of strings, a row each (a null is an empty line). Lines are cut at
+the box and scroll sideways, or with `wrap` break into the rows they
+take. With `follow` it starts at its end and stays there as lines arrive,
+until the user scrolls up; back at the end, it follows again. That is
+the way to show a log or a command's output: bind `lines` to a list in
+the data model and write each line to the next index with
+`updateDataModel` (`/log/0`, `/log/1`, …); A2UI's data model has no
+append, and on a host the line arrives as one `append` delta (§2). It
+takes focus, as a stop of its own in the Tab order, and its keys,
+scrollbar and wheel are §3.4 and §3.7. Where it scrolls is the
+renderer's state, not the data model's.
+
+`hottyScrollTo({id, to})`, a renderer function the agent or a Button may
+call (`allowedCallers: rendererOrAgent`), scrolls it to its `start` or
+its `end` (the default), the id resolved as `hottyFocus`'s is (§6.3). At
+its end a view with `follow` follows the tail again; one without is at
+its end once, and stays where it is as lines arrive. On a host it does
+nothing: a program cannot set where a host has scrolled (SPEC.md §5.3),
+so there a box starts at its top, `follow` or not (§2, vault KIT-07h).
 
 ## 7. Fallbacks
 

@@ -1,14 +1,19 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/progress"
 	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/table"
+	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 )
@@ -28,6 +33,9 @@ func init() {
 	})
 	register("list", "hotty/list", "bubbles: list and its help (KIT-04, KIT-08)", func() tea.Model {
 		return screen{newList()}
+	})
+	register("viewport", "hotty/scroll", "bubbles: viewport (KIT-07)", func() tea.Model {
+		return screen{newViewports()}
 	})
 }
 
@@ -227,3 +235,89 @@ func (m *listRef) Update(msg tea.Msg) tea.Cmd {
 }
 
 func (m *listRef) View() string { return m.l.View() }
+
+// viewport: two of bubbles' viewports, the story's build log at its end
+// and its document (the Text's Markdown, as is: bubbles has no renderer
+// for it), soft-wrapped, and a help line. Tab moves the keys between them.
+// The content is read from the story, so ref runs from the repository's
+// root, as scripts/ref-shot.sh runs it.
+type viewportsRef struct {
+	vp    [2]viewport.Model
+	focus int
+	help  help.Model
+}
+
+func newViewports() *viewportsRef {
+	log, doc := scrollStory()
+	m := &viewportsRef{help: help.New()}
+	m.vp[0] = viewport.New(viewport.WithHeight(8))
+	m.vp[0].SetContentLines(log)
+	m.vp[1] = viewport.New(viewport.WithHeight(10))
+	m.vp[1].SoftWrap = true
+	m.vp[1].SetContent(doc)
+	return m
+}
+
+// scrollStory is the story hotty/scroll's log and its document's text.
+func scrollStory() (log []string, doc string) {
+	b, err := os.ReadFile("story/stories/hotty/scroll.json")
+	if err != nil {
+		return []string{"ref viewport runs from the repository's root: " + err.Error()}, ""
+	}
+	var s struct {
+		Messages []struct {
+			CreateSurface *struct {
+				DataModel struct{ Log []string }
+			}
+			UpdateComponents *struct {
+				Components []struct{ ID, Text string }
+			}
+		}
+	}
+	if err := json.Unmarshal(b, &s); err != nil {
+		return []string{err.Error()}, ""
+	}
+	for _, msg := range s.Messages {
+		if msg.CreateSurface != nil {
+			log = msg.CreateSurface.DataModel.Log
+		}
+		if msg.UpdateComponents != nil {
+			for _, c := range msg.UpdateComponents.Components {
+				if c.ID == "doc_text" {
+					doc = c.Text
+				}
+			}
+		}
+	}
+	return log, doc
+}
+
+func (m *viewportsRef) Init() tea.Cmd { return nil }
+
+func (m *viewportsRef) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		for i := range m.vp {
+			m.vp[i].SetWidth(msg.Width)
+		}
+		m.vp[0].GotoBottom()
+		m.help.SetWidth(msg.Width)
+		return nil
+	case tea.KeyPressMsg:
+		if msg.String() == "tab" {
+			m.focus = 1 - m.focus
+			return nil
+		}
+	}
+	var cmd tea.Cmd
+	m.vp[m.focus], cmd = m.vp[m.focus].Update(msg)
+	return cmd
+}
+
+func (m *viewportsRef) View() string {
+	km := m.vp[m.focus].KeyMap
+	bold := lipgloss.NewStyle().Bold(true)
+	return bold.Render("Build log") + "\n" + m.vp[0].View() + "\n\n" +
+		bold.Render("A document") + "\n" + m.vp[1].View() + "\n\n" +
+		m.help.ShortHelpView([]key.Binding{km.Up, km.Down, km.PageDown, km.PageUp})
+}

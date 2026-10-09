@@ -1,12 +1,17 @@
 package html
 
-import "github.com/neuroplastio/hotty-go"
+import (
+	"strings"
+
+	"github.com/neuroplastio/hotty-go"
+)
 
 // diff appends the deltas that make the host's element o into n, in the
-// surface named name (SPEC §6), as small as the ids allow: attr and unattr for attributes, text for
-// an element whose content is one text, a recursion into children that
-// keep their ids and order, and inner, which morphs the children, for any
-// other change below. o and n have the same id.
+// surface named name (SPEC §6), as small as the ids allow: attr and unattr
+// for attributes, text for an element whose content is one text, a
+// recursion into children that keep their ids and order, append for
+// children added after those, and inner, which morphs the children, for
+// any other change below. o and n have the same id.
 func diff(name string, o, n *node, out []string) []string {
 	if o.tag != n.tag || o.id != n.id {
 		return append(out, hotty.MorphTo(name, o.id, n.html()))
@@ -36,6 +41,19 @@ func diff(name string, o, n *node, out []string) []string {
 				out = diff(name, o.kids[i], k, out)
 			}
 		}
+	case len(n.kids) > len(o.kids) && sameShape(o, &node{kids: n.kids[:len(o.kids)]}) && n.id != "":
+		// Children added after the ones it had, as a log's lines are: they
+		// are appended, and the rest is diffed as it is.
+		for i, k := range n.kids[:len(o.kids)] {
+			if k.id != "" {
+				out = diff(name, o.kids[i], k, out)
+			}
+		}
+		var added strings.Builder
+		for _, k := range n.kids[len(o.kids):] {
+			added.WriteString(k.html())
+		}
+		out = append(out, hotty.Delta(name, hotty.OpAppend, n.id, "", []byte(added.String())))
 	default:
 		out = append(out, inner(name, n))
 	}

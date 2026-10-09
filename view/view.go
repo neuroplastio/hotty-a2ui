@@ -80,6 +80,12 @@ const (
 	// Controller.KeyHints has them: Open while the full view shows, Active
 	// when ? switches views.
 	KeyHints Kind = "keyhints"
+	// ScrollView is a box of Height rows whose content scrolls
+	// (HottyScrollView): its child (Children), or Lines; Top and Left,
+	// where it is scrolled to; Active, whether it follows the tail when
+	// scrolled to its end, and Tail, whether it does now; Wrap, whether
+	// long lines wrap.
+	ScrollView Kind = "scrollview"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -189,6 +195,14 @@ type Element struct {
 	Shown   []int   `json:"shown,omitempty"`
 	Matched [][]int `json:"matched,omitempty"`
 
+	// ScrollView: its lines, when it has no child; whether they wrap; the
+	// first column shown, when they do not; and whether it follows the
+	// tail. Its Height and Top are a Table's, Top a row.
+	Lines []string `json:"lines,omitempty"`
+	Wrap  bool     `json:"wrap,omitempty"`
+	Left  int      `json:"left,omitempty"`
+	Tail  bool     `json:"tail,omitempty"`
+
 	// Placeholder: State is the node's (pending, unknown, cyclic).
 	State a2ui.NodeState `json:"state,omitempty"`
 
@@ -234,7 +248,7 @@ func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView:
 		return true
 	case Choice:
 		return len(e.Children) == 0
