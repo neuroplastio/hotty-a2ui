@@ -14,6 +14,44 @@ const fieldWidth = 20
 // trackWidth is a Slider's natural track width.
 const trackWidth = 10
 
+// gutter is the columns left of a field (profile §3.4): a bar, "┃ ",
+// while it has the keyboard, as huh draws its fields.
+const gutter = 2
+
+// prompt is the columns of a one-line text field's prompt, "> ".
+const prompt = 2
+
+// isField reports whether an element is a field: a control with a gutter
+// and, when it has a label of its own, a title row (profile §3.4).
+func isField(e *view.Element) bool {
+	if e == nil {
+		return false
+	}
+	switch e.Kind {
+	case view.TextField, view.DateTime, view.CheckBox, view.Choice, view.Slider:
+		return true
+	}
+	return false
+}
+
+// isControlElement reports whether an element is a control a Column may
+// set a blank row apart from (separator): a field, or a Button that is not
+// a List's row.
+func isControlElement(e *view.Element) bool {
+	return isField(e) || e != nil && e.Kind == view.Button && !e.Item
+}
+
+// hasTitle reports whether a field has a title row of its own: a text
+// field, a DateTime or a Choice with a label. A CheckBox's and a Slider's
+// labels are on their one row.
+func hasTitle(e *view.Element) bool {
+	switch e.Kind {
+	case view.TextField, view.DateTime, view.Choice:
+		return e.Label != ""
+	}
+	return false
+}
+
 // Text-like controls (profile §3.5).
 
 func isTextControl(e *view.Element) bool {
@@ -26,27 +64,39 @@ func isLongText(e *view.Element) bool { return e.Kind == view.TextField && e.Var
 // rather than chips.
 func isSelect(e *view.Element) bool { return e != nil && e.Kind == view.Choice && len(e.Children) == 0 }
 
-// controlWidth is a control's or a leaf's natural width.
+// controlWidth is a control's or a leaf's natural width; a field's
+// includes its gutter.
 func controlWidth(e *view.Element) int {
 	switch e.Kind {
 	case view.Button:
 		return width(buttonFace(e, style{}))
 	case view.TextField, view.DateTime:
-		return max(Width(e.Label), fieldWidth)
+		n := prompt + fieldWidth
+		if isLongText(e) {
+			n = fieldWidth
+		}
+		return gutter + max(Width(e.Label), n)
 	case view.CheckBox:
-		return width(boxFace(false, e.Label, style{}))
+		return gutter + width(boxFace(false, e.Label, style{}))
 	case view.Choice:
 		if isSelect(e) {
-			return width(selectLine(e, style{}, noWrap))
+			return gutter + max(Width(e.Label), width(selectValue(e, noWrap)))
+		}
+		if e.Variant == "chips" {
+			n := 0
+			for i, ow := range optionWidths(e) {
+				if i > 0 {
+					n += optionGap
+				}
+				n += ow
+			}
+			return gutter + max(Width(e.Label), n)
 		}
 		n := 0
-		for i, ow := range optionWidths(e) {
-			if i > 0 {
-				n += optionGap
-			}
-			n += ow
+		for _, ow := range optionWidths(e) {
+			n = max(n, ow)
 		}
-		return max(Width(e.Label), n)
+		return gutter + max(Width(e.Label), n)
 	case view.Option:
 		return Width(e.Label) + 4
 	case view.Slider:
@@ -54,7 +104,7 @@ func controlWidth(e *view.Element) int {
 		if e.Label != "" {
 			n += Width(e.Label) + 1
 		}
-		return n
+		return gutter + n
 	case view.Image:
 		return Width(imageText(e))
 	case view.Icon:
@@ -69,8 +119,12 @@ func controlWidth(e *view.Element) int {
 	return 0
 }
 
-// controlHeight is a control's or a leaf's height at width w.
+// controlHeight is a control's or a leaf's height at width w, a field's
+// gutter included in w.
 func (l *layout) controlHeight(e *view.Element, w int) int {
+	if isField(e) {
+		w = max(w-gutter, 1)
+	}
 	h := 1
 	switch e.Kind {
 	case view.TextField, view.DateTime:
@@ -84,14 +138,16 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 			if l.r.listOpen(e) {
 				h += len(e.Options)
 			}
-		default:
+		case e.Variant == "chips":
 			h = 0
 			if rows, _ := flow(optionWidths(e), optionGap, w); len(rows) > 0 {
 				h = rows[len(rows)-1] + 1
 			}
-			if e.Label != "" {
-				h++
-			}
+		default:
+			h = len(e.Children)
+		}
+		if e.Label != "" {
+			h++
 		}
 	}
 	return h + len(errorLines(e, w))
@@ -158,11 +214,12 @@ func buttonLabel(e *view.Element) string {
 	return strings.Join(parts, " ")
 }
 
-// boxFace is "[x] label" or "[ ] label"; the box alone without a label.
+// boxFace is "[•] label" or "[ ] label", as huh marks a choice; the box
+// alone without a label.
 func boxFace(on bool, label string, st style) []glyph {
 	box := "[ ]"
 	if on {
-		box = "[x]"
+		box = "[•]"
 	}
 	gs := glyphs(box, st)
 	if label != "" {
@@ -172,15 +229,19 @@ func boxFace(on bool, label string, st style) []glyph {
 }
 
 // optionFace is one of a Choice's options as drawn: a chip, "( label )"
-// or "(● label)", or a box; reversed in the accent when it has the
-// keyboard, the chip whole, else the box.
+// or "(● label)", reversed in the accent when it has the keyboard; or a
+// row, "> [•] label", whose "> " marks the one with the keyboard.
 func optionFace(choice, o *view.Element, focused bool) []glyph {
+	if choice.Variant != "chips" {
+		mark, box := glyphs("  ", style{}), style{}
+		if focused {
+			mark, box = glyphs("> ", style{role: Accent}), style{role: Accent}
+		}
+		return concat(mark, boxFace(o.Active, o.Label, box))
+	}
 	st := style{}
 	if focused {
 		st = style{role: Accent, attr: Reverse}
-	}
-	if choice.Variant != "chips" {
-		return boxFace(o.Active, o.Label, st)
 	}
 	if o.Active {
 		return line("(● "+o.Label+")", st)
@@ -196,29 +257,35 @@ func optionWidths(e *view.Element) []int {
 	return ws
 }
 
-// selectLine is a select's row: "label: value ▸", the value cut to fit w.
-func selectLine(e *view.Element, valueSt style, w int) []glyph {
-	var prefix []glyph
-	if e.Label != "" {
-		prefix = line(e.Label+": ", style{role: Muted})
-	}
-	value := line(pickedLabel(e), valueSt)
+// selectValue is a select's value row: the picked option's label, or "…"
+// in muted, then " ▾" in muted, the label cut to fit w. At noWrap it is as
+// wide as the widest option makes it.
+func selectValue(e *view.Element, w int) []glyph {
+	value := line(pickedLabel(e), style{})
 	if len(value) == 0 {
-		value = line("…", style{role: Muted, attr: valueSt.attr})
+		value = line("…", style{role: Muted})
 	}
 	if w == noWrap {
 		for _, o := range e.Options {
 			if Width(o.Label) > width(value) {
-				value = line(o.Label, valueSt)
+				value = line(o.Label, style{})
 			}
 		}
 	}
-	arrow := glyphs(" ▸", valueSt)
-	room := w - width(prefix) - width(arrow)
-	if room < 1 {
-		return fit(concat(prefix, value, arrow), w)
+	arrow := glyphs(" ▾", style{role: Muted})
+	if room := w - width(arrow); room >= 1 {
+		return concat(fit(value, room), arrow)
 	}
-	return concat(prefix, fit(value, room), arrow)
+	return fit(concat(value, arrow), w)
+}
+
+// titleStyle is a field's title: bold, in the accent while the field has
+// the keyboard.
+func titleStyle(focused bool) style {
+	if focused {
+		return style{role: Accent, attr: Bold}
+	}
+	return style{attr: Bold}
 }
 
 // picked is the index of a select's value among its options, or -1.

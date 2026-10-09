@@ -73,24 +73,40 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 			ch.acts = append(ch.acts, o.Action)
 		}
 	}
-	var opts []any
-	for _, r := range rends {
-		opts = append(opts, map[string]any{"label": r.label, "value": r.value})
+	// A select's title: on a host its label; in cells, where a title takes a
+	// row of its own, its options' labels say it instead ("Theme: Nord"),
+	// so that the three take a row each.
+	picker := func(id, title, path string, options [][2]string) map[string]any {
+		var opts []any
+		for _, o := range options {
+			label := o[1]
+			if !native {
+				label = title + ": " + label
+			}
+			opts = append(opts, map[string]any{"label": label, "value": o[0]})
+		}
+		p := obj("id", id, "component", "ChoicePicker", "value", obj("@path", path), "options", opts, "weight", 1)
+		if native {
+			p["label"] = title
+		} else {
+			p["accessibility"] = obj("label", title)
+		}
+		return p
 	}
-	var themes []any
+	var rendOpts, themeOpts [][2]string
+	for _, r := range rends {
+		rendOpts = append(rendOpts, [2]string{r.value, r.label})
+	}
 	for _, t := range theme.All {
-		themes = append(themes, map[string]any{"label": t.Name, "value": t.Name})
+		themeOpts = append(themeOpts, [2]string{t.Name, t.Name})
 	}
 	pick := []map[string]any{
 		obj("id", "root", "component", "Column", "children", []any{"view"}),
 		obj("id", "view", "component", "Column", "children", map[bool][]any{true: {"top", "theme_p"}, false: {"rend", "keys_p", "theme_p"}}[native]),
 		obj("id", "top", "component", "Row", "children", []any{"rend", "keys_p"}),
-		obj("id", "rend", "component", "ChoicePicker", "label", "Rendition", "value", obj("@path", "/rendition"), "options", opts, "weight", 1),
-		obj("id", "theme_p", "component", "ChoicePicker", "label", "Theme", "value", obj("@path", "/theme"), "options", themes, "weight", 1),
-		obj("id", "keys_p", "component", "ChoicePicker", "label", "Keys", "value", obj("@path", "/keys"), "options", []any{
-			map[string]any{"label": "Terminal", "value": keysTerminal},
-			map[string]any{"label": "Default", "value": keysDefault},
-		}, "weight", 1),
+		picker("rend", "Rendition", "/rendition", rendOpts),
+		picker("theme_p", "Theme", "/theme", themeOpts),
+		picker("keys_p", "Keys", "/keys", [][2]string{{keysTerminal, "Terminal"}, {keysDefault, "Default"}}),
 	}
 	nav := []map[string]any{obj("id", "root", "component", "Column", "children", []any{"list"})}
 	var list []any

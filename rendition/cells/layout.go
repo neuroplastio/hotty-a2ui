@@ -89,9 +89,9 @@ func (l *layout) minimum(e *view.Element) int {
 			n = max(n, longestWord(t.gs))
 		}
 	case view.TextField, view.DateTime:
-		n = max(longestWord(line(e.Label, style{})), 1)
+		n = gutter + max(longestWord(line(e.Label, style{})), 1)
 	case view.Slider:
-		n = 4 + sliderValueWidth(e)
+		n = gutter + 4 + sliderValueWidth(e)
 	case view.Choice:
 		n = l.natural(e)
 		if !isSelect(e) {
@@ -99,6 +99,7 @@ func (l *layout) minimum(e *view.Element) int {
 			for _, ow := range optionWidths(e) {
 				n = max(n, ow)
 			}
+			n += gutter
 		}
 	case view.Divider:
 		n = 1
@@ -231,10 +232,47 @@ func (l *layout) columnWidth(e *view.Element, align string, w int) int {
 
 func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 	h := 0
-	for _, k := range kids {
-		h += l.height(k, l.columnWidth(k, align, w))
+	for i, k := range kids {
+		h += l.height(k, l.columnWidth(k, align, w)) + separator(kids, i)
 	}
 	return h
+}
+
+// separator is the blank rows a Column puts before its child i: one
+// between two controls when either has a title row, as huh puts between
+// its fields, or when one is a field and the other a Button, as bubbles
+// sets a form's button apart; else none, so that a stack of CheckBoxes or
+// of Buttons stays tight.
+func separator(kids []*view.Element, i int) int {
+	if i == 0 {
+		return 0
+	}
+	a, b := edge(kids[i-1], false), edge(kids[i], true)
+	if !isControlElement(a) || !isControlElement(b) {
+		return 0
+	}
+	if hasTitle(a) || hasTitle(b) || isField(a) != isField(b) {
+		return 1
+	}
+	return 0
+}
+
+// edge is what a separator sees of a neighbour: through a Row, a Column or
+// a HottyForm, its first child (first) or its last, so that a field just
+// inside a form is set apart from one just outside it.
+func edge(e *view.Element, first bool) *view.Element {
+	for e != nil && (e.Kind == view.Stack || e.Kind == view.Form) {
+		kids := shown(e.Children)
+		if len(kids) == 0 {
+			return e
+		}
+		if first {
+			e = kids[0]
+		} else {
+			e = kids[len(kids)-1]
+		}
+	}
+	return e
 }
 
 // row places a Row's children across w columns (profile §3.3): each as

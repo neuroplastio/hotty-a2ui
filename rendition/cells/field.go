@@ -76,32 +76,39 @@ func indexAt(line []string, col int, obscured bool) int {
 	return len(line)
 }
 
-// paintField paints a TextField or a DateTime (profile §3.5): a muted
-// label line, then the value on an underlined field as wide as its box,
-// scrolled to keep the cursor in it while it has the keyboard.
+// paintField paints a TextField or a DateTime (profile §3.5) in its box
+// past the gutter: a bold title, then the value. A one-line field's value
+// follows a "> " prompt, as bubbles' text input has it; a longText's rows
+// carry the textarea's "┃" in the gutter. It scrolls to keep the cursor in
+// it while it has the keyboard.
 func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	focused := r.focused(e.ID)
 	row := y
 	if e.Label != "" {
-		st := style{role: Muted}
-		if focused {
-			st.role = Accent
-		}
-		cv.write(x, row, w, fit(line(e.Label, st), w))
+		cv.write(x, row, w, fit(line(e.Label, titleStyle(focused)), w))
 		row++
 	}
 	v, _ := e.Value.(string)
 	cl := clusters(v)
 	obscured := e.Variant == "obscured"
+	long := isLongText(e)
 	lines := [][]string{cl}
-	if isLongText(e) {
+	if long {
 		lines = splitClusters(cl)
 	}
 	rows := fieldRows(e)
 	r.rows[e.ID] = rows
-	under := style{attr: Underline}
-	area := &fieldArea{x: x, y: row, rows: rows}
+	vx, vw := x, w
+	if !long && w > prompt {
+		p := style{role: Muted}
+		if focused {
+			p.role = Accent
+		}
+		cv.write(x, row, w, glyphs("> ", p))
+		vx, vw = x+prompt, w-prompt
+	}
+	area := &fieldArea{x: vx, y: row, rows: rows}
 	li, ci, curCol := 0, 0, 0
 	if focused {
 		li, ci = locate(lines, r.cursorOf(e.ID, len(cl)))
@@ -112,33 +119,35 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 		}
 		voff = max(min(voff, len(lines)-rows), 0)
 		hoff := min(r.hscroll[e.ID], curCol)
-		if curCol >= hoff+w {
-			hoff = curCol - w + 1
+		if curCol >= hoff+vw {
+			hoff = curCol - vw + 1
 		}
-		if colOf(lines[li], len(lines[li]), obscured) < w {
+		if colOf(lines[li], len(lines[li]), obscured) < vw {
 			hoff = 0
 		}
 		r.vscroll[e.ID], r.hscroll[e.ID] = voff, hoff
 		area.voff, area.hoff = voff, hoff
 	}
 	for j := 0; j < rows; j++ {
-		cv.write(x, row+j, w, repeat(" ", w, under))
+		if long {
+			cv.set(x-gutter, row+j, glyph{text: "┃", width: 1, style: style{role: Border}})
+		}
 		k := area.voff + j
 		if k >= len(lines) {
 			continue
 		}
 		gs := make([]glyph, len(lines[k]))
 		for i, g := range lines[k] {
-			gs[i] = shownGlyph(g, obscured, under)
+			gs[i] = shownGlyph(g, obscured, style{})
 		}
 		if !focused {
-			cv.write(x, row+j, w, fit(gs, w))
+			cv.write(vx, row+j, vw, fit(gs, vw))
 			continue
 		}
 		c := 0
 		for _, g := range gs {
-			if c >= area.hoff && c+g.width <= area.hoff+w {
-				cv.set(x+c-area.hoff, row+j, g)
+			if c >= area.hoff && c+g.width <= area.hoff+vw {
+				cv.set(vx+c-area.hoff, row+j, g)
 			}
 			c += g.width
 		}
@@ -148,15 +157,15 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 		if hint == "" && e.Kind == view.DateTime {
 			hint = e.DateHint()
 		}
-		cv.write(x, row, w, fit(line(hint, style{role: Muted, attr: Faint | Underline}), w))
+		cv.write(vx, row, vw, fit(line(hint, style{role: Muted, attr: Faint}), vw))
 	}
 	if focused {
-		cx, cy := x+curCol-area.hoff, row+li-area.voff
+		cx, cy := vx+curCol-area.hoff, row+li-area.voff
 		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows {
 			cv.f.Cells[cy][cx].Attr |= Reverse
 			cv.f.cursorCol, cv.f.cursorRow, cv.f.cursor = cx, cy, true
 		}
 	}
-	r.hits = append(r.hits, hit{x: x, y: y, w: w, h: row - y + rows, id: e.ID, opt: -1, field: area})
+	r.hits = append(r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + rows, id: e.ID, opt: -1, field: area})
 	l.paintError(cv, e, x, row+rows, w)
 }

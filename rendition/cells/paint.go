@@ -143,18 +143,31 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		n := cv.write(x, y, w, face)
 		l.r.boxes[e.ID] = box{x, y, n, 1}
 		l.r.hits = append(l.r.hits, hit{x: x, y: y, w: n, h: 1, id: e.ID, opt: -1, disabled: e.Disabled})
-	case view.TextField, view.DateTime:
-		l.paintField(cv, e, x, y, w)
-	case view.CheckBox:
-		on, _ := e.Value.(bool)
-		n := l.paintBox(cv, e.ID, on, e.Label, x, y, w)
-		l.r.boxes[e.ID] = box{x, y, n, 1}
-		l.r.hits = append(l.r.hits, hit{x: x, y: y, w: n, h: 1, id: e.ID, opt: -1})
-		l.paintError(cv, e, x, y+1, w)
-	case view.Choice:
-		l.paintChoice(cv, e, x, y, w)
-	case view.Slider:
-		l.paintSlider(cv, e, x, y, w)
+	case view.TextField, view.DateTime, view.CheckBox, view.Choice, view.Slider:
+		if w <= gutter {
+			return
+		}
+		fx, fw := x+gutter, w-gutter
+		switch e.Kind {
+		case view.TextField, view.DateTime:
+			l.paintField(cv, e, fx, y, fw)
+		case view.CheckBox:
+			on, _ := e.Value.(bool)
+			n := l.paintBox(cv, e.ID, on, e.Label, fx, y, fw)
+			l.r.boxes[e.ID] = box{fx, y, n, 1}
+			l.r.hits = append(l.r.hits, hit{x: x, y: y, w: gutter + n, h: 1, id: e.ID, opt: -1})
+			l.paintError(cv, e, fx, y+1, fw)
+		case view.Choice:
+			l.paintChoice(cv, e, fx, y, fw)
+		case view.Slider:
+			l.paintSlider(cv, e, fx, y, fw)
+		}
+		if l.hasKeyboard(e) {
+			bar := style{role: Accent}
+			for j := y; j < y+min(h, l.controlHeight(e, w)); j++ {
+				cv.set(x, j, glyph{text: "┃", width: 1, style: bar})
+			}
+		}
 	default:
 		l.paintColumn(cv, shown(e.Children), "start", "stretch", x, y, w, h)
 	}
@@ -173,12 +186,12 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 		ws[i] = l.columnWidth(k, align, w)
 		hs[i] = l.height(k, ws[i])
 		weights[i] = k.Weight
-		sum += hs[i]
+		sum += hs[i] + separator(kids, i)
 	}
 	gaps := l.spread(hs, weights, justify, h-sum)
 	yy := y
 	for i, k := range kids {
-		yy += gaps[i]
+		yy += gaps[i] + separator(kids, i)
 		dx := 0
 		switch align {
 		case "center":
@@ -228,12 +241,27 @@ func (l *layout) paintTabBar(cv *canvas, bar []*view.Element, x, y, w int) int {
 	return n + 1
 }
 
-// paintBox paints "[x] label" or "[ ] label", the box reversed in the
-// accent when id has the keyboard; it returns the columns painted.
+// hasKeyboard reports whether a field has the keyboard: itself, or for
+// a Choice's options, one of them.
+func (l *layout) hasKeyboard(e *view.Element) bool {
+	if l.r.focused(e.ID) {
+		return true
+	}
+	for _, o := range e.Children {
+		if o.Kind == view.Option && l.r.focused(o.ID) {
+			return true
+		}
+	}
+	return false
+}
+
+// paintBox paints "[•] label" or "[ ] label", the box in the accent when
+// id has the keyboard (the gutter's bar marks it); it returns the columns
+// painted.
 func (l *layout) paintBox(cv *canvas, id string, on bool, label string, x, y, w int) int {
 	st := style{}
 	if l.r.focused(id) {
-		st = style{role: Accent, attr: Reverse}
+		st = style{role: Accent}
 	}
 	return cv.write(x, y, w, fit(boxFace(on, label, st), w))
 }
@@ -244,48 +272,57 @@ func (l *layout) paintError(cv *canvas, e *view.Element, x, y, w int) {
 	}
 }
 
+// paintChoice paints a Choice in its field's box (past the gutter): its
+// title, then a select's value row and, while open, its list, "> ● label"
+// on the highlighted row; or the options, chips in a flow or a row each.
 func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	row := y
+	if e.Label != "" {
+		cv.write(x, row, w, fit(line(e.Label, titleStyle(l.hasKeyboard(e))), w))
+		row++
+	}
 	if isSelect(e) {
-		st := style{}
-		if l.r.focused(e.ID) {
-			st = style{role: Accent, attr: Reverse}
-		}
-		cv.write(x, row, w, selectLine(e, st, w))
-		l.r.hits = append(l.r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -1})
+		cv.write(x, row, w, selectValue(e, w))
+		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + 1, id: e.ID, opt: -1})
 		row++
 		if l.r.listOpen(e) {
 			cur := picked(e)
 			for i, o := range e.Options {
-				mark, st := "  ○ ", style{}
+				mark, dot, st := glyphs("  ", style{}), "○ ", style{}
 				if i == cur {
-					mark = "  ● "
+					dot = "● "
 				}
 				if i == l.r.hi {
-					st = style{role: Accent, attr: Reverse}
+					mark, st = glyphs("> ", style{role: Accent}), style{role: Accent, attr: Bold}
 				}
-				gs := concat(glyphs(mark, style{}), line(o.Label, st))
+				gs := concat(mark, glyphs(dot, st), line(o.Label, st))
 				cv.write(x, row, w, fit(gs, w))
-				l.r.hits = append(l.r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: i})
+				l.r.hits = append(l.r.hits, hit{x: x - gutter, y: row, w: w + gutter, h: 1, id: e.ID, opt: i})
 				row++
 			}
 		}
 		l.paintError(cv, e, x, row, w)
 		return
 	}
-	if e.Label != "" {
-		cv.write(x, row, w, fit(line(e.Label, style{role: Muted}), w))
+	if e.Variant == "chips" {
+		rows, xs := flow(optionWidths(e), optionGap, w)
+		for i, o := range e.Children {
+			face := optionFace(e, o, l.r.focused(o.ID))
+			n := cv.write(x+xs[i], row+rows[i], w-xs[i], fit(face, w-xs[i]))
+			l.r.boxes[o.ID] = box{x + xs[i], row + rows[i], n, 1}
+			l.r.hits = append(l.r.hits, hit{x: x + xs[i], y: row + rows[i], w: n, h: 1, id: o.ID, opt: -1})
+		}
+		if len(rows) > 0 {
+			row += rows[len(rows)-1] + 1
+		}
+		l.paintError(cv, e, x, row, w)
+		return
+	}
+	for _, o := range e.Children {
+		n := cv.write(x, row, w, fit(optionFace(e, o, l.r.focused(o.ID)), w))
+		l.r.boxes[o.ID] = box{x, row, n, 1}
+		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: row, w: gutter + n, h: 1, id: o.ID, opt: -1})
 		row++
-	}
-	rows, xs := flow(optionWidths(e), optionGap, w)
-	for i, o := range e.Children {
-		face := optionFace(e, o, l.r.focused(o.ID))
-		n := cv.write(x+xs[i], row+rows[i], w-xs[i], fit(face, w-xs[i]))
-		l.r.boxes[o.ID] = box{x + xs[i], row + rows[i], n, 1}
-		l.r.hits = append(l.r.hits, hit{x: x + xs[i], y: row + rows[i], w: n, h: 1, id: o.ID, opt: -1})
-	}
-	if len(rows) > 0 {
-		row += rows[len(rows)-1] + 1
 	}
 	l.paintError(cv, e, x, row, w)
 }
@@ -303,7 +340,7 @@ func (l *layout) paintSlider(cv *canvas, e *view.Element, x, y, w int) {
 	focused := l.r.focused(e.ID)
 	col := x
 	if label != "" {
-		col += cv.write(col, y, w, line(label+" ", style{role: Muted}))
+		col += cv.write(col, y, w, line(label+" ", titleStyle(focused)))
 	}
 	if n >= 1 {
 		k := 0
@@ -317,7 +354,7 @@ func (l *layout) paintSlider(cv *canvas, e *view.Element, x, y, w int) {
 		}
 		track := concat(repeat("━", k, done), glyphs("●", knob), repeat("─", n-1-k, rest))
 		cv.write(col, y, n, track)
-		l.r.hits = append(l.r.hits, hit{x: x, y: y, w: w, h: 1, id: e.ID, opt: -1, track: &trackArea{x: col, n: n}})
+		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: 1, id: e.ID, opt: -1, track: &trackArea{x: col, n: n}})
 		col += n + 1
 	}
 	cv.write(col, y, x+w-col, line(a2ui.NumberString(v), style{}))

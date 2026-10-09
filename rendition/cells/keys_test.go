@@ -70,10 +70,11 @@ func TestTyping(t *testing.T) {
 		t.Fatalf("after editing: %q", got)
 	}
 	f := r.Draw(40)
-	if col, row, ok := f.Cursor(); !ok || col != 4 || row != 1 {
+	// The gutter's bar and the prompt come first: "┃ > Lda!".
+	if col, row, ok := f.Cursor(); !ok || col != 8 || row != 1 {
 		t.Errorf("cursor %d,%d %v", col, row, ok)
 	}
-	if !strings.HasPrefix(strings.Split(f.Plain(), "\n")[1], "Lda!") {
+	if !strings.HasPrefix(strings.Split(f.Plain(), "\n")[1], "┃ > Lda!") {
 		t.Errorf("field shows\n%s", f.Plain())
 	}
 }
@@ -189,7 +190,7 @@ func TestSelect(t *testing.T) {
 	}
 	keys(t, r, "Enter", "ArrowDown")
 	f := r.Draw(40).Plain()
-	if !strings.Contains(f, "Size: Small ▸") || !strings.Contains(f, "  ● Small\n  ○ Medium") {
+	if !strings.Contains(f, "┃ Size\n┃ Small ▾") || !strings.Contains(f, "┃   ● Small\n┃ > ○ Medium") {
 		t.Fatalf("open list:\n%s", f)
 	}
 	keys(t, r, " ")
@@ -214,7 +215,7 @@ func TestClick(t *testing.T) {
 		t.Fatalf("no row %q in\n%s", prefix, f.Plain())
 		return -1
 	}
-	if err := r.Click(1, row("[ ] Agree")); err != nil || data()["agree"] != true || c.St.Focus != "agree" {
+	if err := r.Click(3, row("  [ ] Agree")); err != nil || data()["agree"] != true || c.St.Focus != "agree" {
 		t.Fatalf("click on the box: %v %v %s", err, data()["agree"], c.St.Focus)
 	}
 	f = r.Draw(40)
@@ -227,7 +228,7 @@ func TestClick(t *testing.T) {
 	}
 	_ = c.SetValue("name", "Ada")
 	f = r.Draw(40)
-	if err := r.Click(1, row("Name")+1); err != nil || !c.St.Keyboard || c.St.Focus != "name" {
+	if err := r.Click(gutter+prompt+1, row("  Name")+1); err != nil || !c.St.Keyboard || c.St.Focus != "name" {
 		t.Fatal("a click on the field did not focus it")
 	}
 	keys(t, r, "x")

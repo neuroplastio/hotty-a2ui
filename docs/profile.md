@@ -211,11 +211,11 @@ Natural widths:
 | --- | --- |
 | Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0 |
 | Button | the label + 4 (`[ ` and ` ]`); borderless, the label; a List's, the label + 2 |
-| TextField, DateTime | the label's width, at least 20 (an HTML input's size) |
-| CheckBox | 3 for the box, plus 1 and the label when it has one |
-| a select | `label: `, the widest option's label, ` ▸` |
-| a Choice's options | the label's width, or all the options in one row two columns apart, whichever is wider |
-| Slider | the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
+| TextField, DateTime | 2 for the gutter, plus the label's width or 22 (the prompt and an HTML input's size of 20), whichever is wider; a longText, the label's or 20 |
+| CheckBox | 2 for the gutter, 3 for the box, plus 1 and the label when it has one |
+| a select | 2 for the gutter, plus the label's width or the widest option's label and ` ▾`, whichever is wider |
+| a Choice's options | 2 for the gutter, plus the label's width or the widest option row (`> [ ] label`), whichever is wider; chips, all the options in one row two columns apart |
+| Slider | 2 for the gutter, the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -227,10 +227,10 @@ Minimums:
 
 - A Text's minimum is its longest word. A list item's indent and marker
   count with its first word.
-- A field's is its label's longest word, and at least 1.
-- A Slider's is 4 plus its value's width.
-- A Choice's options' is its widest option, or its label's longest word if
-  that is wider.
+- A field's is the gutter and its label's longest word, and at least 3.
+- A Slider's is the gutter, 4 and its value's width.
+- A Choice's options' is the gutter and its widest option, or its label's
+  longest word if that is wider.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -240,7 +240,13 @@ How the containers lay their children out:
 
 - **Column** covers a Column, a vertical List, a HottyForm, a Modal's trigger,
   and the content of a Card or a tab.
-  - Its children are stacked with no rows between them.
+  - Its children are stacked with no rows between them, except for one
+    blank row between two controls (fields and Buttons that are not a
+    List's rows) when either has a title row (§3.4), or when one is a
+    field and the other a Button: huh's space between its fields, and
+    bubbles' before a form's button. A stack of CheckBoxes, or of
+    Buttons, stays tight. Through a Row, a Column or a HottyForm, the
+    rule sees its first child (or, before it, its last).
   - Across: with `align` stretch, a child gets the full width. With start,
     center or end, it gets its natural width (at most the full width),
     placed at the start, the centre (rounded down) or the end.
@@ -291,11 +297,11 @@ How the containers lay their children out:
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
 | Divider, Card, Tabs | §3.3 |
 | Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. A vertical List's Button is its row: ` label `, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
-| TextField, DateTime | a label line in `muted`, then the value on a row underlined across the box (§3.5), then the error |
-| CheckBox | `[x] label` or `[ ] label`, then the error |
-| a select (one value, `checkbox` display) | `label: value ▸`: the label in `muted`, then the picked option's label, or `…` in `muted` when none is picked. While its list is open (§3.7), the options follow one a row: `  ● label` for the picked one and `  ○ label` for the others. Then the error. |
-| a Choice's options (several values, or `chips`) | a label line in `muted`, then the options two columns apart, wrapping: chips `( label )` and `(● label)` when picked, else boxes `[ ] label` and `[x] label`; then the error |
-| Slider | `label ━━━━●──── 50` on one row: the label in `muted` and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `●` at round((value − min) / (max − min) × (track − 1)), and after it the track is `─` in `border`. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
+| TextField, DateTime | in the field's box past the gutter: a title row, then the value (§3.5), then the error |
+| CheckBox | past the gutter, `[•] label` or `[ ] label`, then the error |
+| a select (one value, `checkbox` display) | past the gutter, a title row, then the picked option's label, or `…` in `muted` when none is picked, and ` ▾` in `muted`. While its list is open (§3.7), the options follow one a row: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
+| a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options: one a row, `[•] label` or `[ ] label` after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect); chips two columns apart, wrapping, `( label )` and `(● label)` when picked. Then the error. |
+| Slider | past the gutter, `label ━━━━●──── 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `●` at round((value − min) / (max − min) × (track − 1)), and after it the track is `─` in `border`. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
 
@@ -311,22 +317,34 @@ How the containers lay their children out:
   `muted`. A link is underlined and its cells carry the URL (OSC 8).
 - A caption is `muted` throughout.
 
+**Fields** are the text fields, DateTime, CheckBox, Choice and Slider:
+the controls huh calls fields, drawn as huh draws them.
+- **The gutter.** A field's first two columns are its gutter. While the
+  field has the keyboard (for a Choice's options, one of them), the
+  gutter is `┃ ` in `accent` down the field's rows; otherwise it is blank.
+- **The title.** A text field, a DateTime or a Choice with a label has a
+  title row: the label, bold, in `accent` while the field has the
+  keyboard. A CheckBox's and a Slider's labels are on their one row.
+
 **Focus** (the element with the keyboard). Each focused element is in
-`accent`, with an attribute so that the focus still shows without colour:
-- A Button, a chip, a Tabs' title, a select's value, a Media link and a
-  Modal trigger that is not a control are reversed whole.
-- A CheckBox and a box option reverse their box.
+`accent`, with a glyph or an attribute so that the focus still shows
+without colour:
+- A field shows its gutter's bar, and its title is in `accent`.
+- A Button, a chip, a Tabs' title, a Media link and a Modal trigger that
+  is not a control are reversed whole.
+- A CheckBox's box is in `accent`; a box option's row starts with `> `.
 - A Slider's track is in `accent` up to the knob, and the knob is
   reversed.
-- A text field's label line is in `accent`, and its cursor cell is
-  reversed.
+- A text field's prompt is in `accent`, and its cursor cell is reversed.
 
 ### 3.5 Text fields
 
-- **The value row.** A text field's value sits on a row underlined across
-  its box. The placeholder shows while the value is empty, in `muted` and
-  faint. A DateTime's placeholder is the form its value takes:
-  `YYYY-MM-DD`, `HH:MM` or `YYYY-MM-DDTHH:MM`.
+- **The value row.** A one-line field's value follows a prompt, `> `, in
+  `muted` (`accent` while it has the keyboard), as bubbles' text input
+  has it. A longText has no prompt: its rows carry `┃` in the gutter, in
+  `border`, as bubbles' textarea does. The placeholder shows while the
+  value is empty, in `muted` and faint. A DateTime's placeholder is the
+  form its value takes: `YYYY-MM-DD`, `HH:MM` or `YYYY-MM-DDTHH:MM`.
 - **obscured** shows `•` for each cluster.
 - **longText** shows its hard lines, at least 3 rows and at most 8, with no
   soft wrap.

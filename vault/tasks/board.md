@@ -3,8 +3,9 @@
 Last updated: 2026-10-09
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** nothing. Phase 1 is a go (2026-10-09).
-New names follow [catalog-naming](../knowledge/catalog-naming.md).
+**Waiting on the maintainer:** a look at KIT-LOOK (journal 2026-10-09.4):
+fields drawn as huh draws them. Phase 1 is a go (2026-10-09). New names
+follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Legend
 
@@ -16,11 +17,6 @@ New names follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-LOOK** — The existing components' cells look, held against huh
-  and bubbles.
-  - What to compare: focus marker, prompt, placeholder, caret, selection and
-    error colours, borders, Tabs, the select's list and the help line.
-  - It sets the shared style tokens the new components use.
 - [ ] **KIT-02c** — Progress: a bar in eighths, a percentage, a gradient, and
   an indeterminate segment.
 - [ ] **KIT-03c** — Spinner: bubbles' frame sets on the renderer's tick, and
@@ -122,6 +118,14 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-LOOK** — The cells look of fields, held against huh and
+  bubbles' textinputs (journal 2026-10-09.4, awaiting the maintainer's
+  look).
+  - What changed: huh's gutter and its `┃` focus bar, bold titles, the
+    `> ` prompt, the textarea's bar, `[•]`, one option to a row, the
+    select's `▾`, and a blank row between fields.
+  - Left for the legs that need them: background roles (KIT-01, KIT-04)
+    and the help line (KIT-08).
 - [x] **KIT-REF** — Reference shots: `ref/` (its own module), `storybook
   -bare`, and `make shot NAME=…` (journal 2026-10-09.3). It has references
   for form, textarea, progress, spinner, table and list. Each later leg adds
