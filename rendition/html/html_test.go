@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/neuroplastio/hotty-go"
 	"github.com/neuroplastio/hotty-go/hottytest"
@@ -51,10 +52,11 @@ type harness struct {
 	actions []*a2ui.ActionMessage
 	deltas  int
 	pops    map[string]bool // the open lists' surfaces the host has
+	now     time.Time       // the renditions' clock, which stands still
 }
 
 func newHarness(t *testing.T) *harness {
-	x := &harness{t: t, h: hottytest.New(t), rs: map[string]*Rendition{}, pops: map[string]bool{}}
+	x := &harness{t: t, h: hottytest.New(t), rs: map[string]*Rendition{}, pops: map[string]bool{}, now: time.Unix(0, 0)}
 	x.p = a2ui.NewProcessor(basic.Catalog(), hottycat.Catalog())
 	x.p.Send = func(o a2ui.Outbound) {
 		if o.Action != nil {
@@ -110,6 +112,7 @@ func (x *harness) process(msgs ...any) {
 				return '-'
 			}, s.ID)
 			r = New(view.NewController(s), name)
+			r.Clock = func() time.Time { return x.now }
 			x.rs[s.ID] = r
 			x.order = append(x.order, s.ID)
 			x.send(hotty.Doc(name, r.Doc()), hotty.Place(name, hotty.Placement{Cols: 80, Rows: 24}))
@@ -149,7 +152,7 @@ func (x *harness) check(r *Rendition) {
 	x.t.Helper()
 	got := x.h.Surface(r.name).HTML()
 	h2 := hottytest.New(x.t)
-	_, _ = io.WriteString(h2, hotty.Doc(r.name, (&Rendition{C: r.C, name: r.name, keys: r.keys, fit: r.fit}).Doc()))
+	_, _ = io.WriteString(h2, hotty.Doc(r.name, (&Rendition{C: r.C, name: r.name, keys: r.keys, fit: r.fit, Clock: r.Clock}).Doc()))
 	if want := h2.Surface(r.name).HTML(); got != want {
 		x.t.Errorf("%s: the deltas made\n%s\nthe document is\n%s", r.name, got, want)
 	}
@@ -724,6 +727,70 @@ func TestProgressAndSpinner(t *testing.T) {
 	}
 	if got := s.TextOf("s"); strings.Contains(got, "|") || !strings.Contains(got, "Working") {
 		t.Errorf("the stopped spinner reads %q", got)
+	}
+}
+
+// TestProgressAndSpinnerMove: on the host as in cells, an indeterminate
+// Progress sweeps and a Spinner turns on the view's clock, a delta each
+// tick: the Progress's --k-at, the Spinner's frame's text. Once nothing
+// moves, the rendition asks for no more ticks, and a tick sends nothing.
+func TestProgressAndSpinnerMove(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"busy":true}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["i","s"]},
+ {"id":"i","component":"HottyProgress","catalogId":"`+hottycat.ID+`","label":"Indexing","value":{"@path":"/done"}},
+ {"id":"s","component":"HottySpinner","catalogId":"`+hottycat.ID+`","spinner":"line","label":"Working","active":{"@path":"/busy"}}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	frame := partID("s", partFrame)
+	if got, _ := s.Attr("i", "style"); got != "--k-at: -25.00%" {
+		t.Errorf("at tick 0 the bar starts at %q", got)
+	}
+	if got := s.TextOf(frame); got != "|" {
+		t.Errorf("at tick 0 the frame is %q", got)
+	}
+	// The segment starts at step × 125% / 50 − 25%; the line's frames
+	// change at the same rate, four of them.
+	for _, at := range []struct {
+		tick        int64
+		left, frame string
+	}{
+		{1, "-22.50%", "/"},
+		{2, "-20.00%", "-"},
+		{24, "35.00%", "|"},
+		{49, "97.50%", "/"},
+		{50, "-25.00%", "-"},
+	} {
+		if d := r.Animating(); d != view.ProgressInterval {
+			t.Errorf("tick %d: animates every %v, want %v", at.tick, d, view.ProgressInterval)
+		}
+		x.now = time.Unix(0, at.tick*int64(view.ProgressInterval))
+		d := r.Update()
+		want := []string{hotty.SetAttr(r.name, "i", "style", "--k-at: "+at.left), hotty.SetText(r.name, frame, at.frame)}
+		if strings.Join(d, "") != strings.Join(want, "") {
+			t.Errorf("tick %d: deltas %q, want %q", at.tick, d, want)
+		}
+		x.send(d...)
+	}
+	x.check(r)
+
+	var set []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/done","value":1}},
+{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/busy","value":false}}]`), &set))
+	x.process(set...)
+	x.check(r)
+	if d := r.Animating(); d != 0 {
+		t.Errorf("a full bar and a stopped spinner animate every %v", d)
+	}
+	if _, ok := s.Attr("i", "style"); ok {
+		t.Error("a bar with a value keeps --k-at")
+	}
+	x.now = x.now.Add(time.Second)
+	if d := r.Update(); len(d) != 0 {
+		t.Errorf("a tick with nothing moving sent %q", d)
 	}
 }
 

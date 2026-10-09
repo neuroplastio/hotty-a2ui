@@ -226,7 +226,7 @@ func (l *layout) paintProgress(cv *canvas, e *view.Element, x, y, w int) {
 		}
 	} else {
 		seg := max(n/4, 1)
-		at := int(l.r.tick(view.ProgressInterval)%int64(n+seg)) - seg
+		at := view.ProgressStep(l.r.Clock())*(n+seg)/view.ProgressSteps - seg
 		for i := range n {
 			if i >= at && i < at+seg {
 				bar = append(bar, glyph{text: "█", width: 1, style: fill})
@@ -247,8 +247,7 @@ func (l *layout) paintProgress(cv *canvas, e *view.Element, x, y, w int) {
 func (l *layout) paintSpinner(cv *canvas, e *view.Element, x, y, w int) {
 	set := e.SpinnerFrames()
 	if e.Active && len(set.Frames) > 0 {
-		frame := set.Frames[l.r.tick(set.Interval)%int64(len(set.Frames))]
-		cv.write(x, y, w, line(frame, style{role: Info}))
+		cv.write(x, y, w, line(set.Frame(l.r.Clock()), style{role: Info}))
 		l.r.animate(set.Interval)
 	}
 	if e.Label != "" {

@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/neuroplastio/hotty-go"
 
@@ -24,6 +25,17 @@ type markup struct {
 	forms int
 	// list is the select whose list is open, if one is.
 	list *list
+	// now is the time the markup shows (Rendition.Clock).
+	now time.Time
+	// anim is how soon what it made changes by itself (Rendition.Animating).
+	anim time.Duration
+}
+
+// animate notes that the markup changes again after d.
+func (m *markup) animate(d time.Duration) {
+	if d > 0 && (m.anim == 0 || d < m.anim) {
+		m.anim = d
+	}
 }
 
 // list is an open select's list: the rendition's, as cells' is (profile
@@ -38,8 +50,8 @@ type list struct {
 
 // surface is the surface's two top elements: the view, and the layer an
 // open Modal's content shows in.
-func surface(v *view.Surface, th theme.Theme, keys string, fit bool, l *list) (main, layer *node) {
-	m := markup{list: l}
+func surface(v *view.Surface, th theme.Theme, keys string, fit bool, m *markup) (main, layer *node) {
+	l := m.list
 	class := "k-surface"
 	if fit {
 		class += " k-fit"
@@ -157,8 +169,10 @@ func (m *markup) element(e *view.Element) *node {
 		// cells, and its click is the program's, which opens it.
 		n = el("a", "id", id, "class", "k-media", "href", e.URL).add(texts("▶ " + e.Alt)...)
 	case view.Progress:
-		// A bar and a percentage under the label. A baseline: the bar does
-		// not move while indeterminate (phase 2, KIT-02h).
+		// A bar and a percentage under the label. Without a value, a
+		// quarter of the bar sweeps across it on the view's clock, as in
+		// cells (profile §3.4): the element's --k-at is where it starts,
+		// so that a tick is one attribute's delta.
 		f, known := e.Fraction()
 		n = el("div", "id", id, "class", "k-progress", "role", "progressbar",
 			"aria-valuemin", "0", "aria-valuemax", a2ui.NumberString(e.Max))
@@ -177,24 +191,29 @@ func (m *markup) element(e *view.Element) *node {
 			track.add(el("span", "class", class, "style", "width: "+strconv.FormatFloat(f*100, 'f', 2, 64)+"%"))
 			bar.add(el("output", "class", "k-progress-value").add(txt(fmt.Sprintf("%.0f%%", f*100))))
 		} else {
+			at := float64(view.ProgressStep(m.now))*125/view.ProgressSteps - 25
+			n.set("style", "--k-at: "+strconv.FormatFloat(at, 'f', 2, 64)+"%")
 			track.add(el("span", "class", "k-progress-fill k-indeterminate"))
+			m.animate(view.ProgressInterval)
 		}
 		n.add(bar)
 	case view.Spinner:
-		// Its first frame and its label: a baseline that does not spin
-		// (phase 2, KIT-03h).
-		// The frame keeps its set's widest frame's cells (in the mono
-		// face, a ch each), as in cells, so that the label stays put.
+		// The frame the view's clock is at, as in cells, then its label;
+		// the frame has an id, so that a tick is one text's delta. It
+		// keeps its set's widest frame's cells (in the mono face, a ch
+		// each), so that the label stays put.
 		n = el("span", "id", id, "class", "k-spinner", "role", "status")
 		frame, cols := "", 0
 		set := e.SpinnerFrames()
 		for _, f := range set.Frames {
 			cols = max(cols, cells.Width(f))
 		}
-		if e.Active && len(set.Frames) > 0 {
-			frame = set.Frames[0]
+		if e.Active {
+			frame = set.Frame(m.now)
+			m.animate(set.Interval)
 		}
-		n.add(el("span", "class", "k-spinner-frame", "aria-hidden", "true", "style", "min-width: "+strconv.Itoa(cols)+"ch").add(texts(frame)...))
+		n.add(el("span", "id", partID(e.ID, partFrame), "class", "k-spinner-frame", "aria-hidden", "true",
+			"style", "min-width: "+strconv.Itoa(cols)+"ch").add(texts(frame)...))
 		if e.Label != "" {
 			n.add(el("span", "class", "k-spinner-label").add(texts(e.Label)...))
 		}

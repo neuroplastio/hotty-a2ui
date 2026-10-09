@@ -81,8 +81,6 @@ As of 2026-10-09, from the hotty agent:
   click or keyboard loss elsewhere, or the handover stays just for Tab.
   Hosts need hotty-blitz 33b2f9c or later (from the hotty agent,
   2026-10-09).
-- [ ] **KIT-02h** — Progress: a smooth bar.
-- [ ] **KIT-03h** — Spinner: frames or a CSS animation.
 - [ ] **KIT-01h** — Table: a real table, a sticky header, hover, sorting by
   header click.
 - [ ] **KIT-04h** — Rich list: two-line rows in proportional type, hover.
@@ -127,6 +125,18 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-02h** and **KIT-03h** — Progress and Spinner move on a host,
+  taken ahead of phase 2 because the maintainer saw the indexing bar stand
+  still there (journal 2026-10-09.8).
+  - Both renditions keep the same clock (`view.ProgressStep`,
+    `SpinnerSet.Frame`), so cells and HTML show the same frame, side by
+    side.
+  - A tick is one delta: the Progress's `--k-at` attribute, the
+    Spinner's frame's text (`~f`). `html.Rendition` has `Clock` and
+    `Animating`, and `Book.Tick` counts the surfaces it placed.
+  - The bar steps 2.5% of the track at 10 ticks a second, as cells
+    does. A CSS animation would be smoother but would leave the shared
+    clock. It isn't tried yet.
 - [x] **KIT-01c** — `HottyTable` in cells (journal 2026-10-09.7, awaiting
   the maintainer's look).
   - Columns with widths, alignment and `…` cuts. Rows come as data,
@@ -148,7 +158,8 @@ As of 2026-10-09, from the hotty agent:
     stays put, and the spinner stops when `active` is false.
   - The clock: `Rendition.Animating` and `Clock`, `Book.Tick`, and ticks
     in `storybook -bare`.
-  - HTML and text baselines, which don't move (KIT-02h, KIT-03h).
+  - HTML and text baselines. HTML moves since KIT-02h and KIT-03h; text
+    stays still.
   - A2UI's pending state moved to KIT-WAIT.
 - [x] **KIT-LOOK** — The cells look of fields, held against huh and
   bubbles' textinputs (journal 2026-10-09.4, awaiting the maintainer's

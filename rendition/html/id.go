@@ -28,6 +28,7 @@ const (
 	partList   = "x" // a select's open list
 	partOption = "o" // a select's options in its list, "o0" to "oN"
 	partRow    = "y" // a Table's rows, "y0" to "yN", by their index
+	partFrame  = "f" // a Spinner's frame
 	surfaceID  = "~s"
 	layerID    = "~o" // the overlay an open Modal or list shows in
 	backdropID = "~d"

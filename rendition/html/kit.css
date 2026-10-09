@@ -399,7 +399,7 @@ textarea.k-input { min-height: 5.5rem; }
   background: var(--k-info, var(--k-link));
 }
 .k-progress-fill.k-done { background: var(--k-success); }
-.k-progress-fill.k-indeterminate { width: 25%; }
+.k-progress-fill.k-indeterminate { left: var(--k-at, 0); width: 25%; }
 .k-progress-value { min-width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
 .k-spinner { display: inline-flex; column-gap: 0.5ch; }
 .k-spinner-frame { color: var(--k-info, var(--k-link)); font-family: var(--k-mono); }

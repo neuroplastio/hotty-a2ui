@@ -93,9 +93,9 @@ so that an error comes and goes as a text delta.
 | Tabs | a `tablist` of `button role=tab`, then the tab shown |
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
 | HottyForm | `form` with a hidden submit button out of the Tab order, so Enter submits |
-| HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track is filled. Neither moves on a host yet (vault KIT-02h) |
+| HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track sweeps across it with the clock (§3.4): the element's `--k-at` is where it starts, so that a tick is one attribute's delta |
 | HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h |
-| HottySpinner | `span role=status`: its set's first frame while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. It does not move on a host yet (vault KIT-03h) |
+| HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 
 **Updates are deltas.** The document goes once. After it, the renderer
 diffs the elements it sent against the elements the view makes now, and
@@ -330,15 +330,18 @@ How the containers lay their children out:
   `muted`. A link is underlined and its cells carry the URL (OSC 8).
 - A caption is `muted` throughout.
 
-**The clock.** What moves in cells moves with the wall clock, not with
-the draws: a HottySpinner shows frame ⌊t / interval⌋ mod its frames, and
-an indeterminate HottyProgress's segment starts at column (⌊t / 100 ms⌋
-mod (bar + segment)) − segment, for t the Unix time. Every draw says how
-soon it wants drawing again (`Rendition.Animating`: the shortest interval
-it painted, 0 while nothing moves), and the program draws again then: the
+**The clock.** What moves, in cells and on a host, moves with the wall
+clock, not with the draws. For t the Unix time, a HottySpinner shows
+frame ⌊t / interval⌋ mod its frames. An indeterminate HottyProgress is at
+step k = ⌊t / 100 ms⌋ mod 50 of a five-second sweep: its segment starts
+at column ⌊k × (bar + segment) / 50⌋ − segment in cells, and at
+k × 125% / 50 − 25% of the track on a host. Each rendition says how soon
+what it last made changes by itself (`Rendition.Animating`: the shortest
+interval it showed, 0 while nothing moves): a draw in cells, a Doc or an
+Update on a host. The program draws or updates again then: the
 storybook's `Book.Tick` and `storybook -bare` do, on Bubble Tea's
-`tea.Every`. So two renditions of one surface drawn at once show the same
-frame, and a test sets the clock (`Rendition.Clock`).
+`tea.Every`. So two renditions of one surface made at once show the same
+frame, and a test sets the clock (`Rendition.Clock`, in both).
 
 **Fields** are the text fields, DateTime, CheckBox, Choice and Slider:
 the controls huh calls fields, drawn as huh draws them.

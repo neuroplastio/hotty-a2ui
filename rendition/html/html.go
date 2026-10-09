@@ -14,6 +14,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/neuroplastio/hotty-go"
@@ -62,6 +63,12 @@ type Rendition struct {
 	// pop is the open list's surface as the host has it (Popover); nil
 	// before its document is sent, and once the list closes.
 	pop *node
+	// Clock is the time a Doc or Update shows: a Spinner's frame, an
+	// indeterminate Progress's sweep. New sets it to time.Now; a test
+	// stops it.
+	Clock func() time.Time
+	// anim is how soon the last Doc or Update changes again (Animating).
+	anim time.Duration
 }
 
 type keyboard struct {
@@ -72,7 +79,23 @@ type keyboard struct {
 // New is the rendition of a controller's surface, as the host surface
 // name.
 func New(c *view.Controller, name string) *Rendition {
-	return &Rendition{C: c, name: name, keys: hotty.TerminalKeys}
+	return &Rendition{C: c, name: name, keys: hotty.TerminalKeys, Clock: time.Now}
+}
+
+// Animating is how soon the document the last Doc or Update made changes
+// by itself: the interval of its fastest Spinner or indeterminate
+// Progress, or 0 when nothing in it moves. The program calls Update again
+// then; the cells rendition keeps the same clock, so the two show the
+// same frame.
+func (r *Rendition) Animating() time.Duration { return r.anim }
+
+// markup is a new markup of the view as it is at the rendition's clock.
+func (r *Rendition) markup() *markup {
+	now := time.Now
+	if r.Clock != nil {
+		now = r.Clock
+	}
+	return &markup{list: r.openList(), now: now()}
 }
 
 // SetTheme paints the surface in a theme's colours from the next Doc or
@@ -101,8 +124,9 @@ func (r *Rendition) Name() string { return r.name }
 // or the program deleted it off screen) has no focus, so the next Update
 // gives the host the keyboard again if the view has it.
 func (r *Rendition) Doc() string {
-	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, r.openList())
-	r.sent = []*node{main, layer}
+	m := r.markup()
+	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, m)
+	r.sent, r.anim = []*node{main, layer}, m.anim
 	r.host = keyboard{}
 	return head + main.html() + layer.html()
 }
@@ -113,7 +137,9 @@ func (r *Rendition) Update() []string {
 	if r.sent == nil {
 		return nil
 	}
-	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, r.openList())
+	m := r.markup()
+	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, m)
+	r.anim = m.anim
 	r.holdEdit(main)
 	out := diff(r.name, r.sent[0], main, nil)
 	out = diff(r.name, r.sent[1], layer, out)

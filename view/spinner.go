@@ -36,5 +36,36 @@ func (e *Element) SpinnerFrames() SpinnerSet {
 	return Spinners["dot"]
 }
 
-// ProgressInterval is how often an indeterminate Progress moves.
-const ProgressInterval = time.Second / 10
+// Frame is the frame a set shows at a time: the same in every rendition
+// drawn then (profile §3.4, the clock).
+func (s SpinnerSet) Frame(at time.Time) string {
+	if len(s.Frames) == 0 || s.Interval <= 0 {
+		return ""
+	}
+	return s.Frames[step(at, s.Interval, int64(len(s.Frames)))]
+}
+
+// ProgressInterval is how often an indeterminate Progress moves, and
+// ProgressSteps how many moves its sweep takes: its segment, a quarter of
+// its bar, goes from just before the bar's start to just past its end in
+// five seconds, in every rendition.
+const (
+	ProgressInterval = time.Second / 10
+	ProgressSteps    = 50
+)
+
+// ProgressStep is which step of its sweep an indeterminate Progress is at,
+// at a time: from 0 to ProgressSteps − 1.
+func ProgressStep(at time.Time) int {
+	return int(step(at, ProgressInterval, ProgressSteps))
+}
+
+// step is which of n steps, each d long, a time is at, counting from the
+// Unix epoch round and round.
+func step(at time.Time, d time.Duration, n int64) int64 {
+	k := at.UnixNano() / int64(d) % n
+	if k < 0 {
+		k += n
+	}
+	return k
+}

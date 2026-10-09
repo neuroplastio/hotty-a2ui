@@ -124,6 +124,9 @@ type Book struct {
 	// moves; ticking is a tick on its way (Tick).
 	anim    time.Duration
 	ticking bool
+	// shown is the HOTTY surfaces the last View placed, which want
+	// updating as often as their renditions say (Tick).
+	shown []*html.Rendition
 }
 
 // tickMsg is the frame clock's tick: Tick sends it, and Update takes it.
@@ -233,18 +236,25 @@ func (b *Book) Keyboard() bool {
 // that has the keyboard in cells; nil for none.
 func (b *Book) Cursor() *tea.Cursor { return b.cursor }
 
-// Tick is the frame clock: while the last View's cells move (a spinner, a
-// progress bar without a value), a command whose message, given to Update,
-// asks for the next View. The program returns it with each View's
-// commands, as cmd/storybook does. It is nil while nothing moves, and
+// Tick is the frame clock: while something the last View showed moves (a
+// spinner, a progress bar without a value), in cells or on the host, a
+// command whose message, given to Update, asks for the next View. The
+// program returns it with each View's commands, after the session's
+// Layout, which sends a new surface's document, as cmd/storybook does. It is nil while nothing moves, and
 // while a tick is on its way. The ticks keep to the clock (tea.Every), so
 // that they fall where the frames change.
 func (b *Book) Tick() tea.Cmd {
-	if b.anim == 0 || b.ticking {
+	d := b.anim
+	for _, r := range b.shown {
+		if a := r.Animating(); a > 0 && (d == 0 || a < d) {
+			d = a
+		}
+	}
+	if d == 0 || b.ticking {
 		return nil
 	}
 	b.ticking = true
-	return tea.Every(b.anim, func(time.Time) tea.Msg { return tickMsg{} })
+	return tea.Every(d, func(time.Time) tea.Msg { return tickMsg{} })
 }
 
 // ready starts the storybook once the terminal is known: surfaces on a
@@ -629,7 +639,7 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 // its own (Session.Layout), then calls LaidOut. The surfaces' deltas are
 // sent already.
 func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Surface) {
-	b.at, b.cursor, b.anim = r, nil, 0
+	b.at, b.cursor, b.anim, b.shown = r, nil, 0, nil
 	b.ready(h.Mode)
 	if b.ch == nil {
 		return "Finding out whether the terminal is a HOTTY host…", nil
@@ -758,6 +768,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			p.html.SetFit(p == pick)
 			p.html.Away = b.focus != nil && b.focus != p && b.focus.s == p.s
 			h.Send(p.html.Update()...)
+			b.shown = append(b.shown, p.html)
 			at := p.rect
 			at.X, at.Y = at.X+r.X, at.Y+r.Y
 			s := hottytea.Surface{Name: p.name, Rect: at, Doc: p.html.Doc, Scroll: hotty.ScrollVertical}

@@ -65,13 +65,6 @@ func (r *Rendition) animate(d time.Duration) {
 	}
 }
 
-// tick is the frame a thing that changes every d shows now: the clock's
-// time in steps of d, so that every renderer at the same time shows the
-// same frame.
-func (r *Rendition) tick(d time.Duration) int64 {
-	return r.Clock().UnixNano() / int64(d)
-}
-
 // SetKeys sets the keymap the text controls edit by, as rendition/html's
 // SetKeys sets a surface's: the default keymap, then keys, then the
 // components' own (io_neuroplast_hotty.keys). New starts with

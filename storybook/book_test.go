@@ -13,6 +13,8 @@ import (
 	"github.com/neuroplastio/hotty-go"
 	"github.com/neuroplastio/hotty-go/hottytea"
 	"github.com/neuroplastio/hotty-go/hottytest"
+
+	"github.com/neuroplastio/hotty-a2ui/rendition/html"
 )
 
 // host is a program with a screen of its own: a row of its own on top,
@@ -174,6 +176,26 @@ func TestSpinnersMove(t *testing.T) {
 	}
 	if len(seen) < 3 {
 		t.Errorf("the Line spinner drew %d frames in a second: %q", len(seen), slices.Collect(maps.Keys(seen)))
+	}
+}
+
+// TestSpinnersMoveOnHost: on a HOTTY host the clock ticks for the story's
+// surface as for cells: the Line spinner's frame changes by deltas.
+func TestSpinnersMoveOnHost(t *testing.T) {
+	h := hottytest.New(t, hottytest.Size(120, 40))
+	run(t, h, Options{First: "hotty/spinner", Prefix: "sb-"})
+	frame := html.DOMID("s-line") + "~f"
+	eventually(t, "the spinners on the host", func() bool {
+		s := h.Surface("sb-s1-0-h")
+		return s != nil && s.TextOf(frame) != ""
+	})
+	time.Sleep(300 * time.Millisecond)
+	seen := map[string]bool{}
+	for end := time.Now().Add(time.Second); time.Now().Before(end); time.Sleep(20 * time.Millisecond) {
+		seen[h.Surface("sb-s1-0-h").TextOf(frame)] = true
+	}
+	if len(seen) < 3 {
+		t.Errorf("the Line spinner showed %d frames in a second: %q", len(seen), slices.Collect(maps.Keys(seen)))
 	}
 }
 
