@@ -293,11 +293,12 @@ func (m *markup) element(e *view.Element) *node {
 		// A drag reports the element under the pointer, not where on it
 		// (SPEC §9.1), so the track is cut into notches across it, each
 		// a drag target: pressing one sets its value, crossing them moves
-		// it.
+		// it. A touch drags nothing (it scrolls, SPEC §9.1), but a tap is
+		// a click: a notch clicked sets its value too.
 		k := notches(e)
 		w := 100 / float64(k)
 		for i := range k {
-			n.add(el("span", "id", partID(e.ID, partNotch+strconv.Itoa(i)), "class", "k-notch", "data-on", "drag",
+			n.add(el("span", "id", partID(e.ID, partNotch+strconv.Itoa(i)), "class", "k-notch", "data-on", "drag click",
 				"style", "left: "+strconv.FormatFloat(float64(i)*w, 'f', 3, 64)+"%; width: "+strconv.FormatFloat(w, 'f', 3, 64)+"%"))
 		}
 		less := el("button", "id", partID(e.ID, partLess), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "less").add(txt("−"))

@@ -676,6 +676,17 @@ func TestSliderAndDate(t *testing.T) {
 	}
 	x.check(r)
 
+	// A tap: a touch drags nothing (SPEC §9.1), but its click on a notch
+	// sets the value there.
+	if err := x.h.Click(r.name, partID("v", "k4")); err != nil {
+		t.Fatal(err)
+	}
+	x.pump()
+	if got := r.C.S.Data.Value("/v"); got != 2.0 {
+		t.Errorf("tapped notch 4: %v", got)
+	}
+	x.check(r)
+
 	if typ, _ := x.h.Surface(r.name).Attr("due", "type"); typ != "text" {
 		t.Errorf("the date is an input of type %q", typ)
 	}

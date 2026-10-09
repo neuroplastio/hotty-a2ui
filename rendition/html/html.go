@@ -264,6 +264,11 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			}
 			return c.StepSlider(id, n, "")
 		}
+		if e.Kind == view.Slider && len(part) > 1 && part[0] == partNotch[0] {
+			// A tap on the track (a touch drags nothing, SPEC §9.1), or
+			// the click a mouse's drag ends with where it began.
+			return r.notch(e, part)
+		}
 		if part != "" {
 			return nil
 		}
@@ -296,14 +301,19 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		}
 	case hotty.EventDragStart, hotty.EventDrag, hotty.EventDragEnd:
 		if e.Kind == view.Slider && len(part) > 1 && part[0] == partNotch[0] {
-			i, err := strconv.Atoi(part[1:])
-			if err != nil {
-				return nil
-			}
-			return c.SetValue(id, notchValue(e, i))
+			return r.notch(e, part)
 		}
 	}
 	return nil
+}
+
+// notch sets a Slider to the value of its notch part names ("k3").
+func (r *Rendition) notch(e *view.Element, part string) error {
+	i, err := strconv.Atoi(part[1:])
+	if err != nil {
+		return nil
+	}
+	return r.C.SetValue(e.ID, notchValue(e, i))
 }
 
 // Key is a key the program read while the surface is the one keys apply
