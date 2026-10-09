@@ -179,7 +179,7 @@ func New(o Options) *Book {
 func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	switch msg := msg.(type) {
 	case hottytea.ReadyMsg:
-		b.steps = hostSteps(msg.Caps)
+		b.steps = msg.Caps.Steps
 		b.ready(msg.Mode)
 	case tickMsg:
 		b.ticking = false
@@ -281,15 +281,6 @@ func (b *Book) Tick() tea.Cmd {
 	}
 	b.ticking = true
 	return tea.Tick(view.UntilStep(time.Now(), d), func(time.Time) tea.Msg { return tickMsg{} })
-}
-
-// hostSteps reports `steps` in a host's capabilities (SPEC §4, §9.1).
-func hostSteps(c hotty.Caps) bool {
-	var s struct {
-		Steps bool `json:"steps"`
-	}
-	_ = json.Unmarshal(c.Raw, &s)
-	return s.Steps
 }
 
 // ready starts the storybook once the terminal is known: surfaces on a

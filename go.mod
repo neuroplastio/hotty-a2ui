@@ -15,10 +15,10 @@ require (
 	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/clipperhouse/uax29/v2 v2.7.0
-	github.com/neuroplastio/hotty-go v0.0.0-20261009172718-a66190c972f5
-	github.com/neuroplastio/hotty-go/hottyedit v0.0.0-20261009172718-a66190c972f5
-	github.com/neuroplastio/hotty-go/hottytea v0.0.0-20261009172718-a66190c972f5
-	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261009172718-a66190c972f5
+	github.com/neuroplastio/hotty-go v0.0.0-20261009222248-a97e4ff8c82a
+	github.com/neuroplastio/hotty-go/hottyedit v0.0.0-20261009222248-a97e4ff8c82a
+	github.com/neuroplastio/hotty-go/hottytea v0.0.0-20261009222248-a97e4ff8c82a
+	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261009222248-a97e4ff8c82a
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/yuin/goldmark v1.8.6
 )

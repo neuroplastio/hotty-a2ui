@@ -11,7 +11,6 @@ package html
 
 import (
 	_ "embed"
-	"encoding/json"
 	"slices"
 	"strconv"
 	"strings"
@@ -380,13 +379,8 @@ func (r *Rendition) slideSteps(ev hotty.Event) (done bool, err error) {
 // stepX is a drag's step along its element, if the host said one (SPEC
 // §9.1, data-steps).
 func stepX(ev hotty.Event) (int, bool) {
-	var d struct {
-		X *int `json:"x"`
-	}
-	if json.Unmarshal(ev.Detail, &d) != nil || d.X == nil {
-		return 0, false
-	}
-	return *d.X, true
+	d, ok := ev.Drag()
+	return d.X, ok && d.HasX
 }
 
 // notch sets a Slider to the value of its notch part names ("k3").

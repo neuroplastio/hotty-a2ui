@@ -57,8 +57,8 @@ type harness struct {
 	now     time.Time       // the renditions' clock, which stands still
 }
 
-func newHarness(t *testing.T) *harness {
-	x := &harness{t: t, h: hottytest.New(t), rs: map[string]*Rendition{}, pops: map[string]bool{}, now: time.Unix(0, 0)}
+func newHarness(t *testing.T, opts ...hottytest.Option) *harness {
+	x := &harness{t: t, h: hottytest.New(t, opts...), rs: map[string]*Rendition{}, pops: map[string]bool{}, now: time.Unix(0, 0)}
 	x.p = a2ui.NewProcessor(basic.Catalog(), hottycat.Catalog())
 	x.p.Send = func(o a2ui.Outbound) {
 		if o.Action != nil {
@@ -483,7 +483,9 @@ func TestNoEcho(t *testing.T) {
 // track, where t is empty, or over another element. The click a drag ends
 // with is the drag's; a tap after it sets the value tapped.
 func TestSliderSteps(t *testing.T) {
-	x := newHarness(t)
+	caps := hottytest.DefaultCaps()
+	caps.Steps = true
+	x := newHarness(t, hottytest.Caps(caps))
 	var msgs []any
 	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"v":3}}},
 {"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
@@ -508,29 +510,26 @@ func TestSliderSteps(t *testing.T) {
 			t.Errorf("%s %s: %q, want %q", a.id, a.attr, got, a.want)
 		}
 	}
-	ev := func(kind, target string, step int) hotty.Event {
-		detail := fmt.Sprintf(`{"c":10,"r":2,"keys":[],"x":%d}`, step)
-		if kind == hotty.EventClick {
-			detail = ""
-		}
-		return hotty.Event{Kind: kind, Surface: r.name, Target: target, Detail: json.RawMessage(detail)}
-	}
+	// The host lays nothing out: the test says which step the pointer is
+	// at, as a host with steps measures it along the track.
 	for _, step := range []struct {
 		what string
-		ev   hotty.Event
+		do   func() error
 		want float64
 	}{
-		{"pressed at step 4", ev(hotty.EventDragStart, "v", 4), 2},
-		{"off the track at the end", ev(hotty.EventDrag, "", 20), 10},
-		{"over the − button at the start", ev(hotty.EventDrag, partID("v", partLess), 0), 0},
-		{"let go off the track at step 6", ev(hotty.EventDragEnd, "", 6), 3},
-		{"the drag's click", ev(hotty.EventClick, partID("v", "k15"), 0), 3},
-		{"a tap on notch 4", ev(hotty.EventClick, partID("v", "k4"), 0), 2},
+		{"pressed on notch 2 at step 4", func() error { return x.h.DragStartStep(r.name, partID("v", "k2"), 10, 2, 4, 0) }, 2},
+		{"off the track at the end", func() error { return x.h.DragMoveStep("", 60, 5, 20, 0) }, 10},
+		{"over the − button at the start", func() error { return x.h.DragMoveStep(partID("v", partLess), 1, 2, 0, 0) }, 0},
+		// Let go over notch 15 at step 6: the host's step and the notch
+		// disagree, so that the click on notch 15 the drag ends with would
+		// show if it set anything.
+		{"let go on the track", func() error { return x.h.DragEndStep(partID("v", "k15"), 30, 2, 6, 0) }, 3},
+		{"a tap on notch 4", func() error { return x.h.Click(r.name, partID("v", "k4")) }, 2},
 	} {
-		if err := r.Event(step.ev); err != nil {
+		if err := step.do(); err != nil {
 			t.Fatal(err)
 		}
-		x.update(r)
+		x.pump()
 		if got := r.C.S.Data.Value("/v"); got != step.want {
 			t.Errorf("%s: %v, want %v", step.what, got, step.want)
 		}
