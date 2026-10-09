@@ -1067,6 +1067,71 @@ func TestTableKeepsWidth(t *testing.T) {
 	}
 }
 
+// TestDiffOnHost: a HottyDiff is a focusable box of files and hunks,
+// each line its numbers, sign and code, its changed words marked, the
+// unchanged runs between hunks folded. A click
+// on a hunk selects it and a second acts on it; the keys the box gives the
+// program move the selection. The selected hunk has the host's focus, so
+// that the host scrolls it into view; the box marks that it has the
+// keyboard (k-on).
+func TestDiffOnHost(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"h":""}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyDiff","catalogId":"`+hottycat.ID+`","selected":{"@path":"/h"},
+  "patch":"--- a/x.go\n+++ b/x.go\n@@ -1,2 +1,2 @@ func f() {\n-\treturn errors.New(e)\n+\treturn fmt.Errorf(e)\n }\n@@ -9 +9 @@\n-a\n+b\n",
+  "onActivate":{"event":{"name":"stage","context":{"hunk":{"@path":"/h"}}}}}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	for _, want := range [][3]string{{"root", "tabindex", "0"}, {"root", "role", "listbox"}, {"root", "data-keys", diffKeys},
+		{"root", "style", "--k-lo: 1ch; --k-ln: 1ch"}, {partID("root", partHunk+"1"), "tabindex", "-1"}} {
+		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
+			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
+		}
+	}
+	h := s.HTML()
+	for _, want := range []string{
+		`<div class="k-diff-file"><span class="k-diff-name">x.go</span><span class="k-diff-stat"><span class="k-add">+2</span> <span class="k-del">-2</span></span></div>`,
+		`<div class="k-hh"><span class="k-hh-at">@@ -1,2 +1,2 @@</span><span class="k-hh-sec"> func f() {</span></div>`,
+		`<div class="k-dl k-d-del"><span class="k-ln k-lo" aria-hidden="true">1</span><span class="k-ln" aria-hidden="true"></span><span class="k-sign" aria-label="removed">-</span><span class="k-src">    <span class="k-t-keyword">return</span> <span class="k-w">errors</span>.<span class="k-t-function k-w">New</span>(e)</span></div>`,
+		`<div class="k-dl"><span class="k-ln k-lo" aria-hidden="true">2</span><span class="k-ln" aria-hidden="true">2</span><span class="k-sign"></span><span class="k-src">}</span></div>`,
+		`</div><div class="k-fold">⋯ 6 unchanged lines</div><div id="root~b1"`} {
+		if !strings.Contains(h, want) {
+			t.Errorf("no %s in\n%s", want, h)
+		}
+	}
+	hunk := func(i int) string { return partID("root", partHunk+strconv.Itoa(i)) }
+	must(t, x.h.Click(r.name, hunk(1)))
+	x.pump()
+	if got := r.C.S.Data.Value("/h"); got != "x.go:9" || !r.C.St.Keyboard || r.C.St.Focus != "root" {
+		t.Fatalf("a click on the second hunk: selected %v, keyboard %v on %q", got, r.C.St.Keyboard, r.C.St.Focus)
+	}
+	if v, _ := s.Attr(hunk(1), "class"); v != "k-hunk k-sel" {
+		t.Errorf("the second hunk's class is %q", v)
+	}
+	if v, _ := s.Attr("root", "class"); v != "k-diff k-on" {
+		t.Errorf("the box's class is %q", v)
+	}
+	if got := s.Focused(); got != hunk(1) {
+		t.Errorf("the host's focus is on %q, not the selected hunk", got)
+	}
+	must(t, x.h.Click(r.name, hunk(1)))
+	x.pump()
+	if len(x.actions) != 1 || x.actions[0].Name != "stage" || x.actions[0].Context["hunk"] != "x.go:9" {
+		t.Fatalf("a second click: %+v", x.actions)
+	}
+	if _, ok, err := r.Key("k"); !ok || err != nil {
+		t.Fatalf("k: %v %v", ok, err)
+	}
+	x.update(r)
+	x.check(r)
+	if got := r.C.S.Data.Value("/h"); got != "x.go:1" || s.Focused() != hunk(0) {
+		t.Errorf("after k: selected %v, the host's focus on %q", got, s.Focused())
+	}
+}
+
 // TestCodeOnHost: a HottyCode is a box of rows, each its number (hidden
 // from a screen reader), its mark's sign and its code, a span for each
 // token that is not plain; a marked row has the mark's class. Code that

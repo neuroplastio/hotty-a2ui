@@ -150,7 +150,10 @@ func (l *layout) revealFocus(e, k *view.Element, cw, total, top, page int) int {
 	hits := len(r.hits)
 	l.paint(&canvas{f: newFrame(cw, total)}, k, 0, 0, cw, total)
 	r.hits = r.hits[:hits]
-	b, ok := r.boxes[c.St.Focus]
+	b, ok := r.reveal[c.St.Focus]
+	if !ok {
+		b, ok = r.boxes[c.St.Focus]
+	}
 	if !ok {
 		return top
 	}

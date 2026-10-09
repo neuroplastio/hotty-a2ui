@@ -82,7 +82,7 @@ func lex(code, lang string) [][]Token {
 		}
 	}
 	if tokens == nil {
-		tokens = []chroma.Token{{Type: chroma.Text, Value: code}}
+		tokens = []chroma.Token{{Type: chroma.Text, Value: code + "\n"}}
 	}
 	out := [][]Token{nil}
 	col := 0

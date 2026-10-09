@@ -106,8 +106,11 @@ func TestDiff(t *testing.T) {
 // a newline, and empty code is one empty line.
 func TestNewlines(t *testing.T) {
 	for code, n := range map[string]int{"a": 1, "a\n": 1, "a\n\n": 2, "a\r\nb\r\n": 2, "": 1, "\n\nb": 3} {
-		if got := len(highlight.Lines(code, "go")); got != n {
-			t.Errorf("%q: %d lines, want %d", code, got, n)
+		// With a lexer and without one (plain text).
+		for _, lang := range []string{"go", ""} {
+			if got := len(highlight.Lines(code, lang)); got != n {
+				t.Errorf("%q as %q: %d lines, want %d", code, lang, got, n)
+			}
 		}
 	}
 }

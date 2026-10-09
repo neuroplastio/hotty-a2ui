@@ -1,0 +1,73 @@
+{
+  "name": "HottyDiff: a change under review",
+  "description": "A change to code as a review shows it. Above, a patch of two files as git diff writes it, unified: each line numbered on its old and its new side and signed, highlighted for its language, and the words a changed line changes marked. Its hunks are a list: ↑ and ↓ (k, j) select one, and Enter or a second click stages it (the action's context reads the hunk from /hunk). Below, two texts of a Python file compared, split: the old side left, the new right, a changed line beside the line it replaces; on a narrow screen it is unified. With no room for its lines, a diff wraps them; a long one goes in a HottyScrollView.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "diff",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "hunk": ""
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "diff",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "review",
+              "py_title",
+              "py",
+              "help"
+            ]
+          },
+          {
+            "id": "review",
+            "component": "HottyDiff",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "patch": "diff --git a/api/handler.go b/api/handler.go\nindex 3b18e51..a9c2f4d 100644\n--- a/api/handler.go\n+++ b/api/handler.go\n@@ -1,7 +1,7 @@\n package api\n \n import (\n-\t\"errors\"\n+\t\"fmt\"\n \t\"net/http\"\n )\n \n@@ -18,9 +18,10 @@ type Server struct {\n // Handle serves a request, or says why it cannot.\n func Handle(w http.ResponseWriter, r *http.Request) error {\n-\tif r.Method != http.MethodGet {\n-\t\treturn errors.New(\"only GET\")\n+\tif r.Method != http.MethodGet && r.Method != http.MethodHead {\n+\t\treturn fmt.Errorf(\"only GET or HEAD, not %s\", r.Method)\n \t}\n+\tw.Header().Set(\"Content-Type\", \"text/plain\")\n \tw.WriteHeader(http.StatusOK)\n \t_, err := w.Write([]byte(\"ok\\n\"))\n \treturn err\n }\ndiff --git a/api/handler_test.go b/api/handler_test.go\nnew file mode 100644\nindex 0000000..7c4a013\n--- /dev/null\n+++ b/api/handler_test.go\n@@ -0,0 +1,9 @@\n+package api\n+\n+import \"net/http/httptest\"\n+\n+func TestHead(t *testing.T) {\n+\tif err := Handle(httptest.NewRecorder(), httptest.NewRequest(\"HEAD\", \"/\", nil)); err != nil {\n+\t\tt.Fatal(err)\n+\t}\n+}\n",
+            "selected": {
+              "@path": "/hunk"
+            },
+            "onActivate": {
+              "event": {
+                "name": "stageHunk",
+                "context": {
+                  "hunk": {
+                    "@path": "/hunk"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "py_title",
+            "component": "Text",
+            "text": "**Retry with backoff**, split"
+          },
+          {
+            "id": "py",
+            "component": "HottyDiff",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "file": "fetch.py",
+            "old": "import requests\n\n\ndef fetch(url, tries=3):\n    for attempt in range(tries):\n        try:\n            return requests.get(url, timeout=5)\n        except requests.ConnectionError:\n            pass\n    raise RuntimeError(f\"gave up on {url}\")\n",
+            "new": "import time\n\nimport requests\n\n\ndef fetch(url, tries=3, backoff=0.5):\n    for attempt in range(tries):\n        try:\n            return requests.get(url, timeout=5)\n        except requests.ConnectionError:\n            time.sleep(backoff * 2**attempt)\n    raise RuntimeError(f\"gave up on {url} after {tries} tries\")\n",
+            "view": "split",
+            "context": 2
+          },
+          {
+            "id": "help",
+            "component": "HottyKeyHints",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+          }
+        ]
+      }
+    }
+  ]
+}

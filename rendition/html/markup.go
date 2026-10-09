@@ -34,6 +34,9 @@ type markup struct {
 	// which a HottyKeyHints shows.
 	short []view.Hint
 	full  [][]view.Hint
+	// keyboard is the element with the keyboard, "" while the surface
+	// has none.
+	keyboard string
 }
 
 // animate notes that the markup changes again after d.
@@ -232,6 +235,8 @@ func (m *markup) element(e *view.Element) *node {
 		n = m.scrollView(e)
 	case view.Listing:
 		n = m.code(e)
+	case view.DiffView:
+		n = m.diffView(e)
 	case view.Divider:
 		if e.Dir == view.Vertical {
 			n = el("div", "id", id, "class", "k-vr", "role", "separator", "aria-orientation", "vertical")

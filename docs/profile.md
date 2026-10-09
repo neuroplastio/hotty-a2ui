@@ -99,6 +99,7 @@ so that an error comes and goes as a text delta.
 | HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h |
 | HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there. Its `data-keys` binds the keys bubbles' viewport scrolls with to the host's scroll actions (SPEC.md §10.2, *Scrolling keys*), so that they scroll it as in cells (§3.7): j and k, f, b, Space and Shift+Space, u and d (Control+u, Control+d), g and G, and h and l while its lines are cut. A Button in it keeps Space and a field in it types the letters, since a key an element uses stays its own and a field leaves scroll actions out. Following the tail on a host is vault KIT-07h |
 | HottyCode | `div` in the mono face, filled with `--k-tonal` as a Text's code block is, a flex row (`k-cl`) for each line: its number, right-aligned as wide as the widest (`--k-ln`), in `--k-muted` and `aria-hidden`; its mark's sign, when the code has marks; then its code (`k-src`), a span for each token that is not plain, of class `k-t-` and its kind, which the sheet colours with the roles cells uses (§3.4). A marked row has `k-m-` and its kind: a highlighted one is filled with `--k-selection`, the others with a sixth of their role's colour (`color-mix`). Lines wrap, `pre-wrap`; with `wrap` false they do not, and the box scrolls sideways, which the host does itself (SPEC.md §5.3), every row as wide as the widest so that a tint reaches the end. A Text's fenced code block is goldmark's `pre` and `code`, its tokens in the same spans |
+| HottyDiff | `div` in the mono face, filled with `--k-tonal` as a HottyCode's; with hunks, `tabindex=0 role=listbox`, whose `data-keys` gives the program ArrowUp, ArrowDown, Home, End, k, j, g and G (a HottyScrollView around it binds the letters to scroll actions, SPEC.md §10.2). For each file with a name (or of several), a row (`k-diff-file`): its name, bold, then what the change adds and removes, `+N` in `--k-success` and `-M` in `--k-error`, or new, deleted or binary. A run of unchanged lines left out is a muted row, `⋯ N unchanged lines` (`k-fold`). Each hunk is a `div tabindex=-1 role=option data-on=click` (`k-hunk`), whose id is the diff's, `~b` and the hunk's index: its header in info and its section muted (`k-hh`), then its lines. Unified, a line is a flex row (`k-dl`): its old number and its new (`--k-lo` and `--k-ln` wide, `aria-hidden`), its sign, then its code, its tokens in a HottyCode's spans. Split, the hunk is a grid of two equal columns, the old side and the new (`k-ds`), paired as cells pairs them, a rule between them and the header across both. A removed line (`k-d-del`) is filled with a sixth of `--k-error`, an added one (`k-d-add`) with a sixth of `--k-success`, and its changed words (`k-w`) more. The selected hunk (`k-sel`, `aria-selected`) has a rail on its left and its header reversed, muted, and in `--k-focus` while the diff has the keyboard (`k-on`). It then has the host's focus itself, so that the host scrolls it into view (SPEC.md §5.3) as cells keeps it in sight. A split diff stays split at any width, its sides wrapping: the markup does not know the width, and a host has no container queries |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 
 **Updates are deltas.** The document goes once. After it, the renderer
@@ -231,6 +232,7 @@ Natural widths:
 | HottyKeyHints | its short line, or in the full view its columns, uncut |
 | HottyScrollView | its widest line unwrapped (whether it wraps them or not), or its child's natural width, plus 2 for the scrollbar |
 | HottyCode | its gutter (§3.4) and its widest line |
+| HottyDiff | 1 for the rail, then its gutter (§3.4) and its widest line; split, twice a side's gutter and that line, and 3; or a file's row, a hunk's header or a fold, if one is wider |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -255,6 +257,7 @@ Minimums:
   wraps them), plus 2 for the scrollbar.
 - A HottyCode's is its gutter and 8 columns of code, or its widest line
   when that is narrower.
+- A HottyDiff's is its rail, its unified gutter and 8 columns of code.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -275,7 +278,7 @@ How the containers lay their children out:
     whatever comes before, as bubbles' help sits a row under its list.
     A HottyScrollView has one after it, whatever comes after: its box
     draws no edge but the scrollbar, so what follows would read as its
-    content. So does a HottyCode, which draws no edge at all. Before it, the rule for controls applies, so a title above
+    content. So do a HottyCode and a HottyDiff, which draw no edge at all. Before it, the rule for controls applies, so a title above
     it stays on the row before its box.
     Through a Row, a Column or a HottyForm, the rule sees its first child
     (or, before it, its last).
@@ -340,6 +343,7 @@ How the containers lay their children out:
 | HottyKeyHints | as bubbles' help draws it: the short view one line, each key in `muted`, a space, what it does in `muted` faint, and ` • ` in `border` faint between them (bubbles' three steps; the Terminal theme's `muted` and `border` are one colour); the hints that do not fit go, and ` …` ends the line where it fits. The full view (after `?`, §3.7) is its groups (§6.10) as columns four apart, each a row a key, the keys padded to the widest, then a space and what they do; a group that does not fit goes, and ` …` follows the first row where it fits. |
 | HottyScrollView | a box `height` rows tall, as bubbles' viewport: its content, 2 columns narrower than the box, then a blank column and the scrollbar down the last. Its lines are a row each, cut at the box and scrolled sideways six columns at a time, or with `wrap` broken between characters into the rows they take; a child is laid out at the content's width, and shows through the box at the rows scrolled to: what it hides takes no click, and the element with the keyboard inside it is scrolled into sight. It starts at its top, or with `follow` at its end, where it stays as lines arrive until the user scrolls up, and follows again once back at the end. The scrollbar, while the content is taller than the box, is a track of `│` in `border` faint and on it a thumb of `┃` as long as the share that shows (at least a row), where it shows, in `muted`, and in `accent` while the box has the keyboard. bubbles' viewport draws no scrollbar: without one, a box with no edge gives no sign that it scrolls |
 | HottyCode | a row for each line, or with `wrap` (the default) as many as the line takes, broken by cluster under the code: first its number, right-aligned as wide as the widest, in `muted`, and a space, when `lineNumbers` is on; then, when the code has marks, the line's sign and a space (`▎` in `info` for highlight, `+` in `success` for added, `-` and `✗` in `error` for removed and error, `!` in `warning`); then the code. Continuation rows leave the gutter blank. Without `wrap` a long line is cut with `…`. Each token is coloured by its kind (package `highlight`): keywords `info` and bold, types and builtins `info`, functions' names bold, strings `success`, numbers and constants `warning`, as are preprocessor lines, decorators and attributes, comments `muted` and italic, a diff's added and removed lines `success` and `error`, its hunk headers `info` and bold, and the rest `fg`. Not `accent`, which marks only focus (§3.6). A marked line's rows are tinted across the width (§3.6): toward `selection` itself for highlight, a sixth of the way toward `success`, `error` or `warning` for the others. As OpenTUI's Code and LineNumbers; glamour, the reference shot's, draws code blocks with neither numbers nor marks |
+| HottyDiff | a column for the rail, then rows. For each file: a blank row before all but the first; its name when it has one (or the diff has several files), bold, then `+N` in `success` and `-M` in `error`, or `new`, `deleted` or `binary`. For each hunk: `⋯ N unchanged lines` in `muted` when it leaves lines out before it (and after the last, where the diff knows, from two texts); its header in `info` and its section in `muted`; then its lines. Unified, a line is its old number and its new (blank on the side that does not have it), right-aligned as wide as the widest, in `muted`, each and a space, when `lineNumbers` is on (the default); its sign (`-` in `error`, `+` in `success`) and a space; then its code, its tokens coloured as a HottyCode's, wrapped under the code or, without `wrap`, cut with `…`. Split, where each side has room for 16 columns of code (unified where not): the old side, ` │ ` in `border`, then the new, each a number, a sign and code; a context line on both, and in a run of removed lines followed by added ones, each removed line beside the added line that replaces it; a row is as tall as its taller side, and a side with no line is blank. A removed line's rows are tinted a sixth of the way toward `error`, an added one's toward `success`, its changed words a third (§3.6). The selected hunk's rows have `▎` in the rail and its header is reversed, both in `muted`, in `accent` while the diff has the keyboard; a scroll view around it keeps that hunk in sight. With no hunks and no name, `No changes` in `muted`. As OpenTUI's Diff, which has no names, folds, word marks or selection |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
@@ -448,6 +452,10 @@ A cell's background may be tinted (a HottyCode's marked line): k/255 of
 the way from the theme's `bg` to a role's colour, as above. It takes
 effect where the theme colours both; with the terminal's background, and
 at the ANSI-16 floor, there is no tint, and the line's sign says it alone.
+A HottyDiff's changed lines and words are tinted so too. Where they cannot
+be, a changed line's text takes its role's colour in place of its tokens',
+and its changed words are reversed as well, as git's diff-highlight shows
+them; under NO_COLOR the reverse still marks them.
 
 The attributes are bold (1), faint (2), italic (3), underline (4), reverse
 (7) and strikethrough (9). Under NO_COLOR, the attributes are written and
@@ -509,6 +517,12 @@ In the output:
   first. Enter acts on the selected row (§6.8). On a host the table is a
   focused box, which leaves every key to the program, so the renderer
   moves it there too, with the same rules (`view.Controller.TableKey`).
+- **A HottyDiff** moves its selection by ArrowUp and ArrowDown (k and j)
+  a hunk, and by Home and End (g and G) to its first hunk and its last;
+  with no hunk selected, each selects the first. Enter acts on the
+  selected hunk (§6.13). On a host its box gives those keys to the
+  program (§2), so the renderer moves it there too
+  (`view.Controller.DiffKey`).
 - **A HottyList** takes keys as bubbles' list does
   (`view.Controller.ListKey`, in both renditions): ArrowUp and ArrowDown
   (k and j) move its selection an item; ArrowLeft and ArrowRight (h and l,
@@ -556,7 +570,8 @@ In the output:
     list picks that option and closes the list;
   - a click on a HottyTable's row selects it, and a click on its selected
     row acts on it (§6.8); a click on its header only focuses it; so too
-    a HottyList's items (§6.9), and its title and status line;
+    a HottyList's items (§6.9), and its title and status line, and a
+    HottyDiff's hunks (§6.13), its files' names and folds;
   - a click on a Slider's track sets the value at that column:
     min + (max − min) × column / (track − 1), stepped and clamped, and
     the value follows the pointer while the button stays down;
@@ -618,6 +633,10 @@ reference is `rendition/text`.
 - A HottyCode is its code as it is, each line after its number when the
   numbers show, and its mark's sign when it has marks (`>` for highlight,
   `+`, `-`, `✗`, `!`), as a pipe reads a diff.
+- A HottyDiff is a unified diff that patch reads, split or not: each
+  named file's `---` and `+++` lines (git's `a/` and `b/`, `/dev/null`
+  for a side it does not have), then its hunks, each its header and its
+  lines, signed; a binary file is git's line for one.
 - Tabs are their titles, the one shown in brackets, then its content.
 - A HottyKeyHints says nothing: a pipe takes no keys.
 - An error is `✗ message`, on the line after its control.
@@ -826,7 +845,8 @@ so the agent places it once and never updates it. The renderer builds it
 1. The keys of the component with the keyboard, in bubbles' words:
    a HottyList's `↑/k up`, `↓/j down`, `/ filter`, `enter choose` (and,
    while its filter is typed, `enter apply filter`, `esc cancel`), a
-   HottyTable's the same without the filter, a field's `enter submit` in
+   HottyTable's the same without the filter, a HottyDiff's `↑/k prev
+   hunk`, `↓/j next hunk`, `enter choose`, a field's `enter submit` in
    a HottyForm, a CheckBox's `space toggle`, a Button's `enter press`, a
    Slider's `←/→ adjust`, a select's `enter open`, a HottyScrollView's
    `↑/k up`, `↓/j down`, `f/pgdn page down`, `b/pgup page up`; and
@@ -840,7 +860,7 @@ default; turn it off where `?` is the surface's own key), shows those as
 groups in columns, as bubbles' full help: the component's keys, more of
 them, in a column or two as bubbles splits them (a list's moves, its
 pages, `g/home` and `G/end`, then its filter and Enter; a table's rows,
-then its pages; a scroll view's rows and ends, then its pages and half
+then its pages; a diff's hunks and ends; a scroll view's rows and ends, then its pages and half
 pages, then `←/h move left` and `→/l move right` for lines that do not
 wrap, as bubbles' viewport's; a text field's moves, then its edits, from
 its keymap, §5, two keys an action at most); the HottyShortcuts; then `tab next`,
@@ -849,7 +869,7 @@ Which view shows is the renderer's state, shared by the surface's
 renditions. It takes no focus and sends nothing.
 
 On a host, the component's keys are those of a HottyTable, a HottyList,
-a Slider or a select, whose keys the program works; the host moves focus
+a HottyDiff, a Slider or a select, whose keys the program works; the host moves focus
 among the others without telling the renderer (§2, the keyboard). A
 HottyScrollView's keys are the host's own there, so it has none.
 
@@ -899,6 +919,39 @@ lexers of the languages coding agents write most (`highlight/lexers`,
 copied from chroma by `make lexers`); a program that wants every language
 chroma knows imports `highlight/all`, at the size those take. A Text's
 fenced code blocks are highlighted the same way.
+
+### 6.13 HottyDiff
+
+A change to code, as a review shows it: a `patch`, a unified diff of one
+or more files as git diff or diff -u writes it, or the `old` and `new`
+texts of one file, named `file`, compared with `context` unchanged lines
+around each change (3 by default). The patch's hunks are shown as they
+are: a hunk cut short ends where it stops. Each line is highlighted for
+`language`, or for its file's name. `view` is `unified` (the default),
+one column, or `split`, the old side beside the new where there is room
+(§3.4); `lineNumbers` and `wrap` are on by default, as a HottyCode's.
+Unchanged runs left out between hunks are folded, a row that says how
+many lines they are. It has no height: a HottyScrollView scrolls a long
+diff.
+
+A changed line's changed words are marked, as delta and GitHub mark
+them: in a run of removed lines followed by added ones, each removed
+line is set against the added line in its place, both split into words,
+runs of space and single other characters, and compared (package `diff`).
+A change that only inserts or only deletes slides as far right as the
+same words let it, and changes that then touch join, so that one run is
+marked where two would do. Lines with too little in common (what changed
+is over 6 tenths of their characters besides space) are marked as whole
+lines only.
+
+It is a list of its hunks, as a HottyTable is of its rows: it takes
+focus when it has one, `selected` holds the selected hunk's id, its
+file's name, `:` and the first line of its new side (`api/handler.go:18`;
+the line alone without a name), and `onActivate` runs on Enter or a
+click on the selected hunk (§3.7). Bind `selected` to a path that the
+action's context reads to stage, revert or comment on that hunk. Its
+keys are §3.7's. A big patch belongs in props rather than the data
+model, where every change to it would be sent again.
 
 ## 7. Fallbacks
 

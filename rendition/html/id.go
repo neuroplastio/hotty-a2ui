@@ -34,6 +34,7 @@ const (
 	partItem   = "i" // a HottyList's items, "i0" to "iN", by their index
 	partDots   = "d" // a HottyList's page dots
 	partLines  = "j" // a HottyScrollView's lines, which a log appends to
+	partHunk   = "b" // a HottyDiff's hunks, "b0" to "bN", by their index
 	surfaceID  = "~s"
 	layerID    = "~o" // the overlay an open Modal or list shows in
 	backdropID = "~d"

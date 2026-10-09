@@ -125,9 +125,10 @@ func (c *Controller) Activate(id string) error {
 		if c.S.Env().OpenURL != nil && e.URL != "" {
 			err = c.S.Env().OpenURL(e.URL)
 		}
-	case Table, RichList:
-		// Its selected row is acted on: onActivate, whose context reads the
-		// row from where selected is bound (an action carries no payload).
+	case Table, RichList, DiffView:
+		// Its selected row (a HottyDiff's hunk) is acted on: onActivate,
+		// whose context reads the row from where selected is bound (an
+		// action carries no payload).
 		// A HottyList's, only while it shows.
 		sel := e.SelectedRow()
 		if e.Kind == RichList {
@@ -203,12 +204,12 @@ func (c *Controller) StepSlider(id string, n int, to string) error {
 	return c.SetValue(id, f)
 }
 
-// SelectRow selects a Table's row i, or a HottyList's item i, clamped to
-// its rows: its id goes to where selected is bound, else to the
-// renderer's state.
+// SelectRow selects a Table's row i, a HottyList's item i or a HottyDiff's
+// hunk i, clamped to its rows: its id goes to where selected is bound,
+// else to the renderer's state.
 func (c *Controller) SelectRow(id string, i int) error {
 	e := c.V.Find(id)
-	if e == nil || e.Kind != Table && e.Kind != RichList || len(e.RowIDs) == 0 {
+	if e == nil || e.Kind != Table && e.Kind != RichList && e.Kind != DiffView || len(e.RowIDs) == 0 {
 		return nil
 	}
 	err := c.set(e, e.RowIDs[min(max(i, 0), len(e.RowIDs)-1)])
@@ -257,13 +258,13 @@ func (c *Controller) TableKey(id, key string) (ok bool, err error) {
 }
 
 // set writes a control's value: to its binding, else to the state. A
-// Table's and a HottyList's value is its selected property; any other's,
-// value.
+// Table's, a HottyList's and a HottyDiff's value is its selected
+// property; any other's, value.
 func (c *Controller) set(e *Element, v any) error {
 	c.St.Touched[e.ID] = true
 	n := c.V.Node(e.ID)
 	prop := "value"
-	if e.Kind == Table || e.Kind == RichList {
+	if e.Kind == Table || e.Kind == RichList || e.Kind == DiffView {
 		prop = "selected"
 	}
 	if l, ok := v.([]string); ok {

@@ -96,7 +96,11 @@ func (r *Rendition) markup() *markup {
 		now = r.Clock
 	}
 	short, full := r.C.KeyHints(r.keys, true)
-	return &markup{list: r.openList(), now: now(), short: short, full: full}
+	m := &markup{list: r.openList(), now: now(), short: short, full: full}
+	if r.C.St.Keyboard && !r.Away {
+		m.keyboard = r.C.St.Focus
+	}
+	return m
 }
 
 // SetTheme paints the surface in a theme's colours from the next Doc or
@@ -159,13 +163,16 @@ func (r *Rendition) Update() []string {
 	// a host scrolls with the arrows a focused button leaves (SPEC §5.3),
 	// so they would never reach it.
 	st := r.C.St
-	want := keyboard{st.Keyboard && !r.Away && r.openList() == nil, st.Focus}
+	want := keyboard{st.Keyboard && !r.Away && r.openList() == nil, r.focusOn(st.Focus)}
 	if want != r.host && (want.on || r.host.on) {
 		switch {
 		case !want.on:
 			out = append(out, hotty.Blur(r.name))
 		case r.back && want.focus == r.host.focus:
 			out = append(out, hotty.Focus(r.name, ""))
+		case want.focus != st.Focus:
+			// A part of the element: a HottyDiff's selected hunk.
+			out = append(out, hotty.Focus(r.name, want.focus))
 		case want.focus != "" && r.C.V.Find(want.focus) != nil:
 			out = append(out, hotty.Focus(r.name, domID(want.focus)))
 		default:
@@ -240,14 +247,17 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		if isSelect(e) {
 			return r.clickSelect(e, part, ev)
 		}
-		if e.Kind == view.Table || e.Kind == view.RichList {
-			// A row (a Table's) or an item (a HottyList's) is selected by a
-			// click, and acted on by another.
+		if e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.DiffView {
+			// A row (a Table's), an item (a HottyList's) or a hunk (a
+			// HottyDiff's) is selected by a click, and acted on by another.
 			c.Focus(id)
 			r.host = keyboard{true, id}
 			prefix := partRow
-			if e.Kind == view.RichList {
+			switch e.Kind {
+			case view.RichList:
 				prefix = partItem
+			case view.DiffView:
+				prefix = partHunk
 			}
 			if i, err := strconv.Atoi(strings.TrimPrefix(part, prefix)); err == nil && strings.HasPrefix(part, prefix) {
 				if i == e.SelectedRow() {
@@ -373,6 +383,12 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	// move its selection, and Enter acts on it.
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Table {
 		if ok, err := c.TableKey(e.ID, key); ok {
+			return nil, true, err
+		}
+	}
+	// So is a HottyDiff, whose keys (diffKeys) move its selection.
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.DiffView {
+		if ok, err := c.DiffKey(e.ID, key); ok {
 			return nil, true, err
 		}
 	}

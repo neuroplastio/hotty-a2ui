@@ -5,7 +5,7 @@
   "title": "HOTTY Catalog",
   "description": "Keys, forms and focus for A2UI surfaces shown in a terminal: the hotty catalog of the HOTTY profile of A2UI. Mix it with the basic catalog component by component. Its names start with Hotty (components) and hotty (functions), so that none can be one A2UI adds later.",
   "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
-  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.\n\n8. HottyTable shows rows of data: give `columns` (each a `key` into the rows, a `header`, and `align`: \"end\" for numbers) and `rows`, a list of objects, best bound to the data model. Set `rowKey` to the field that identifies a row, and bind `selected` to a path: the user's selection is written there. To act on the selected row, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `height` to scroll long tables.\n\n9. HottyList shows items to pick from, a label and a line under it each: give `items`, a list of objects with `label`, `description` and `value` (what identifies the item), best bound to the data model, and bind `selected` to a path: the user's pick is written there. To act on it, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `filterable` to let the user type / and narrow the items by their labels, and `height` to show long lists a page at a time.\n\n10. HottyKeyHints is a help line: the keys the user can press now, those of the component with the keyboard and the surface's HottyShortcuts. Put one at the bottom of a surface that takes keys, and give each HottyShortcut a short `label` (\"save\", \"quit\") so that it shows there. The user presses ? for the full view.\n\n11. HottyScrollView shows content taller than the room it has, in a box `height` rows tall that the user scrolls: give it a `child` (a long Text, say), or `lines`, a list of strings. For a log or a command's output, bind `lines` to a list in the data model, add each line by writing the next index with updateDataModel (/log/0, /log/1, …), and set `follow` so that the box shows the newest. Call hottyScrollTo(id, \"start\" or \"end\") to move it.\n\n12. HottyCode shows source code, highlighted: give `code` and `language` (a name such as \"go\" or a file name such as \"main.go\"). Set `lineNumbers` for a file or an excerpt of one (with `startLine`), and `marks` to point at lines: {\"line\": 12, \"kind\": \"error\"}, or a range with `end`; kinds are highlight, added, removed, error and warning. Put a long listing in a HottyScrollView. Code inside prose can stay a fenced block in a Text (```python), which is highlighted too.",
+  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.\n\n8. HottyTable shows rows of data: give `columns` (each a `key` into the rows, a `header`, and `align`: \"end\" for numbers) and `rows`, a list of objects, best bound to the data model. Set `rowKey` to the field that identifies a row, and bind `selected` to a path: the user's selection is written there. To act on the selected row, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `height` to scroll long tables.\n\n9. HottyList shows items to pick from, a label and a line under it each: give `items`, a list of objects with `label`, `description` and `value` (what identifies the item), best bound to the data model, and bind `selected` to a path: the user's pick is written there. To act on it, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `filterable` to let the user type / and narrow the items by their labels, and `height` to show long lists a page at a time.\n\n10. HottyKeyHints is a help line: the keys the user can press now, those of the component with the keyboard and the surface's HottyShortcuts. Put one at the bottom of a surface that takes keys, and give each HottyShortcut a short `label` (\"save\", \"quit\") so that it shows there. The user presses ? for the full view.\n\n11. HottyScrollView shows content taller than the room it has, in a box `height` rows tall that the user scrolls: give it a `child` (a long Text, say), or `lines`, a list of strings. For a log or a command's output, bind `lines` to a list in the data model, add each line by writing the next index with updateDataModel (/log/0, /log/1, …), and set `follow` so that the box shows the newest. Call hottyScrollTo(id, \"start\" or \"end\") to move it.\n\n12. HottyCode shows source code, highlighted: give `code` and `language` (a name such as \"go\" or a file name such as \"main.go\"). Set `lineNumbers` for a file or an excerpt of one (with `startLine`), and `marks` to point at lines: {\"line\": 12, \"kind\": \"error\"}, or a range with `end`; kinds are highlight, added, removed, error and warning. Put a long listing in a HottyScrollView. Code inside prose can stay a fenced block in a Text (```python), which is highlighted too.\n\n13. HottyDiff shows a change to code, as a review does: give `patch`, a unified diff of one or more files (git diff's output), or the `old` and `new` text of one file with its `file` name. Set `view` to \"split\" for the two sides next to each other. Bind `selected` to a path: the hunk the user picks is written there, as \"path:line\". To act on it (stage it, revert it, comment on it), give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Big diffs belong in props rather than the data model, and in a HottyScrollView.",
   "components": {
     "HottyShortcut": {
       "type": "object",
@@ -465,6 +465,75 @@
         "component",
         "code"
       ]
+    },
+    "HottyDiff": {
+      "type": "object",
+      "description": "A change to code, as a code review shows it: one or more files of hunks, each line numbered on its old side and its new side, signed + or -, highlighted for its language, and the words a changed line changes marked. Unified (one column) or split (old and new side by side). Give a `patch` (a unified diff, as git diff writes it), or the `old` and `new` texts of one file. The user moves between hunks with the arrow keys or a click, and Enter (or a click on the selected hunk) runs onActivate. It has no height of its own: put a long diff in a HottyScrollView.",
+      "properties": {
+        "component": {
+          "const": "HottyDiff"
+        },
+        "patch": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "A unified diff of one or more files, as git diff or diff -u writes it. Its hunks are shown as they are, with the unchanged lines they hold."
+        },
+        "old": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "Without a patch: the file's text before the change."
+        },
+        "new": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "Without a patch: the file's text after the change."
+        },
+        "file": {
+          "type": "string",
+          "description": "Without a patch: the file's name, shown above its hunks and naming its language unless `language` does."
+        },
+        "context": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 3,
+          "description": "Without a patch: how many unchanged lines show around each change. Longer unchanged runs are folded."
+        },
+        "language": {
+          "type": "string",
+          "description": "What the code is, for every file: a language's name (\"go\", \"python\") or a file name. By default each file's own name says."
+        },
+        "view": {
+          "type": "string",
+          "enum": [
+            "unified",
+            "split"
+          ],
+          "default": "unified",
+          "description": "unified: removed and added lines in one column, as git diff shows them. split: the old side on the left and the new on the right, a changed line beside the line it replaces; where there is no room for two sides, the diff is unified."
+        },
+        "lineNumbers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show each line's numbers on its old and new sides."
+        },
+        "wrap": {
+          "type": "boolean",
+          "default": true,
+          "description": "Wrap lines longer than the width. Without it they are cut at the edge (on a HOTTY host the diff scrolls sideways)."
+        },
+        "selected": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "The selected hunk: its file's name and the first line of its new side, as \"api/handler.go:12\" (the line alone without a file name). Bind it to the data model: the user's selection is written there, and onActivate's context reads it from there."
+        },
+        "onActivate": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Runs when the user presses Enter on the selected hunk, or clicks it again: to stage, revert or comment on it. Its context should read the hunk from the path selected is bound to."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column, as CSS 'flex-grow'."
+        }
+      },
+      "required": [
+        "component"
+      ]
     }
   },
   "functions": {
@@ -577,6 +646,9 @@
         },
         {
           "$ref": "#/components/HottyCode"
+        },
+        {
+          "$ref": "#/components/HottyDiff"
         }
       ],
       "discriminator": {

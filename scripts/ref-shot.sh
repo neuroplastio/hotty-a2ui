@@ -4,6 +4,10 @@
 # in the same terminal, at the same size, with the same font and theme, as
 # one picture in .shots/NAME.png. STORY defaults to the one ref -list names.
 #
+# Where Bubble Tea has no such component, the reference is OpenTUI's:
+# ref/opentui/NAME.ts, run with Bun, whose "// story:" line names its
+# story (bun install in ref/opentui first).
+#
 # Keys to send first, as VHS commands, so that both sides are in the same
 # state (a field focused, a row moved to):
 #   REF_KEYS='Down Down'    for Bubble Tea's side (empty by default)
@@ -17,10 +21,18 @@ cd "$(dirname "$0")/.."
 
 name=${1:?usage: ref-shot.sh NAME [STORY]}
 mkdir -p bin .shots
-(cd ref && mise exec -- go build -o ../bin/ref .)
 mise exec -- go build -o bin/storybook ./cmd/storybook
-story=${2:-$(bin/ref -list | awk -v n="$name" '$1 == n { print $2 }')}
-[ -n "$story" ] || { echo "ref-shot: no ref $name (bin/ref -list)" >&2; exit 2; }
+if [ -f "ref/opentui/$name.ts" ]; then
+	refcmd="mise exec bun@1.4.2 -- bun ref/opentui/$name.ts"
+	reflabel="OpenTUI · ref $name"
+	story=${2:-$(sed -n 's|^// story: *||p' "ref/opentui/$name.ts" | head -1)}
+else
+	(cd ref && mise exec -- go build -o ../bin/ref .)
+	refcmd="bin/ref $name"
+	reflabel="Bubble Tea · ref $name"
+	story=${2:-$(bin/ref -list | awk -v n="$name" '$1 == n { print $2 }')}
+fi
+[ -n "$story" ] || { echo "ref-shot: no ref $name (bin/ref -list, ref/opentui)" >&2; exit 2; }
 
 cols=${COLS:-80}
 rows=${ROWS:-24}
@@ -51,11 +63,11 @@ EOF
 	vhs "$tmp/$1.tape" >/dev/null
 }
 
-tape ref "bin/ref $name" "${REF_KEYS:-}"
+tape ref "$refcmd" "${REF_KEYS:-}"
 tape kit "bin/storybook -bare $story" "${KIT_KEYS-Tab}"
 
 montage -background '#1e1e2e' -fill '#cdd6f4' -font DejaVu-Sans -pointsize 18 \
-	-label "Bubble Tea · ref $name" "$tmp/ref.png" \
+	-label "$reflabel" "$tmp/ref.png" \
 	-label "the kit · $story" "$tmp/kit.png" \
 	-tile 2x1 -geometry +12+12 ".shots/$name.png"
 echo ".shots/$name.png"

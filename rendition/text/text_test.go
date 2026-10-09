@@ -110,3 +110,26 @@ func TestCode(t *testing.T) {
 		t.Errorf("got\n%s\nwant\n%s", got, want)
 	}
 }
+
+// TestDiff: a HottyDiff reads as a unified diff, which patch reads: each
+// named file's --- and +++ lines, its hunks' headers and their lines,
+// signed, and git's line for a binary file; a split one too.
+func TestDiff(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["a","b"]},
+	 {"id":"a","component":"HottyDiff","catalogId":"` + hotty.ID + `","view":"split",
+	  "patch":"--- a/x.go\n+++ b/x.go\n@@ -1,2 +1,2 @@ func f() {\n-\treturn a\n+\treturn b\n }\nBinary files a/i.png and b/i.png differ\n"},
+	 {"id":"b","component":"HottyDiff","catalogId":"` + hotty.ID + `","file":"n.txt","old":"","new":"hi\n"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	want := "--- a/x.go\n+++ b/x.go\n@@ -1,2 +1,2 @@ func f() {\n-    return a\n+    return b\n }\n" +
+		"Binary files a/i.png and b/i.png differ\n" +
+		"--- a/n.txt\n+++ b/n.txt\n@@ -0,0 +1 @@\n+hi\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}

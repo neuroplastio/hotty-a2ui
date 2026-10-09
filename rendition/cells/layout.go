@@ -116,6 +116,8 @@ func (l *layout) minimum(e *view.Element) int {
 		n = l.scrollMinimum(e)
 	case view.Listing:
 		n = codeMinimum(e)
+	case view.DiffView:
+		n = diffMinimum(e)
 	default:
 		n = l.natural(e)
 	}
@@ -185,6 +187,8 @@ func (l *layout) measure(e *view.Element) int {
 		return l.scrollWidth(e)
 	case view.Listing:
 		return codeWidth(e)
+	case view.DiffView:
+		return diffWidth(e)
 	}
 	return controlWidth(e)
 }
@@ -229,6 +233,8 @@ func (l *layout) measureHeight(e *view.Element, w int) int {
 		return e.Height
 	case view.Listing:
 		return len(codeRows(e, w))
+	case view.DiffView:
+		return len(l.diffRows(e, w))
 	}
 	return l.controlHeight(e, w)
 }
@@ -274,7 +280,7 @@ func separator(kids []*view.Element, i int) int {
 		return 0
 	}
 	a, b := edge(kids[i-1], false), edge(kids[i], true)
-	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing {
+	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView {
 		return 1
 	}
 	if !isControlElement(a) || !isControlElement(b) {

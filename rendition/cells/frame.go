@@ -82,6 +82,13 @@ type Cell struct {
 	// and so is a theme that keeps the terminal's background.
 	Back    Role
 	BackMix uint8
+	// Where there is no tint (a theme that keeps the terminal's
+	// background, NO_COLOR), a cell with BackMix shows its Back another
+	// way, as git's diff-highlight does a changed line: in Back's colour
+	// with BackFg, and with BackAttr's attributes (its changed words
+	// reversed).
+	BackFg   bool
+	BackAttr Attr
 }
 
 var blank = Cell{Text: " ", Width: 1}
@@ -189,14 +196,24 @@ func (f *Frame) render(th *theme.Theme) string {
 
 // style is a cell's SGR parameters; th nil is no colour at all.
 func (c Cell) style(th *theme.Theme) string {
+	attr, role := c.Attr, c.Role
+	if c.BackMix > 0 && !c.tinted(th) {
+		attr |= c.BackAttr
+		if c.BackFg {
+			role = c.Back
+		}
+	}
 	var p []string
 	for i, s := range sgr {
-		if c.Attr&(1<<i) != 0 {
+		if attr&(1<<i) != 0 {
 			p = append(p, s)
 		}
 	}
 	if th == nil {
 		return strings.Join(p, ";")
+	}
+	if role != c.Role {
+		c.Role, c.Mix = role, 0
 	}
 	hex := th.Colour(roleNames[c.Role])
 	if c.Mix > 0 {
@@ -215,6 +232,17 @@ func (c Cell) style(th *theme.Theme) string {
 		p = append(p, truecolour("48", bg))
 	}
 	return strings.Join(p, ";")
+}
+
+// tinted reports whether the cell's background can be tinted (BackMix) in
+// a theme: one whose background and Back's colour are both "#rrggbb".
+func (c Cell) tinted(th *theme.Theme) bool {
+	if th == nil {
+		return false
+	}
+	_, okBg := rgb(th.Bg)
+	_, okBack := rgb(th.Colour(roleNames[c.Back]))
+	return okBg && okBack
 }
 
 // truecolour is the SGR for a "#rrggbb" colour, foreground (38) or

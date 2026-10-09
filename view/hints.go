@@ -83,7 +83,7 @@ func (c *Controller) KeyHints(keys string, host bool) (short []Hint, full [][]Hi
 // select (rendition/html's Key).
 func programKeys(e *Element) bool {
 	switch e.Kind {
-	case Table, RichList, Slider:
+	case Table, RichList, Slider, DiffView:
 		return true
 	case Choice:
 		return len(e.Children) == 0
@@ -129,6 +129,14 @@ func (c *Controller) elementHints(e *Element, keys string) (short []Hint, groups
 			pages = append(pages, Hint{"enter", "choose"})
 		}
 		return short, [][]Hint{moves, pages}
+	case DiffView:
+		short = []Hint{{"↑/k", "prev hunk"}, {"↓/j", "next hunk"}}
+		moves := append(slices.Clone(short), Hint{"g/home", "first hunk"}, Hint{"G/end", "last hunk"})
+		if act {
+			short = append(short, Hint{"enter", "choose"})
+			moves = append(moves, Hint{"enter", "choose"})
+		}
+		return short, [][]Hint{moves}
 	case ScrollView:
 		// bubbles' viewport's words. A host scrolls the box itself (SPEC
 		// §5.3), so on one these never show (programKeys).

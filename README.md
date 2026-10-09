@@ -48,7 +48,7 @@ and the cells beside it follow, and the other way round.
   both the cells and the HTML rendition.
 - 🔌 **A hotty catalog**, through A2UI's extension points only:
   `HottyShortcut`, `HottyForm`, `HottyProgress`, `HottySpinner`,
-  `HottyTable`, `HottyList`, `HottyKeyHints`, `HottyScrollView`, `HottyCode`, `hottyFocus`, `hottyBlur`, `hottyScrollTo`, autofocus and keys. Its names carry the prefix
+  `HottyTable`, `HottyList`, `HottyKeyHints`, `HottyScrollView`, `HottyCode`, `HottyDiff`, `hottyFocus`, `hottyBlur`, `hottyScrollTo`, autofocus and keys. Its names carry the prefix
   so that none can be one A2UI adds later.
 - 🎨 **Seven themes**: Terminal, Material dark and light, Nord, Dracula,
   Gruvbox and Solarized light.
@@ -113,9 +113,10 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 | [`docs/profile.md`](docs/profile.md) | the HOTTY profile of A2UI, a draft: renditions, keys and focus, the hotty catalog, fallbacks |
 | [`a2ui/`](a2ui) | an A2UI v1.0 core in Go: the data model, expressions and functions, catalogs checked against the spec's JSON Schemas, node resolution, and the message processor with the agent's function calls |
 | [`catalog/basic/`](catalog/basic) | A2UI's basic catalog, its functions implemented (en-US formatting) |
-| [`catalog/hotty/`](catalog/hotty) | the hotty catalog: `HottyShortcut`, `HottyForm`, `HottyProgress`, `HottySpinner`, `HottyTable`, `HottyList`, `HottyKeyHints`, `HottyScrollView`, `HottyCode`, `hottyFocus`, `hottyBlur`, `hottyScrollTo` |
+| [`catalog/hotty/`](catalog/hotty) | the hotty catalog: `HottyShortcut`, `HottyForm`, `HottyProgress`, `HottySpinner`, `HottyTable`, `HottyList`, `HottyKeyHints`, `HottyScrollView`, `HottyCode`, `HottyDiff`, `hottyFocus`, `hottyBlur`, `hottyScrollTo` |
 | [`view/`](view) | the renderer's model of a surface: its nodes made into a few kinds of element, with the renderer's own state (focus, the tab shown, the modal open), and the controller the user's acts go through |
 | [`highlight/`](highlight) | code as lines of tokens of a few kinds, which the renditions colour by role: chroma's lexers for the languages agents write most ([`lexers/`](highlight/lexers), `make lexers`), and all of chroma's with [`highlight/all`](highlight/all) |
+| [`diff/`](diff) | a change as files of hunks, from a patch or from two texts, each line highlighted and its changed words marked |
 | [`rendition/html/`](rendition/html) | surfaces on a HOTTY host: a document, then deltas, and the host's events back as the user's acts |
 | [`rendition/cells/`](rendition/cells) | cells in a terminal that is not a host, laid out by the profile's rules (§3), with keys and clicks as SPEC §10 has them |
 | [`rendition/text/`](rendition/text) | plain text for a pipe |
@@ -125,7 +126,7 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 | [`story/`](story) | the stories (A2UI's basic examples, the hotty catalog's, the fallbacks), and a story as it runs |
 | [`storybook/`](storybook) | the storybook, for a program to show in a part of its screen |
 | [`cmd/storybook/`](cmd/storybook) | the storybook on the whole screen, as plain text in a pipe, or a story's HTML |
-| [`ref/`](ref) | what the kit is held against: Bubble Tea's bubbles, huh and lipgloss, with the kit's stories' content (a module of its own) |
+| [`ref/`](ref) | what the kit is held against: Bubble Tea's bubbles, huh and lipgloss, with the kit's stories' content (a module of its own), and OpenTUI's where Bubble Tea has none ([`ref/opentui`](ref/opentui), a Bun package) |
 | [`vault/`](vault/README.md) | the work: the gap analysis, the board, questions and the journal |
 | [`third_party/a2ui/`](third_party/a2ui) | A2UI at one commit ([`REV`](third_party/a2ui/REV)): the v1.0 schemas, the basic catalog and its examples, the conformance suites |
 

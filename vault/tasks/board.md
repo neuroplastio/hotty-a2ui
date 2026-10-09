@@ -8,8 +8,9 @@ fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
 2026-10-09.5): progress bars and spinners; at KIT-01c (journal
 2026-10-09.7): the table; at KIT-04c (journal 2026-10-09.9): the list;
 at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
-(journal 2026-10-09.11): the scroll view; and at KIT-05c (journal
-2026-10-09.12): code and its colours. Phase 1 is a go
+(journal 2026-10-09.11): the scroll view; at KIT-05c (journal
+2026-10-09.12): code and its colours; and at KIT-06c (journal
+2026-10-09.13): the diff. Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
@@ -23,8 +24,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-06c** — Diff: unified and split views, gutters, word marks, hunk
-  headers, folded runs. Select-then-act on a hunk (L2).
 - [ ] **KIT-09c** — Tree: guides, folding, a selected node.
 - [ ] **KIT-10c** — Chart: sparkline, braille line chart and bars, using
   hotty-go's chart, braille and series.
@@ -136,6 +135,21 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-06c** — `HottyDiff` in cells, held against OpenTUI's Diff
+  (journal 2026-10-09.13, awaiting the maintainer's look).
+  - A patch of one or more files, or two texts compared (package
+    `diff`, go-udiff's LCS). Unified, or split where each side has 16
+    columns of code.
+  - File names with `+N -M`, hunk headers, both line numbers, unchanged
+    runs folded into a `⋯ N unchanged lines` row.
+  - Changed lines are tinted a sixth toward their role, and changed words
+    a third, with delta's distance rule. Without a theme background, the
+    line's text takes the role colour and its words are reversed, as
+    git's diff-highlight does.
+  - Select-then-act on a hunk (L2): `selected` is `path:line`, and
+    `onActivate` runs on Enter or a second click. On a host the selected
+    hunk takes the host's focus, so that the host scrolls it into view.
+  - It costs the site's storybook module 27 KB brotli.
 - [x] **KIT-05c** — `HottyCode` in cells, held against glamour's code
   blocks (journal 2026-10-09.12, awaiting the maintainer's look).
   - chroma lexes; each token kind takes a role, so every theme and the

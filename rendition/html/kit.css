@@ -506,6 +506,47 @@ textarea.k-input { min-height: 5.5rem; }
 .k-m-warning { background: color-mix(in srgb, var(--k-warning) 16%, transparent); }
 .k-m-warning .k-sign { color: var(--k-warning); }
 
+/* HottyDiff (profile §2, §6.13): a box as a HottyCode's, holding each
+   file's name and a block for each hunk: its header in info, its section
+   in muted, then its lines, each row its numbers (old in --k-lo columns,
+   new in --k-ln), its sign and its code. A removed line is tinted with a
+   sixth of error, an added one of success, their changed words a third
+   (k-w, over the line's tint). Split, a hunk is a grid of two equal
+   columns, the old side and the new, a rule between them, the header
+   across both. A run of unchanged lines left out is a muted row
+   (k-fold). The selected hunk has a rail on its left and its header
+   reversed, muted, and the focus colour while the diff has the keyboard
+   (k-on: the host's focus is on the hunk then, not the box). */
+.k-diff { font-family: var(--k-mono); line-height: var(--hotty-cell-h, 1.25rem); background: var(--k-tonal);
+  border-radius: var(--k-r-field); padding: var(--k-1) 0; outline: none; overflow-x: auto;
+  scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }
+.k-diff-file { display: flex; column-gap: 2ch; padding: 0 var(--k-2); font-weight: 600; }
+.k-diff-file:not(:first-child) { margin-top: var(--hotty-cell-h, 1.25rem); }
+.k-diff-stat { font-weight: 400; color: var(--k-muted); }
+.k-add { color: var(--k-success); }
+.k-del { color: var(--k-error); }
+.k-diff-note, .k-fold { padding: 0 var(--k-2); color: var(--k-muted); }
+.k-hunk { border-left: 2px solid transparent; outline: none; cursor: pointer; }
+.k-hh { padding: 0 var(--k-2); color: var(--k-info, var(--hotty-ansi-6, var(--k-link))); white-space: pre; overflow: hidden; text-overflow: ellipsis; }
+.k-hh-sec { color: var(--k-muted); }
+.k-hunk.k-sel { border-left-color: var(--k-muted); }
+.k-hunk.k-sel > .k-hh, .k-hunk.k-sel .k-hh-sec { background: var(--k-muted); color: var(--k-bg); }
+.k-on .k-hunk.k-sel { border-left-color: var(--k-focus); }
+.k-on .k-hunk.k-sel > .k-hh, .k-on .k-hunk.k-sel .k-hh-sec { background: var(--k-focus); }
+.k-dl, .k-ds { display: flex; min-height: var(--hotty-cell-h, 1.25rem); padding: 0 var(--k-2); }
+.k-nowrap .k-dl { width: max-content; min-width: 100%; box-sizing: border-box; }
+.k-lo { width: var(--k-lo); }
+.k-d-del { background: color-mix(in srgb, var(--k-error) 16%, transparent); }
+.k-d-add { background: color-mix(in srgb, var(--k-success) 16%, transparent); }
+.k-d-del .k-sign { color: var(--k-error); }
+.k-d-add .k-sign { color: var(--k-success); }
+.k-d-del .k-w { background: color-mix(in srgb, var(--k-error) 22%, transparent); }
+.k-d-add .k-w { background: color-mix(in srgb, var(--k-success) 22%, transparent); }
+.k-split .k-hunk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.k-split .k-hh { grid-column: 1 / -1; }
+.k-split .k-new { border-left: 1px solid var(--k-border); }
+.k-nowrap.k-split .k-ds { overflow: hidden; }
+
 /* Tokens (package highlight), in a HottyCode and in a Text's fenced code
    block: the roles cells colours them with (profile §3.4). Keywords are
    info and bold, types info: accent marks only focus (§3.6). Info is the

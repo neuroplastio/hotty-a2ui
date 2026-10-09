@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/diff"
 	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
@@ -136,6 +137,8 @@ func element(e *view.Element) []string {
 		return e.Lines
 	case view.Listing:
 		return listing(e)
+	case view.DiffView:
+		return patch(e)
 	case view.Spinner:
 		if e.Active {
 			return []string{field(e.Label, "…")}
@@ -276,6 +279,49 @@ func richList(e *view.Element) []string {
 // listing is a HottyCode as text: each line as it is, after its number
 // when the numbers show, and its mark's sign when it has marks (+, -, ✗,
 // ! and > for a highlighted line), as a pipe would want to read a diff.
+// patch is a HottyDiff as text: a unified diff, which patch and git apply
+// read: for each file with a name, its --- and +++ lines (git's a/ and b/,
+// /dev/null for a side it does not have), then its hunks, each its header
+// and its lines, signed. A binary file is git's line for one. Tabs are
+// spaces, as the diff shows them.
+func patch(e *view.Element) []string {
+	var out []string
+	for _, f := range e.Diff.Files {
+		old, new := "a/"+f.Old, "b/"+f.New
+		if f.Old == "" {
+			old = "/dev/null"
+		}
+		if f.New == "" {
+			new = "/dev/null"
+		}
+		switch {
+		case f.Binary:
+			out = append(out, "Binary files "+old+" and "+new+" differ")
+			continue
+		case f.Name() != "":
+			out = append(out, "--- "+old, "+++ "+new)
+		}
+		for _, h := range f.Hunks {
+			head := h.Header()
+			if h.Section != "" {
+				head += " " + h.Section
+			}
+			out = append(out, head)
+			for _, l := range h.Lines {
+				sign := " "
+				switch l.Op {
+				case diff.Removed:
+					sign = "-"
+				case diff.Added:
+					sign = "+"
+				}
+				out = append(out, sign+l.Text())
+			}
+		}
+	}
+	return out
+}
+
 func listing(e *view.Element) []string {
 	numbers := 0
 	if e.Numbers {

@@ -12,6 +12,7 @@ require (
 require (
 	charm.land/bubbletea/v2 v2.0.10
 	github.com/alecthomas/chroma/v2 v2.27.0
+	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/clipperhouse/uax29/v2 v2.7.0
 	github.com/neuroplastio/hotty-go v0.0.0-20261009172718-a66190c972f5

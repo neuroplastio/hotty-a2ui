@@ -27,10 +27,11 @@ test:   ## the tests (A2UI's conformance suites among them), with the race detec
 ref:   ## the references (ref/, a module of its own): tidy, vetted, built
 	cd ref && $(GO) mod tidy -diff && $(GO) vet ./... && $(GO) build -o ../bin/ref .
 
-# A reference shot: Bubble Tea's component beside the kit's story, as one
-# picture in .shots/NAME.png (scripts/ref-shot.sh; vhs and ImageMagick).
+# A reference shot: Bubble Tea's component (or OpenTUI's, ref/opentui)
+# beside the kit's story, as one picture in .shots/NAME.png
+# (scripts/ref-shot.sh; vhs and ImageMagick).
 # Not in the gate.
-shot:   ## .shots/NAME.png: ref NAME beside its story (NAME=form; KIT_KEYS, REF_KEYS)
+shot:   ## .shots/NAME.png: ref NAME beside its story (NAME=form; KIT_KEYS, REF_KEYS, COLS, ROWS)
 	sh scripts/ref-shot.sh $(NAME) $(STORY)
 
 a2ui:   ## third_party/a2ui at REV, a full A2UI commit (scripts/a2ui.sh)

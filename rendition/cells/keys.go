@@ -93,6 +93,9 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	if e.Kind == view.Table {
 		return r.c.TableKey(e.ID, name)
 	}
+	if e.Kind == view.DiffView {
+		return r.c.DiffKey(e.ID, name)
+	}
 	if e.Kind == view.RichList {
 		return r.c.ListKey(e.ID, name)
 	}

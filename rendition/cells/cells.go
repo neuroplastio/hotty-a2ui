@@ -35,6 +35,10 @@ type Rendition struct {
 	hits  []hit
 	panel *hit           // the open Modal's panel, as last drawn
 	boxes map[string]box // the cells each element covers, as last drawn
+	// reveal is the part of an element a scroll view keeps in sight while
+	// it has the keyboard, where that is not all of it: a HottyDiff's
+	// selected hunk.
+	reveal map[string]box
 	// scrolls are the HottyScrollViews as last drawn, scrollOrder their
 	// ids in the order painted, the innermost last (Wheel).
 	scrolls     map[string]scrolled
@@ -130,7 +134,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 	}
 	f := newFrame(cols, rows)
 	cv := &canvas{f: f}
-	r.hits, r.panel, r.boxes, r.anim = nil, nil, map[string]box{}, 0
+	r.hits, r.panel, r.boxes, r.reveal, r.anim = nil, nil, map[string]box{}, map[string]box{}, 0
 	r.scrolls, r.scrollOrder = map[string]scrolled{}, nil
 	if root != nil {
 		l.paint(cv, root, 0, 0, cols, rootH)
@@ -216,6 +220,8 @@ func (r *Rendition) Click(col, row int) error {
 		return nil
 	case e.Kind == view.Table:
 		return r.clickTable(e, h.opt)
+	case e.Kind == view.DiffView:
+		return r.clickDiff(e, h.opt)
 	case e.Kind == view.RichList:
 		return r.clickList(e, h.opt)
 	case e.Kind == view.Slider:
