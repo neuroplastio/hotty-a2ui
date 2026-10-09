@@ -103,6 +103,8 @@ func (l *layout) minimum(e *view.Element) int {
 		}
 	case view.Divider:
 		n = 1
+	case view.Progress:
+		n = max(longestWord(line(e.Label, style{})), 3+percentWidth)
 	default:
 		n = l.natural(e)
 	}

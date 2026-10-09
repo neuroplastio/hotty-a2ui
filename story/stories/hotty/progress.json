@@ -1,0 +1,89 @@
+{
+  "name": "HottyProgress",
+  "description": "Bars at fixed values, one bound to the data model (the slider under it moves it), and one without a value, which slides while the work has no end in sight.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "progress",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "download": 0.25
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "progress",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "queued",
+              "download",
+              "install",
+              "done",
+              "indexing",
+              "drag"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Progress"
+          },
+          {
+            "id": "queued",
+            "component": "HottyProgress",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Queued",
+            "value": 0
+          },
+          {
+            "id": "download",
+            "component": "HottyProgress",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Download",
+            "value": {
+              "@path": "/download"
+            }
+          },
+          {
+            "id": "install",
+            "component": "HottyProgress",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Install",
+            "value": 0.6
+          },
+          {
+            "id": "done",
+            "component": "HottyProgress",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Done",
+            "value": 1
+          },
+          {
+            "id": "indexing",
+            "component": "HottyProgress",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Indexing"
+          },
+          {
+            "id": "drag",
+            "component": "Slider",
+            "label": "Download",
+            "value": {
+              "@path": "/download"
+            },
+            "min": 0,
+            "max": 1,
+            "steps": 20
+          }
+        ]
+      }
+    }
+  ]
+}

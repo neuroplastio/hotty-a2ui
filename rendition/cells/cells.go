@@ -6,6 +6,8 @@
 package cells
 
 import (
+	"time"
+
 	"github.com/neuroplastio/hotty-go"
 	"github.com/neuroplastio/hotty-go/hottyedit"
 
@@ -34,6 +36,11 @@ type Rendition struct {
 	panel *hit           // the open Modal's panel, as last drawn
 	boxes map[string]box // the cells each element covers, as last drawn
 	drag  string         // the Slider a click on its track started dragging
+	anim  time.Duration  // how soon the last Draw changes again (Animating)
+
+	// Clock is the time a Draw paints at: a Spinner's frame, an
+	// indeterminate Progress's place. New sets time.Now.
+	Clock func() time.Time
 }
 
 // box is a rectangle of cells.
@@ -42,7 +49,27 @@ type box struct{ x, y, w, h int }
 // New is a surface's rendition in cells.
 func New(c *view.Controller) *Rendition {
 	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
-		keys: hotty.TerminalKeys, fields: map[string]*hottyedit.Field{}}
+		keys: hotty.TerminalKeys, fields: map[string]*hottyedit.Field{}, Clock: time.Now}
+}
+
+// Animating is how soon the last Draw's frame changes by itself: the
+// shortest interval of the Spinners that spin and the indeterminate
+// Progress bars it painted; 0 when nothing moves. A program that shows the
+// frame draws it again after that long (profile §3.4, the clock).
+func (r *Rendition) Animating() time.Duration { return r.anim }
+
+// animate notes that the frame changes again after d.
+func (r *Rendition) animate(d time.Duration) {
+	if d > 0 && (r.anim == 0 || d < r.anim) {
+		r.anim = d
+	}
+}
+
+// tick is the frame a thing that changes every d shows now: the clock's
+// time in steps of d, so that every renderer at the same time shows the
+// same frame.
+func (r *Rendition) tick(d time.Duration) int64 {
+	return r.Clock().UnixNano() / int64(d)
 }
 
 // SetKeys sets the keymap the text controls edit by, as rendition/html's
@@ -106,7 +133,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 	}
 	f := newFrame(cols, rows)
 	cv := &canvas{f: f}
-	r.hits, r.panel, r.boxes = nil, nil, map[string]box{}
+	r.hits, r.panel, r.boxes, r.anim = nil, nil, map[string]box{}, 0
 	if root != nil {
 		l.paint(cv, root, 0, 0, cols, rootH)
 	}

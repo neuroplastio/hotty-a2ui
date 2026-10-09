@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/neuroplastio/hotty-go"
@@ -117,7 +118,16 @@ type Book struct {
 	// pickRows is pick's height with its lists closed: the host's fit on a
 	// host, the frame's rows in cells; 0 until known.
 	pickRows int
+
+	// anim is how often the last View's cells want drawing again (a
+	// spinner, a progress bar without a value), 0 when nothing in them
+	// moves; ticking is a tick on its way (Tick).
+	anim    time.Duration
+	ticking bool
 }
+
+// tickMsg is the frame clock's tick: Tick sends it, and Update takes it.
+type tickMsg struct{}
 
 // New is a Book. It starts once the terminal is known: on the Session's
 // ReadyMsg, or at the first View after it.
@@ -144,6 +154,8 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	switch msg := msg.(type) {
 	case hottytea.ReadyMsg:
 		b.ready(msg.Mode)
+	case tickMsg:
+		b.ticking = false
 	case hottytea.EventMsg:
 		b.event(msg.Event)
 	case hottytea.ErrorMsg:
@@ -220,6 +232,20 @@ func (b *Book) Keyboard() bool {
 // Cursor is where the terminal's cursor goes, on the screen: in the field
 // that has the keyboard in cells; nil for none.
 func (b *Book) Cursor() *tea.Cursor { return b.cursor }
+
+// Tick is the frame clock: while the last View's cells move (a spinner, a
+// progress bar without a value), a command whose message, given to Update,
+// asks for the next View. The program returns it with each View's
+// commands, as cmd/storybook does. It is nil while nothing moves, and
+// while a tick is on its way. The ticks keep to the clock (tea.Every), so
+// that they fall where the frames change.
+func (b *Book) Tick() tea.Cmd {
+	if b.anim == 0 || b.ticking {
+		return nil
+	}
+	b.ticking = true
+	return tea.Every(b.anim, func(time.Time) tea.Msg { return tickMsg{} })
+}
 
 // ready starts the storybook once the terminal is known: surfaces on a
 // host, cells elsewhere.
@@ -603,7 +629,7 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 // its own (Session.Layout), then calls LaidOut. The surfaces' deltas are
 // sent already.
 func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Surface) {
-	b.at, b.cursor = r, nil
+	b.at, b.cursor, b.anim = r, nil, 0
 	b.ready(h.Mode)
 	if b.ch == nil {
 		return "Finding out whether the terminal is a HOTTY host…", nil
@@ -714,6 +740,9 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		case asCells:
 			p.cells.SetKeys(b.keymap())
 			p.frame = p.cells.Draw(p.rect.W)
+			if d := p.cells.Animating(); d > 0 && (b.anim == 0 || d < b.anim) {
+				b.anim = d
+			}
 			p.top = scrollTo(p)
 			scr.blit(p.frame, p.rect, p.top)
 		case asText:

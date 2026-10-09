@@ -1,0 +1,184 @@
+{
+  "name": "HottySpinner",
+  "description": "Each of the frame sets, by name, spinning while Working is checked. One that stops keeps its label where it was.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "spinner",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "busy": true
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "spinner",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "busy",
+              "sets"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Spinners"
+          },
+          {
+            "id": "busy",
+            "component": "CheckBox",
+            "label": "Working",
+            "value": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "sets",
+            "component": "Column",
+            "children": [
+              "s-line",
+              "s-dot",
+              "s-miniDot",
+              "s-jump",
+              "s-pulse",
+              "s-points",
+              "s-globe",
+              "s-moon",
+              "s-monkey",
+              "s-meter",
+              "s-hamburger",
+              "s-ellipsis"
+            ]
+          },
+          {
+            "id": "s-line",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "line",
+            "label": "Line",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-dot",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "dot",
+            "label": "Dot",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-miniDot",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "miniDot",
+            "label": "MiniDot",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-jump",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "jump",
+            "label": "Jump",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-pulse",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "pulse",
+            "label": "Pulse",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-points",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "points",
+            "label": "Points",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-globe",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "globe",
+            "label": "Globe",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-moon",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "moon",
+            "label": "Moon",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-monkey",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "monkey",
+            "label": "Monkey",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-meter",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "meter",
+            "label": "Meter",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-hamburger",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "hamburger",
+            "label": "Hamburger",
+            "active": {
+              "@path": "/busy"
+            }
+          },
+          {
+            "id": "s-ellipsis",
+            "component": "HottySpinner",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "spinner": "ellipsis",
+            "label": "Ellipsis",
+            "active": {
+              "@path": "/busy"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

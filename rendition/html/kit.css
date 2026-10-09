@@ -376,3 +376,30 @@ textarea.k-input { min-height: 5.5rem; }
 .k-popover > .k-listbox { min-width: 0; max-width: none; box-shadow: none; }
 .k-option[aria-selected=true] { background: var(--k-tonal); font-weight: 600; }
 .k-option.k-hi { outline: 1px solid var(--k-focus); outline-offset: -1px; }
+
+/* HottyProgress and HottySpinner: a baseline (phase 1). The bar and the
+   spinner do not move on a host yet (KIT-02h, KIT-03h). */
+.k-progress { display: flex; flex-direction: column; row-gap: var(--k-1); }
+.k-progress-bar { display: flex; align-items: center; column-gap: var(--k-2); }
+.k-progress-track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 6rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--k-tonal);
+  overflow: hidden;
+}
+.k-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: var(--k-info, var(--k-link));
+}
+.k-progress-fill.k-done { background: var(--k-success); }
+.k-progress-fill.k-indeterminate { width: 25%; }
+.k-progress-value { min-width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
+.k-spinner { display: inline-flex; column-gap: 0.5ch; }
+.k-spinner-frame { color: var(--k-info, var(--k-link)); font-family: var(--k-mono); }

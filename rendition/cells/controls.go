@@ -35,21 +35,51 @@ func isField(e *view.Element) bool {
 }
 
 // isControlElement reports whether an element is a control a Column may
-// set a blank row apart from (separator): a field, or a Button that is not
-// a List's row.
+// set a blank row apart from (separator): a field, a Button that is not a
+// List's row, a Progress or a Spinner.
 func isControlElement(e *view.Element) bool {
-	return isField(e) || e != nil && e.Kind == view.Button && !e.Item
+	if isField(e) {
+		return true
+	}
+	switch {
+	case e == nil:
+		return false
+	case e.Kind == view.Button:
+		return !e.Item
+	}
+	return e.Kind == view.Progress || e.Kind == view.Spinner
 }
 
-// hasTitle reports whether a field has a title row of its own: a text
-// field, a DateTime or a Choice with a label. A CheckBox's and a Slider's
-// labels are on their one row.
+// hasTitle reports whether an element has a title row of its own: a text
+// field, a DateTime, a Choice or a Progress with a label. A CheckBox's, a
+// Slider's and a Spinner's labels are on their one row.
 func hasTitle(e *view.Element) bool {
 	switch e.Kind {
-	case view.TextField, view.DateTime, view.Choice:
+	case view.TextField, view.DateTime, view.Choice, view.Progress:
 		return e.Label != ""
 	}
 	return false
+}
+
+// progressWidth is a Progress bar's natural width; percentWidth, the
+// columns of its percentage, " 100%".
+const (
+	progressWidth = 20
+	percentWidth  = 5
+)
+
+// eighths are the glyphs of a Progress bar's last, partly filled cell,
+// by eighths filled.
+var eighths = [...]string{"", "▏", "▎", "▍", "▌", "▋", "▊", "▉"}
+
+// spinnerWidth is the columns a Spinner's frames take: its widest frame,
+// so that its label stays put while it spins.
+func spinnerWidth(e *view.Element) int {
+	n := 0
+	for _, f := range e.SpinnerFrames().Frames {
+		n = max(n, Width(f))
+	}
+	return n
 }
 
 // Text-like controls (profile §3.5).
@@ -105,6 +135,14 @@ func controlWidth(e *view.Element) int {
 			n += Width(e.Label) + 1
 		}
 		return gutter + n
+	case view.Progress:
+		return max(Width(e.Label), progressWidth+percentWidth)
+	case view.Spinner:
+		n := spinnerWidth(e)
+		if e.Label != "" {
+			n += 1 + Width(e.Label)
+		}
+		return n
 	case view.Image:
 		return Width(imageText(e))
 	case view.Icon:
@@ -129,6 +167,10 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 	switch e.Kind {
 	case view.TextField, view.DateTime:
 		h = fieldRows(e)
+		if e.Label != "" {
+			h++
+		}
+	case view.Progress:
 		if e.Label != "" {
 			h++
 		}

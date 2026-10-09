@@ -1,6 +1,7 @@
 package html
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"github.com/neuroplastio/hotty-go"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
@@ -154,6 +156,48 @@ func (m *markup) element(e *view.Element) *node {
 		// A link, not a hyperlink: it takes the keyboard as it does in
 		// cells, and its click is the program's, which opens it.
 		n = el("a", "id", id, "class", "k-media", "href", e.URL).add(texts("▶ " + e.Alt)...)
+	case view.Progress:
+		// A bar and a percentage under the label. A baseline: the bar does
+		// not move while indeterminate (phase 2, KIT-02h).
+		f, known := e.Fraction()
+		n = el("div", "id", id, "class", "k-progress", "role", "progressbar",
+			"aria-valuemin", "0", "aria-valuemax", a2ui.NumberString(e.Max))
+		if e.Label != "" {
+			n.set("aria-label", e.Label)
+			n.add(el("div", "class", "k-progress-label").add(texts(e.Label)...))
+		}
+		track := el("span", "class", "k-progress-track")
+		bar := el("div", "class", "k-progress-bar").add(track)
+		if known {
+			n.set("aria-valuenow", a2ui.NumberString(f*e.Max))
+			class := "k-progress-fill"
+			if f >= 1 {
+				class += " k-done"
+			}
+			track.add(el("span", "class", class, "style", "width: "+strconv.FormatFloat(f*100, 'f', 2, 64)+"%"))
+			bar.add(el("output", "class", "k-progress-value").add(txt(fmt.Sprintf("%.0f%%", f*100))))
+		} else {
+			track.add(el("span", "class", "k-progress-fill k-indeterminate"))
+		}
+		n.add(bar)
+	case view.Spinner:
+		// Its first frame and its label: a baseline that does not spin
+		// (phase 2, KIT-03h).
+		// The frame keeps its set's widest frame's cells (in the mono
+		// face, a ch each), as in cells, so that the label stays put.
+		n = el("span", "id", id, "class", "k-spinner", "role", "status")
+		frame, cols := "", 0
+		set := e.SpinnerFrames()
+		for _, f := range set.Frames {
+			cols = max(cols, cells.Width(f))
+		}
+		if e.Active && len(set.Frames) > 0 {
+			frame = set.Frames[0]
+		}
+		n.add(el("span", "class", "k-spinner-frame", "aria-hidden", "true", "style", "min-width: "+strconv.Itoa(cols)+"ch").add(texts(frame)...))
+		if e.Label != "" {
+			n.add(el("span", "class", "k-spinner-label").add(texts(e.Label)...))
+		}
 	case view.Divider:
 		if e.Dir == view.Vertical {
 			n = el("div", "id", id, "class", "k-vr", "role", "separator", "aria-orientation", "vertical")
@@ -478,6 +522,7 @@ func themeCSS(th theme.Theme) string {
 	put("--k-error", th.Error)
 	put("--k-warning", th.Warning)
 	put("--k-success", th.Success)
+	put("--k-info", th.Info)
 	put("--k-r-button", th.Shape.Button)
 	put("--k-r-chip", th.Shape.Chip)
 	put("--k-r-card", th.Shape.Card)

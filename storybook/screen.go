@@ -60,7 +60,7 @@ func (s screen) blit(f *cells.Frame, r hottytea.Rect, top int) {
 		for x := 0; x < r.W && x < f.Cols && r.X+x < s.Cols; x++ {
 			c := f.Cells[fy][x]
 			if c.Width == 2 && (x+1 >= r.W || r.X+x+1 >= s.Cols) {
-				c = cells.Cell{Text: " ", Width: 1, Role: c.Role, Attr: c.Attr}
+				c = cells.Cell{Text: " ", Width: 1, Role: c.Role, Attr: c.Attr, To: c.To, Mix: c.Mix}
 			}
 			s.Cells[r.Y+y][r.X+x] = c
 		}

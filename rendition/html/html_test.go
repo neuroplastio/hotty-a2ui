@@ -681,3 +681,47 @@ func TestSliderAndDate(t *testing.T) {
 		t.Errorf("the date's placeholder is %q", p)
 	}
 }
+
+// TestProgressAndSpinner: a HottyProgress is a progressbar, its value for
+// assistive tech and a fill as wide as its fraction, k-done once full; one
+// without a value has no aria-valuenow. A HottySpinner is a status: its
+// first frame while it spins, and its label. Both change by deltas.
+func TestProgressAndSpinner(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"v":3,"busy":true}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["p","i","s"]},
+ {"id":"p","component":"HottyProgress","catalogId":"`+hottycat.ID+`","label":"Download","value":{"@path":"/v"},"max":8},
+ {"id":"i","component":"HottyProgress","catalogId":"`+hottycat.ID+`","label":"Indexing"},
+ {"id":"s","component":"HottySpinner","catalogId":"`+hottycat.ID+`","spinner":"line","label":"Working","active":{"@path":"/busy"}}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	for _, want := range [][3]string{{"p", "role", "progressbar"}, {"p", "aria-valuenow", "3"}, {"p", "aria-valuemax", "8"}, {"p", "aria-label", "Download"}, {"s", "role", "status"}} {
+		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
+			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
+		}
+	}
+	if !strings.Contains(s.HTML(), `style="width: 37.50%"`) || !strings.Contains(s.TextOf("p"), "38%") {
+		t.Errorf("the bar at 3 of 8:\n%s", s.HTML())
+	}
+	if v, ok := s.Attr("i", "aria-valuenow"); ok {
+		t.Errorf("an indeterminate bar's value is %q", v)
+	}
+	if got := s.TextOf("s"); !strings.Contains(got, "|") || !strings.Contains(got, "Working") {
+		t.Errorf("the spinner reads %q", got)
+	}
+
+	var set []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/v","value":8}},
+{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/busy","value":false}}]`), &set))
+	x.process(set...)
+	x.check(r)
+	if !strings.Contains(s.HTML(), "k-progress-fill k-done") {
+		t.Errorf("a full bar is not done:\n%s", s.HTML())
+	}
+	if got := s.TextOf("s"); strings.Contains(got, "|") || !strings.Contains(got, "Working") {
+		t.Errorf("the stopped spinner reads %q", got)
+	}
+}

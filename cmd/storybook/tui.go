@@ -47,7 +47,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Sequence(m.s.Close(), tea.Quit)
 		}
 	}
-	return m, tea.Batch(cmd, m.draw())
+	return m, tea.Batch(cmd, m.draw(), m.b.Tick())
 }
 
 func (m *model) View() tea.View {

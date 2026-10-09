@@ -93,6 +93,8 @@ so that an error comes and goes as a text delta.
 | Tabs | a `tablist` of `button role=tab`, then the tab shown |
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
 | HottyForm | `form` with a hidden submit button out of the Tab order, so Enter submits |
+| HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track is filled. Neither moves on a host yet (vault KIT-02h) |
+| HottySpinner | `span role=status`: its set's first frame while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. It does not move on a host yet (vault KIT-03h) |
 
 **Updates are deltas.** The document goes once. After it, the renderer
 diffs the elements it sent against the elements the view makes now, and
@@ -216,6 +218,8 @@ Natural widths:
 | a select | 2 for the gutter, plus the label's width or the widest option's label and ` ▾`, whichever is wider |
 | a Choice's options | 2 for the gutter, plus the label's width or the widest option row (`> [ ] label`), whichever is wider; chips, all the options in one row two columns apart |
 | Slider | 2 for the gutter, the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
+| HottyProgress | its label's width or 25 (a bar of 20 and ` 100%`), whichever is wider |
+| HottySpinner | its set's widest frame, plus 1 and the label when it has one |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -231,6 +235,8 @@ Minimums:
 - A Slider's is the gutter, 4 and its value's width.
 - A Choice's options' is the gutter and its widest option, or its label's
   longest word if that is wider.
+- A HottyProgress's is its label's longest word, and at least 8: a bar of 3
+  and the percentage.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -241,11 +247,12 @@ How the containers lay their children out:
 - **Column** covers a Column, a vertical List, a HottyForm, a Modal's trigger,
   and the content of a Card or a tab.
   - Its children are stacked with no rows between them, except for one
-    blank row between two controls (fields and Buttons that are not a
-    List's rows) when either has a title row (§3.4), or when one is a
-    field and the other a Button: huh's space between its fields, and
-    bubbles' before a form's button. A stack of CheckBoxes, or of
-    Buttons, stays tight. Through a Row, a Column or a HottyForm, the
+    blank row between two controls (fields, Buttons that are not a
+    List's rows, HottyProgress and HottySpinner) when either has a title
+    row (§3.4; a HottyProgress's label is one), or when one is a field
+    and the other is not: huh's space between its fields, and bubbles'
+    before a form's button. A stack of CheckBoxes, of Buttons, or of
+    HottySpinners stays tight. Through a Row, a Column or a HottyForm, the
     rule sees its first child (or, before it, its last).
   - Across: with `align` stretch, a child gets the full width. With start,
     center or end, it gets its natural width (at most the full width),
@@ -302,6 +309,8 @@ How the containers lay their children out:
 | a select (one value, `checkbox` display) | past the gutter, a title row, then the picked option's label, or `…` in `muted` when none is picked, and ` ▾` in `muted`. While its list is open (§3.7), the options follow one a row: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
 | a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options: one a row, `[•] label` or `[ ] label` after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect); chips two columns apart, wrapping, `( label )` and `(● label)` when picked. Then the error. |
 | Slider | past the gutter, `label ━━━━●──── 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `●` at round((value − min) / (max − min) × (track − 1)), and after it the track is `─` in `border`. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
+| HottyProgress | its label on a row, when it has one, then the bar and the percentage on the next: ` 42%`, five columns (`%3.0f%%` after a space, half to even). The bar takes the columns before them, filled in eighths of a cell: `█` for each full cell, then one of `▏▎▍▌▋▊▉` for a cell part filled, blending from `info` into `accent` across the bar (§3.6), or `success` alone once full. The rest is `░` in `border`. Without a value, a segment of a quarter of the bar (at least one cell) is `█` in `info`, moving with the clock (below), and the percentage's columns are blank. When the bar would be shorter than 3, the percentage is dropped. |
+| HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
 
@@ -316,6 +325,16 @@ How the containers lay their children out:
 - Inline: bold, italic and strikethrough are attributes, and code is
   `muted`. A link is underlined and its cells carry the URL (OSC 8).
 - A caption is `muted` throughout.
+
+**The clock.** What moves in cells moves with the wall clock, not with
+the draws: a HottySpinner shows frame ⌊t / interval⌋ mod its frames, and
+an indeterminate HottyProgress's segment starts at column (⌊t / 100 ms⌋
+mod (bar + segment)) − segment, for t the Unix time. Every draw says how
+soon it wants drawing again (`Rendition.Animating`: the shortest interval
+it painted, 0 while nothing moves), and the program draws again then: the
+storybook's `Book.Tick` and `storybook -bare` do, on Bubble Tea's
+`tea.Every`. So two renditions of one surface drawn at once show the same
+frame, and a test sets the clock (`Rendition.Clock`).
 
 **Fields** are the text fields, DateTime, CheckBox, Choice and Slider:
 the controls huh calls fields, drawn as huh draws them.
@@ -382,6 +401,12 @@ In a theme (`rendition/theme`), a role the theme colours is that colour
 in truecolor (`38;2;r;g;b`), and the theme's `bg` is under every cell
 (`48;2;r;g;b`), so a row keeps its blank cells to the end. A role the
 theme leaves to the terminal keeps the floor above.
+
+A cell may blend two roles (a HottyProgress's fill): k/255 of the way
+from the first to the second, which is, channel by channel, p + (q − p) ×
+k / 255 in integers, truncated. It takes effect where the theme colours
+both roles; elsewhere, and at the ANSI-16 floor, the cell is the first
+role's.
 
 The attributes are bold (1), faint (2), italic (3), underline (4), reverse
 (7) and strikethrough (9). Under NO_COLOR, the attributes are written and
@@ -496,6 +521,8 @@ reference is `rendition/text`.
 - A CheckBox is `[x] Label` or `[ ] Label`; a ChoicePicker `Label: ` and
   the labels picked; a Slider `Label: value (min–max)`.
 - A Button is `[ label ]`, followed by `(disabled)` while its checks fail.
+- A HottyProgress is `Label: 42%`, or `Label: …` without a value; a
+  HottySpinner is `Label: …` while it spins, else its label alone.
 - Tabs are their titles, the one shown in brackets, then its content.
 - An error is `✗ message`, on the line after its control.
 - Image, Icon, Video, AudioPlayer and placeholders are as §7 has them.
@@ -622,6 +649,27 @@ it is one, over the surface's keymap (§5) and those of the components
 around it, key by key, the nearest last. On a host it is the element's
 `data-keys`; in cells the rendition resolves it the same way. Other
 renderers ignore it.
+
+### 6.6 HottyProgress
+
+How far a task has come: a bar and a percentage under its `label`, as
+bubbles' progress. `value` (a DynamicNumber) runs from 0 to `max` (1 by
+default, so a fraction; 100 takes a percentage) and is held to that range.
+While it is absent, or its path holds nothing, the bar is indeterminate:
+it moves without saying how far. It is not a control: it takes no focus
+and sends nothing. The agent moves it with `updateDataModel` as the task
+goes.
+
+### 6.7 HottySpinner
+
+That something is under way, with no measure: a spinner and its `label`.
+`spinner` names its set, bubbles' spinner's frames at bubbles' rates
+(`view.Spinners`, MIT): `dot` (the default), `line`, `miniDot`, `jump`,
+`pulse`, `points`, `globe`, `moon`, `monkey`, `meter`, `hamburger` and
+`ellipsis`. `active` (a DynamicBoolean, true by default) says whether it
+spins; bound to a path that holds nothing, it does not. One that stops
+keeps its label in place, so the agent can stop it, or replace it with
+the result, when the work is done. It takes no focus and sends nothing.
 
 ## 7. Fallbacks
 

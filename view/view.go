@@ -56,6 +56,14 @@ const (
 	Modal Kind = "modal"
 	// Form submits the fields inside it (hotty catalog).
 	Form Kind = "form"
+	// Progress is how far a task has come (HottyProgress): Value, a
+	// float64 from 0 to Max, or nil while that is not known
+	// (indeterminate); Label.
+	Progress Kind = "progress"
+	// Spinner shows that something is under way (HottySpinner): Variant
+	// names its frame set (SpinnerFrames), Active whether it spins;
+	// Label.
+	Spinner Kind = "spinner"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -122,7 +130,7 @@ type Element struct {
 	Options  []ChoiceOption `json:"options,omitempty"`
 	Multiple bool           `json:"multiple,omitempty"`
 	Filter   bool           `json:"filter,omitempty"`
-	// Slider: the range, and the step (0: any value).
+	// Slider: the range, and the step (0: any value). Progress: Max.
 	Min  float64 `json:"min,omitempty"`
 	Max  float64 `json:"max,omitempty"`
 	Step float64 `json:"step,omitempty"`
@@ -133,7 +141,8 @@ type Element struct {
 	MaxISO string `json:"maxIso,omitempty"`
 
 	// Tabs: which tab is shown. Tab and Option: whether it is the one
-	// shown, or picked. Modal: whether its content is shown.
+	// shown, or picked. Modal: whether its content is shown. Spinner:
+	// whether it spins.
 	Selected int  `json:"selected,omitempty"`
 	Active   bool `json:"active,omitempty"`
 	Open     bool `json:"open,omitempty"`
@@ -305,6 +314,16 @@ func (s *Surface) Focusables() []string {
 	}
 	s.Walk(add)
 	return out
+}
+
+// Fraction is how far a Progress has come, from 0 to 1; ok is false
+// while that is not known (indeterminate).
+func (e *Element) Fraction() (f float64, ok bool) {
+	v, ok := e.Value.(float64)
+	if !ok || e.Max <= 0 {
+		return 0, false
+	}
+	return min(max(v/e.Max, 0), 1), true
 }
 
 // SliderStep is how far a Slider moves for one step of the keyboard or a

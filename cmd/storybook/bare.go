@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/neuroplastio/hotty-go/hottytea"
@@ -32,7 +33,14 @@ type bareModel struct {
 	frame string
 	cur   *tea.Cursor
 	err   string
+	// anim is how often the frame wants drawing again, 0 when nothing in
+	// it moves; ticking is a tick on its way.
+	anim    time.Duration
+	ticking bool
 }
+
+// bareTick is the frame clock's tick (bareModel.tick).
+type bareTick struct{}
 
 type barePane struct {
 	s     *story.Surface
@@ -64,6 +72,8 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
+	case bareTick:
+		m.ticking = false
 	case tea.KeyPressMsg:
 		k := hottytea.KeyName(msg.Key())
 		if k == "" {
@@ -92,7 +102,18 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	m.draw()
-	return m, nil
+	return m, m.tick()
+}
+
+// tick asks for the next frame while something in this one moves (a
+// spinner, a progress bar without a value), on the clock, as the Book's
+// Tick does.
+func (m *bareModel) tick() tea.Cmd {
+	if m.anim == 0 || m.ticking {
+		return nil
+	}
+	m.ticking = true
+	return tea.Every(m.anim, func(time.Time) tea.Msg { return bareTick{} })
 }
 
 // key gives a key to the surface that has the keyboard, or Tab to the
@@ -152,7 +173,7 @@ func (m *bareModel) draw() {
 		return
 	}
 	var b strings.Builder
-	m.cur = nil
+	m.cur, m.anim = nil, 0
 	top := 0
 	for i, p := range m.panes {
 		if i > 0 {
@@ -160,6 +181,9 @@ func (m *bareModel) draw() {
 			top++
 		}
 		p.f, p.top = p.r.Draw(m.w), top
+		if d := p.r.Animating(); d > 0 && (m.anim == 0 || d < m.anim) {
+			m.anim = d
+		}
 		if c, row, ok := p.f.Cursor(); ok && p.s.C.St.Keyboard {
 			m.cur = tea.NewCursor(c, top+row)
 		}

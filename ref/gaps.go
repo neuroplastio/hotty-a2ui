@@ -31,7 +31,8 @@ func init() {
 	})
 }
 
-// progress: bars at fixed values, and one that fills as time goes.
+// progress: bars at fixed values, each under its label, and one that
+// fills as time goes.
 type progressRef struct {
 	bars []progress.Model
 	at   []float64
@@ -57,6 +58,12 @@ func progressNext() tea.Cmd {
 
 func (m *progressRef) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		// As wide as the window, as the story's bars are in a Column.
+		for i := range m.bars {
+			m.bars[i].SetWidth(msg.Width)
+		}
+		m.live.SetWidth(msg.Width)
 	case progressTick:
 		p := m.live.Percent() + 0.1
 		if p > 1.0001 {
@@ -75,9 +82,10 @@ func (m *progressRef) View() string {
 	var b strings.Builder
 	b.WriteString("Progress\n\n")
 	for i, bar := range m.bars {
-		fmt.Fprintf(&b, "%-10s %s\n\n", []string{"Queued", "Download", "Install", "Done"}[i], bar.ViewAs(m.at[i]))
+		fmt.Fprintf(&b, "%s\n%s\n\n", []string{"Queued", "Download", "Install", "Done"}[i], bar.ViewAs(m.at[i]))
 	}
-	fmt.Fprintf(&b, "%-10s %s\n", "Live", m.live.View())
+	// bubbles has no bar without a value: this one fills as time goes.
+	fmt.Fprintf(&b, "%s\n%s\n", "Indexing", m.live.View())
 	return b.String()
 }
 

@@ -5,7 +5,7 @@
   "title": "HOTTY Catalog",
   "description": "Keys, forms and focus for A2UI surfaces shown in a terminal: the hotty catalog of the HOTTY profile of A2UI. Mix it with the basic catalog component by component. Its names start with Hotty (components) and hotty (functions), so that none can be one A2UI adds later.",
   "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
-  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.",
+  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://neuroplast.io/hotty/a2ui/v1/catalog.json\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.",
   "components": {
     "HottyShortcut": {
       "type": "object",
@@ -82,6 +82,79 @@
           ]
         }
       ]
+    },
+    "HottyProgress": {
+      "type": "object",
+      "description": "A progress bar: how far a task has come, as a bar and a percentage, under an optional label. Without a value it is indeterminate: it shows that the task runs, not how far. It does not take the keyboard.",
+      "properties": {
+        "component": {
+          "const": "HottyProgress"
+        },
+        "value": {
+          "$ref": "common_types.json#/$defs/DynamicNumber",
+          "description": "How far the task has come, from 0 to max. Leave it out, or bind it to a path that is not set yet, while that is not known."
+        },
+        "max": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1,
+          "description": "The value when the task is done. The default, 1, takes value as a fraction; 100 takes it as a percentage."
+        },
+        "label": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "What the task is, in a few words, on a row above the bar."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column, as CSS 'flex-grow'."
+        }
+      },
+      "required": [
+        "component"
+      ]
+    },
+    "HottySpinner": {
+      "type": "object",
+      "description": "Shows that something is under way, with no measure of how far: a spinner, then its label. It does not take the keyboard.",
+      "properties": {
+        "component": {
+          "const": "HottySpinner"
+        },
+        "label": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "What is under way, in a few words."
+        },
+        "spinner": {
+          "type": "string",
+          "enum": [
+            "dot",
+            "line",
+            "miniDot",
+            "jump",
+            "pulse",
+            "points",
+            "globe",
+            "moon",
+            "monkey",
+            "meter",
+            "hamburger",
+            "ellipsis"
+          ],
+          "default": "dot",
+          "description": "The spinner's look, as Bubble Tea's spinners are named."
+        },
+        "active": {
+          "$ref": "common_types.json#/$defs/DynamicBoolean",
+          "description": "Whether it spins. Default true. One that does not spin shows its label alone, where it was."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column, as CSS 'flex-grow'."
+        }
+      },
+      "required": [
+        "component"
+      ]
     }
   },
   "functions": {
@@ -136,6 +209,12 @@
         },
         {
           "$ref": "#/components/HottyForm"
+        },
+        {
+          "$ref": "#/components/HottyProgress"
+        },
+        {
+          "$ref": "#/components/HottySpinner"
         }
       ],
       "discriminator": {

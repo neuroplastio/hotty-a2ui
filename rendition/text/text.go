@@ -4,6 +4,7 @@
 package text
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -113,6 +114,16 @@ func element(e *view.Element) []string {
 	case view.Slider:
 		f, _ := e.Value.(float64)
 		return errLine([]string{field(e.Label, a2ui.NumberString(f)+" ("+a2ui.NumberString(e.Min)+"–"+a2ui.NumberString(e.Max)+")")})
+	case view.Progress:
+		if f, ok := e.Fraction(); ok {
+			return []string{field(e.Label, fmt.Sprintf("%.0f%%", f*100))}
+		}
+		return []string{field(e.Label, "…")}
+	case view.Spinner:
+		if e.Active {
+			return []string{field(e.Label, "…")}
+		}
+		return []string{e.Label}
 	case view.Tabs:
 		var titles []string
 		var rest []string

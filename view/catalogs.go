@@ -113,6 +113,23 @@ func init() {
 		b.InForm(n.Key, func() { e.Children = b.Children(n.Props["child"]) })
 		return e
 	})
+	Register(hotty.ID, "HottyProgress", func(b *Builder, n *a2ui.Node) *Element {
+		hi := a2ui.ToNumber(b.Raw(n, "max"))
+		if math.IsNaN(hi) || hi <= 0 {
+			hi = 1
+		}
+		e := &Element{Kind: Progress, Label: b.String(n, "label"), Max: hi}
+		if v := a2ui.ToNumber(b.Raw(n, "value")); b.Raw(n, "value") != nil && !math.IsNaN(v) {
+			e.Value = math.Max(0, math.Min(v, hi))
+		}
+		return e
+	})
+	Register(hotty.ID, "HottySpinner", func(b *Builder, n *a2ui.Node) *Element {
+		// active is true by default: absent, not bound to nothing.
+		_, set := n.Props["active"]
+		active := !set || b.Bool(n, "active")
+		return &Element{Kind: Spinner, Label: b.String(n, "label"), Variant: b.Enum(n, "spinner", "dot"), Active: active}
+	})
 	Register(hotty.ID, "HottyShortcut", func(b *Builder, n *a2ui.Node) *Element {
 		b.AddShortcut(Shortcut{ID: n.Key, Key: b.String(n, "key"), Press: b.String(n, "press"), Label: b.String(n, "label")})
 		b.out.nodes[n.Key] = n

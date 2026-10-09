@@ -71,6 +71,11 @@ type Cell struct {
 	Attr  Attr
 	// Link is the URL the cell links to (OSC 8), or "".
 	Link string
+	// To and Mix blend the cell's colour toward another role's: Mix/255 of
+	// the way from Role's to To's, where the theme has both as "#rrggbb"
+	// (a Progress bar's gradient); else Role's. Mix 0 is Role's alone.
+	To  Role
+	Mix uint8
 }
 
 var blank = Cell{Text: " ", Width: 1}
@@ -187,7 +192,11 @@ func (c Cell) style(th *theme.Theme) string {
 	if th == nil {
 		return strings.Join(p, ";")
 	}
-	if hex := th.Colour(roleNames[c.Role]); hex != "" {
+	hex := th.Colour(roleNames[c.Role])
+	if c.Mix > 0 {
+		hex = blend(hex, th.Colour(roleNames[c.To]), c.Mix)
+	}
+	if hex != "" {
 		p = append(p, truecolour("38", hex))
 	} else if int(c.Role) < len(ansi16) && ansi16[c.Role] != "" {
 		p = append(p, ansi16[c.Role])
@@ -201,12 +210,33 @@ func (c Cell) style(th *theme.Theme) string {
 // truecolour is the SGR for a "#rrggbb" colour, foreground (38) or
 // background (48); a colour that is not one is the terminal's.
 func truecolour(layer, hex string) string {
-	if len(hex) != 7 || hex[0] != '#' {
-		return ""
-	}
-	v, err := strconv.ParseUint(hex[1:], 16, 24)
-	if err != nil {
+	v, ok := rgb(hex)
+	if !ok {
 		return ""
 	}
 	return fmt.Sprintf("%s;2;%d;%d;%d", layer, v>>16, v>>8&0xff, v&0xff)
+}
+
+// rgb is a "#rrggbb" colour's value, 0xrrggbb.
+func rgb(hex string) (uint32, bool) {
+	if len(hex) != 7 || hex[0] != '#' {
+		return 0, false
+	}
+	v, err := strconv.ParseUint(hex[1:], 16, 24)
+	return uint32(v), err == nil
+}
+
+// blend is the colour m/255 of the way from a to b, channel by channel;
+// a when either is not a "#rrggbb".
+func blend(a, b string, m uint8) string {
+	x, okA := rgb(a)
+	y, okB := rgb(b)
+	if !okA || !okB {
+		return a
+	}
+	ch := func(shift uint) uint32 {
+		p, q := int(x>>shift&0xff), int(y>>shift&0xff)
+		return uint32(p + (q-p)*int(m)/255)
+	}
+	return fmt.Sprintf("#%02x%02x%02x", ch(16), ch(8), ch(0))
 }

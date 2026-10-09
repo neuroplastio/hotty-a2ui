@@ -34,3 +34,23 @@ func TestLoginForm(t *testing.T) {
 		t.Error("the password shows")
 	}
 }
+
+// TestProgressAndSpinner: a bar reads as its percentage, or "…" while it
+// has none; a spinner reads as "…" while it spins.
+func TestProgressAndSpinner(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["p","i","s","x"]},
+	 {"id":"p","component":"HottyProgress","catalogId":"` + hotty.ID + `","label":"Download","value":0.25},
+	 {"id":"i","component":"HottyProgress","catalogId":"` + hotty.ID + `","label":"Indexing"},
+	 {"id":"s","component":"HottySpinner","catalogId":"` + hotty.ID + `","label":"Working"},
+	 {"id":"x","component":"HottySpinner","catalogId":"` + hotty.ID + `","label":"Idle","active":false}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	if want := "Download: 25%\nIndexing: …\nWorking: …\nIdle\n"; got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}

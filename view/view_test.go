@@ -151,3 +151,63 @@ func TestSliderWidth(t *testing.T) {
 		}
 	}
 }
+
+// TestProgressAndSpinner: a HottyProgress's value is a fraction of its
+// max, clamped, and unknown while it is absent or bound to nothing; a
+// HottySpinner spins unless its active says otherwise, bound to nothing
+// included.
+func TestProgressAndSpinner(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"at":3,"busy":false}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["half","bound","over","none","gone","spin","still","lost","odd"]},
+	 {"id":"half","component":"HottyProgress","catalogId":"` + hotty.ID + `","label":"Half","value":0.5},
+	 {"id":"bound","component":"HottyProgress","catalogId":"` + hotty.ID + `","value":{"@path":"/at"},"max":4},
+	 {"id":"over","component":"HottyProgress","catalogId":"` + hotty.ID + `","value":7,"max":4},
+	 {"id":"none","component":"HottyProgress","catalogId":"` + hotty.ID + `","label":"Indexing"},
+	 {"id":"gone","component":"HottyProgress","catalogId":"` + hotty.ID + `","value":{"@path":"/missing"}},
+	 {"id":"spin","component":"HottySpinner","catalogId":"` + hotty.ID + `","label":"Working"},
+	 {"id":"still","component":"HottySpinner","catalogId":"` + hotty.ID + `","spinner":"line","active":{"@path":"/busy"}},
+	 {"id":"lost","component":"HottySpinner","catalogId":"` + hotty.ID + `","active":{"@path":"/missing"}},
+	 {"id":"odd","component":"HottySpinner","catalogId":"` + hotty.ID + `","spinner":"moon"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	for _, want := range []struct {
+		id    string
+		f     float64
+		known bool
+	}{{"half", 0.5, true}, {"bound", 0.75, true}, {"over", 1, true}, {"none", 0, false}, {"gone", 0, false}} {
+		e := c.V.Find(want.id)
+		if e == nil || e.Kind != view.Progress {
+			t.Fatalf("%s: %+v, want a Progress", want.id, e)
+		}
+		if f, ok := e.Fraction(); f != want.f || ok != want.known {
+			t.Errorf("%s: fraction %v (known %v), want %v (%v)", want.id, f, ok, want.f, want.known)
+		}
+	}
+	if e := c.V.Find("none"); e.Label != "Indexing" || e.Max != 1 {
+		t.Errorf("none: label %q, max %v; want Indexing, 1 by default", e.Label, e.Max)
+	}
+	for _, want := range []struct {
+		id     string
+		active bool
+		frame  string
+	}{{"spin", true, "⣾"}, {"still", false, "|"}, {"lost", false, "⣾"}, {"odd", true, "🌑"}} {
+		e := c.V.Find(want.id)
+		if e == nil || e.Kind != view.Spinner {
+			t.Fatalf("%s: %+v, want a Spinner", want.id, e)
+		}
+		if e.Active != want.active || e.SpinnerFrames().Frames[0] != want.frame {
+			t.Errorf("%s: active %v, first frame %q; want %v, %q", want.id, e.Active, e.SpinnerFrames().Frames[0], want.active, want.frame)
+		}
+	}
+	if err := c.S.Write("/busy", true); err != nil {
+		t.Fatal(err)
+	}
+	c.Rebuild()
+	if !c.V.Find("still").Active {
+		t.Error("a spinner bound to /busy does not spin once it is true")
+	}
+}

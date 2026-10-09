@@ -2,6 +2,8 @@ package storybook
 
 import (
 	"encoding/json"
+	"maps"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -38,7 +40,7 @@ func (m *host) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.frame = "the program's own row\n" + m.frame
 	m.s.Layout(want)
 	m.b.LaidOut(m.s)
-	return m, tea.Batch(cmd, m.s.Flush())
+	return m, tea.Batch(cmd, m.s.Flush(), m.b.Tick())
 }
 
 func (m *host) View() tea.View {
@@ -123,6 +125,31 @@ func TestInAProgramInCells(t *testing.T) {
 	h.Type(at)
 	h.Type("hello")
 	eventually(t, "the typing in the field", func() bool { return strings.Contains(h.Screen(), "hello") })
+}
+
+// TestSpinnersMove: with the Book's Tick among its commands, a program's
+// cells move by themselves: a spinner's frame changes with no input.
+func TestSpinnersMove(t *testing.T) {
+	h := hottytest.New(t, hottytest.Text(), hottytest.Size(120, 40))
+	run(t, h, Options{First: "hotty/spinner", Prefix: "sb-"})
+	line := func() string {
+		for _, l := range strings.Split(h.Screen(), "\n") {
+			if strings.Contains(l, " Line") {
+				return l
+			}
+		}
+		return ""
+	}
+	eventually(t, "the spinners in cells", func() bool { return line() != "" })
+	// Past the start's own redraws, only the clock draws.
+	time.Sleep(300 * time.Millisecond)
+	seen := map[string]bool{}
+	for end := time.Now().Add(time.Second); time.Now().Before(end); time.Sleep(20 * time.Millisecond) {
+		seen[line()] = true
+	}
+	if len(seen) < 3 {
+		t.Errorf("the Line spinner drew %d frames in a second: %q", len(seen), slices.Collect(maps.Keys(seen)))
+	}
 }
 
 // TestPickStaysPut: the pickers are a surface of their own over nav, as

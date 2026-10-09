@@ -4,7 +4,8 @@ Last updated: 2026-10-09
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** a look at KIT-LOOK (journal 2026-10-09.4):
-fields drawn as huh draws them. Phase 1 is a go (2026-10-09). New names
+fields drawn as huh draws them; and at KIT-02c and KIT-03c (journal
+2026-10-09.5): progress bars and spinners. Phase 1 is a go (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Legend
@@ -17,10 +18,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-02c** — Progress: a bar in eighths, a percentage, a gradient, and
-  an indeterminate segment.
-- [ ] **KIT-03c** — Spinner: bubbles' frame sets on the renderer's tick, and
-  A2UI's pending state for async function values.
 - [ ] **KIT-01c** — Table: header, column widths, alignment, a highlighted
   row, a sticky header while the body scrolls, and `…` cuts. Data-driven
   (L3, L5), with select-then-act (L2).
@@ -107,6 +104,11 @@ As of 2026-10-09, from the hotty agent:
   the hotty catalog, generated, so an agent can use it as the surface
   default (L1). Do it when the agent integration starts, which the
   maintainer has on hold.
+- [ ] **KIT-WAIT** — A spinner where a value is still to come: a component
+  whose prop is an agent function's value not yet returned. Split from
+  KIT-03c: the core resolves function calls at once and has no pending
+  state to draw, so it needs one first. Do it with the agent integration,
+  where such calls come from.
 - [ ] **KIT-FIT** — Re-check `html.Rendition.SetFit` (`k-fit`) on hottyterm
   26.10.09. That build ships hotty-blitz 050d4ba with the `100vh` fit fix.
   Keep `k-fit` unless it is now dead weight.
@@ -118,6 +120,18 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-02c** and **KIT-03c** — `HottyProgress` and `HottySpinner` in
+  cells, on a frame clock (journal 2026-10-09.5, awaiting the maintainer's
+  look).
+  - Progress: a label, a bar in eighths blending from info into accent,
+    the percentage, success once done, and a sliding segment without a
+    value.
+  - Spinner: bubbles' twelve frame sets at bubbles' rates. The label
+    stays put, and the spinner stops when `active` is false.
+  - The clock: `Rendition.Animating` and `Clock`, `Book.Tick`, and ticks
+    in `storybook -bare`.
+  - HTML and text baselines, which don't move (KIT-02h, KIT-03h).
+  - A2UI's pending state moved to KIT-WAIT.
 - [x] **KIT-LOOK** — The cells look of fields, held against huh and
   bubbles' textinputs (journal 2026-10-09.4, awaiting the maintainer's
   look).

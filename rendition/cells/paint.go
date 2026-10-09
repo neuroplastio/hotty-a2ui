@@ -1,6 +1,7 @@
 package cells
 
 import (
+	"fmt"
 	"math"
 	"strings"
 
@@ -168,8 +169,88 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 				cv.set(x, j, glyph{text: "┃", width: 1, style: bar})
 			}
 		}
+	case view.Progress:
+		l.paintProgress(cv, e, x, y, w)
+	case view.Spinner:
+		l.paintSpinner(cv, e, x, y, w)
 	default:
 		l.paintColumn(cv, shown(e.Children), "start", "stretch", x, y, w, h)
+	}
+}
+
+// paintProgress paints a Progress: its label on a row, then the bar and
+// the percentage, " 42%", as bubbles' progress has them. The bar is filled
+// in eighths with "█" and a partial block, blending from info into accent
+// (success alone once done), the rest "░" in border. An indeterminate bar is a quarter of the bar
+// filled, sliding across with the clock, and the percentage's columns are
+// blank.
+func (l *layout) paintProgress(cv *canvas, e *view.Element, x, y, w int) {
+	row := y
+	if e.Label != "" {
+		cv.write(x, row, w, fit(line(e.Label, style{}), w))
+		row++
+	}
+	f, known := e.Fraction()
+	pct := strings.Repeat(" ", percentWidth)
+	if known {
+		pct = fmt.Sprintf(" %3.0f%%", f*100)
+	}
+	n := w - Width(pct)
+	if n < 3 {
+		n, pct = w, ""
+	}
+	fill, empty := style{role: Info}, style{role: Border}
+	var bar []glyph
+	if known {
+		// Across the bar, info blends into accent, as bubbles' default
+		// blend does; a done bar is success alone.
+		at := func(i int) style {
+			if f >= 1 {
+				return style{role: Success}
+			}
+			s := fill
+			if n > 1 {
+				s.to, s.mix = Accent, uint8(255*i/(n-1))
+			}
+			return s
+		}
+		eighth := int(f * float64(n*8))
+		for i := range eighth / 8 {
+			bar = append(bar, glyph{text: "█", width: 1, style: at(i)})
+		}
+		if p := eighth % 8; p > 0 {
+			bar = append(bar, glyphs(eighths[p], at(eighth/8))...)
+		}
+	} else {
+		seg := max(n/4, 1)
+		at := int(l.r.tick(view.ProgressInterval)%int64(n+seg)) - seg
+		for i := range n {
+			if i >= at && i < at+seg {
+				bar = append(bar, glyph{text: "█", width: 1, style: fill})
+			} else {
+				bar = append(bar, glyph{text: "░", width: 1, style: empty})
+			}
+		}
+		l.r.animate(view.ProgressInterval)
+	}
+	bar = append(bar, repeat("░", n-width(bar), empty)...)
+	cv.write(x, row, n, bar)
+	cv.write(x+n, row, w-n, line(pct, style{}))
+}
+
+// paintSpinner paints a Spinner: the frame the clock is at, in info, then
+// a space and its label. One that does not spin keeps its frame's columns
+// blank, so that its label stays where it was.
+func (l *layout) paintSpinner(cv *canvas, e *view.Element, x, y, w int) {
+	set := e.SpinnerFrames()
+	if e.Active && len(set.Frames) > 0 {
+		frame := set.Frames[l.r.tick(set.Interval)%int64(len(set.Frames))]
+		cv.write(x, y, w, line(frame, style{role: Info}))
+		l.r.animate(set.Interval)
+	}
+	if e.Label != "" {
+		col := spinnerWidth(e) + 1
+		cv.write(x+col, y, w-col, fit(line(e.Label, style{}), w-col))
 	}
 }
 
