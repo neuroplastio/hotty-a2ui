@@ -21,6 +21,9 @@ import (
 // its label and its error, which have ids of their own so that a change
 // to them is a small delta.
 type markup struct {
+	// steps: the host says where in a dragged element the pointer is
+	// (Rendition.SetSteps).
+	steps bool
 	// forms is how many forms enclose the element: HTML cannot nest them,
 	// so an inner Form is a group, and Enter submits the outer one.
 	forms int
@@ -298,17 +301,29 @@ func (m *markup) element(e *view.Element) *node {
 			el("span", "class", "k-fill", "style", "width: "+at),
 			el("span", "class", "k-knob", "style", "left: "+at),
 		)
-		// A drag reports the element under the pointer, not where on it
-		// (SPEC §9.1), so the track is cut into notches across it, each
-		// a drag target: pressing one sets its value, crossing them moves
-		// it. A finger drags them along the track, whose touch-action
-		// (kit.css) leaves only vertical pans (SPEC §9.1). A tap is a
-		// click: a notch clicked sets its value too.
+		// The track is cut into notches, one a value, each centred on
+		// where the knob stands at that value (half one at either end), so
+		// that a tap sets the value tapped: a tap is a click, which says
+		// what was tapped and not where on it. A drag of the track says
+		// where on it the pointer is on a host with steps (SPEC §9.1): the
+		// track is then the drag target, data-steps its notches' count
+		// less one, and a drag moves it wherever the pointer goes. Without
+		// steps a drag reports only the element under the pointer, so each
+		// notch is a drag target too: pressing one sets its value, crossing
+		// them moves it, and off them it stops. A finger drags along the
+		// track, whose touch-action (kit.css) leaves only vertical pans.
 		k := notches(e)
-		w := 100 / float64(k)
+		notch := "drag click"
+		if m.steps {
+			n.set("data-on", "drag")
+			n.set("data-steps", strconv.Itoa(k-1))
+			notch = "click"
+		}
 		for i := range k {
-			n.add(el("span", "id", partID(e.ID, partNotch+strconv.Itoa(i)), "class", "k-notch", "data-on", "drag click",
-				"style", "left: "+strconv.FormatFloat(float64(i)*w, 'f', 3, 64)+"%; width: "+strconv.FormatFloat(w, 'f', 3, 64)+"%"))
+			lo := math.Max(0, (float64(i)-0.5)/float64(k-1))
+			hi := math.Min(1, (float64(i)+0.5)/float64(k-1))
+			n.add(el("span", "id", partID(e.ID, partNotch+strconv.Itoa(i)), "class", "k-notch", "data-on", notch,
+				"style", "left: "+strconv.FormatFloat(lo*100, 'f', 3, 64)+"%; width: "+strconv.FormatFloat((hi-lo)*100, 'f', 3, 64)+"%"))
 		}
 		less := el("button", "id", partID(e.ID, partLess), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "less").add(txt("−"))
 		more := el("button", "id", partID(e.ID, partMore), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "more").add(txt("+"))

@@ -11,6 +11,7 @@ package html
 
 import (
 	_ "embed"
+	"encoding/json"
 	"slices"
 	"strconv"
 	"strings"
@@ -51,6 +52,12 @@ type Rendition struct {
 	keys string
 	// fit: the program sizes the surface to its document (SetFit).
 	fit bool
+	// steps: the host says where in a dragged element the pointer is
+	// (SetSteps). drag is the Slider whose track such a drag is on, and
+	// dragged the one whose drag just ended: the click after it is the
+	// drag's.
+	steps         bool
+	drag, dragged string
 	// Away is set while the keyboard is in another rendition of the same
 	// surface (cells beside it): the host's surface gives it up, and its
 	// blur leaves the controller's keyboard where it is.
@@ -96,7 +103,7 @@ func (r *Rendition) markup() *markup {
 		now = r.Clock
 	}
 	short, full := r.C.KeyHints(r.keys, true)
-	m := &markup{list: r.openList(), now: now(), short: short, full: full}
+	m := &markup{list: r.openList(), now: now(), short: short, full: full, steps: r.steps}
 	if r.C.St.Keyboard && !r.Away {
 		m.keyboard = r.C.St.Focus
 	}
@@ -120,6 +127,13 @@ func (r *Rendition) SetKeys(keys string) { r.keys = keys }
 // is then as tall as its content, where it otherwise fills the surface,
 // which would hold the fit at the surface's height.
 func (r *Rendition) SetFit(fit bool) { r.fit = fit }
+
+// SetSteps says, from the next Doc or Update on, whether the host says
+// where in a dragged element the pointer is (SPEC §9.1's steps, `steps` in
+// its capabilities). A Slider's track is then one element that a drag
+// moves wherever the pointer goes, its notches only for taps; without
+// steps, each notch is a drag target, and a drag off them stops.
+func (r *Rendition) SetSteps(steps bool) { r.steps = steps }
 
 // Name is the HOTTY surface's name.
 func (r *Rendition) Name() string { return r.name }
@@ -234,6 +248,9 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		c.CloseModal()
 		return nil
 	}
+	if done, err := r.slideSteps(ev); done {
+		return err
+	}
 	id, part, ok := viewID(ev.Target)
 	if !ok {
 		return nil
@@ -315,6 +332,61 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		}
 	}
 	return nil
+}
+
+// slideSteps takes a drag of a Slider's track on a host with steps (SPEC
+// §9.1): dragstart names the track, and from then on x is the step under
+// the pointer along it, wherever the pointer is and whatever t says, until
+// dragend. The click a drag ends with, on the notch it was released on,
+// is the drag's, which set the value already. done reports that ev was
+// one of these.
+func (r *Rendition) slideSteps(ev hotty.Event) (done bool, err error) {
+	dragged := r.dragged
+	r.dragged = ""
+	switch ev.Kind {
+	case hotty.EventDragStart:
+		id, part, ok := viewID(ev.Target)
+		if !ok || part != "" {
+			return false, nil
+		}
+		e := r.C.V.Find(id)
+		x, has := stepX(ev)
+		if e == nil || e.Kind != view.Slider || !has {
+			return false, nil
+		}
+		r.drag = id
+		return true, r.C.SetValue(id, notchValue(e, x))
+	case hotty.EventDrag, hotty.EventDragEnd:
+		id := r.drag
+		if id == "" {
+			return false, nil
+		}
+		if ev.Kind == hotty.EventDragEnd {
+			r.drag, r.dragged = "", id
+		}
+		e := r.C.V.Find(id)
+		if x, has := stepX(ev); has && e != nil && e.Kind == view.Slider {
+			return true, r.C.SetValue(id, notchValue(e, x))
+		}
+		return true, nil
+	case hotty.EventClick:
+		if id, _, ok := viewID(ev.Target); ok && dragged != "" && id == dragged {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// stepX is a drag's step along its element, if the host said one (SPEC
+// §9.1, data-steps).
+func stepX(ev hotty.Event) (int, bool) {
+	var d struct {
+		X *int `json:"x"`
+	}
+	if json.Unmarshal(ev.Detail, &d) != nil || d.X == nil {
+		return 0, false
+	}
+	return *d.X, true
 }
 
 // notch sets a Slider to the value of its notch part names ("k3").

@@ -106,6 +106,9 @@ type Book struct {
 	at    hottytea.Rect // where the last View put the Book on the screen
 	mode  hottytea.Mode
 	theme theme.Theme // the colours the cells and the kit paint with
+	// steps: the host says where in a dragged element the pointer is
+	// (html.Rendition.SetSteps).
+	steps bool
 
 	ch     *chrome
 	list   []entry
@@ -176,6 +179,7 @@ func New(o Options) *Book {
 func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	switch msg := msg.(type) {
 	case hottytea.ReadyMsg:
+		b.steps = hostSteps(msg.Caps)
 		b.ready(msg.Mode)
 	case tickMsg:
 		b.ticking = false
@@ -277,6 +281,15 @@ func (b *Book) Tick() tea.Cmd {
 	}
 	b.ticking = true
 	return tea.Tick(view.UntilStep(time.Now(), d), func(time.Time) tea.Msg { return tickMsg{} })
+}
+
+// hostSteps reports `steps` in a host's capabilities (SPEC §4, §9.1).
+func hostSteps(c hotty.Caps) bool {
+	var s struct {
+		Steps bool `json:"steps"`
+	}
+	_ = json.Unmarshal(c.Raw, &s)
+	return s.Steps
 }
 
 // ready starts the storybook once the terminal is known: surfaces on a
@@ -895,6 +908,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		case asSurface:
 			p.html.SetTheme(b.theme)
 			p.html.SetKeys(b.keymap())
+			p.html.SetSteps(b.steps)
 			fits := p == pick || p == panel && preview
 			p.html.SetFit(fits)
 			p.html.Away = b.focus != nil && b.focus != p && b.focus.s == p.s

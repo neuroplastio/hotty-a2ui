@@ -513,3 +513,13 @@ func TestTickDrawsTheNextFrame(t *testing.T) {
 		before = after
 	}
 }
+
+// TestHostSteps: the Book reads `steps` from the host's capabilities
+// (SPEC §4), which its HTML renditions draw a Slider by.
+func TestHostSteps(t *testing.T) {
+	for raw, want := range map[string]bool{`{"v":"0.1","steps":true}`: true, `{"v":"0.1"}`: false, `{"steps":"yes"}`: false, ``: false} {
+		if got := hostSteps(hotty.Caps{Raw: json.RawMessage(raw)}); got != want {
+			t.Errorf("%s: %v", raw, got)
+		}
+	}
+}

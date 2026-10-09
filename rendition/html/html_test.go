@@ -154,7 +154,7 @@ func (x *harness) check(r *Rendition) {
 	x.t.Helper()
 	got := x.h.Surface(r.name).HTML()
 	h2 := hottytest.New(x.t)
-	_, _ = io.WriteString(h2, hotty.Doc(r.name, (&Rendition{C: r.C, name: r.name, keys: r.keys, fit: r.fit, Clock: r.Clock}).Doc()))
+	_, _ = io.WriteString(h2, hotty.Doc(r.name, (&Rendition{C: r.C, name: r.name, keys: r.keys, fit: r.fit, steps: r.steps, Clock: r.Clock}).Doc()))
 	if want := h2.Surface(r.name).HTML(); got != want {
 		x.t.Errorf("%s: the deltas made\n%s\nthe document is\n%s", r.name, got, want)
 	}
@@ -472,6 +472,68 @@ func TestNoEcho(t *testing.T) {
 	x.process(set...)
 	if v, _ := s.Value("f"); v != "from the agent" {
 		t.Errorf("the agent's value did not reach the field: %q", v)
+	}
+	x.check(r)
+}
+
+// TestSliderSteps: on a host with steps (SPEC §9.1) a Slider's track is
+// the drag target, its notches' count less one as data-steps, and the
+// notches, each centred on its value, take taps alone. A drag sets the
+// value of the step under the pointer wherever the pointer goes: off the
+// track, where t is empty, or over another element. The click a drag ends
+// with is the drag's; a tap after it sets the value tapped.
+func TestSliderSteps(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"v":3}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["v"]},
+ {"id":"v","component":"Slider","label":"Volume","min":0,"max":10,"value":{"@path":"/v"}}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	r := x.rs["s"]
+	r.SetSteps(true)
+	x.send(hotty.Doc(r.name, r.Doc()))
+	s := x.h.Surface(r.name)
+	for _, a := range []struct{ id, attr, want string }{
+		{"v", "data-on", "drag"},
+		{"v", "data-steps", "20"},
+		{partID("v", "k0"), "data-on", "click"},
+		{partID("v", "k0"), "style", "left: 0.000%; width: 2.500%"},
+		{partID("v", "k4"), "style", "left: 17.500%; width: 5.000%"},
+		{partID("v", "k20"), "style", "left: 97.500%; width: 2.500%"},
+	} {
+		if got, _ := s.Attr(a.id, a.attr); got != a.want {
+			t.Errorf("%s %s: %q, want %q", a.id, a.attr, got, a.want)
+		}
+	}
+	ev := func(kind, target string, step int) hotty.Event {
+		detail := fmt.Sprintf(`{"c":10,"r":2,"keys":[],"x":%d}`, step)
+		if kind == hotty.EventClick {
+			detail = ""
+		}
+		return hotty.Event{Kind: kind, Surface: r.name, Target: target, Detail: json.RawMessage(detail)}
+	}
+	for _, step := range []struct {
+		what string
+		ev   hotty.Event
+		want float64
+	}{
+		{"pressed at step 4", ev(hotty.EventDragStart, "v", 4), 2},
+		{"off the track at the end", ev(hotty.EventDrag, "", 20), 10},
+		{"over the − button at the start", ev(hotty.EventDrag, partID("v", partLess), 0), 0},
+		{"let go off the track at step 6", ev(hotty.EventDragEnd, "", 6), 3},
+		{"the drag's click", ev(hotty.EventClick, partID("v", "k15"), 0), 3},
+		{"a tap on notch 4", ev(hotty.EventClick, partID("v", "k4"), 0), 2},
+	} {
+		if err := r.Event(step.ev); err != nil {
+			t.Fatal(err)
+		}
+		x.update(r)
+		if got := r.C.S.Data.Value("/v"); got != step.want {
+			t.Errorf("%s: %v, want %v", step.what, got, step.want)
+		}
 	}
 	x.check(r)
 }
