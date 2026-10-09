@@ -1018,3 +1018,39 @@ func TestScrollViewOnHost(t *testing.T) {
 		t.Errorf("the log reads %q", s.TextOf("log"))
 	}
 }
+
+// TestTableKeepsWidth: a scrolling table's body holds the window's rows,
+// and a host sizes the columns from the rows it has, so each header cell
+// holds its column's widest cells of every row, out of sight: the header,
+// and so the columns, stay the same wherever the window is.
+func TestTableKeepsWidth(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyTable","catalogId":"`+hottycat.ID+`","columns":[{"key":"city","header":"City"}],
+  "rows":[{"city":"Rome"},{"city":"Mexico City"},{"city":"Oslo"},{"city":"Rome"}],"height":1}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	head := func() string {
+		h := s.HTML()
+		return h[strings.Index(h, "<thead>"):strings.Index(h, "</thead>")]
+	}
+	before := head()
+	if !strings.Contains(before, `<div class="k-sizer" aria-hidden="true"><div>Mexico City</div><div>Rome</div><div>Oslo</div></div>`) {
+		t.Errorf("the sizer, widest first, each once:\n%s", before)
+	}
+	must(t, x.h.Click(r.name, partID("root", partRow+"0")))
+	x.pump()
+	for range 3 {
+		if _, ok, err := r.Key("ArrowDown"); !ok || err != nil {
+			t.Fatalf("ArrowDown: %v %v", ok, err)
+		}
+		x.update(r)
+	}
+	x.check(r)
+	if !strings.Contains(s.TextOf("root"), "4–4 of 4") || head() != before {
+		t.Errorf("scrolled to the end, the header changed:\n%s", head())
+	}
+}

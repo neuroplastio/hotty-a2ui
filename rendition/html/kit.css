@@ -417,6 +417,10 @@ textarea.k-input { min-height: 5.5rem; }
 .k-table .k-end { text-align: end; font-variant-numeric: tabular-nums; }
 .k-table .k-sel { background: var(--k-tonal); }
 .k-table:focus .k-sel { background: color-mix(in srgb, var(--k-focus) 35%, var(--k-bg)); }
+/* A scrolling table's header cells each hold their column's widest
+   cells of every row, out of sight and with no height, in the body's
+   weight: the columns keep their width wherever the window is. */
+.k-table .k-sizer { height: 0; overflow: hidden; visibility: hidden; font-weight: 400; }
 .k-table-note { color: var(--k-muted); font-size: 0.875rem; padding: var(--k-1) var(--k-3); text-align: end; }
 
 /* HottyList: a baseline (phase 1), the page cells shows, as bubbles'

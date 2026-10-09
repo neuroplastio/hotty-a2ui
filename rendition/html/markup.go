@@ -3,6 +3,7 @@ package html
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -575,12 +576,22 @@ const tableKeys = "ArrowUp=program ArrowDown=program PageUp=program PageDown=pro
 // The body holds the rows the view shows (Element.Top), as cells does: the
 // selection never scrolls out of sight, which a host's own scrolling
 // would let it do. Under it, while it scrolls, which rows show.
+//
+// A table sizes its columns from the rows it has, which are the window's,
+// so as it scrolled its columns, and the table, changed width. Each header
+// cell holds, out of sight and taking no height, its column's widest
+// cells of every row (sizer), so that the columns are as wide as all the
+// rows need, as cells has them, wherever the window is.
 func table(e *view.Element) *node {
 	box := el("div", "id", domID(e.ID), "class", "k-table", "tabindex", "0", "role", "grid",
 		"aria-rowcount", strconv.Itoa(len(e.Cells)), "data-keys", tableKeys)
 	head := el("tr")
-	for _, c := range e.Columns {
-		head.add(el("th", "class", "k-"+c.Align).add(texts(c.Header)...))
+	for j, c := range e.Columns {
+		th := el("th", "class", "k-"+c.Align).add(texts(c.Header)...)
+		if e.Height > 0 && len(e.Cells) > e.Height {
+			th.add(sizer(e, j))
+		}
+		head.add(th)
 	}
 	body := el("tbody")
 	top, end := e.Top, len(e.Cells)
@@ -607,4 +618,28 @@ func table(e *view.Element) *node {
 		box.add(el("div", "class", "k-table-note").add(txt(strconv.Itoa(top+1) + "–" + strconv.Itoa(end) + " of " + strconv.Itoa(n))))
 	}
 	return box
+}
+
+// sizerCells is how many of a column's widest cells its sizer holds: by
+// characters, since the host's pixels are not the program's to measure,
+// a few, so that in a proportional font the widest is among them.
+const sizerCells = 6
+
+// sizer is a block of column j's widest cells, a line each, that a header
+// cell holds out of sight (table): its width is the column's.
+func sizer(e *view.Element, j int) *node {
+	var vals []string
+	seen := map[string]bool{}
+	for _, row := range e.Cells {
+		if v := row[j]; !seen[v] {
+			seen[v] = true
+			vals = append(vals, v)
+		}
+	}
+	slices.SortStableFunc(vals, func(a, b string) int { return cells.Width(b) - cells.Width(a) })
+	n := el("div", "class", "k-sizer", "aria-hidden", "true")
+	for _, v := range vals[:min(len(vals), sizerCells)] {
+		n.add(el("div").add(texts(v)...))
+	}
+	return n
 }
