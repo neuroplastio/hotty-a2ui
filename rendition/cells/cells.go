@@ -161,6 +161,17 @@ func (r *Rendition) Box(id string) (col, row, w, h int, ok bool) {
 	return b.x, b.y, b.w, b.h, ok
 }
 
+// Sight is the cells of an element to keep in sight in the last frame,
+// as Box has them: the part of it it reveals (a HottyDiff's selected
+// hunk), or else all of it.
+func (r *Rendition) Sight(id string) (col, row, w, h int, ok bool) {
+	b, ok := r.reveal[id]
+	if !ok {
+		b, ok = r.boxes[id]
+	}
+	return b.x, b.y, b.w, b.h, ok
+}
+
 // Click is a click on a cell of the last frame drawn (SPEC §10.1): what
 // takes focus there gets the keyboard and is activated, as the host would
 // (a Button runs, a CheckBox toggles, a select opens, a field puts its

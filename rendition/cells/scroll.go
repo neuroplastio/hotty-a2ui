@@ -139,8 +139,8 @@ func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w int) {
 
 // revealFocus is the top that keeps the element with the keyboard in
 // sight, when it is in the scroll view's child: the top as it was, moved
-// as little as shows it. The child is laid out once more, off the frame,
-// to find it.
+// as little as shows it, its start where it is taller than the page. The
+// child is laid out once more, off the frame, to find it.
 func (l *layout) revealFocus(e, k *view.Element, cw, total, top, page int) int {
 	r := l.r
 	c := r.c
@@ -157,11 +157,11 @@ func (l *layout) revealFocus(e, k *view.Element, cw, total, top, page int) int {
 	if !ok {
 		return top
 	}
-	if b.y < top {
-		top = b.y
-	}
 	if b.y+b.h > top+page {
 		top = b.y + b.h - page
+	}
+	if b.y < top {
+		top = b.y
 	}
 	return min(max(top, 0), max(total-page, 0))
 }

@@ -420,8 +420,8 @@ func (l *layout) splitRows(e *view.Element, h diff.Hunk, w int) [][]glyph {
 
 // paintDiff paints a HottyDiff at (x, y), w wide: its rail, the selected
 // hunk's rows marked "▎" (accent while it has the keyboard), then its
-// rows. A click on a hunk's row is on that hunk; the selected hunk is
-// what a scroll view keeps in sight.
+// rows. A click on a hunk's row is on that hunk; the selected hunk, with
+// the rows that lead to it, is what a scroll view keeps in sight.
 func (l *layout) paintDiff(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	rows := l.diffRows(e, w)
@@ -444,6 +444,11 @@ func (l *layout) paintDiff(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	r.boxes[e.ID] = box{x, y, w, len(rows)}
 	if first >= 0 {
+		// What leads to the hunk shows with it: its file's name, and the
+		// fold before it.
+		for first > 0 && rows[first-1].hunk < 0 {
+			first--
+		}
 		r.reveal[e.ID] = box{x, y + first, w, last - first + 1}
 	}
 }

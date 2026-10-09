@@ -2,6 +2,7 @@ package cells
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 
@@ -213,5 +214,43 @@ func TestDiffLayout(t *testing.T) {
 	}
 	if w := diffWidth(r.c.V.Find("d")); w != 1+len("@@ -1 +1 @@") {
 		t.Errorf("natural width %d", w)
+	}
+}
+
+// In a HottyScrollView, the selected hunk is kept in sight with the rows
+// that lead to it, its start where it is taller than the box.
+func TestDiffInScrollView(t *testing.T) {
+	var old, new []string
+	for i := range 30 {
+		old = append(old, string(rune('a'+i%26)))
+	}
+	new = slices.Clone(old)
+	for i := 2; i < 10; i++ {
+		new[i] = "X"
+	}
+	new[25] = "Y"
+	b, _ := json.Marshal(map[string]string{"old": strings.Join(old, "\n") + "\n", "new": strings.Join(new, "\n") + "\n"})
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyScrollView","catalogId":"` + hotty.ID + `","height":6,"child":"d"},
+	 {"id":"d","component":"HottyDiff","catalogId":"` + hotty.ID + `","file":"x",` + string(b)[1:] + `]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	r := New(c)
+	r.Draw(40)
+	c.Focus("d")
+	keys(t, r, "G")
+	keys(t, r, "G")
+	// Taller than the box: its start, the fold before it first.
+	if got := r.Draw(40).Plain(); !strings.HasPrefix(got, " ⋯ 9 unchanged lines") || !strings.Contains(got, "@@ -23,7 +23,7 @@") {
+		t.Fatalf("G: the last hunk's start not at the top:\n%s", got)
+	}
+	keys(t, r, "g")
+	got := r.Draw(40).Plain()
+	if lines := strings.Split(got, "\n"); !strings.HasPrefix(strings.TrimSpace(lines[0]), "x") || !strings.Contains(lines[1], "@@ -1,") {
+		t.Errorf("g: want the file's name, then the first hunk's header:\n%s", got)
 	}
 }

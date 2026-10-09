@@ -54,9 +54,18 @@ type pane struct {
 	rect  hottytea.Rect // in the Book, not on the screen
 	frame *cells.Frame
 	top   int // the frame's first row shown
+	// sight is what scrollTo last kept in sight: the element with the
+	// keyboard and its cells (cells.Rendition.Sight).
+	sight sight
 	// popRows is the rows the open list's surface needs (html.Popover),
 	// as the host's fit says; 0 until it does, and while none is open.
 	popRows int
+}
+
+type sight struct {
+	id       string
+	row, h   int
+	keyboard bool
 }
 
 // takesInput: text is for reading. Cells beside a surface take input as
@@ -561,18 +570,24 @@ func (b *Book) click(x, y int) {
 
 // wheel is a notch of the wheel over the cells, in the Book: the cells
 // pane under it, the one drawn last where they overlap, scrolls a
-// HottyScrollView under it. Over a surface the host scrolls it (SPEC
-// §5.3).
+// HottyScrollView under it that can move, or else itself, wheelRows a
+// notch. Over a surface the host scrolls it (SPEC §5.3).
 func (b *Book) wheel(x, y int, msg tea.MouseWheelMsg) {
 	dx, dy := WheelDelta(msg)
 	for _, p := range slices.Backward(b.order) {
 		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
 			continue
 		}
-		p.cells.Wheel(x-p.rect.X, y-p.rect.Y+p.top, dx, dy)
+		if !p.cells.Wheel(x-p.rect.X, y-p.rect.Y+p.top, dx, dy) {
+			p.top += dy * wheelRows // scrollTo keeps it within the frame
+		}
 		return
 	}
 }
+
+// wheelRows are the rows a notch of the wheel scrolls a pane, as the kit
+// scrolls a HottyScrollView.
+const wheelRows = 3
 
 // WheelDelta is a notch of the wheel as columns and rows, for
 // cells.Rendition.Wheel: Shift turns it sideways, as bubbles' viewport
@@ -895,20 +910,29 @@ func (b *Book) LaidOut(h *hottytea.Session) {
 	}
 }
 
-// scrollTo is the first row a cells pane shows: the one before, moved as
-// little as keeps the focused element in sight.
+// scrollTo is the first row a cells pane shows: the one before (where the
+// wheel left it), moved as little as brings into sight what the element
+// with the keyboard shows (cells.Rendition.Sight: a HottyDiff's selected
+// hunk), and its start where that is taller than the pane. It moves only
+// when that changed, as focus scrolls a page, so that the wheel can move
+// on from there.
 func scrollTo(p *pane) int {
 	top := p.top
 	c := p.s.C
+	now := sight{keyboard: c.St.Keyboard}
 	if c.St.Keyboard && c.St.Focus != "" {
-		if _, row, _, h, ok := p.cells.Box(c.St.Focus); ok {
-			if row < top {
-				top = row
-			}
-			if row+h > top+p.rect.H {
-				top = row + h - p.rect.H
+		if _, row, _, h, ok := p.cells.Sight(c.St.Focus); ok {
+			now = sight{c.St.Focus, row, h, true}
+			if now != p.sight {
+				if row+h > top+p.rect.H {
+					top = row + h - p.rect.H
+				}
+				if row < top {
+					top = row
+				}
 			}
 		}
 	}
+	p.sight = now
 	return max(0, min(top, p.frame.Rows-p.rect.H))
 }

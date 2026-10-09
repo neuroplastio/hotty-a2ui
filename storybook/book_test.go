@@ -247,3 +247,77 @@ func TestPickStaysPut(t *testing.T) {
 		return (l == nil || !l.Placed()) && strings.Contains(h.Surface("sb-pick").Text(), "Nord")
 	})
 }
+
+// TestPaneScrolls: in cells, a pane taller than its rows scrolls to what
+// the keyboard shows only when that changes: a HottyDiff's selected hunk,
+// G to the last, g back to the first (the first key picks the first),
+// and up one at a time; and the wheel scrolls the pane
+// where no scroll view takes it, all the way back up.
+func TestPaneScrolls(t *testing.T) {
+	s := hottytea.New()
+	s.Mode = hottytea.Text
+	b := New(Options{First: "hotty/diff"})
+	view := func() *pane {
+		t.Helper()
+		b.View(hottytea.Rect{W: 120, H: 24}, s)
+		for _, p := range b.order {
+			if p.kind == asCells && !p.chrome(b) {
+				return p
+			}
+		}
+		t.Fatal("no pane for the story")
+		return nil
+	}
+	p := view()
+	if p.frame.Rows <= p.rect.H {
+		t.Fatalf("the story fits its %d rows: %d", p.rect.H, p.frame.Rows)
+	}
+	if !b.give(p, false) || p.s.C.St.Focus != "review" {
+		t.Fatalf("the keyboard on %q, want the diff", p.s.C.St.Focus)
+	}
+	if p = view(); p.top != 0 {
+		t.Errorf("the diff focused: top %d, want its start", p.top)
+	}
+	b.key("j", s) // from none, the first hunk
+	b.key("G", s)
+	p = view()
+	_, row, _, h, _ := p.cells.Sight("review")
+	if p.top == 0 || row < p.top || row+h > p.top+p.rect.H {
+		t.Errorf("G: top %d, the last hunk at %d+%d", p.top, row, h)
+	}
+	b.key("g", s)
+	if p = view(); p.top != 0 {
+		t.Errorf("g: top %d, want 0", p.top)
+	}
+	// Up a hunk at a time from the last: each in sight whole, with its
+	// file's name, and the first at the top.
+	b.key("G", s)
+	p = view()
+	for i := range len(p.s.C.V.Find("review").RowIDs) - 1 {
+		b.key("ArrowUp", s)
+		p = view()
+		_, row, _, h, _ := p.cells.Sight("review")
+		if row < p.top || row+h > p.top+p.rect.H {
+			t.Errorf("ArrowUp %d: top %d, the hunk at %d+%d", i+1, p.top, row, h)
+		}
+	}
+	if p.top != 0 {
+		t.Errorf("up to the first hunk: top %d, want 0", p.top)
+	}
+	b.key("G", s)
+	p = view()
+	for range 20 {
+		b.wheel(p.rect.X+1, p.rect.Y+1, tea.MouseWheelMsg{Button: tea.MouseWheelUp})
+		p = view()
+	}
+	if p.top != 0 {
+		t.Errorf("the wheel up from the end: top %d, want 0", p.top)
+	}
+	for range 3 {
+		b.wheel(p.rect.X+1, p.rect.Y+1, tea.MouseWheelMsg{Button: tea.MouseWheelDown})
+		p = view()
+	}
+	if p.top != 3*wheelRows {
+		t.Errorf("three notches down: top %d, want %d", p.top, 3*wheelRows)
+	}
+}
