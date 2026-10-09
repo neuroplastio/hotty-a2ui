@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"testing"
+	"time"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
@@ -291,5 +292,30 @@ func TestTable(t *testing.T) {
 	// Without onActivate, or with nothing selected, Enter does nothing.
 	if ok, err := c.TableKey("plain", "Enter"); !ok || err != nil || len(actions) != 1 {
 		t.Errorf("Enter on a table without onActivate: %v %v %+v", ok, err, actions)
+	}
+}
+
+// TestUntilStep: a frame clock that waits UntilStep wakes on the next
+// step, whatever the interval and wherever in a step it starts: a
+// twelfth of a second (miniDot) too, where Go's zero time falls mid-step.
+func TestUntilStep(t *testing.T) {
+	intervals := []time.Duration{view.ProgressInterval}
+	for _, s := range view.Spinners {
+		intervals = append(intervals, s.Interval)
+	}
+	base := time.Date(2026, 10, 9, 20, 0, 0, 0, time.UTC)
+	for _, d := range intervals {
+		for i := range 500 {
+			at := base.Add(time.Duration(i) * 7919 * time.Microsecond)
+			wait := view.UntilStep(at, d)
+			if wait <= 0 || wait > d {
+				t.Fatalf("%v at %v: wait %v", d, at, wait)
+			}
+			// Steps count from the Unix epoch.
+			step := func(t time.Time) int64 { return t.UnixNano() / int64(d) }
+			if a, b := step(at), step(at.Add(wait)); b != a+1 {
+				t.Fatalf("%v at %v: after %v, step %d (was %d)", d, at, wait, b, a)
+			}
+		}
 	}
 }

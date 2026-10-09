@@ -14,6 +14,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/story"
 	"github.com/neuroplastio/hotty-a2ui/storybook"
+	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
 // bareModel is one story's surfaces alone, in cells, on the whole screen:
@@ -119,7 +120,7 @@ func (m *bareModel) tick() tea.Cmd {
 		return nil
 	}
 	m.ticking = true
-	return tea.Every(m.anim, func(time.Time) tea.Msg { return bareTick{} })
+	return tea.Tick(view.UntilStep(time.Now(), m.anim), func(time.Time) tea.Msg { return bareTick{} })
 }
 
 // key gives a key to the surface that has the keyboard, or Tab to the

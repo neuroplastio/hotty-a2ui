@@ -60,6 +60,20 @@ func ProgressStep(at time.Time) int {
 	return int(step(at, ProgressInterval, ProgressSteps))
 }
 
+// UntilStep is how long from at until the next step of an animation
+// whose steps are d long: when its frame changes. A program's frame clock
+// waits that long. tea.Every doesn't do: it counts from Go's zero time,
+// not from the Unix epoch as steps do, and the two fall between steps of
+// a twelfth, a seventh or a third of a second, so its ticks come up to a
+// step early and draw the frame before.
+func UntilStep(at time.Time, d time.Duration) time.Duration {
+	k := at.UnixNano() % int64(d)
+	if k < 0 {
+		k += int64(d)
+	}
+	return d - time.Duration(k)
+}
+
 // step is which of n steps, each d long, a time is at, counting from the
 // Unix epoch round and round.
 func step(at time.Time, d time.Duration, n int64) int64 {

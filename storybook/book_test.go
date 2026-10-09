@@ -475,3 +475,26 @@ func TestPanelJSON(t *testing.T) {
 		t.Errorf("marks with nothing failed: %s", got)
 	}
 }
+
+// TestTickDrawsTheNextFrame: the frame clock's tick comes when a frame
+// changes, so the View after it is a new frame. The spinners' fastest is
+// miniDot's, a twelfth of a second, between whose steps Go's zero time
+// falls: ticks counted from it (tea.Every) came early.
+func TestTickDrawsTheNextFrame(t *testing.T) {
+	s := hottytea.New()
+	s.Mode = hottytea.Text
+	b := New(Options{First: "hotty/spinner"})
+	before, _ := b.View(hottytea.Rect{W: 120, H: 40}, s)
+	for range 3 {
+		tick := b.Tick()
+		if tick == nil {
+			t.Fatal("no tick while spinners turn")
+		}
+		b.Update(tick(), s)
+		after, _ := b.View(hottytea.Rect{W: 120, H: 40}, s)
+		if after == before {
+			t.Fatal("the tick drew the same frame")
+		}
+		before = after
+	}
+}

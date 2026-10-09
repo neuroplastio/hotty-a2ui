@@ -263,8 +263,8 @@ func (b *Book) Cursor() *tea.Cursor { return b.cursor }
 // command whose message, given to Update, asks for the next View. The
 // program returns it with each View's commands, after the session's
 // Layout, which sends a new surface's document, as cmd/storybook does. It is nil while nothing moves, and
-// while a tick is on its way. The ticks keep to the clock (tea.Every), so
-// that they fall where the frames change.
+// while a tick is on its way. The ticks fall where the frames change
+// (view.UntilStep).
 func (b *Book) Tick() tea.Cmd {
 	d := b.anim
 	for _, r := range b.shown {
@@ -276,7 +276,7 @@ func (b *Book) Tick() tea.Cmd {
 		return nil
 	}
 	b.ticking = true
-	return tea.Every(d, func(time.Time) tea.Msg { return tickMsg{} })
+	return tea.Tick(view.UntilStep(time.Now(), d), func(time.Time) tea.Msg { return tickMsg{} })
 }
 
 // ready starts the storybook once the terminal is known: surfaces on a
