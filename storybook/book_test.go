@@ -15,6 +15,7 @@ import (
 	"github.com/neuroplastio/hotty-go/hottytest"
 
 	"github.com/neuroplastio/hotty-a2ui/rendition/html"
+	"github.com/neuroplastio/hotty-a2ui/story"
 )
 
 // host is a program with a screen of its own: a row of its own on top,
@@ -319,5 +320,104 @@ func TestPaneScrolls(t *testing.T) {
 	}
 	if p.top != 3*wheelRows {
 		t.Errorf("three notches down: top %d, want %d", p.top, 3*wheelRows)
+	}
+}
+
+// TestTabsAndSidebarOnHost: panel is the right column's tab bar, as high
+// as the host's fit, with the story under it; another tab takes the
+// whole column and hides the story's surfaces, which come back on the
+// preview as they were. F1 hides the sidebar's surfaces, and shows them
+// again; the toggle's cell does too.
+func TestTabsAndSidebarOnHost(t *testing.T) {
+	h := hottytest.New(t, hottytest.Size(120, 40))
+	run(t, h, Options{First: "hotty/form", Prefix: "sb-"})
+	st := storyByName(t, "hotty/form")
+	story := func() *hottytest.Surface { return h.Surface("sb-s1-0-h") }
+	eventually(t, "the story under panel's bar, as high as its fit", func() bool {
+		fit := 0
+		for _, ev := range h.Events() {
+			var d struct{ R int }
+			if ev.Surface == "sb-panel" && ev.Kind == hotty.EventFit && json.Unmarshal(ev.Detail, &d) == nil {
+				fit = d.R
+			}
+		}
+		p, s := h.Surface("sb-panel"), story()
+		if fit == 0 || p == nil || s == nil || !s.Placed() {
+			return false
+		}
+		_, prow := p.At()
+		_, srow := s.At()
+		return p.Placement().Rows == fit && srow == prow+fit
+	})
+	h.Type("\x1b[15~") // F5: About
+	eventually(t, "About over the whole column, the story hidden", func() bool {
+		p, s := h.Surface("sb-panel"), story()
+		return s != nil && !s.Placed() && p.Placement().Rows == 39 && !p.Placement().Fit && strings.Contains(p.Text(), st.Title)
+	})
+	for range 4 {
+		h.Type("\x1b[15~") // round to the preview
+	}
+	eventually(t, "the story back, the same surface", func() bool { s := story(); return s != nil && s.Placed() })
+	h.Type("\x1bOP") // F1
+	eventually(t, "the sidebar hidden", func() bool {
+		p, n := h.Surface("sb-pick"), h.Surface("sb-nav")
+		col, _ := h.Surface("sb-panel").At()
+		return p != nil && n != nil && !p.Placed() && !n.Placed() && col == 2
+	})
+	h.Type("\x1b[<0;1;2M\x1b[<0;1;2m") // a click on ▸, at the rule's top
+	eventually(t, "the sidebar back", func() bool { return h.Surface("sb-pick").Placed() && h.Surface("sb-nav").Placed() })
+}
+
+func storyByName(t *testing.T, name string) *story.Story {
+	t.Helper()
+	st := story.Find(name)
+	if st == nil {
+		t.Fatalf("no story %s", name)
+	}
+	return st
+}
+
+// TestTabsKeepTheStory: in cells, another tab hides the story's panes
+// and takes the keyboard from them; back on the preview, they are as they
+// were (the same pane, scrolled where it was, its hunk selected). F1 hides
+// the sidebar and gives its columns to the right.
+func TestTabsKeepTheStory(t *testing.T) {
+	s := hottytea.New()
+	s.Mode = hottytea.Text
+	b := New(Options{First: "hotty/diff"})
+	storyPane := func() *pane {
+		b.View(hottytea.Rect{W: 120, H: 24}, s)
+		for _, p := range b.order {
+			if !p.chrome(b) {
+				return p
+			}
+		}
+		return nil
+	}
+	press := func(k string) { b.key(k, s); b.settle() } // as Update does
+	p := storyPane()
+	b.give(p, false)
+	press("j")
+	press("G")
+	p = storyPane()
+	top := p.top
+	press("F5")
+	if q := storyPane(); q != nil || b.focus != nil {
+		t.Fatalf("on About: the story's pane drawn (%v), the keyboard on %v", q != nil, b.focus)
+	}
+	if !slices.Contains(b.hidden, p) || b.panes[b.o.Prefix+panelID].rect.H != 24 {
+		t.Errorf("on About: the story's pane not kept, or panel not the whole column")
+	}
+	for range panelTabs - 1 {
+		press("F5")
+	}
+	q := storyPane()
+	if q != p || q.top != top || q.s.C.S.Data.Value("/hunk") == nil {
+		t.Errorf("back on the preview: same pane %v, top %d (was %d), hunk %v", q == p, q.top, top, q.s.C.S.Data.Value("/hunk"))
+	}
+	x := q.rect.X
+	press("F1")
+	if q = storyPane(); q.rect.X != 1 || q.rect.W <= 120-x-1 {
+		t.Errorf("without the sidebar: the story at %d, %d wide", q.rect.X, q.rect.W)
 	}
 }

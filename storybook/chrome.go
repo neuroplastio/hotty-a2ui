@@ -17,8 +17,10 @@ import (
 // The storybook's own surfaces are A2UI too, rendered by the kit like the
 // stories (NEIO-11's Q6, leaning to the kit): the storybook is their
 // agent. pick picks the rendition and the theme, and stays put above nav,
-// which lists the stories and scrolls; panel shows the story's actions,
-// data model and messages.
+// which lists the stories and scrolls; together they are the sidebar.
+// panel is the right column's tabs: the story's preview, which the Book
+// draws under the tab bar, then what the story is, and its actions, data
+// model and messages.
 const (
 	pickID  = "pick"
 	navID   = "nav"
@@ -129,13 +131,18 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 		components(navID, nav...),
 		create(panelID, map[string]any{"head": "", "actions": "", "data": "", "messages": ""}),
 		components(panelID,
-			obj("id", "root", "component", "Column", "children", []any{"head", "tabs"}),
-			obj("id", "head", "component", "Text", "text", obj("@path", "/head")),
-			obj("id", "tabs", "component", "Tabs", "tabs", []any{
+			obj("id", "root", "component", "Column", "children", []any{tabsID}),
+			obj("id", tabsID, "component", "Tabs", "tabs", []any{
+				obj("title", "Preview", "child", "preview"),
+				obj("title", "About", "child", "head"),
 				obj("title", "Actions", "child", "actions"),
 				obj("title", "Data model", "child", "data"),
 				obj("title", "Messages", "child", "messages"),
 			}),
+			// The preview is the Book's: the tab holds nothing, and the
+			// story's surfaces go under its bar.
+			obj("id", "preview", "component", "Column", "children", []any{}),
+			obj("id", "head", "component", "Text", "text", obj("@path", "/head")),
 			obj("id", "actions", "component", "Text", "text", obj("@path", "/actions")),
 			obj("id", "data", "component", "Text", "text", obj("@path", "/data")),
 			obj("id", "messages", "component", "Text", "text", obj("@path", "/messages")),
@@ -145,6 +152,22 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 }
 
 func itemID(i int) string { return "story_" + strconv.Itoa(i) }
+
+// tabsID is panel's Tabs; its first tab, the preview, is 0.
+const tabsID = "tabs"
+
+// panelTabs is how many tabs panel has.
+const panelTabs = 5
+
+// tab is the tab panel shows: 0 for the preview.
+func (ch *chrome) tab() int { return ch.surface(panelID).C.St.Tabs[tabsID] }
+
+// setTab shows panel's tab i, as a click on its title would.
+func (ch *chrome) setTab(i int) {
+	c := ch.surface(panelID).C
+	c.St.Tabs[tabsID] = (i + panelTabs) % panelTabs
+	c.Rebuild()
+}
 
 // item is a story's row in nav: borderless, but for the story shown.
 func (ch *chrome) item(i int, shown bool) map[string]any {

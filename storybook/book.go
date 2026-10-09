@@ -125,8 +125,19 @@ type Book struct {
 	status string
 
 	// pickRows is pick's height with its lists closed: the host's fit on a
-	// host, the frame's rows in cells; 0 until known.
-	pickRows int
+	// host, the frame's rows in cells; 0 until known. barRows is panel's
+	// on the preview, its tab bar alone, as the host's fit says.
+	pickRows, barRows int
+
+	// noSidebar: the sidebar (pick and nav) is hidden (F1, or a click on
+	// toggle, the cell of the rule beside it that shows ◂ or ▸).
+	noSidebar bool
+	toggle    [2]int
+	// hidden are the panes kept while out of sight: the sidebar's while
+	// it is hidden, the story's while panel shows another tab. On a host
+	// their surfaces are hidden, not deleted, so they come back as they
+	// were.
+	hidden []*pane
 
 	// anim is how often the last View's cells want drawing again (a
 	// spinner, a progress bar without a value), 0 when nothing in them
@@ -291,7 +302,8 @@ func (b *Book) ready(mode hottytea.Mode) {
 	b.open(cmp.Or(b.o.First, b.list[0].name))
 }
 
-// open shows a story: a new run of it, or the stream as it is.
+// open shows a story, on the preview: a new run of it, or the stream as
+// it is.
 func (b *Book) open(name string) {
 	head := ""
 	if name == streamName && b.stream != nil {
@@ -321,6 +333,7 @@ func (b *Book) open(name string) {
 	b.gen++
 	b.seq = map[*a2ui.Surface]int{}
 	b.ch.showing(name, head)
+	b.ch.setTab(0) // the story opened is what to see
 }
 
 // settle does what the last message left to do: the storybook's own
@@ -350,6 +363,10 @@ func (b *Book) settle() {
 		}
 	}
 	if b.focus != nil && !b.focus.s.C.St.Keyboard {
+		b.focus = nil
+	}
+	if f := b.focus; f != nil && b.ch.tab() != 0 && !f.chrome(b) {
+		f.s.C.St.Keyboard = false
 		b.focus = nil
 	}
 	if b.run != nil {
@@ -401,12 +418,16 @@ func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 		b.cycle(k == "Shift+Tab", cmp.Or(b.focus, b.last))
 	case "Escape":
 		b.escape()
+	case "F1":
+		b.toggleSidebar()
 	case "F2":
 		b.nextRendition()
 	case "F3":
 		b.nextTheme()
 	case "F4":
 		b.nextKeys()
+	case "F5":
+		b.ch.setTab(b.ch.tab() + 1)
 	case "q":
 		return b.focus == nil
 	}
@@ -516,6 +537,16 @@ func (b *Book) nextRendition() {
 	b.ch.set(pickID, "/rendition", []any{next})
 }
 
+// toggleSidebar hides the sidebar, or shows it again. The keyboard leaves
+// it as it goes.
+func (b *Book) toggleSidebar() {
+	b.noSidebar = !b.noSidebar
+	if f := b.focus; b.noSidebar && f != nil && (f.s == b.ch.surface(pickID) || f.s == b.ch.surface(navID)) {
+		f.s.C.St.Keyboard = false
+		b.focus = nil
+	}
+}
+
 // nextTheme shows the next theme in pick.
 func (b *Book) nextTheme() {
 	delete(b.ch.sent, pickID+"/theme")
@@ -542,11 +573,15 @@ func (b *Book) keymap() string {
 }
 
 // click is a primary click on the cells, in the Book: a list open on the
-// host closes; in a cells pane, the one drawn last where they overlap
+// host closes; on toggle, the sidebar hides or shows; in a cells pane, the one drawn last where they overlap
 // (pick's open list over nav), its rendition takes it; anywhere else the
 // keyboard goes back to the storybook.
 func (b *Book) click(x, y int) {
 	b.closeLists(nil)
+	if x == b.toggle[0] && y == b.toggle[1] {
+		b.toggleSidebar()
+		return
+	}
 	for _, p := range slices.Backward(b.order) {
 		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
 			continue
@@ -637,8 +672,12 @@ func (b *Book) event(ev hotty.Event) {
 	b.fail(p.html.Event(ev))
 	switch ev.Kind {
 	case hotty.EventFit:
-		if p.name == b.o.Prefix+pickID && fit {
+		switch {
+		case !fit:
+		case p.name == b.o.Prefix+pickID:
 			b.pickRows = d.R
+		case p.name == b.o.Prefix+panelID && b.ch.tab() == 0:
+			b.barRows = d.R
 		}
 	case hotty.EventFocus:
 		if f := b.focus; f != nil && f != p && f.kind == asCells && f.s != p.s {
@@ -711,38 +750,69 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if b.o.Bars {
 		x := scr.put(0, 0, W, "HOTTY kit storybook", cells.Fg, cells.Bold)
 		scr.put(x, 0, W-x, " · "+b.cur+" · "+b.rend, cells.Muted, 0)
-		help := "Tab next · Esc leave · F2 rendition · F3 theme · F4 keys · Ctrl+C quit"
+		help := "Tab next · Esc leave · F1 sidebar · F2 rendition · F3 theme · F4 keys · F5 tab · Ctrl+C quit"
 		if b.status != "" {
 			help = b.status + " · " + help
 		}
 		scr.put(0, H-1, W, help, cells.Muted, 0)
 		top, bodyH = 1, H-2
 	}
-	navW := min(max(W/4, 22), 36, W/2)
-	scr.vrule(navW, top, bodyH)
-	rx := navW + 1
-	rw := W - rx
-	panelH := min(max(bodyH/3, 6), 16)
-	canvasH := bodyH - panelH - 1
-	scr.hrule(rx, top+canvasH, rw)
-
 	chromeKind := asCells
 	if native {
 		chromeKind = asSurface
+	}
+	// The sidebar, unless hidden, then a rule whose first cell hides it or
+	// shows it (toggle), then the right column: panel's tab bar, and
+	// under it the preview, or panel's other tabs over all of it.
+	navW := 0
+	if !b.noSidebar {
+		navW = min(max(W/4, 22), 36, W/2)
+	}
+	scr.vrule(navW, top, bodyH)
+	scr.put(navW, top, 1, map[bool]string{false: "◂", true: "▸"}[b.noSidebar], cells.Muted, 0)
+	b.toggle = [2]int{navW, top}
+	rx := navW + 1
+	rw := W - rx
+
+	var order, hidden []*pane
+	keep := func(ps ...*pane) {
+		for _, p := range ps {
+			if p != nil {
+				hidden = append(hidden, p)
+			}
+		}
 	}
 	// pick stays at the top of the left column, over a rule, and nav
 	// scrolls under them. On a host, a select's open list is a surface of
 	// its own (html.Popover); in cells, it pushes pick's frame down, which
 	// then covers nav until the list closes.
-	pick := b.pane(b.o.Prefix+pickID, b.ch.surface(pickID), chromeKind, hottytea.Rect{X: 0, Y: top, W: navW})
-	pickH, open := b.pickHeight(pick, bodyH)
-	pick.rect.H = pickH
-	if open {
-		pick.rect.H = bodyH
+	var pick *pane
+	if b.noSidebar {
+		keep(b.panes[b.o.Prefix+pickID], b.panes[b.o.Prefix+navID])
+	} else {
+		pick = b.pane(b.o.Prefix+pickID, b.ch.surface(pickID), chromeKind, hottytea.Rect{X: 0, Y: top, W: navW})
+		pickH, open := b.pickHeight(pick, bodyH)
+		pick.rect.H = pickH
+		if open {
+			pick.rect.H = bodyH
+		}
+		scr.hrule(0, top+pickH, navW)
+		nav := b.pane(b.o.Prefix+navID, b.ch.surface(navID), chromeKind, hottytea.Rect{X: 0, Y: top + pickH + 1, W: navW, H: bodyH - pickH - 1})
+		order = append(order, nav, pick)
 	}
-	scr.hrule(0, top+pickH, navW)
-	nav := b.pane(b.o.Prefix+navID, b.ch.surface(navID), chromeKind, hottytea.Rect{X: 0, Y: top + pickH + 1, W: navW, H: bodyH - pickH - 1})
-	order := []*pane{nav, pick}
+
+	preview := b.ch.tab() == 0
+	// A column in from the rule, so that its first title is clear of
+	// toggle.
+	panel := b.pane(b.o.Prefix+panelID, b.ch.surface(panelID), chromeKind, hottytea.Rect{X: rx + 1, Y: top, W: rw - 1, H: bodyH})
+	// The preview goes under the bar, which is all panel shows there; on
+	// another tab panel has the whole column, and the story's panes keep
+	// the places they had, out of sight.
+	barH := min(b.barHeight(panel, preview), bodyH/2)
+	if preview {
+		panel.rect.H = barH
+	}
+	canvasTop, canvasH := top+barH, bodyH-barH
 
 	kinds := map[string][]kind{rendSurfaces: {asSurface}, rendCells: {asCells}, rendText: {asText}, rendSide: {asSurface, asCells}}[b.rend]
 	if !native {
@@ -758,14 +828,14 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	colW := (rw - (len(kinds) - 1)) / len(kinds)
 	for ki, k := range kinds {
 		cx := rx + ki*(colW+1)
-		if ki > 0 {
-			scr.vrule(cx-1, top, canvasH)
+		if ki > 0 && preview {
+			scr.vrule(cx-1, canvasTop, canvasH)
 		}
-		y := top
+		y := canvasTop
 		for i, s := range ss {
 			sh := canvasH / len(ss)
 			if i == len(ss)-1 {
-				sh = canvasH - (y - top)
+				sh = canvasH - (y - canvasTop)
 			}
 			if sh <= 0 {
 				continue
@@ -775,24 +845,32 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			}
 			name := fmt.Sprintf("%ss%d-%d-%c", b.o.Prefix, b.gen, b.seq[s.S], "hct"[k])
 			p := b.pane(name, s, k, hottytea.Rect{X: cx, Y: y, W: colW, H: sh})
-			order = append(order, p)
+			if preview {
+				order = append(order, p)
+			} else {
+				keep(p)
+			}
 			y += sh
 		}
 	}
-	if len(ss) == 0 {
-		scr.put(rx+1, top, rw-1, "No surface yet.", cells.Muted, 0)
+	if len(ss) == 0 && preview {
+		scr.put(rx+1, canvasTop, rw-1, "No surface yet.", cells.Muted, 0)
 	}
-	order = append(order, b.pane(b.o.Prefix+panelID, b.ch.surface(panelID), chromeKind, hottytea.Rect{X: rx, Y: top + 1 + canvasH, W: rw, H: panelH}))
-	b.order = order
+	order = append(order, panel)
+	b.order, b.hidden = order, hidden
 	for name, p := range b.panes {
-		if !slices.Contains(order, p) {
-			delete(b.panes, name)
-			if b.focus == p {
-				b.focus = nil
-			}
-			if b.last == p {
-				b.last = nil
-			}
+		if slices.Contains(order, p) || slices.Contains(hidden, p) {
+			continue
+		}
+		delete(b.panes, name)
+		if p.kind == asSurface {
+			h.Delete(name) // kept, so Layout would only hide it
+		}
+		if b.focus == p {
+			b.focus = nil
+		}
+		if b.last == p {
+			b.last = nil
 		}
 	}
 
@@ -817,14 +895,17 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		case asSurface:
 			p.html.SetTheme(b.theme)
 			p.html.SetKeys(b.keymap())
-			p.html.SetFit(p == pick)
+			fits := p == pick || p == panel && preview
+			p.html.SetFit(fits)
 			p.html.Away = b.focus != nil && b.focus != p && b.focus.s == p.s
 			h.Send(p.html.Update()...)
 			b.shown = append(b.shown, p.html)
 			at := p.rect
 			at.X, at.Y = at.X+r.X, at.Y+r.Y
-			s := hottytea.Surface{Name: p.name, Rect: at, Doc: p.html.Doc, Scroll: hotty.ScrollVertical}
-			if p == pick {
+			// Kept: one out of sight (hidden) is hidden, and comes back as
+			// it was; the Book deletes the ones it drops.
+			s := hottytea.Surface{Name: p.name, Rect: at, Doc: p.html.Doc, Scroll: hotty.ScrollVertical, Keep: true}
+			if fits {
 				s.Scroll, s.Fit = 0, true
 			}
 			want = append(want, s)
@@ -843,6 +924,19 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		return scr.ANSI(false), want
 	}
 	return scr.Themed(b.theme), want
+}
+
+// barHeight is panel's height on the preview, its tab bar alone: the
+// frame's rows in cells, the host's fit on a host; on another tab, what
+// it was last on the preview.
+func (b *Book) barHeight(p *pane, preview bool) int {
+	if p.kind == asCells && preview {
+		b.barRows = p.cells.Draw(p.rect.W).Rows
+	}
+	if b.barRows == 0 {
+		b.barRows = 3 // until the host's fit says
+	}
+	return b.barRows
 }
 
 // pickHeight is pick's height with its lists closed, at most half the

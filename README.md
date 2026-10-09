@@ -54,8 +54,9 @@ and the cells beside it follow, and the other way round.
   Gruvbox and Solarized light.
 - 🛟 **Fallbacks** for what a terminal can't show: images, video, a
   component that contains itself, a child still to come.
-- 📚 **A storybook made with the kit**: its list of stories and its panel of
-  actions, data model and messages are A2UI surfaces too.
+- 📚 **A storybook made with the kit**: its list of stories, and the tabs
+  beside the preview (the story's actions, data model and messages), are
+  A2UI surfaces too.
 
 ## Quick start
 
@@ -81,11 +82,13 @@ storybook -bare hotty/keys                       # a story's surfaces alone, in 
 
 | Key | |
 | --- | --- |
-| <kbd>Tab</kbd> | through the story, then the panel and the list |
+| <kbd>Tab</kbd> | through the story, then the tabs and the list |
 | <kbd>Esc</kbd> | leave a field, close a modal |
+| <kbd>F1</kbd> | hide the list, or show it again (or click <kbd>◂</kbd> at the top of its edge) |
 | <kbd>F2</kbd> | surfaces, cells, text, or surfaces beside cells |
 | <kbd>F3</kbd> | the next theme |
 | <kbd>F4</kbd> | the fields' keys: Bubble Tea's (<kbd>Ctrl</kbd>+<kbd>A</kbd>, <kbd>Alt</kbd>+<kbd>B</kbd>, <kbd>Ctrl</kbd>+<kbd>W</kbd>…), or HOTTY's defaults alone |
+| <kbd>F5</kbd> | the next tab: the preview, what the story is, its actions, its data model, its messages |
 | <kbd>Ctrl</kbd>+<kbd>C</kbd> | quit |
 
 ## The storybook in your program

@@ -319,6 +319,9 @@ textarea.k-input { min-height: 5.5rem; }
 }
 .k-tab[aria-selected=true] { color: var(--k-fg); border-bottom-color: var(--k-accent); font-weight: 600; }
 .k-tabpanel { padding-top: var(--k-3); }
+/* A tab whose content is an empty container shows nothing, and takes no
+   room under the bar (the storybook's preview, which it draws itself). */
+.k-tabpanel:has(> .k-stack:empty:only-child) { display: none; }
 
 .k-form { display: flex; flex-direction: column; row-gap: var(--k-3); }
 .k-submit { position: absolute; width: 0; height: 0; padding: 0; border: 0; overflow: hidden; opacity: 0; }

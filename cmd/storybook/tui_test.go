@@ -75,7 +75,8 @@ func eventually(t *testing.T, what string, cond func() bool) {
 
 // TestOnHost: on a host, the storybook's own surfaces and the story's are
 // HOTTY surfaces. A click in nav opens a story; the user's typing and
-// Enter reach the agent as the Form's action, and the panel lists it.
+// Enter reach the agent as the Form's action, and the panel's Actions tab
+// lists it.
 func TestOnHost(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))
 	sent := runBook(t, h, "hotty/form", false)
@@ -106,6 +107,7 @@ func TestOnHost(t *testing.T) {
 		}
 		return false
 	})
+	h.Type("\x1b[15~\x1b[15~") // F5 twice: Actions
 	eventually(t, "the action in panel", func() bool {
 		return strings.Contains(h.Surface(panelID).TextOf("actions"), "signUp")
 	})
@@ -150,6 +152,7 @@ func TestInCells(t *testing.T) {
 		}
 		return false
 	})
+	h.Type("\x1b[15~\x1b[15~") // F5 twice: Actions
 	eventually(t, "the action in the panel", func() bool { return strings.Contains(h.Screen(), `"name":"save"`) })
 }
 
