@@ -1,0 +1,159 @@
+{
+  "name": "HottyTable",
+  "description": "The world's largest cities, as bubbles' table example has them: seven rows at a time, the rest scrolling under the header. The arrows, Page Up, Page Down, Home and End move the selection, which is written to /selected; Enter, or a second click on the selected row, sends openCity with it.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "cities",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "cities": [
+            {
+              "rank": 1,
+              "city": "Tokyo",
+              "country": "Japan",
+              "population": "37,274,000"
+            },
+            {
+              "rank": 2,
+              "city": "Delhi",
+              "country": "India",
+              "population": "32,065,760"
+            },
+            {
+              "rank": 3,
+              "city": "Shanghai",
+              "country": "China",
+              "population": "28,516,904"
+            },
+            {
+              "rank": 4,
+              "city": "Dhaka",
+              "country": "Bangladesh",
+              "population": "22,478,116"
+            },
+            {
+              "rank": 5,
+              "city": "São Paulo",
+              "country": "Brazil",
+              "population": "22,429,800"
+            },
+            {
+              "rank": 6,
+              "city": "Mexico City",
+              "country": "Mexico",
+              "population": "22,085,140"
+            },
+            {
+              "rank": 7,
+              "city": "Cairo",
+              "country": "Egypt",
+              "population": "21,750,020"
+            },
+            {
+              "rank": 8,
+              "city": "Beijing",
+              "country": "China",
+              "population": "21,333,332"
+            },
+            {
+              "rank": 9,
+              "city": "Mumbai",
+              "country": "India",
+              "population": "20,961,472"
+            },
+            {
+              "rank": 10,
+              "city": "Osaka",
+              "country": "Japan",
+              "population": "19,059,856"
+            },
+            {
+              "rank": 11,
+              "city": "Chongqing",
+              "country": "China",
+              "population": "16,874,740"
+            },
+            {
+              "rank": 12,
+              "city": "Karachi",
+              "country": "Pakistan",
+              "population": "16,839,950"
+            }
+          ],
+          "selected": "Tokyo"
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "cities",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "table",
+              "help"
+            ]
+          },
+          {
+            "id": "table",
+            "component": "HottyTable",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "columns": [
+              {
+                "key": "rank",
+                "header": "Rank",
+                "width": 4,
+                "align": "end"
+              },
+              {
+                "key": "city",
+                "header": "City",
+                "width": 10
+              },
+              {
+                "key": "country",
+                "header": "Country",
+                "width": 10
+              },
+              {
+                "key": "population",
+                "header": "Population",
+                "width": 10,
+                "align": "end"
+              }
+            ],
+            "rows": {
+              "@path": "/cities"
+            },
+            "rowKey": "city",
+            "selected": {
+              "@path": "/selected"
+            },
+            "height": 7,
+            "onActivate": {
+              "event": {
+                "name": "openCity",
+                "context": {
+                  "city": {
+                    "@path": "/selected"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "help",
+            "component": "Text",
+            "text": "↑ ↓ move · Enter opens · a second click opens",
+            "variant": "caption"
+          }
+        ]
+      }
+    }
+  ]
+}

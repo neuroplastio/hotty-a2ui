@@ -164,7 +164,9 @@ func newTable() *tableRef {
 		{"11", "Chongqing", "China", "16,874,740"},
 		{"12", "Karachi", "Pakistan", "16,839,950"},
 	}
-	t := table.New(table.WithColumns(columns), table.WithRows(rows), table.WithFocused(true), table.WithHeight(7))
+	// bubbles v2 draws no rows until the table has a width: its columns
+	// and a column of padding each side of each.
+	t := table.New(table.WithColumns(columns), table.WithRows(rows), table.WithFocused(true), table.WithHeight(7), table.WithWidth(4+10+10+10+4*2))
 	s := table.DefaultStyles()
 	s.Header = s.Header.BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("240")).BorderBottom(true).Bold(false)
 	s.Selected = s.Selected.Foreground(lipgloss.Color("229")).Background(lipgloss.Color("57")).Bold(false)

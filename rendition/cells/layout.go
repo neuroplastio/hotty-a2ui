@@ -105,6 +105,8 @@ func (l *layout) minimum(e *view.Element) int {
 		n = 1
 	case view.Progress:
 		n = max(longestWord(line(e.Label, style{})), 3+percentWidth)
+	case view.Table:
+		n = tableMinimum(e)
 	default:
 		n = l.natural(e)
 	}

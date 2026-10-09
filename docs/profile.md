@@ -94,6 +94,7 @@ so that an error comes and goes as a text delta.
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
 | HottyForm | `form` with a hidden submit button out of the Tab order, so Enter submits |
 | HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track is filled. Neither moves on a host yet (vault KIT-02h) |
+| HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h |
 | HottySpinner | `span role=status`: its set's first frame while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. It does not move on a host yet (vault KIT-03h) |
 
 **Updates are deltas.** The document goes once. After it, the renderer
@@ -110,7 +111,7 @@ renderer's own state: a tab shown, a Modal opened.
 | event | does |
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
-| `click` | a Button runs its action; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
+| `click` | a Button runs its action; a Table's row is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
 | `submit` | the HottyForm submits (§6.2) |
 | `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it |
 | `focus`, `blur` | the surface has the keyboard, or not |
@@ -220,6 +221,7 @@ Natural widths:
 | Slider | 2 for the gutter, the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
 | HottyProgress | its label's width or 25 (a bar of 20 and ` 100%`), whichever is wider |
 | HottySpinner | its set's widest frame, plus 1 and the label when it has one |
+| HottyTable | its columns' widths, each a column's `width`, else its header's or its widest cell's, whichever is wider, plus 2 for each column (a column of padding each side) |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -237,6 +239,7 @@ Minimums:
   longest word if that is wider.
 - A HottyProgress's is its label's longest word, and at least 8: a bar of 3
   and the percentage.
+- A HottyTable's is its columns', each at most 3 wide, with their padding.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -248,9 +251,9 @@ How the containers lay their children out:
   and the content of a Card or a tab.
   - Its children are stacked with no rows between them, except for one
     blank row between two controls (fields, Buttons that are not a
-    List's rows, HottyProgress and HottySpinner) when either has a title
-    row (§3.4; a HottyProgress's label is one), or when one is a field
-    and the other is not: huh's space between its fields, and bubbles'
+    List's rows, HottyProgress, HottySpinner and HottyTable) when either
+    has a title row (§3.4; a HottyProgress's label is one, and a
+    HottyTable's header), or when one is a field and the other is not: huh's space between its fields, and bubbles'
     before a form's button. A stack of CheckBoxes, of Buttons, or of
     HottySpinners stays tight. Through a Row, a Column or a HottyForm, the
     rule sees its first child (or, before it, its last).
@@ -310,6 +313,7 @@ How the containers lay their children out:
 | a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options: one a row, `[•] label` or `[ ] label` after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect); chips two columns apart, wrapping, `( label )` and `(● label)` when picked. Then the error. |
 | Slider | past the gutter, `label ━━━━●──── 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `●` at round((value − min) / (max − min) × (track − 1)), and after it the track is `─` in `border`. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
 | HottyProgress | its label on a row, when it has one, then the bar and the percentage on the next: ` 42%`, five columns (`%3.0f%%` after a space, half to even). The bar takes the columns before them, filled in eighths of a cell: `█` for each full cell, then one of `▏▎▍▌▋▊▉` for a cell part filled, blending from `info` into `accent` across the bar (§3.6), or `success` alone once full. The rest is `░` in `border`. Without a value, a segment of a quarter of the bar (at least one cell) is `█` in `info`, moving with the clock (below), and the percentage's columns are blank. When the bar would be shorter than 3, the percentage is dropped. |
+| HottyTable | a header row, bold; a rule of `─` in `border`; then a row for each row the body shows, a cell for each column: its text, padded a column each side, cut with `…` when wider than its column, at the start, the centre (rounded down) or the end as `align` says. The columns take their natural widths; while the table is too wide, a column at a time comes off the widest that is wider than 3 (the first of equals), and once none is, off the widest. The body shows `height` rows, or all of them (one, `No rows` in `muted`, when it has none): from the first it showed, moved as little as brings the selected row into view, never past the last (the view's `Top`, the same in both renditions). While it scrolls, the rule ends with ` 4–10 of 12 ` in `muted` and one more `─`. The selected row is reversed across the table, in `accent` while the table has the keyboard and in `muted` otherwise. |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
@@ -461,6 +465,12 @@ In the output:
   the step's decimals: 0.45 less 0.05 is 0.4, not 0.39999999999999997.
   On a host the slider is a button, which leaves these keys to the
   program (SPEC.md §10.2), so the renderer steps it there too.
+- **A HottyTable** moves its selection by ArrowUp and ArrowDown a row, by
+  PageUp and PageDown the rows its body shows, and by Home and End to its
+  first row and its last, clamped; with no row selected, each selects the
+  first. Enter acts on the selected row (§6.8). On a host the table is a
+  focused box, which leaves every key to the program, so the renderer
+  moves it there too, with the same rules (`view.Controller.TableKey`).
 - **Space and Enter** activate a Button, a Tabs' title, a chip, a Media
   link, or a Modal trigger that is not a control.
 - **A CheckBox, and an option shown as a box,** is a checkbox on a host,
@@ -480,6 +490,8 @@ In the output:
     label line only focuses it);
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
+  - a click on a HottyTable's row selects it, and a click on its selected
+    row acts on it (§6.8); a click on its header only focuses it;
   - a click on a Slider's track sets the value at that column:
     min + (max − min) × column / (track − 1), stepped and clamped, and
     the value follows the pointer while the button stays down;
@@ -523,6 +535,9 @@ reference is `rendition/text`.
 - A Button is `[ label ]`, followed by `(disabled)` while its checks fail.
 - A HottyProgress is `Label: 42%`, or `Label: …` without a value; a
   HottySpinner is `Label: …` while it spins, else its label alone.
+- A HottyTable is its header and every row, whatever its `height`: the
+  columns two spaces apart, each as wide as its widest cell and aligned as
+  it says, after `> ` for the selected row and two spaces for the others.
 - Tabs are their titles, the one shown in brackets, then its content.
 - An error is `✗ message`, on the line after its control.
 - Image, Icon, Video, AudioPlayer and placeholders are as §7 has them.
@@ -670,6 +685,29 @@ That something is under way, with no measure: a spinner and its `label`.
 spins; bound to a path that holds nothing, it does not. One that stops
 keeps its label in place, so the agent can stop it, or replace it with
 the result, when the work is done. It takes no focus and sends nothing.
+
+### 6.8 HottyTable
+
+Rows of data under a header, one selected at a time, as bubbles' table.
+`columns` are its columns in order, each the `key` of the row field it
+shows, a `header`, an optional `width` in cells, and `align` (`start`,
+`center`, `end`). `rows` are objects whose fields the columns name, best
+bound to the data model, so that the agent changes them with
+`updateDataModel`. A cell is its field as text (A2UI's string conversion:
+a number as JavaScript writes it, a missing field empty).
+
+A row is identified by its `rowKey` field, as text, or by its index
+without one. `selected` (a DynamicString) is the selected row's
+identity: bound to the data model, the user's selection is written
+there, and the agent sets it there too; the body scrolls to it either
+way. It is identity rather than an index, so that it stays on its row
+as rows come and go.
+
+A2UI's actions carry nothing from the renderer (vault a2ui-limits L2), so
+a row is selected, then acted on: Enter, or a click on the selected row,
+runs `onActivate`, whose context reads the selection from where
+`selected` is bound. With no row selected it does nothing. `height`
+fixes the body's rows; the rest scroll under the header.
 
 ## 7. Fallbacks
 

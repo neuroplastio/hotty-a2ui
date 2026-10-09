@@ -211,3 +211,84 @@ func TestProgressAndSpinner(t *testing.T) {
 		t.Error("a spinner bound to /busy does not spin once it is true")
 	}
 }
+
+// TestTable: a HottyTable's rows are text, a cell a column; a row is its
+// rowKey's value, else its index. Its keys move the selection to the bound
+// path, and the body's window follows it. Enter acts on the selected row,
+// whose context reads it from there.
+func TestTable(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	var actions []*a2ui.ActionMessage
+	p.Send = func(o a2ui.Outbound) {
+		if o.Action != nil {
+			actions = append(actions, o.Action)
+		}
+	}
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"sel":"",
+	 "rows":[{"id":"a","n":1,"ok":true},{"id":"b","n":2.5},{"id":"c","n":3},{"id":"d","n":4},{"id":"e","n":5}]}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["t","plain"]},
+	 {"id":"t","component":"HottyTable","catalogId":"` + hotty.ID + `","columns":[{"key":"id","header":"Id"},{"key":"n","header":"N","align":"end","width":4},{"key":"ok"}],
+	  "rows":{"@path":"/rows"},"rowKey":"id","selected":{"@path":"/sel"},"height":2,
+	  "onActivate":{"event":{"name":"open","context":{"row":{"@path":"/sel"}}}}},
+	 {"id":"plain","component":"HottyTable","catalogId":"` + hotty.ID + `","columns":[{"key":"x"}],"rows":[{"x":"p"},{"x":"q"}]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	e := c.V.Find("t")
+	if e == nil || e.Kind != view.Table || !e.Focusable() {
+		t.Fatalf("t: %+v, want a focusable Table", e)
+	}
+	if got := e.Columns; len(got) != 3 || got[1] != (view.Column{Key: "n", Header: "N", Width: 4, Align: "end"}) || got[2].Align != "start" {
+		t.Errorf("columns %+v", got)
+	}
+	if got := e.Cells[0]; got[0] != "a" || got[1] != "1" || got[2] != "true" || e.Cells[1][1] != "2.5" || e.Cells[1][2] != "" {
+		t.Errorf("cells %q", e.Cells)
+	}
+	if got := c.V.Find("plain").RowIDs; len(got) != 2 || got[0] != "0" || got[1] != "1" {
+		t.Errorf("rows without a rowKey are %q, want their indexes", got)
+	}
+	if e.SelectedRow() != -1 || e.Top != 0 {
+		t.Fatalf("selected %d, top %d before anything", e.SelectedRow(), e.Top)
+	}
+	c.Focus("t")
+	if ok, err := c.TableKey("t", "ArrowUp"); !ok || err != nil {
+		t.Fatalf("ArrowUp: %v %v", ok, err)
+	}
+	for _, step := range []struct {
+		key      string
+		sel, top int
+	}{{"", 0, 0}, {"ArrowDown", 1, 0}, {"ArrowDown", 2, 1}, {"PageDown", 4, 3}, {"ArrowDown", 4, 3}, {"Home", 0, 0}, {"End", 4, 3}, {"PageUp", 2, 2}} {
+		if step.key != "" {
+			if ok, err := c.TableKey("t", step.key); !ok || err != nil {
+				t.Fatalf("%s: %v %v", step.key, ok, err)
+			}
+		}
+		e = c.V.Find("t")
+		if e.SelectedRow() != step.sel || e.Top != step.top {
+			t.Fatalf("after %q: row %d, top %d; want %d, %d", step.key, e.SelectedRow(), e.Top, step.sel, step.top)
+		}
+	}
+	if got := c.S.Data.Value("/sel"); got != "c" {
+		t.Errorf("the selection wrote %v, want c", got)
+	}
+	if ok, _ := c.TableKey("t", "Space"); ok {
+		t.Error("Space is a Table's key")
+	}
+	if ok, err := c.TableKey("t", "Enter"); !ok || err != nil || len(actions) != 1 || actions[0].Name != "open" || actions[0].Context["row"] != "c" {
+		t.Fatalf("Enter: %v %v %+v", ok, err, actions)
+	}
+	// The agent moves the selection: the window follows it.
+	if err := c.S.Write("/sel", "e"); err != nil {
+		t.Fatal(err)
+	}
+	c.Rebuild()
+	if e = c.V.Find("t"); e.SelectedRow() != 4 || e.Top != 3 {
+		t.Errorf("selected by the agent: row %d, top %d", e.SelectedRow(), e.Top)
+	}
+	// Without onActivate, or with nothing selected, Enter does nothing.
+	if ok, err := c.TableKey("plain", "Enter"); !ok || err != nil || len(actions) != 1 {
+		t.Errorf("Enter on a table without onActivate: %v %v %+v", ok, err, actions)
+	}
+}

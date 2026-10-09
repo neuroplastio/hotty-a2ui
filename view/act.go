@@ -125,6 +125,12 @@ func (c *Controller) Activate(id string) error {
 		if c.S.Env().OpenURL != nil && e.URL != "" {
 			err = c.S.Env().OpenURL(e.URL)
 		}
+	case Table:
+		// Its selected row is acted on: onActivate, whose context reads the
+		// row from where selected is bound (an action carries no payload).
+		if n := c.V.Node(id); e.SelectedRow() >= 0 && n.Props["onActivate"] != nil {
+			err = c.S.Tree.Invoke(n, "onActivate", true)
+		}
 	}
 	for _, a := range c.Ancestors(id) {
 		if a.Kind == Modal && !a.Open {
@@ -192,10 +198,66 @@ func (c *Controller) StepSlider(id string, n int, to string) error {
 	return c.SetValue(id, f)
 }
 
-// set writes a control's value: to its binding, else to the state.
+// SelectRow selects a Table's row i, clamped to its rows: its id goes to
+// where selected is bound, else to the renderer's state.
+func (c *Controller) SelectRow(id string, i int) error {
+	e := c.V.Find(id)
+	if e == nil || e.Kind != Table || len(e.RowIDs) == 0 {
+		return nil
+	}
+	err := c.set(e, e.RowIDs[min(max(i, 0), len(e.RowIDs)-1)])
+	c.Rebuild()
+	return err
+}
+
+// TableKey works a Table by a key, named as SPEC §10.4 has it: the
+// arrows move its selection a row, Page Up and Page Down by the rows its
+// body shows, Home and End to the first row and the last; from no
+// selection, each of them selects the first row. Enter acts on the
+// selected row (Activate). ok reports whether the key is one of those.
+func (c *Controller) TableKey(id, key string) (ok bool, err error) {
+	e := c.V.Find(id)
+	if e == nil || e.Kind != Table {
+		return false, nil
+	}
+	cur, page := e.SelectedRow(), e.Height
+	if page <= 0 {
+		page = len(e.RowIDs)
+	}
+	to := cur
+	switch key {
+	case "Enter":
+		return true, c.Activate(id)
+	case "ArrowUp":
+		to = cur - 1
+	case "ArrowDown":
+		to = cur + 1
+	case "PageUp":
+		to = cur - page
+	case "PageDown":
+		to = cur + page
+	case "Home":
+		to = 0
+	case "End":
+		to = len(e.RowIDs) - 1
+	default:
+		return false, nil
+	}
+	if cur < 0 {
+		to = 0
+	}
+	return true, c.SelectRow(id, to)
+}
+
+// set writes a control's value: to its binding, else to the state. A
+// Table's value is its selected property; any other's, value.
 func (c *Controller) set(e *Element, v any) error {
 	c.St.Touched[e.ID] = true
 	n := c.V.Node(e.ID)
+	prop := "value"
+	if e.Kind == Table {
+		prop = "selected"
+	}
 	if l, ok := v.([]string); ok {
 		a := make([]any, len(l))
 		for i, s := range l {
@@ -203,7 +265,7 @@ func (c *Controller) set(e *Element, v any) error {
 		}
 		v = a
 	}
-	if bd, ok := n.Props["value"].(a2ui.Bound); ok && bd.Writable() {
+	if bd, ok := n.Props[prop].(a2ui.Bound); ok && bd.Writable() {
 		return c.S.Write(bd.Path, v)
 	}
 	c.St.Local[e.ID] = v

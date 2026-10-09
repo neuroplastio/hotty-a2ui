@@ -36,7 +36,7 @@ func isField(e *view.Element) bool {
 
 // isControlElement reports whether an element is a control a Column may
 // set a blank row apart from (separator): a field, a Button that is not a
-// List's row, a Progress or a Spinner.
+// List's row, a Progress, a Spinner or a Table.
 func isControlElement(e *view.Element) bool {
 	if isField(e) {
 		return true
@@ -47,14 +47,17 @@ func isControlElement(e *view.Element) bool {
 	case e.Kind == view.Button:
 		return !e.Item
 	}
-	return e.Kind == view.Progress || e.Kind == view.Spinner
+	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Table
 }
 
 // hasTitle reports whether an element has a title row of its own: a text
-// field, a DateTime, a Choice or a Progress with a label. A CheckBox's, a
-// Slider's and a Spinner's labels are on their one row.
+// field, a DateTime, a Choice or a Progress with a label, and a Table, its
+// header. A CheckBox's, a Slider's and a Spinner's labels are on their one
+// row.
 func hasTitle(e *view.Element) bool {
 	switch e.Kind {
+	case view.Table:
+		return true
 	case view.TextField, view.DateTime, view.Choice, view.Progress:
 		return e.Label != ""
 	}
@@ -143,6 +146,8 @@ func controlWidth(e *view.Element) int {
 			n += 1 + Width(e.Label)
 		}
 		return n
+	case view.Table:
+		return tableWidth(columnWidths(e))
 	case view.Image:
 		return Width(imageText(e))
 	case view.Icon:
@@ -174,6 +179,8 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 		if e.Label != "" {
 			h++
 		}
+	case view.Table:
+		h = 2 + bodyRows(e)
 	case view.Choice:
 		switch {
 		case isSelect(e):

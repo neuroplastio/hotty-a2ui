@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -119,6 +120,8 @@ func element(e *view.Element) []string {
 			return []string{field(e.Label, fmt.Sprintf("%.0f%%", f*100))}
 		}
 		return []string{field(e.Label, "…")}
+	case view.Table:
+		return table(e)
 	case view.Spinner:
 		if e.Active {
 			return []string{field(e.Label, "…")}
@@ -181,4 +184,49 @@ func fallback(s, def string) string {
 		return s
 	}
 	return def
+}
+
+// table is a Table as text: its header and every row, the columns two
+// spaces apart and as wide as their widest cell, numbers and the like
+// aligned as the column says; "> " marks the selected row.
+func table(e *view.Element) []string {
+	ws := make([]int, len(e.Columns))
+	for j, c := range e.Columns {
+		ws[j] = cells.Width(c.Header)
+		for _, row := range e.Cells {
+			ws[j] = max(ws[j], cells.Width(row[j]))
+		}
+	}
+	format := func(row []string) string {
+		parts := make([]string, len(row))
+		for j, s := range row {
+			pad := strings.Repeat(" ", ws[j]-cells.Width(s))
+			switch e.Columns[j].Align {
+			case "end":
+				parts[j] = pad + s
+			case "center":
+				parts[j] = pad[:len(pad)/2] + s + pad[len(pad)/2:]
+			default:
+				parts[j] = s + pad
+			}
+		}
+		return strings.TrimRight(strings.Join(parts, "  "), " ")
+	}
+	headers := make([]string, len(e.Columns))
+	for j, c := range e.Columns {
+		headers[j] = c.Header
+	}
+	out := []string{"  " + format(headers)}
+	sel := e.SelectedRow()
+	for i, row := range e.Cells {
+		mark := "  "
+		if i == sel {
+			mark = "> "
+		}
+		out = append(out, mark+format(row))
+	}
+	if len(e.Cells) == 0 {
+		out = append(out, "  No rows")
+	}
+	return out
 }

@@ -368,3 +368,23 @@
     - key: Alt+b
     - key: Control+k
     - expect: {focused: note, actions: [clear, send], data: {/note: "hi "}}
+
+- name: A HottyTable's keys move its selection to the bound path, and Enter acts on the row selected
+  story: hotty/table
+  steps:
+    - focus: table
+    - expect: {focused: table, data: {/selected: Tokyo}}
+    - key: ArrowDown
+    - expect: {focused: table, data: {/selected: Delhi}}
+    - key: PageDown
+    - expect: {data: {/selected: Mumbai}}
+    - key: End
+    - expect: {data: {/selected: Karachi}}
+    - key: ArrowDown
+    - expect: {data: {/selected: Karachi}}
+    - key: Home
+    - expect: {data: {/selected: Tokyo}, actions: []}
+    - key: Enter
+    - expect: {focused: table, actions: [openCity], context: {city: Tokyo}}
+    - key: Tab
+    - expect: {focused: null}

@@ -82,6 +82,9 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	if isSelect(e) {
 		return r.selectKey(e, name)
 	}
+	if e.Kind == view.Table {
+		return r.c.TableKey(e.ID, name)
+	}
 	if e.Kind == view.Slider {
 		switch name {
 		case "ArrowLeft", "ArrowDown":

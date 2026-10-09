@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -723,5 +724,59 @@ func TestProgressAndSpinner(t *testing.T) {
 	}
 	if got := s.TextOf("s"); strings.Contains(got, "|") || !strings.Contains(got, "Working") {
 		t.Errorf("the stopped spinner reads %q", got)
+	}
+}
+
+// TestTableOnHost: a HottyTable is a focusable box holding a table, its
+// body the rows the view shows. A click on a row selects it, and a second
+// acts on it; the program's arrows move the selection, and the body
+// follows it, by deltas.
+func TestTableOnHost(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"sel":"",
+ "rows":[{"id":"a","n":1},{"id":"b","n":2},{"id":"c","n":3}]}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyTable","catalogId":"`+hottycat.ID+`","columns":[{"key":"id","header":"Id"},{"key":"n","header":"N","align":"end"}],
+  "rows":{"@path":"/rows"},"rowKey":"id","selected":{"@path":"/sel"},"height":2,
+  "onActivate":{"event":{"name":"open","context":{"row":{"@path":"/sel"}}}}}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	for _, want := range [][3]string{{"root", "tabindex", "0"}, {"root", "role", "grid"}, {"root", "aria-rowcount", "3"}, {"root", "data-keys", tableKeys}} {
+		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
+			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
+		}
+	}
+	row := func(i int) string { return partID("root", partRow+strconv.Itoa(i)) }
+	if _, ok := s.Element(row(2)); ok {
+		t.Error("the third row is in a body two rows high")
+	}
+	if !strings.Contains(s.TextOf("root"), "1–2 of 3") {
+		t.Errorf("no position under a scrolling table: %q", s.TextOf("root"))
+	}
+	must(t, x.h.Click(r.name, row(1)))
+	x.pump()
+	if got := r.C.S.Data.Value("/sel"); got != "b" || !r.C.St.Keyboard || r.C.St.Focus != "root" {
+		t.Fatalf("a click on b's row: selected %v, keyboard %v on %q", got, r.C.St.Keyboard, r.C.St.Focus)
+	}
+	if v, _ := s.Attr(row(1), "aria-selected"); v != "true" {
+		t.Errorf("b's row is not selected on the host")
+	}
+	must(t, x.h.Click(r.name, row(1)))
+	x.pump()
+	if len(x.actions) != 1 || x.actions[0].Name != "open" || x.actions[0].Context["row"] != "b" {
+		t.Fatalf("a second click: %+v", x.actions)
+	}
+	if _, ok, err := r.Key("ArrowDown"); !ok || err != nil {
+		t.Fatalf("ArrowDown: %v %v", ok, err)
+	}
+	x.update(r)
+	x.check(r)
+	if _, ok := s.Element(row(0)); ok {
+		t.Error("the first row is still in the body after it scrolled")
+	}
+	if v, _ := s.Attr(row(2), "aria-selected"); v != "true" {
+		t.Errorf("c's row is not selected after ArrowDown")
 	}
 }

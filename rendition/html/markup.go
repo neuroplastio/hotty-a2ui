@@ -198,6 +198,8 @@ func (m *markup) element(e *view.Element) *node {
 		if e.Label != "" {
 			n.add(el("span", "class", "k-spinner-label").add(texts(e.Label)...))
 		}
+	case view.Table:
+		n = table(e)
 	case view.Divider:
 		if e.Dir == view.Vertical {
 			n = el("div", "id", id, "class", "k-vr", "role", "separator", "aria-orientation", "vertical")
@@ -530,4 +532,49 @@ func themeCSS(th theme.Theme) string {
 	put("--k-link", th.Accent)
 	put("--k-focus", th.Accent)
 	return b.String()
+}
+
+// tableKeys are the keys a Table gives the program, which works its
+// selection (Rendition.Key): on a host that scrolls a surface with them,
+// they would never reach it otherwise (SPEC §10.2, keys for the program).
+const tableKeys = "ArrowUp=program ArrowDown=program PageUp=program PageDown=program Home=program End=program"
+
+// table is a Table: a focusable box holding a table, whose keys reach the
+// program (tableKeys; Enter reaches it anyway), and whose rows each report
+// a click, which selects the row, or acts on it once selected (Event).
+// The body holds the rows the view shows (Element.Top), as cells does: the
+// selection never scrolls out of sight, which a host's own scrolling
+// would let it do. Under it, while it scrolls, which rows show.
+func table(e *view.Element) *node {
+	box := el("div", "id", domID(e.ID), "class", "k-table", "tabindex", "0", "role", "grid",
+		"aria-rowcount", strconv.Itoa(len(e.Cells)), "data-keys", tableKeys)
+	head := el("tr")
+	for _, c := range e.Columns {
+		head.add(el("th", "class", "k-"+c.Align).add(texts(c.Header)...))
+	}
+	body := el("tbody")
+	top, end := e.Top, len(e.Cells)
+	if e.Height > 0 {
+		end = min(top+e.Height, end)
+	}
+	sel := e.SelectedRow()
+	for i := top; i < end; i++ {
+		tr := el("tr", "id", partID(e.ID, partRow+strconv.Itoa(i)), "class", "k-row", "data-on", "click",
+			"aria-rowindex", strconv.Itoa(i+2), "aria-selected", strconv.FormatBool(i == sel))
+		if i == sel {
+			tr.set("class", "k-row k-sel")
+		}
+		for j, c := range e.Columns {
+			tr.add(el("td", "class", "k-"+c.Align).add(texts(e.Cells[i][j])...))
+		}
+		body.add(tr)
+	}
+	box.add(el("table").add(el("thead").add(head), body))
+	switch n := len(e.Cells); {
+	case n == 0:
+		box.add(el("div", "class", "k-table-note").add(txt("No rows")))
+	case e.Height > 0 && n > e.Height:
+		box.add(el("div", "class", "k-table-note").add(txt(strconv.Itoa(top+1) + "–" + strconv.Itoa(end) + " of " + strconv.Itoa(n))))
+	}
+	return box
 }

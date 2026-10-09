@@ -213,6 +213,17 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		if isSelect(e) {
 			return r.clickSelect(e, part, ev)
 		}
+		if e.Kind == view.Table {
+			c.Focus(id)
+			r.host = keyboard{true, id}
+			if i, err := strconv.Atoi(strings.TrimPrefix(part, partRow)); err == nil && strings.HasPrefix(part, partRow) {
+				if i == e.SelectedRow() {
+					return c.Activate(id)
+				}
+				return c.SelectRow(id, i)
+			}
+			return nil
+		}
 		if e.Kind == view.Slider && (part == partLess || part == partMore) {
 			n := 1
 			if part == partLess {
@@ -303,6 +314,14 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	}
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && isSelect(e) {
 		if ok, err := r.selectKey(e, key); ok {
+			return nil, true, err
+		}
+	}
+	// A focused Table is a box on the host, which leaves every key to the
+	// program (SPEC §10.2): the arrows, Page Up, Page Down, Home and End
+	// move its selection, and Enter acts on it.
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Table {
+		if ok, err := c.TableKey(e.ID, key); ok {
 			return nil, true, err
 		}
 	}

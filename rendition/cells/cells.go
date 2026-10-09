@@ -24,7 +24,7 @@ type Rendition struct {
 	cursor  map[string]int // a text control's cursor: an index into its value's clusters
 	hscroll map[string]int // the first column it shows
 	vscroll map[string]int // a longText's first line shown
-	rows    map[string]int // a longText's rows, as last drawn
+	rows    map[string]int // a longText's rows, a Table's body rows, as last drawn
 	list    string         // the select whose list is open
 	hi      int            // the option highlighted in it
 	keys    string         // the text controls' keymap (SetKeys)
@@ -216,6 +216,8 @@ func (r *Rendition) Click(col, row int) error {
 		}
 		r.toggleList(e)
 		return nil
+	case e.Kind == view.Table:
+		return r.clickTable(e, h.opt)
 	case e.Kind == view.Slider:
 		if t := h.track; t != nil && col >= t.x && col < t.x+t.n {
 			r.drag = e.ID

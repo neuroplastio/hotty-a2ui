@@ -64,6 +64,11 @@ const (
 	// names its frame set (SpinnerFrames), Active whether it spins;
 	// Label.
 	Spinner Kind = "spinner"
+	// Table is rows of data under a header (HottyTable): Columns, Cells
+	// (each row's text, a column at a time), RowIDs (what identifies each
+	// row), Value (the selected row's id, a string; "" for none), Height
+	// (the body's rows, 0 for all of them) and Top (the first shown).
+	Table Kind = "table"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -154,6 +159,16 @@ type Element struct {
 	// one picked, say) rather than shaping it.
 	Item bool `json:"item,omitempty"`
 
+	// Table: its columns, each row's cells as text, each row's id, the
+	// rows of its body (0: as many as it has), and the first row the body
+	// shows: where it was scrolled, moved as little as brings the selected
+	// row into view (State.Scroll).
+	Columns []Column   `json:"columns,omitempty"`
+	Cells   [][]string `json:"cells,omitempty"`
+	RowIDs  []string   `json:"rowIds,omitempty"`
+	Height  int        `json:"height,omitempty"`
+	Top     int        `json:"top,omitempty"`
+
 	// Placeholder: State is the node's (pending, unknown, cyclic).
 	State a2ui.NodeState `json:"state,omitempty"`
 
@@ -173,6 +188,16 @@ type ChoiceOption struct {
 	Value string `json:"value"`
 }
 
+// Column is one of a Table's columns: the row field it shows (Key), its
+// header, its width in cells (0: its content's) and how its cells are
+// aligned (start, center, end).
+type Column struct {
+	Key    string `json:"key"`
+	Header string `json:"header,omitempty"`
+	Width  int    `json:"width,omitempty"`
+	Align  string `json:"align,omitempty"`
+}
+
 // A11y is a component's accessibility attributes.
 type A11y struct {
 	Label       string `json:"label,omitempty"`
@@ -189,7 +214,7 @@ func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table:
 		return true
 	case Choice:
 		return len(e.Children) == 0
@@ -324,6 +349,20 @@ func (e *Element) Fraction() (f float64, ok bool) {
 		return 0, false
 	}
 	return min(max(v/e.Max, 0), 1), true
+}
+
+// SelectedRow is the index of a Table's selected row, or -1.
+func (e *Element) SelectedRow() int {
+	v, _ := e.Value.(string)
+	if v == "" {
+		return -1
+	}
+	for i, id := range e.RowIDs {
+		if id == v {
+			return i
+		}
+	}
+	return -1
 }
 
 // SliderStep is how far a Slider moves for one step of the keyboard or a

@@ -403,3 +403,18 @@ textarea.k-input { min-height: 5.5rem; }
 .k-progress-value { min-width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
 .k-spinner { display: inline-flex; column-gap: 0.5ch; }
 .k-spinner-frame { color: var(--k-info, var(--k-link)); font-family: var(--k-mono); }
+
+/* HottyTable: a baseline (phase 1). The body holds the rows the view
+   shows, as cells does; a host's own scrolling, a sticky header and
+   hover are KIT-01h. Separate borders draw the header's rule on Blitz,
+   2px since a 1px straight edge drops out at a fractional scale, and a
+   row's own background keeps a selected row whole. */
+.k-table { align-self: start; border-radius: var(--k-r-field); outline: none; }
+.k-table table { border-collapse: separate; border-spacing: 0; }
+.k-table th { font-weight: 600; padding: var(--k-1) var(--k-3); border-bottom: 2px solid var(--k-border); text-align: start; }
+.k-table td { padding: var(--k-1) var(--k-3); }
+.k-table .k-center { text-align: center; }
+.k-table .k-end { text-align: end; font-variant-numeric: tabular-nums; }
+.k-table .k-sel { background: var(--k-tonal); }
+.k-table:focus .k-sel { background: color-mix(in srgb, var(--k-focus) 35%, var(--k-bg)); }
+.k-table-note { color: var(--k-muted); font-size: 0.875rem; padding: var(--k-1) var(--k-3); text-align: end; }

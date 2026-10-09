@@ -4,8 +4,9 @@ Last updated: 2026-10-09
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** a look at KIT-LOOK (journal 2026-10-09.4):
-fields drawn as huh draws them; and at KIT-02c and KIT-03c (journal
-2026-10-09.5): progress bars and spinners. Phase 1 is a go (2026-10-09). New names
+fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
+2026-10-09.5): progress bars and spinners; and at KIT-01c (journal
+2026-10-09.7): the table. Phase 1 is a go (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Legend
@@ -18,9 +19,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-01c** — Table: header, column widths, alignment, a highlighted
-  row, a sticky header while the body scrolls, and `…` cuts. Data-driven
-  (L3, L5), with select-then-act (L2).
 - [ ] **KIT-04c** — Rich list: title and description rows, the `/` filter,
   pagination dots, a status line, an empty state.
 - [ ] **KIT-08c** — Key hints from the Shortcuts and the focused field's
@@ -129,6 +127,17 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-01c** — `HottyTable` in cells (journal 2026-10-09.7, awaiting
+  the maintainer's look).
+  - Columns with widths, alignment and `…` cuts. Rows come as data,
+    bound or literal.
+  - The selection is a row's `rowKey`, written to the bound `selected`.
+    The arrows, Page Up, Page Down, Home and End move it. Enter or a
+    second click runs `onActivate` (L2).
+  - `height` gives a fixed body, which scrolls under the header to keep
+    the selection in view. The rule says which rows show.
+  - The HTML baseline is a real table with the same window of rows. Keys
+    and clicks work on a host, and a key vector covers both renditions.
 - [x] **KIT-02c** and **KIT-03c** — `HottyProgress` and `HottySpinner` in
   cells, on a frame clock (journal 2026-10-09.5, awaiting the maintainer's
   look).

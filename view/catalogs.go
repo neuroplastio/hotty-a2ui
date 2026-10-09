@@ -2,6 +2,7 @@ package view
 
 import (
 	"math"
+	"strconv"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
@@ -130,6 +131,7 @@ func init() {
 		active := !set || b.Bool(n, "active")
 		return &Element{Kind: Spinner, Label: b.String(n, "label"), Variant: b.Enum(n, "spinner", "dot"), Active: active}
 	})
+	Register(hotty.ID, "HottyTable", mapTable)
 	Register(hotty.ID, "HottyShortcut", func(b *Builder, n *a2ui.Node) *Element {
 		b.AddShortcut(Shortcut{ID: n.Key, Key: b.String(n, "key"), Press: b.String(n, "press"), Label: b.String(n, "label")})
 		b.out.nodes[n.Key] = n
@@ -225,4 +227,54 @@ func fallback(s, def string) string {
 		return s
 	}
 	return def
+}
+
+// mapTable makes a HottyTable's element: its columns, and its rows as
+// text, a cell for each column, from the row's field of the column's key.
+// A row's id is its rowKey field, as text, else its index.
+func mapTable(b *Builder, n *a2ui.Node) *Element {
+	e := &Element{Kind: Table, Value: a2ui.ToString(b.Value(n, "selected"))}
+	cols, _ := b.Raw(n, "columns").([]any)
+	for _, c := range cols {
+		m, _ := c.(map[string]any)
+		key, _ := m["key"].(string)
+		if key == "" {
+			continue
+		}
+		col := Column{Key: key, Header: a2ui.ToString(m["header"]), Align: "start"}
+		if w := a2ui.ToNumber(m["width"]); w >= 1 {
+			col.Width = int(w)
+		}
+		switch a, _ := m["align"].(string); a {
+		case "center", "end":
+			col.Align = a
+		}
+		e.Columns = append(e.Columns, col)
+	}
+	rowKey := b.String(n, "rowKey")
+	rows, _ := b.Raw(n, "rows").([]any)
+	for i, r := range rows {
+		m, _ := r.(map[string]any)
+		cells := make([]string, len(e.Columns))
+		for j, col := range e.Columns {
+			cells[j] = a2ui.ToString(m[col.Key])
+		}
+		id := strconv.Itoa(i)
+		if v, ok := m[rowKey]; rowKey != "" && ok && v != nil {
+			id = a2ui.ToString(v)
+		}
+		e.Cells = append(e.Cells, cells)
+		e.RowIDs = append(e.RowIDs, id)
+	}
+	if h := a2ui.ToNumber(b.Raw(n, "height")); h >= 1 {
+		e.Height = int(h)
+		top := b.St.Scroll[n.Key]
+		if sel := e.SelectedRow(); sel >= 0 {
+			top = min(top, sel)
+			top = max(top, sel-e.Height+1)
+		}
+		e.Top = max(min(top, len(e.Cells)-e.Height), 0)
+		b.St.Scroll[n.Key] = e.Top
+	}
+	return e
 }
