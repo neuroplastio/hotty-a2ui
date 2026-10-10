@@ -164,10 +164,16 @@ func notchAt(e *view.Element, part string) (v float64, ok bool) {
 
 // TrackStep is where on a host a Slider's or a HottyRangeSlider's track
 // stands for v: its notch's DOM id, which a tap there clicks, and its step
-// (SPEC §9.1's x), which a drag there reports. ok is false for any other
+// (SPEC §9.1's x), which a drag there reports; for a HottyPaginator of
+// dots, page v's dot (from 1) and its index. ok is false for any other
 // element.
 func (r *Rendition) TrackStep(id string, v float64) (notch string, step int, ok bool) {
 	e := r.C.V.Find(id)
+	if e != nil && e.Kind == view.Paginator && e.Variant != "numbers" {
+		// Page v's dot.
+		p := min(max(int(v), 1), e.PageCount) - 1
+		return partID(id, partDots+strconv.Itoa(p)), p, true
+	}
 	if e == nil || e.Kind != view.Slider && e.Kind != view.RangeSlider {
 		return "", 0, false
 	}

@@ -64,7 +64,7 @@ they're built.
 | KIT-12 | **Selection and copy** | OpenTUI selection and clipboard | Medium | Dragging the mouse selects text in cells. Copy goes through OSC 52 | The host's own selection and copy. This waits for the host's clipboard (board, *The host*) |
 | KIT-13 | **Toast and tooltip** | OpenTUI notifications, console | Low–Medium | A toast is a box in a corner, over the surface, that times out. A tooltip is a component's `accessibility.description`, shown in a status line | A toast is a surface at a higher Z. A tooltip is a surface at a higher z, at the hovered area |
 | KIT-14 | **Timer and stopwatch** | bubbles timer and stopwatch | Low | A countdown or elapsed time that ticks, and an action when time is up | The same, set in display type |
-| KIT-15 | **Paginator** | bubbles paginator | Low | Dots (`• ○`) or `3/10`, moved with ← → | The same |
+| KIT-15 | **Paginator** (`HottyPaginator`) | bubbles paginator | Low | Dots (`•`, the page shown's bright and the others faint, as bubbles' paginator example and list draw them; bubbles' bare default is `• ○`) or `3/10`, moved with ← → and h l, under the items it pages | The same |
 | KIT-16 | **Confirm**: a pattern of two Buttons and HottyShortcuts, not a component (profile §6.24, journal 2026-10-10.26) | huh confirm | Low | Yes and No inline, with the y and n keys | The same |
 | KIT-17 | **File picker** | bubbles filepicker, huh filepicker | Low | A directory listing walked with ↑ ↓ ← →. It shows only the roots the program grants (a2ui-limits L10) | The same, with icons |
 | KIT-18 | **Terminal** | OpenTUI EmbeddedTerminal | Low, large | A VT pane that runs only commands the program has registered, never a command line from the agent (L10) | To be decided |

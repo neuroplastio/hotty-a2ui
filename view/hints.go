@@ -95,11 +95,12 @@ func (c *Controller) KeyHints(keys string, host bool) (short []Hint, full [][]Hi
 }
 
 // programKeys reports whether a host leaves an element's keys to the
-// program, which works it: a box (a Table, a HottyList), a Slider, a
-// HottyRangeSlider's knob, a select (rendition/html's Key).
+// program, which works it: a box (a Table, a HottyList, a
+// HottyPaginator), a Slider, a HottyRangeSlider's knob, a select
+// (rendition/html's Key).
 func programKeys(e *Element) bool {
 	switch e.Kind {
-	case Table, RichList, Slider, Knob, DiffView, Tree:
+	case Table, RichList, Slider, Knob, DiffView, Tree, Paginator:
 		return true
 	case Choice:
 		return len(e.Children) == 0
@@ -240,6 +241,11 @@ func (c *Controller) ownHints(e *Element, keys string) (short []Hint, groups [][
 	case Slider, Knob:
 		short = []Hint{{"←/→", "adjust"}}
 		return short, [][]Hint{append(slices.Clone(short), Hint{"home/end", "min/max"})}
+	case Paginator:
+		// bubbles' paginator example's help, "h/l ←/→ page"; the full
+		// view in bubbles' list's words for its pages.
+		short = []Hint{{"←/→", "page"}}
+		return short, [][]Hint{{{"→/l/pgdn", "next page"}, {"←/h/pgup", "prev page"}, {"home", "first page"}, {"end", "last page"}}}
 	case Button:
 		short = []Hint{{"enter", "press"}}
 		return short, [][]Hint{short}

@@ -192,6 +192,30 @@ func TestScrollView(t *testing.T) {
 	}
 }
 
+// TestPaginator: a paginator reads as its child with every page's items,
+// whatever the page, then the page shown; one without a child reads as
+// that line alone.
+func TestPaginator(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	h := `"catalogId":"` + hotty.ID + `"`
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"page":2}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["fruit","results"]},
+	 {"id":"fruit","component":"HottyPaginator",` + h + `,"child":"list","perPage":2,"page":{"@path":"/page"}},
+	 {"id":"list","component":"Column","children":["a","b","c"]},
+	 {"id":"a","component":"Text","text":"Apple"},
+	 {"id":"b","component":"Text","text":"Banana"},
+	 {"id":"c","component":"Text","text":"Cherry"},
+	 {"id":"results","component":"HottyPaginator",` + h + `,"pages":12,"page":3,"displayStyle":"numbers"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	if want := "Apple\nBanana\nCherry\nPage 2 of 2\nPage 3 of 12\n"; got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
 // TestCode: code reads as it is, after its line numbers when they show
 // and its marks' signs when it has any.
 func TestCode(t *testing.T) {

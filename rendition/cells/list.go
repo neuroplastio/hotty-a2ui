@@ -2,7 +2,6 @@ package cells
 
 import (
 	"slices"
-	"strconv"
 
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
@@ -168,20 +167,10 @@ func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	row += listBody(e)
 	if listPaged(e) {
+		// A HottyPaginator's dots (pageDots), as bubbles' list has its
+		// paginator; numbers in muted where they do not fit.
 		if pages, page := e.Pages(); pages > 1 {
-			var dots []glyph
-			if pages <= iw {
-				for p := range pages {
-					st := style{role: Border}
-					if p == page {
-						st = style{}
-					}
-					dots = append(dots, line("•", st)...)
-				}
-			} else {
-				dots = line(strconv.Itoa(page+1)+"/"+strconv.Itoa(pages), style{role: Muted})
-			}
-			cv.write(in, row+1, iw, fit(dots, iw))
+			cv.write(in, row+1, iw, fit(pageDots(pages, page, iw, false, style{}, style{role: Muted}), iw))
 		}
 		row += 2
 	}

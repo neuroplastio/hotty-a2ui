@@ -209,6 +209,8 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		l.paintKeyHints(cv, e, x, y, w)
 	case view.ScrollView:
 		l.paintScroll(cv, e, x, y, w)
+	case view.Paginator:
+		l.paintPaginator(cv, e, x, y, w, h)
 	case view.Listing:
 		l.paintCode(cv, e, x, y, w)
 	case view.DiffView:

@@ -42,7 +42,8 @@ type player interface {
 	click(id string)
 	// tap, press, move and release are the pointer on a Slider's or a
 	// HottyRangeSlider's track where it stands for v: a click there, and a
-	// drag's press, moves and release.
+	// drag's press, moves and release. A tap on a HottyPaginator clicks
+	// page v's dot.
 	tap(id string, v float64)
 	press(id string, v float64)
 	move(v float64)

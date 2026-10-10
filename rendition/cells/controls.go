@@ -63,13 +63,14 @@ func inputWidth(e *view.Element) int {
 }
 
 // isField reports whether an element is a field: a control with a gutter
-// and, when it has a label of its own, a title row (profile §3.4).
+// and, when it has a label of its own, a title row (profile §3.4). A
+// HottyPaginator has a gutter, and no label.
 func isField(e *view.Element) bool {
 	if e == nil {
 		return false
 	}
 	switch e.Kind {
-	case view.TextField, view.DateTime, view.CheckBox, view.Switch, view.Choice, view.Slider, view.RangeSlider:
+	case view.TextField, view.DateTime, view.CheckBox, view.Switch, view.Choice, view.Slider, view.RangeSlider, view.Paginator:
 		return true
 	}
 	return false

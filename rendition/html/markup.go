@@ -243,6 +243,8 @@ func (m *markup) element(e *view.Element) *node {
 		n = m.keyHints(e)
 	case view.ScrollView:
 		n = m.scrollView(e)
+	case view.Paginator:
+		n = m.paginator(e)
 	case view.Listing:
 		n = m.code(e)
 	case view.DiffView:

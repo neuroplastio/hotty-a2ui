@@ -154,7 +154,7 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 | KIT-12 Selection and copy | nothing: renderer behaviour; a `copy` renderer function if the agent should copy | Fits. L8 |
 | KIT-13 Toast and tooltip | toast: `message`, `tone`, `duration`, bound `open`; tooltip: `accessibility.description` | Fits. L6 |
 | KIT-14 Timer and stopwatch | Settled (KIT-14c, profile §6.25): `HottyTimer` (`duration`, `onTimeout`) and `HottyStopwatch`, each with `running` (a DynamicBoolean the renderer writes false when a timer runs out), `interval`, `format`; the time counted is the renderer's state, and Buttons work it through `hottyStartTimer`, `hottyStopTimer`, `hottyToggleTimer` and `hottyResetTimer`, since basic's Button can't write the data model | Fits. L1, L6, L8 |
-| KIT-15 Paginator | bound `page`, `pages` | Fits |
+| KIT-15 Paginator | Settled (KIT-15c, profile §6.26): a `child` (a List, Column or Row, whose items the view cuts into pages of `perPage`) or `pages`, the agent's; bound `page`, from 1; `onChange` (an Action after each turn, whose context reads `page`); `displayStyle` dots or numbers | Fits. L2 |
 | KIT-16 Confirm | Settled (KIT-16c, profile §6.24): nothing; a pattern of two Buttons, each with its own action, and HottyShortcuts for y, n and the arrows. Its keys are the surface's (NEIO-11 question 4), and a kept yes or no is a HottySwitch's or a CheckBox's value | Fits |
 | KIT-17 File picker | `root` (a grant's name), bound `path`, `filter` | Fits. **L10** |
 | KIT-18 Terminal | `command` (a registered id), `lines` or a stream | Fits. L4, **L10** |

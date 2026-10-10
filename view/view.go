@@ -127,6 +127,11 @@ const (
 	// (HottySparkline): Series, Height, Window as a Chart's; Min and Max,
 	// the values at its bottom and its top.
 	Sparkline Kind = "sparkline"
+	// Paginator turns pages (HottyPaginator): PageCount, its pages;
+	// Selected, the one shown, from 0; Variant, dots or numbers. With a
+	// child (Children), Height is the items a page shows and Paged every
+	// page's items, the child holding the shown one's.
+	Paginator Kind = "paginator"
 	// Toast is a notice over the surface, in a corner, for a while
 	// (hottyToast, Surface.Toasts): Label, its message; Variant, its kind
 	// (info, success, warning, error); Name, its id; its ToastAction, when
@@ -304,6 +309,13 @@ type Element struct {
 	Labels []string `json:"labels,omitempty"`
 	Window int      `json:"window,omitempty"`
 
+	// Paginator: how many pages it has; with a child, the child's items
+	// cut into pages, the one shown being the child's own Children (shared:
+	// for a rendition to measure, so that the paginator keeps the size of
+	// its widest and tallest page; not in the tree, so not walked).
+	PageCount int          `json:"pageCount,omitempty"`
+	Paged     [][]*Element `json:"-"`
+
 	// Drag and drop (profile §6.21). Movable: a HottyList, HottyTable or
 	// HottyTree that is reorderable, or a List of a template with
 	// io_neuroplast_hotty.reorder, whose items the user moves; ItemType, the
@@ -364,7 +376,7 @@ func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button, Switch, Knob:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree, ToastAction:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree, ToastAction, Paginator:
 		return true
 	case DiffView:
 		return len(e.RowIDs) > 0

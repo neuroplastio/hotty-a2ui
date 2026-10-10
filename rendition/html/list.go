@@ -79,18 +79,11 @@ func richList(e *view.Element) *node {
 		}
 	}
 	if pages, page := e.Pages(); pages > 1 || paged {
-		dots := el("div", "id", partID(e.ID, partDots), "class", "k-rich-pages", "aria-label",
-			"Page "+strconv.Itoa(page+1)+" of "+strconv.Itoa(pages))
+		// A HottyPaginator's dots (pageDots), without its clicks.
+		dots := pageDots(e.ID, "k-rich-pages", pages, page, false)
 		if pages == 1 {
 			dots.set("class", "k-rich-pages k-rich-gap")
 			dots.set("aria-hidden", "true")
-		}
-		for p := range pages {
-			class := "k-dot"
-			if p == page {
-				class += " k-on"
-			}
-			dots.add(el("span", "class", class).add(txt("•")))
 		}
 		box.add(dots)
 	}

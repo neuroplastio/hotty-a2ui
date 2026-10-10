@@ -16,6 +16,9 @@ type layout struct {
 	// labelW is the width a one-line field pads its label to on its
 	// value's row: its run's widest (labelRuns).
 	labelW map[*view.Element]int
+	// pages are each HottyPaginator's child as it stands for each page
+	// (pagerPages).
+	pages map[*view.Element][]*view.Element
 }
 
 type sized struct {
@@ -25,7 +28,7 @@ type sized struct {
 
 func newLayout(r *Rendition) *layout {
 	return &layout{r: r, nat: map[*view.Element]int{}, min: map[*view.Element]int{}, hgt: map[sized]int{}, text: map[sized][]tline{},
-		labelW: map[*view.Element]int{}}
+		labelW: map[*view.Element]int{}, pages: map[*view.Element][]*view.Element{}}
 }
 
 // labelRuns notes, for each run of a Column's children whose labels are
@@ -159,6 +162,8 @@ func (l *layout) minimum(e *view.Element) int {
 		n = 1
 	case view.ScrollView:
 		n = l.scrollMinimum(e)
+	case view.Paginator:
+		n = l.pagerMinimum(e)
 	case view.Listing:
 		n = codeMinimum(e)
 	case view.DiffView:
@@ -235,6 +240,8 @@ func (l *layout) measure(e *view.Element) int {
 		return l.r.hintsWidth(e)
 	case view.ScrollView:
 		return l.scrollWidth(e)
+	case view.Paginator:
+		return l.pagerWidth(e)
 	case view.Listing:
 		return codeWidth(e)
 	case view.DiffView:
@@ -286,6 +293,8 @@ func (l *layout) measureHeight(e *view.Element, w int) int {
 		return len(l.lines(e, w))
 	case view.ScrollView:
 		return e.Height
+	case view.Paginator:
+		return l.pagerHeight(e, w)
 	case view.Listing:
 		return len(codeRows(e, w))
 	case view.DiffView:
@@ -332,15 +341,17 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 // title row; one before a control after a heading, a form's title; before
 // a HottyKeyHints, as bubbles' help sits a row under what it is for; after
 // a HottyScrollView, whose box draws no edge but its scrollbar, a
-// HottyCode, which draws none, or a HottyChart, whose labels and legend
-// end it, so that what follows does not read as its content; else none,
-// so that a stack of Buttons or of HottySpinners stays tight.
+// HottyCode, which draws none, a HottyChart, whose labels and legend end
+// it, or a HottyPaginator, whose dots end its pages, so that what follows
+// does not read as its content; else none, so that a stack of Buttons or
+// of HottySpinners stays tight.
 func separator(kids []*view.Element, i int) int {
 	if i == 0 {
 		return 0
 	}
 	a, b := edge(kids[i-1], false), edge(kids[i], true)
-	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView || a.Kind == view.Chart {
+	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView || a.Kind == view.Chart ||
+		a.Kind == view.Paginator {
 		return 1
 	}
 	if isControlElement(b) && endsInHeading(a) {

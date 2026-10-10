@@ -103,8 +103,11 @@ func (e *Element) SelectedShown() int {
 }
 
 // Pages is how many pages a HottyList's shown items take, and the one
-// that shows: 1 and 0 without a height.
+// that shows: 1 and 0 without a height. A HottyPaginator's are its own.
 func (e *Element) Pages() (n, at int) {
+	if e.Kind == Paginator {
+		return e.PageCount, e.Selected
+	}
 	if e.Height <= 0 {
 		return 1, 0
 	}

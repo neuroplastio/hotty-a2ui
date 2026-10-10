@@ -12,7 +12,8 @@
 #   blur: the program takes it back
 #   click: the user clicks an element (by view id)
 #   tap: {on: a Slider's or a HottyRangeSlider's view id, at: a value}:
-#     a click on its track where it stands for the value
+#     a click on its track where it stands for the value; {on: a
+#     HottyPaginator's, at: a page from 1}: a click on that page's dot
 #   press: {on, at}, then move: {at} and release: {at}: a drag along that
 #     track, from its press to its release (on the host, as one that says
 #     where on the track the pointer is, SPEC §9.1's steps)
@@ -816,3 +817,38 @@
     - expect: {toasts: [pinned, upload, toast-3, toast-2, toast-1]}
     - click: unstay
     - expect: {actions: [], toasts: [upload, toast-3, toast-2, toast-1]}
+
+- name: ← → and h l turn a focused HottyPaginator's pages, none past the ends, Home and End to them; a turn sends onChange's event, the page in its context
+  story: hotty/paginator
+  steps:
+    - focus: fruit
+    - key: ArrowRight
+    - expect: {focused: fruit, data: {/fruitPage: 2}}
+    - key: l
+    - expect: {data: {/fruitPage: 3}}
+    - key: h
+    - expect: {data: {/fruitPage: 2}}
+    - key: End
+    - expect: {data: {/fruitPage: 6}}
+    - key: ArrowRight
+    - expect: {focused: fruit, data: {/fruitPage: 6}}
+    - key: Home
+    - expect: {data: {/fruitPage: 1}}
+    - key: ArrowLeft
+    - expect: {focused: fruit, data: {/fruitPage: 1}, actions: []}
+    - key: Tab
+    - expect: {focused: results_pager}
+    - key: ArrowRight
+    - expect: {actions: [search], context: {query: paginator, page: 2}, data: {/results/page: 2}}
+    - key: Tab
+    - expect: {focused: null}
+
+- name: A click on a HottyPaginator's dot shows its page and gives the paginator the keyboard
+  story: hotty/paginator
+  steps:
+    - tap: {on: fruit, at: 4}
+    - expect: {focused: fruit, data: {/fruitPage: 4}}
+    - key: ArrowLeft
+    - expect: {data: {/fruitPage: 3}}
+    - tap: {on: fruit, at: 6}
+    - expect: {focused: fruit, data: {/fruitPage: 6}, actions: []}

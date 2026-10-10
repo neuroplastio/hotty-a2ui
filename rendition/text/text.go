@@ -178,6 +178,8 @@ func element(e *view.Element) []string {
 			return children(e)
 		}
 		return e.Lines
+	case view.Paginator:
+		return pager(e)
 	case view.Listing:
 		return listing(e)
 	case view.DiffView:
@@ -374,6 +376,23 @@ func richList(e *view.Element) []string {
 		out = append(out, "  "+e.Placeholder)
 	}
 	return out
+}
+
+// pager is a HottyPaginator as text: its child with every page's items,
+// whatever the page, as a HottyScrollView's whole content, then the page
+// the view shows, "Page 2 of 6"; that line alone for one without a child,
+// whose pages the agent holds.
+func pager(e *view.Element) []string {
+	var out []string
+	if len(e.Children) > 0 {
+		all := *e.Children[0]
+		all.Children = nil
+		for _, p := range e.Paged {
+			all.Children = append(all.Children, p...)
+		}
+		out = element(&all)
+	}
+	return append(out, "Page "+strconv.Itoa(e.Selected+1)+" of "+strconv.Itoa(e.PageCount))
 }
 
 // tree is a HottyTree as text: every node it shows, whatever its height,

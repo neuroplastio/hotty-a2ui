@@ -32,7 +32,7 @@ const (
 	partTitle  = "h" // a HottyList's title, or its filter while typed
 	partStatus = "u" // a HottyList's status line
 	partItem   = "i" // a HottyList's items, "i0" to "iN", by their index
-	partDots   = "d" // a HottyList's page dots
+	partDots   = "d" // a HottyList's or a HottyPaginator's page dots; a HottyPaginator's each, "d0" to "dN"
 	partLines  = "j" // a HottyScrollView's lines, which a log appends to
 	partHunk   = "b" // a HottyDiff's hunks, "b0" to "bN", by their index
 	partNode   = "q" // a HottyTree's nodes, "q0" to "qN", by their index

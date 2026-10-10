@@ -593,6 +593,22 @@ textarea.k-input { min-height: 5.5rem; }
 .k-dot { color: var(--k-border); }
 .k-dot.k-on { color: var(--k-fg); }
 
+/* HottyPaginator: a baseline (phase 1), as cells draws it: its child,
+   holding the page the view shows, then its pages, a HottyList's dots,
+   each taking a click, or the page of how many. Its content starts where
+   a HottyList's items do, past a 3px bar that is in the focus colour
+   while it has the keyboard, down the box as cells' gutter bar is, the
+   page shown in the focus colour too. A page is as tall as its items: a
+   host lays it out, where cells keeps every page as tall as the tallest.
+   Display type and the host's own look are KIT-15h. */
+.k-pager { display: flex; flex-direction: column; row-gap: var(--k-2); align-self: stretch; min-width: 0;
+  padding-left: var(--k-3); border-left: 3px solid transparent; outline: none; }
+.k-pager:focus { border-left-color: var(--k-focus); }
+.k-pages { letter-spacing: 0.2em; }
+.k-pager .k-dot { cursor: pointer; }
+.k-page-n { letter-spacing: normal; font-variant-numeric: tabular-nums; }
+.k-pager:focus > .k-pages .k-dot.k-on, .k-pager:focus > .k-page-n { color: var(--k-focus); }
+
 /* HottyTree: a baseline (phase 1), the rows cells shows, as a host's tree
    lays them out: a row a node, --k-node-h tall, indented a step a level
    (--k-level), its fold (▸ closed, ▾ open, blank on a leaf, so that a

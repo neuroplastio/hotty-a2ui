@@ -360,6 +360,8 @@ func (r *Rendition) click(col, row int) error {
 		return r.clickList(e, h.opt)
 	case e.Kind == view.Tree:
 		return r.c.ClickNode(e.ID, h.opt)
+	case e.Kind == view.Paginator:
+		return r.clickPager(e, h.opt)
 	case e.Kind == view.Slider:
 		if t := h.track; t != nil && col >= t.x && col < t.x+t.n {
 			r.drag = e.ID
@@ -469,11 +471,15 @@ func trackValue(e *view.Element, t *trackArea, col int) float64 {
 
 // TrackCell is the cell of a Slider's or a HottyRangeSlider's track that
 // stands for v, in the last frame drawn (profile §3.4): where a click sets
-// v, or the nearest to it. ok is false when the track was not drawn.
+// v, or the nearest to it; of a HottyPaginator's, the dot of page v (from
+// 1). ok is false when the track was not drawn.
 func (r *Rendition) TrackCell(id string, v float64) (col, row int, ok bool) {
 	e := r.c.V.Find(id)
 	if e == nil {
 		return 0, 0, false
+	}
+	if e.Kind == view.Paginator {
+		return r.dotCell(id, int(v))
 	}
 	for _, h := range r.hits {
 		if h.id == id && h.track != nil {

@@ -1,0 +1,247 @@
+{
+  "name": "Paginator",
+  "kind": "component",
+  "component": "HottyPaginator",
+  "icon": "more_horiz",
+  "description": "Pages, as bubbles' paginator turns them. Fruit is a List of 22, four to a page: the paginator holds it (its child) and shows one page of it, then a dot for each page, the one shown the brightest; the last page, of two, keeps the others' height, so the dots stay put. The arrows left and right, h and l, and Page Up and Page Down turn the pages; Home and End go to the first and the last; a click on a dot goes to its page. The page is written to /fruitPage, from 1. Search results are the agent's: it holds twelve pages and sends them one at a time, so the paginator has no child, only pages, shown as numbers (displayStyle numbers). A turn writes /results/page and sends search with it, which the agent would answer with that page's results; this story has no agent, so they stay. The help line is a HottyKeyHints.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "paginator",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "fruit": [
+            {
+              "name": "Apple"
+            },
+            {
+              "name": "Apricot"
+            },
+            {
+              "name": "Banana"
+            },
+            {
+              "name": "Blackberry"
+            },
+            {
+              "name": "Cherry"
+            },
+            {
+              "name": "Damson"
+            },
+            {
+              "name": "Elderberry"
+            },
+            {
+              "name": "Fig"
+            },
+            {
+              "name": "Grape"
+            },
+            {
+              "name": "Kiwi"
+            },
+            {
+              "name": "Lemon"
+            },
+            {
+              "name": "Mango"
+            },
+            {
+              "name": "Nectarine"
+            },
+            {
+              "name": "Orange"
+            },
+            {
+              "name": "Papaya"
+            },
+            {
+              "name": "Peach"
+            },
+            {
+              "name": "Pear"
+            },
+            {
+              "name": "Plum"
+            },
+            {
+              "name": "Quince"
+            },
+            {
+              "name": "Raspberry"
+            },
+            {
+              "name": "Strawberry"
+            },
+            {
+              "name": "Watermelon"
+            }
+          ],
+          "fruitPage": 1,
+          "results": {
+            "query": "paginator",
+            "page": 1,
+            "pages": 12,
+            "items": [
+              {
+                "title": "Paginator · bubbles",
+                "url": "github.com/charmbracelet/bubbles/tree/main/paginator"
+              },
+              {
+                "title": "Pagination · Material Design",
+                "url": "m3.material.io/components/pagination"
+              },
+              {
+                "title": "Paginator · Angular Material",
+                "url": "material.angular.dev/components/paginator"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "paginator",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "fruit_title",
+              "fruit",
+              "results_title",
+              "results",
+              "results_bar",
+              "help"
+            ]
+          },
+          {
+            "id": "fruit_title",
+            "component": "Text",
+            "text": "#### Fruit"
+          },
+          {
+            "id": "fruit",
+            "component": "HottyPaginator",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "child": "fruit_list",
+            "perPage": 4,
+            "page": {
+              "@path": "/fruitPage"
+            },
+            "accessibility": {
+              "label": "Fruit pages"
+            }
+          },
+          {
+            "id": "fruit_list",
+            "component": "List",
+            "children": {
+              "componentId": "fruit_item",
+              "path": "/fruit"
+            }
+          },
+          {
+            "id": "fruit_item",
+            "component": "Text",
+            "text": {
+              "@call": "formatString",
+              "args": {
+                "value": "- ${name}"
+              }
+            }
+          },
+          {
+            "id": "results_title",
+            "component": "Text",
+            "text": "#### Search results"
+          },
+          {
+            "id": "results",
+            "component": "List",
+            "children": {
+              "componentId": "result",
+              "path": "/results/items"
+            }
+          },
+          {
+            "id": "result",
+            "component": "Column",
+            "children": [
+              "result_title",
+              "result_url"
+            ]
+          },
+          {
+            "id": "result_title",
+            "component": "Text",
+            "text": {
+              "@path": "title"
+            }
+          },
+          {
+            "id": "result_url",
+            "component": "Text",
+            "text": {
+              "@path": "url"
+            },
+            "variant": "caption"
+          },
+          {
+            "id": "results_bar",
+            "component": "Row",
+            "justify": "spaceBetween",
+            "align": "center",
+            "children": [
+              "results_count",
+              "results_pager"
+            ]
+          },
+          {
+            "id": "results_count",
+            "component": "Text",
+            "text": "58 results",
+            "variant": "caption"
+          },
+          {
+            "id": "results_pager",
+            "component": "HottyPaginator",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "pages": {
+              "@path": "/results/pages"
+            },
+            "page": {
+              "@path": "/results/page"
+            },
+            "displayStyle": "numbers",
+            "accessibility": {
+              "label": "Result pages"
+            },
+            "onChange": {
+              "event": {
+                "name": "search",
+                "context": {
+                  "query": {
+                    "@path": "/results/query"
+                  },
+                  "page": {
+                    "@path": "/results/page"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "help",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          }
+        ]
+      }
+    }
+  ]
+}

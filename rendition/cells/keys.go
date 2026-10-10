@@ -119,6 +119,9 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	if e.Kind == view.Tree {
 		return r.c.TreeKey(e.ID, name)
 	}
+	if e.Kind == view.Paginator {
+		return r.c.PageKey(e.ID, name)
+	}
 	// A HottyRangeSlider's knob steps as a Slider does, and stops where it
 	// meets the other.
 	if e.Kind == view.Slider || e.Kind == view.Knob {

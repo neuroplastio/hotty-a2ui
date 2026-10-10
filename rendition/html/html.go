@@ -359,6 +359,15 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			}
 			return nil
 		}
+		if e.Kind == view.Paginator {
+			// A dot shows its page, and the box has the keyboard.
+			c.Focus(id)
+			r.host = keyboard{true, id}
+			if i, err := strconv.Atoi(strings.TrimPrefix(part, partDots)); err == nil && strings.HasPrefix(part, partDots) {
+				return c.TurnPage(id, i)
+			}
+			return nil
+		}
 		if e.Kind == view.Slider && (part == partLess || part == partMore) {
 			n := 1
 			if part == partLess {
@@ -588,6 +597,12 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	// and close its branches.
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Tree {
 		if ok, err := c.TreeKey(e.ID, key); ok {
+			return nil, true, err
+		}
+	}
+	// And a HottyPaginator, whose keys (pagerKeys) turn its pages.
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Paginator {
+		if ok, err := c.PageKey(e.ID, key); ok {
 			return nil, true, err
 		}
 	}

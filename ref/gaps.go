@@ -11,6 +11,7 @@ import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/list"
+	"charm.land/bubbles/v2/paginator"
 	"charm.land/bubbles/v2/progress"
 	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/table"
@@ -55,6 +56,9 @@ func init() {
 	})
 	register("confirm-form", "hotty/confirm-form", "huh: Confirm ending a form (KIT-16)", func() tea.Model {
 		return screen{newConfirmForm()}
+	})
+	register("paginator", "hotty/paginator", "bubbles: paginator, dots and arabic (KIT-15)", func() tea.Model {
+		return screen{newPagers()}
 	})
 	// Bubble Tea has no charts: ntcharts' (charts.go).
 	register("chart", "hotty/chart", "ntcharts: time series line chart, bar chart (KIT-10)", func() tea.Model {
@@ -506,4 +510,101 @@ func codeMarkdown() string {
 		out.WriteString(c.text + "\n\n")
 	}
 	return out.String()
+}
+
+// paginator: bubbles' paginator example, its dots styled as the example
+// styles them (its dark colours: the shots are in Catppuccin Mocha), over
+// the story's fruit, four a page, each "• name" two columns in as the
+// example's items are; then the story's search results, static, and an
+// arabic paginator of their twelve pages, as bubbles draws one by
+// default, at the row's end. Tab moves the keys between the two, as the
+// story's Tab does; the help line is bubbles' help with the example's
+// keys. The story is read as viewport's is, from the repository's root.
+type pagersRef struct {
+	fruit   []string
+	results []struct{ Title, URL string }
+	pages   [2]paginator.Model
+	focus   int
+	width   int
+	help    help.Model
+}
+
+func newPagers() *pagersRef {
+	m := &pagersRef{help: help.New()}
+	b, err := os.ReadFile("story/stories/hotty/paginator.json")
+	if err != nil {
+		m.fruit = []string{"ref paginator runs from the repository's root: " + err.Error()}
+	}
+	var s struct {
+		Messages []struct {
+			CreateSurface *struct {
+				DataModel struct {
+					Fruit   []struct{ Name string }
+					Results struct {
+						Pages int
+						Items []struct{ Title, URL string }
+					}
+				}
+			}
+		}
+	}
+	_ = json.Unmarshal(b, &s)
+	pages := 1
+	for _, msg := range s.Messages {
+		if cs := msg.CreateSurface; cs != nil {
+			for _, f := range cs.DataModel.Fruit {
+				m.fruit = append(m.fruit, f.Name)
+			}
+			m.results, pages = cs.DataModel.Results.Items, cs.DataModel.Results.Pages
+		}
+	}
+	dots := paginator.New(paginator.WithPerPage(4))
+	dots.Type = paginator.Dots
+	dots.ActiveDot = lipgloss.NewStyle().Foreground(lipgloss.Color("252")).Render("•")
+	dots.InactiveDot = lipgloss.NewStyle().Foreground(lipgloss.Color("238")).Render("•")
+	dots.SetTotalPages(len(m.fruit))
+	m.pages = [2]paginator.Model{dots, paginator.New(paginator.WithTotalPages(max(pages, 1)))}
+	return m
+}
+
+func (m *pagersRef) Init() tea.Cmd { return nil }
+
+func (m *pagersRef) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.help.SetWidth(msg.Width)
+		return nil
+	case tea.KeyPressMsg:
+		if msg.String() == "tab" {
+			m.focus = 1 - m.focus
+			return nil
+		}
+	}
+	var cmd tea.Cmd
+	m.pages[m.focus], cmd = m.pages[m.focus].Update(msg)
+	return cmd
+}
+
+func (m *pagersRef) View() string {
+	bold, subdued := lipgloss.NewStyle().Bold(true), lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
+	var b strings.Builder
+	b.WriteString(bold.Render("Fruit") + "\n\n")
+	start, end := m.pages[0].GetSliceBounds(len(m.fruit))
+	for _, f := range m.fruit[start:end] {
+		b.WriteString("  • " + f + "\n")
+	}
+	b.WriteString("\n  " + m.pages[0].View() + "\n\n")
+	b.WriteString(bold.Render("Search results") + "\n")
+	for _, r := range m.results {
+		b.WriteString(r.Title + "\n" + subdued.Render(r.URL) + "\n")
+	}
+	count, pages := subdued.Render("58 results"), m.pages[1].View()
+	gap := max(m.width-lipgloss.Width(count)-lipgloss.Width(pages), 1)
+	b.WriteString(count + strings.Repeat(" ", gap) + pages + "\n\n")
+	b.WriteString(m.help.ShortHelpView([]key.Binding{
+		key.NewBinding(key.WithKeys("h", "l", "left", "right"), key.WithHelp("h/l ←/→", "page")),
+		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
+	}))
+	return b.String()
 }
