@@ -417,6 +417,10 @@ without colour:
 - A HottySwitch's label is in `accent`.
 - A Slider's track is in `accent` up to the knob, and so is the knob.
 - A text field's prompt is in `accent`, and its cursor cell is reversed.
+  What Shift or Control+a selected (§5) is on the `selection` colour, or
+  reversed where the theme can't tint, as a terminal shows its own; the
+  cursor cell is not reversed then, as a GUI's field shows no caret beside
+  a selection.
 
 ### 3.5 Text fields
 
@@ -713,19 +717,21 @@ terminal implements them. In cells the renderer does, by the same rules:
   SPEC.md §10.4 has them: `Control+s`, `Alt+b`, `A`, `Space`.
 - **A text field's keys are its keymap** (SPEC.md §10.2). The renderer
   sets the surface's on its top elements as `data-keys`: hotty-go's
-  `TerminalKeys`, the keys of Bubble Tea's text input (Control+a and
-  Control+e, Alt+b and Alt+f, Control+w, Control+k, Control+u…), unless
-  the program sets another (`SetKeys`; empty for SPEC.md's default
-  keymap alone). A component's `keys` (§6.5) overrides it key by key for
+  `TerminalKeys`, the keys of Bubble Tea's text input (Control+e, Alt+b
+  and Alt+f, Control+w, Control+k, Control+u…) over SPEC.md's default
+  keymap, unless the program sets another (`SetKeys`; empty for the
+  default keymap alone). Either way a field keeps a GUI's muscle memory:
+  Shift with any move selects from where the caret was, Control+a selects
+  all (in `TerminalKeys` too, where Home goes to the line's start), and
+  typing or deleting replaces the selection. A component's `keys` (§6.5) overrides it key by key for
   the fields inside. The cells rendition resolves the same keymap
   (`hotty.Resolve`), so a key does the same in both.
 - **HottyShortcuts** (§6.1) take the keys that reach the program, for the
   surface that is active: the one that has the keyboard, or when none has
   it, the one the program says is current.
 
-Within a surface, which component has the keyboard is invisible to a
-program on a host (SPEC.md §9: `focus` and `blur` concern the whole
-surface). So shortcuts apply to a whole surface, in both renditions. Whether
+Shortcuts apply to a whole surface, in both renditions, though a host now
+names the element the user focuses (SPEC.md §10.1, §2's keyboard). Whether
 they should apply per component is NEIO-11's open question 4, to be decided
 after the storybook.
 

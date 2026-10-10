@@ -220,6 +220,7 @@ var editNames = []struct {
 	{hotty.LineStart, "line start", false}, {hotty.LineEnd, "line end", false},
 	{hotty.LinePrevious, "line up", false}, {hotty.LineNext, "line down", false},
 	{hotty.InputStart, "input begin", false}, {hotty.InputEnd, "input end", false},
+	{hotty.SelectAll, "select all", false},
 	{hotty.DeleteCharBackward, "delete character backward", true}, {hotty.DeleteCharForward, "delete character forward", true},
 	{hotty.DeleteWordBackward, "delete word backward", true}, {hotty.DeleteWordForward, "delete word forward", true},
 	{hotty.DeleteToLineStart, "delete before cursor", true}, {hotty.DeleteToLineEnd, "delete after cursor", true},

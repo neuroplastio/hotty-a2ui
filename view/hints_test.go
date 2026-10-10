@@ -109,12 +109,12 @@ func TestKeyHints(t *testing.T) {
 	c.Focus("title")
 	_, full = c.KeyHints(hottygo.TerminalKeys, false)
 	if got := hintKeys(full[0]); !slices.Equal(got, []string{"←/ctrl+b character backward", "→/ctrl+f character forward",
-		"alt+←/ctrl+← word backward", "alt+→/ctrl+→ word forward", "home/ctrl+a line start", "end/ctrl+e line end",
-		"alt+</ctrl+home input begin", "alt+>/ctrl+end input end"}) {
+		"ctrl+←/alt+← word backward", "ctrl+→/alt+→ word forward", "home line start", "end/ctrl+e line end",
+		"ctrl+home/alt+< input begin", "ctrl+end/alt+> input end", "ctrl+a select all"}) {
 		t.Errorf("a field's moves: %q", got)
 	}
 	if got := hintKeys(full[1]); !slices.Equal(got, []string{"backspace/ctrl+h delete character backward",
-		"delete/ctrl+d delete character forward", "alt+backspace/ctrl+w delete word backward", "alt+delete/alt+d delete word forward",
+		"delete/ctrl+d delete character forward", "ctrl+backspace/alt+backspace delete word backward", "ctrl+delete/alt+delete delete word forward",
 		"ctrl+u delete before cursor", "ctrl+k delete after cursor", "enter submit"}) {
 		t.Errorf("a field's edits: %q", got)
 	}

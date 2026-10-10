@@ -235,7 +235,7 @@
     - key: Alt+b
     - type: x
     - expect: {data: {/t: "foo xbar "}}
-    - key: Control+a
+    - key: Home
     - type: "<"
     - key: Control+e
     - type: ">"
@@ -254,31 +254,53 @@
     - key: Control+d
     - expect: {focused: t, data: {/t: "z"}}
 
-- name: with Shift a move moves as it does without; a key the keymap does not name is the program's
+- name: with Shift a move selects from where the caret was, and typing or deleting replaces the selection; a key the keymap does not name is the program's
   messages: *field
   steps:
     - focus: t
-    - type: ab
+    - type: abc
     - key: Shift+ArrowLeft
-    - key: Shift+Home
     - type: x
+    - expect: {data: {/t: "abx"}}
+    - key: ArrowLeft
+    - key: Shift+Home
+    - key: Backspace
+    - expect: {data: {/t: "x"}}
+    - type: "yz"
+    - key: Shift+Alt+ArrowLeft
+    - type: "!"
     - key: Control+g
     - key: F5
-    - expect: {focused: t, data: {/t: "xab"}}
+    - expect: {focused: t, data: {/t: "!x"}}
 
-- name: the default keymap alone leaves Control+a to the program
+- name: Control+a selects all, in the terminal keymap as in the default, and Home still goes to the line's start
+  messages: *field
+  steps:
+    - focus: t
+    - type: foo bar
+    - key: Control+a
+    - type: x
+    - expect: {data: {/t: "x"}}
+    - type: yz
+    - key: Home
+    - type: "<"
+    - key: Control+a
+    - key: Delete
+    - expect: {focused: t, data: {/t: ""}}
+
+- name: the default keymap alone selects all with Control+a and moves by words with Control and the arrows, leaving Alt+b to the program
   keys: ""
   messages: *field
   steps:
     - focus: t
-    - type: ab
+    - type: ab cd
     - key: Control+a
     - type: x
     - key: Alt+b
-    - type: y
-    - key: Home
+    - type: " y"
+    - key: Control+ArrowLeft
     - type: "<"
-    - expect: {focused: t, data: {/t: "<abxy"}}
+    - expect: {focused: t, data: {/t: "x <y"}}
 
 - name: row moves in a multi-line field keep their place along the row
   messages:

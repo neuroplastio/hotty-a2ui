@@ -41,6 +41,11 @@ func offset(lines [][]string, li, ci int) int {
 	return pos + ci
 }
 
+// selected is how a field shows the selected part of its value: on the
+// selection colour, or reversed where the theme can't tint, as a terminal
+// shows its own selection.
+var selected = style{back: Selection, backMix: 255, backAttr: Reverse}
+
 // shownGlyph is how a field shows one cluster of its value: "•" when
 // obscured, a break or a control as a space.
 func shownGlyph(g string, obscured bool, st style) glyph {
@@ -110,8 +115,15 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	area := &fieldArea{x: vx, y: row, rows: rows}
 	li, ci, curCol := 0, 0, 0
+	// What Shift and select-all selected (SPEC §10.2), while the field
+	// editKey keeps is the one shown.
+	s0, s1 := 0, 0
 	if focused {
-		li, ci = locate(lines, r.cursorOf(e.ID, len(cl)))
+		pos := r.cursorOf(e.ID, len(cl))
+		if f := r.fields[e.ID]; f != nil && f.Value == v && f.Caret == pos {
+			s0, s1 = f.Selection()
+		}
+		li, ci = locate(lines, pos)
 		curCol = colOf(lines[li], ci, obscured)
 		voff := min(r.vscroll[e.ID], li)
 		if li >= voff+rows {
@@ -137,8 +149,12 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 			continue
 		}
 		gs := make([]glyph, len(lines[k]))
+		base := offset(lines, k, 0)
 		for i, g := range lines[k] {
 			gs[i] = shownGlyph(g, obscured, style{})
+			if base+i >= s0 && base+i < s1 {
+				gs[i].style = selected
+			}
 		}
 		if !focused {
 			cv.write(vx, row+j, vw, fit(gs, vw))
@@ -162,7 +178,11 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff
 		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows && cv.in(cx, cy) {
-			cv.f.Cells[cy][cx].Attr |= Reverse
+			// A selection shows no block caret, as a GUI's field shows
+			// none beside one: it would read as one more selected cell.
+			if s0 == s1 {
+				cv.f.Cells[cy][cx].Attr |= Reverse
+			}
 			cv.cursorAt(cx, cy)
 		}
 	}

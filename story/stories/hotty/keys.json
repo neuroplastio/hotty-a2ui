@@ -3,7 +3,7 @@
   "kind": "behaviour",
   "component": "io_neuroplast_hotty.keys",
   "icon": "keyboard",
-  "description": "A field edits by its keymap (HOTTY SPEC §10.2): the Keys picker sets the surface's, Terminal (Bubble Tea's keys: Control+a, Alt+b, Control+w…) or Default (the arrows, Home, End, Backspace, Delete). In Notes, up and down keep their place along the row. The password is one word. The HottyForm binds Control+s to submit and leaves Control+k to the program, whose HottyShortcut takes it; in Notes, Control+k deletes to the line's end.",
+  "description": "A field edits by its keymap (HOTTY SPEC §10.2): the Keys picker sets the surface's, Terminal (Bubble Tea's keys: Control+e, Alt+b, Control+w…) or Default (the arrows, with Control by words, Home, End, Backspace, Delete). In both, Shift with a move selects and Control+a selects all, as in a GUI's field. In Notes, up and down keep their place along the row. The password is one word. The HottyForm binds Control+s to submit and leaves Control+k to the program, whose HottyShortcut takes it; in Notes, Control+k deletes to the line's end.",
   "messages": [
     {
       "version": "v1.0",

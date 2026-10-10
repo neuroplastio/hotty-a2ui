@@ -79,6 +79,40 @@ func TestTyping(t *testing.T) {
 	}
 }
 
+// TestFieldSelection: Shift with a move and Control+a select (SPEC §10.2),
+// and the field shows what is selected on the selection colour, reversed
+// where the theme can't tint, with no block caret beside it.
+func TestFieldSelection(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	c.Focus("name")
+	r.Draw(40)
+	shows := func(when string, sel []bool, caret int) {
+		t.Helper()
+		f := r.Draw(40)
+		// "┃ > abc": the value from column 4, on the title's next row.
+		row := f.Cells[1]
+		for i, want := range sel {
+			cell := row[4+i]
+			if got := cell.Back == Selection && cell.BackMix == 255 && cell.BackAttr == Reverse; got != want {
+				t.Errorf("%s: %q selected %v", when, cell.Text, got)
+			}
+			if got := cell.Attr&Reverse != 0; got != (i == caret) {
+				t.Errorf("%s: %q a block caret %v", when, cell.Text, got)
+			}
+		}
+	}
+	keys(t, r, "a", "b", "c", "Shift+ArrowLeft", "Shift+ArrowLeft")
+	shows("Shift+ArrowLeft twice", []bool{false, true, true, false}, -1)
+	if col, _, ok := r.Draw(40).Cursor(); !ok || col != 5 {
+		t.Errorf("the cursor at %d %v, want 5", col, ok)
+	}
+	keys(t, r, "End")
+	shows("End", []bool{false, false, false, false}, 3)
+	keys(t, r, "Control+a")
+	shows("Control+a", []bool{true, true, true, false}, -1)
+}
+
 func TestLongText(t *testing.T) {
 	c, data, _ := form(t)
 	r := New(c)
