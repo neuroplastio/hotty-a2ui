@@ -817,7 +817,11 @@ terminal implements them. In cells the renderer does, by the same rules:
   muscle memory:
   Shift with any move selects from where the caret was, Control+a selects
   all (in `TerminalKeys` too, where Home goes to the line's start), and
-  typing or deleting replaces the selection. A component's `keys` (§6.5) overrides it key by key for
+  typing or deleting replaces the selection. macOS's Command keys come as
+  Meta and do what they do in a Mac field: Meta+ArrowLeft and
+  Meta+ArrowRight go to the line's ends, Meta+ArrowUp and Meta+ArrowDown to
+  the input's, Meta+Backspace deletes to the line's start and Meta+a
+  selects all. The full key help lists them after the others. A component's `keys` (§6.5) overrides it key by key for
   the fields inside. The cells rendition resolves the same keymap
   (`hotty.Resolve`), so a key does the same in both.
 - **HottyShortcuts** (§6.1) take the keys that reach the program, for the

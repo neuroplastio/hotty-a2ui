@@ -105,17 +105,17 @@ func TestKeyHints(t *testing.T) {
 		t.Errorf("while the filter is typed: %q", hintKeys(short))
 	}
 	// A field's keys are the surface's keymap's, with the components'
-	// over it.
+	// over it; macOS's Command keys after the others.
 	c.Focus("title")
 	_, full = c.KeyHints(hottygo.TerminalKeys, false)
 	if got := hintKeys(full[0]); !slices.Equal(got, []string{"←/ctrl+b character backward", "→/ctrl+f character forward",
-		"ctrl+←/alt+← word backward", "ctrl+→/alt+→ word forward", "home line start", "end/ctrl+e line end",
-		"ctrl+home/alt+< input begin", "ctrl+end/alt+> input end", "ctrl+a select all"}) {
+		"ctrl+←/alt+← word backward", "ctrl+→/alt+→ word forward", "home/meta+← line start", "end/ctrl+e line end",
+		"ctrl+home/alt+< input begin", "ctrl+end/alt+> input end", "ctrl+a/meta+a select all"}) {
 		t.Errorf("a field's moves: %q", got)
 	}
 	if got := hintKeys(full[1]); !slices.Equal(got, []string{"backspace/ctrl+h delete character backward",
 		"delete/ctrl+d delete character forward", "ctrl+backspace/alt+backspace delete word backward", "ctrl+delete/alt+delete delete word forward",
-		"ctrl+u delete before cursor", "ctrl+k delete after cursor", "enter submit"}) {
+		"ctrl+u/meta+backspace delete before cursor", "ctrl+k delete after cursor", "enter submit"}) {
 		t.Errorf("a field's edits: %q", got)
 	}
 	c.Focus("body")

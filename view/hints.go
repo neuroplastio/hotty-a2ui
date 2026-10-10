@@ -1,6 +1,7 @@
 package view
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 
@@ -261,17 +262,31 @@ var editNames = []struct {
 }
 
 // fieldHints are a text field's keys, from its keymap, in two groups, the
-// moves and the edits: each action once, its first two keys; Submit only
-// in a HottyForm, where Enter submits; the lines' only in a long text, as
+// moves and the edits: each action once, its first two keys, those with
+// Meta (macOS's Command) after the others, so that a terminal keymap's
+// Control+e shows before the default's Meta+ArrowRight; Submit only in a
+// HottyForm, where Enter submits; the lines' only in a long text, as
 // bubbles' text input has none.
 func fieldHints(km *hotty.Keymap, long, inForm bool) [][]Hint {
 	keys := map[hotty.Action][]string{}
 	for _, b := range strings.Fields(km.Format()) {
 		i := strings.LastIndexByte(b, '=')
 		a := hotty.Action(b[i+1:])
-		if len(keys[a]) < 2 {
-			keys[a] = append(keys[a], KeyText(b[:i]))
+		keys[a] = append(keys[a], b[:i])
+	}
+	for a, ks := range keys {
+		meta := func(k string) int {
+			if strings.Contains(k, "Meta+") {
+				return 1
+			}
+			return 0
 		}
+		slices.SortStableFunc(ks, func(x, y string) int { return cmp.Compare(meta(x), meta(y)) })
+		ks = ks[:min(len(ks), 2)]
+		for i, k := range ks {
+			ks[i] = KeyText(k)
+		}
+		keys[a] = ks
 	}
 	var moves, edits []Hint
 	for _, n := range editNames {

@@ -17,10 +17,10 @@ require (
 	github.com/charmbracelet/x/ansi v0.11.8
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/clipperhouse/uax29/v2 v2.7.0
-	github.com/neuroplastio/hotty-go v0.0.0-20261010144511-718d7a230659
-	github.com/neuroplastio/hotty-go/hottyedit v0.0.0-20261010144511-718d7a230659
-	github.com/neuroplastio/hotty-go/hottytea v0.0.0-20261010144511-718d7a230659
-	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261010144511-718d7a230659
+	github.com/neuroplastio/hotty-go v0.0.0-20261010155854-1ddaac3bfc10
+	github.com/neuroplastio/hotty-go/hottyedit v0.0.0-20261010155854-1ddaac3bfc10
+	github.com/neuroplastio/hotty-go/hottytea v0.0.0-20261010155854-1ddaac3bfc10
+	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261010155854-1ddaac3bfc10
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/yuin/goldmark v1.8.6
 )

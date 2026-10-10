@@ -310,6 +310,25 @@
     - type: "<"
     - expect: {focused: t, data: {/t: "x <y"}}
 
+- name: macOS's Command keys, as Meta, go to the line's ends, delete to its start and select all, with Shift selecting
+  keys: ""
+  messages: *field
+  steps:
+    - focus: t
+    - type: ab cd
+    - key: Meta+ArrowLeft
+    - type: "<"
+    - key: Meta+ArrowRight
+    - type: ">"
+    - expect: {data: {/t: "<ab cd>"}}
+    - key: Meta+Backspace
+    - type: x
+    - key: Meta+a
+    - type: "yz"
+    - key: Shift+Meta+ArrowLeft
+    - type: "!"
+    - expect: {focused: t, data: {/t: "!"}}
+
 - name: row moves in a multi-line field keep their place along the row
   keys: terminal
   messages:
