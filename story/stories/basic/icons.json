@@ -1,5 +1,8 @@
 {
-  "name": "Icons",
+  "name": "Icon",
+  "kind": "component",
+  "component": "Icon",
+  "icon": "star",
   "description": "An Icon is its Material Symbols shape on a host, in the text's colour, and a one-cell glyph in cells and text. An svgPath is its path on a host and ◇ in cells.",
   "messages": [
     {

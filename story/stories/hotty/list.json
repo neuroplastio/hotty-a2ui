@@ -1,5 +1,8 @@
 {
-  "name": "HottyList",
+  "name": "List",
+  "kind": "component",
+  "component": "HottyList",
+  "icon": "list",
   "description": "Bubbles' list example, My Fave Things: five items to a page, a dot for each page. The arrows, j and k move the selection, which is written to /selected; the left and right arrows, h and l turn pages; / filters the items by their labels as you type, best first, Enter applies it and Escape drops it. Enter, or a second click on the selected item, sends openThing with it. The help line under it is a HottyKeyHints, as bubbles' list has one: ? shows every key.",
   "messages": [
     {

@@ -1,5 +1,8 @@
 {
-  "name": "HottyIcon",
+  "name": "Material icon",
+  "kind": "component",
+  "component": "HottyIcon",
+  "icon": "interests",
   "description": "Icons beyond the basic Icon's 59, by their Material Symbols names as Google Fonts writes them, Sharp and filled as the 59 are; one of the 59 by Material's name; a path of the agent's own, stroked; and a name the storybook has no shape for, which shows the mark cells draw for it. On a host each is an inline svg as tall as its text, in its colour; in cells, its glyph.",
   "messages": [
     {

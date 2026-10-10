@@ -1,5 +1,8 @@
 {
-  "name": "HottyProgress",
+  "name": "Progress",
+  "kind": "component",
+  "component": "HottyProgress",
+  "icon": "hourglass_top",
   "description": "Bars at fixed values, one bound to the data model (the slider under it moves it), and one without a value, which slides while the work has no end in sight.",
   "messages": [
     {

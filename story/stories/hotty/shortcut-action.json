@@ -1,5 +1,8 @@
 {
-  "name": "HottyShortcut runs an Action",
+  "name": "Shortcut runs an action",
+  "kind": "behaviour",
+  "component": "HottyShortcut",
+  "icon": "bolt",
   "description": "Control+r asks the agent to refresh, with no Button: the HottyShortcut's own action.",
   "messages": [
     {

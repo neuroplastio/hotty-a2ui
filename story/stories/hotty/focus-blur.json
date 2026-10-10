@@ -1,5 +1,8 @@
 {
-  "name": "hottyFocus and hottyBlur",
+  "name": "Focus and blur",
+  "kind": "behaviour",
+  "component": "hottyFocus, hottyBlur",
+  "icon": "center_focus_strong",
   "description": "The name field takes the keyboard when the surface shows (autofocus). The buttons move it with the hottyFocus and hottyBlur functions: on a host, a=focus and a=blur.",
   "messages": [
     {

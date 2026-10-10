@@ -1,5 +1,8 @@
 {
-  "name": "HottyTable",
+  "name": "Table",
+  "kind": "component",
+  "component": "HottyTable",
+  "icon": "table",
   "description": "The world's largest cities, as bubbles' table example has them: seven rows at a time, the rest scrolling under the header. The arrows, Page Up, Page Down, Home and End move the selection, which is written to /selected; Enter, or a second click on the selected row, sends openCity with it.",
   "messages": [
     {

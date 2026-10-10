@@ -1,5 +1,7 @@
 {
   "name": "Video and audio",
+  "component": "Video, AudioPlayer",
+  "icon": "movie",
   "description": "Video and AudioPlayer have no terminal meaning: each becomes a labelled link, which opens in the platform's player.",
   "messages": [
     {

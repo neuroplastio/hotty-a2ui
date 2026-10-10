@@ -1,5 +1,8 @@
 {
-  "name": "HottyDiff: a change under review",
+  "name": "Diff",
+  "kind": "component",
+  "component": "HottyDiff",
+  "icon": "difference",
   "description": "A change to code as a review shows it. Above, a patch of two files as git diff writes it, unified: each line numbered on its old and its new side and signed, highlighted for its language, and the words a changed line changes marked. Its hunks are a list: ↑ and ↓ (k, j) select one, and Enter or a second click stages it (the action's context reads the hunk from /hunk). Below, two texts of a Python file compared, split: the old side left, the new right, a changed line beside the line it replaces; in cells, on a narrow screen, it is unified. With no room for its lines, a diff wraps them; a long one goes in a HottyScrollView.",
   "messages": [
     {

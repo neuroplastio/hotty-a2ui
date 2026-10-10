@@ -1,5 +1,7 @@
 {
   "name": "Images",
+  "component": "Image",
+  "icon": "image",
   "description": "An Image is a picture on a host, and its description in cells and text.",
   "messages": [
     {

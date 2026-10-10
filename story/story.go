@@ -42,7 +42,21 @@ type Story struct {
 	Title       string            `json:"name"`
 	Description string            `json:"description"`
 	Messages    []json.RawMessage `json:"messages"`
+	// Kind, Component and Icon are the kit's own stories' (A2UI's examples
+	// have none): what the storybook lists it under, "component" or
+	// "behaviour" (a fallback's group says); the A2UI names it is about
+	// ("HottyTree", "hottyFocus, hottyBlur"); and its icon, a Material
+	// Symbols name the storybook registers (storybook/icons.txt).
+	Kind      string `json:"kind,omitempty"`
+	Component string `json:"component,omitempty"`
+	Icon      string `json:"icon,omitempty"`
 }
+
+// The kinds of the kit's own stories (Story.Kind).
+const (
+	KindComponent = "component"
+	KindBehaviour = "behaviour"
+)
 
 //go:embed stories/*/*.json
 var stories embed.FS

@@ -1,5 +1,6 @@
 {
   "name": "A child still to come",
+  "icon": "hourglass_empty",
   "description": "The agent streams: a component can name a child it has not sent yet. It shows as pending, and the surface stays up; the last message sends it.",
   "messages": [
     {

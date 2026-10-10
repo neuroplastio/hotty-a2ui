@@ -1,5 +1,8 @@
 {
-  "name": "HottyScrollView: a log and a document",
+  "name": "Scroll view",
+  "kind": "component",
+  "component": "HottyScrollView",
+  "icon": "swap_vert",
   "description": "A box of a fixed height whose content scrolls, as bubbles' viewport. The log is lines bound to /log, as an agent adds them (an index each; the data model has no append), and follows its tail: it starts at the end. Its long lines are cut, and ← and → scroll them. The document is a Text child. Tab into either. In cells, bubbles' keys scroll it: the arrows, j and k, Page Up and Page Down (b, f, Space), u and d, Home and End (g, G), and the wheel. On a HOTTY host the host scrolls it, with the keys a browser scrolls with, the wheel, and the same letters, which the box binds to the host's scroll actions (SPEC §10.2); a host older than those scrolls with the arrows, Page Up, Page Down, Home and End only.",
   "messages": [
     {

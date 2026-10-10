@@ -1,5 +1,8 @@
 {
-  "name": "HottyKeyHints follows the keyboard",
+  "name": "Key hints",
+  "kind": "component",
+  "component": "HottyKeyHints",
+  "icon": "help_center",
   "description": "A help line, as bubbles' help draws one: the keys of what has the keyboard, then the surface's HottyShortcuts that have a label. Tab through the note and watch it change. ? shows every key in columns, a text field's editing keys among them, and ? again hides them; in a field, ? is typed. Control+s saves, Control+d discards.",
   "messages": [
     {

@@ -1,5 +1,6 @@
 {
   "name": "A component that contains itself",
+  "icon": "sync_problem",
   "description": "A Card whose column holds the Card again would never end. Where the loop closes, it shows a mark instead, and the rest of the surface shows.",
   "messages": [
     {

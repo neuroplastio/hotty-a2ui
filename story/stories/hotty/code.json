@@ -1,5 +1,8 @@
 {
-  "name": "HottyCode: highlighted source",
+  "name": "Code",
+  "kind": "component",
+  "component": "HottyCode",
+  "icon": "code",
   "description": "Source code as a code viewer shows it, highlighted for its language with the theme's roles: Go with line numbers and marked lines (a highlighted range, an error), an excerpt of a change to a Python file from line 40 (a removed and an added line, cut at the edge rather than wrapped; on a host it scrolls sideways), and a fenced TypeScript block in a Text. HottyCode has no height of its own: a long listing goes in a HottyScrollView.",
   "messages": [
     {

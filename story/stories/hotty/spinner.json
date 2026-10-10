@@ -1,5 +1,8 @@
 {
-  "name": "HottySpinner",
+  "name": "Spinner",
+  "kind": "component",
+  "component": "HottySpinner",
+  "icon": "progress_activity",
   "description": "Each of the frame sets, by name, spinning while Working is checked. One that stops keeps its label where it was.",
   "messages": [
     {

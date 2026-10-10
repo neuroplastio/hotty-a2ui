@@ -67,3 +67,21 @@ func TestTreeButtons(t *testing.T) {
 		t.Errorf("collapse all: open %v, selected %v", open, c.S.Data.Value("/selected"))
 	}
 }
+
+// TestKitStoriesSayWhatTheyAre: every story of the kit's own has an icon,
+// and every one of the basic and hotty groups a kind and the A2UI names
+// it is about, so that the storybook can list it.
+func TestKitStoriesSayWhatTheyAre(t *testing.T) {
+	for _, st := range All() {
+		own := st.Group != Basic || st.Kind != ""
+		if !own {
+			continue
+		}
+		if st.Icon == "" {
+			t.Errorf("%s has no icon", st.Name)
+		}
+		if st.Group != Fallback && (st.Component == "" || st.Kind != KindComponent && st.Kind != KindBehaviour) {
+			t.Errorf("%s: kind %q, component %q", st.Name, st.Kind, st.Component)
+		}
+	}
+}
