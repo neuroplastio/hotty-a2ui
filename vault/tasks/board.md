@@ -30,8 +30,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 ## Phase 1 — Cells parity
 
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
-- [ ] **KIT-19c** — Big text.
-- [ ] **KIT-20c** — QR code.
 - [ ] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [ ] **KIT-18c** — Terminal, with the profile's rule for registered
@@ -208,6 +206,25 @@ built on it).
 
 ## Done
 
+- [x] **KIT-20c** — `HottyQRCode` (journal 2026-10-10.31, profile §6.29,
+  instruction 29): `value`, `errorCorrection` (a minimum, raised when the
+  version holds more for free), `label`. Package `qr/` on rsc.io/qr's
+  coding (BSD-3), with the version, mode, level and mask chosen as ISO
+  18004 has them. Cells draws half blocks with a quiet zone of 4 on paper
+  (`Cell.Paper`: black on white whatever the theme, §3.6), or the label
+  and value as text when the box is too narrow; a host gets an svg path.
+  34 codes decode back from cells (gozxing), and zbar reads every picture.
+  Story `hotty/qr`. Open for the maintainer: paper under NO_COLOR (drawn
+  reversed today), 256-colour paper at the floor, the raised level, text
+  as the narrow fallback.
+- [x] **KIT-19c** — `HottyBigText` (journal 2026-10-10.30, profile §6.28,
+  instruction 28): `text`, `size` (small, medium, large: 3, 4 or 5 rows in
+  cells), `align`. The kit's own pixel fonts (rendition/cells/bigfont.go;
+  OpenTUI's come from cfonts, GPL-3.0, not taken), in half blocks; wraps
+  between words. A host gets display type, the text as written. Story
+  `hotty/bigtext`. Open for the maintainer: `size` over `font`, capitals
+  in cells but the text's case on a host, a finer large font, the blank
+  row after each.
 - [x] **KIT-24** — Page mode (journal 2026-10-10.29, profile §2.1):
   `html.PageCSS()` once in a page's head, `Rendition.Page(PageOptions)` a
   surface's fragment for its body (ids prefixed by the surface's name;
