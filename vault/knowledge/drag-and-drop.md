@@ -2,7 +2,14 @@
 
 As of 2026-10-10. The maintainer asked for drag and drop to be first-class
 behaviour of lists, tables, trees and the like (KIT-23). This note lays out
-the design for them to pick from. Nothing is built yet.
+the design they picked from.
+
+**Picked (the maintainer, 2026-10-10):** C, both (the kit moves an item
+within and between its own lists, and a drop onto anything else is the
+agent's), and P2, a line. Keys are Alt with the arrows; cut and paste is
+not the kit's. P2 needs G1, and drop-only targets need G2, so both went
+to hotty the same day. The cells leg (KIT-23c) doesn't wait for them; the
+host leg (KIT-23h) does.
 
 **A2UI v1.0 has none.** It has no drag event, no drop target and no
 reorder in the basic catalog. A renderer tells the agent things through an
@@ -68,16 +75,19 @@ What the user sees during the drag:
   land, between rows, or a ring shows a folder it will go into. The move
   happens on the drop, as in Finder and VS Code's explorer. It needs to
   know where in the row the pointer is (G1). In cells a row is one cell
-  high, so the line is an underline on the row above, or a mark in the
-  gutter.
+  high: where the terminal reports the pointer in pixels (SGR-Pixels,
+  mode 1016) the kit knows the half or the third of the row; elsewhere
+  the line goes on the side the item comes from.
 
 **Keys (S6).**
 - Alt+↑ and Alt+↓ move the selected item one place, as in VS Code and
   Org's M-up and M-down.
 - In a tree, Alt+← and Alt+→ move it out of its branch or into the one
   above, as Org's M-left and M-right do.
-- For a distant move, Ctrl+X marks the item and Ctrl+V puts it after the
-  selection, as file managers do (and lf's and ranger's `dd` then `p`).
+- Not cut and paste (Ctrl+X, then Ctrl+V): the maintainer ruled it out of
+  the kit. So a move by keys stays within one component. A move by keys
+  to another list, or onto a thing (S4, S5), is the app's, for instance a
+  Button or a HottyShortcut that sends an action.
 - On a host these are data-keys programs (SPEC §10.2).
 
 **Touch.** A row in a list that scrolls has `pan-y`, so under §9.1 a

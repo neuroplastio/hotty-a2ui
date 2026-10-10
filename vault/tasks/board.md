@@ -14,8 +14,7 @@ at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; at
 KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; at
 KIT-22c (journal 2026-10-10.5): the switch; at KIT-10c (journal
-2026-10-10.6): the charts; and for KIT-23, drag and drop, a pick of model
-([drag-and-drop](../knowledge/drag-and-drop.md)).
+2026-10-10.6): the charts.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -30,6 +29,16 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
+- [ ] **KIT-23c** — Drag and drop: a list, a table, a tree and a
+  templated List reorder and move by a mouse, with a line where the item
+  will land, and by Alt with the arrows; any component can be a drag
+  source or a drop target for the agent
+  ([drag-and-drop](../knowledge/drag-and-drop.md), model C with P2,
+  picked 2026-10-10).
+- [ ] **KIT-SLIDE** — Sliders: a Slider that fills from its end
+  (`io_neuroplast_hotty.fill`), `HottyRangeSlider` with two knobs, and
+  a story of their own; Progress keeps one slider. The rail stays as it
+  is (`━━━━■⎯⎯⎯⎯`), approved 2026-10-10.
 - [ ] **KIT-11c** — Suggestions: ghost text and a list under the field.
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
 - [ ] **KIT-13c** — Toast and tooltip (tooltip from
@@ -135,6 +144,9 @@ As of 2026-10-09, from the hotty agent:
 - [ ] **KIT-17h** — File picker.
 - [ ] **KIT-18h** — Terminal.
 - [ ] **KIT-22h** — Toggle: a pill whose knob slides by deltas.
+- [ ] **KIT-23h** — Drag and drop on a host: SPEC §9.1 drags, with a line
+  where the item lands. Blocked on G1 (where in the target) and G2 (a
+  target that isn't draggable), with hotty since 2026-10-10.
 
 ## Later
 
