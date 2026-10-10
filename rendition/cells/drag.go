@@ -279,12 +279,20 @@ func (l *layout) paintDrag(cv *canvas) {
 		cv.restyle(x, b.y, b.x+b.w-x, 1, func(c *Cell) { c.Role, c.Attr = Accent, c.Attr|Reverse })
 		return
 	}
-	if t.Kind == view.Tree {
+	where := d.Where
+	switch {
+	case t.Kind == view.Tree:
 		// The line starts where the item's level does.
 		x := b.x + treeIndent + treeGuide*t.Nodes[d.At].Level
 		b = box{x, b.y, b.x + b.w - x, b.h}
+	case where == view.After:
+		// After an item is before the next, where it shows: the line goes
+		// on the blank row between them, where there is one.
+		if next, ok := r.itemBox(t.ID, d.At+1); ok {
+			b, where = next, view.Before
+		}
 	}
-	dragLine(cv, b, d.Where)
+	dragLine(cv, b, where)
 }
 
 // lifted is the cells of what a drag lifted, as last drawn: its item, and
