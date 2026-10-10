@@ -160,7 +160,8 @@ As of 2026-10-09, from the hotty agent:
   maintainer's look).
   - A `label`, a bound `value` (a boolean), `checks` and `disabled`;
     these take literals or paths, not basic's functions (L1).
-  - Cells: `━━●` in the accent when on, `●──` muted when off, in a
+  - Cells: `▬▬■` in the accent when on, `□──` muted when off (the
+    maintainer's pick, 2026-10-10), in a
     field's frame; faint when disabled.
   - Space, Enter or a click flips it, Enter in a HottyForm too; a
     disabled one is skipped by Tab.
