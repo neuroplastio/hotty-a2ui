@@ -17,12 +17,25 @@ import (
 )
 
 // Render is a surface's view as text, ending in a newline; an open
-// Modal's content follows the surface, after a rule.
+// Modal's content follows the surface, after a rule, and then the toasts,
+// after another, the newest first: each its kind's mark, its message, and
+// its action as a button (profile §4). A pipe has no time, so a toast is
+// listed while the view has it.
 func Render(v *view.Surface) string {
 	lines := element(v.Root)
 	if v.Overlay != nil {
 		lines = append(lines, "───")
 		lines = append(lines, element(v.Overlay)...)
+	}
+	if len(v.Toasts) > 0 {
+		lines = append(lines, "───")
+		for _, t := range v.Toasts {
+			line := icons.Glyph(view.ToastIcons[t.Variant]) + " " + t.Label
+			for _, a := range t.Children {
+				line += "  [ " + a.Label + " ]"
+			}
+			lines = append(lines, line)
+		}
 	}
 	if len(lines) == 0 {
 		return ""
