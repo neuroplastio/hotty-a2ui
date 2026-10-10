@@ -25,7 +25,7 @@ const (
 	partTabs   = "t" // a Tabs' bar
 	partPanel  = "p" // a Tabs' content
 	partSubmit = "s" // a Form's hidden submit button
-	partList   = "x" // a select's open list
+	partList   = "x" // a select's open list; a text field's suggestions' datalist
 	partOption = "o" // a select's options in its list, "o0" to "oN"
 	partRow    = "y" // a Table's rows, "y0" to "yN", by their index
 	partFrame  = "f" // a Spinner's frame

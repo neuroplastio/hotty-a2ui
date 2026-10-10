@@ -271,7 +271,7 @@ func (m *markup) element(e *view.Element) *node {
 		if e.Placeholder != "" {
 			n.set("placeholder", e.Placeholder)
 		}
-		outer = m.field(e, "k-field", label(e), n)
+		outer = m.field(e, "k-field", label(e), n, suggestions(e, n))
 	case view.CheckBox:
 		n = el("input", "id", id, "type", "checkbox").flag("checked", e.Value == true)
 		outer = m.field(e, "k-check", n, label(e))
@@ -490,6 +490,26 @@ func (m *markup) field(e *view.Element, class string, parts ...*node) *node {
 		msg.add(txt("✗ " + e.Error))
 	}
 	return w.add(msg)
+}
+
+// suggestions is a text field's suggestions on a host (profile §2,
+// §6.22): a datalist of the agent's options, which the field's input
+// names (list), so that a host with the browser's own list shows it and
+// sets the field's value from it, which comes back as input. Blitz draws
+// none, so the field is plain there; the kit's list under the field, its
+// ghost text and its keys are cells', until a list of the kit's own as a
+// surface at a higher z (vault KIT-11h). Nil for a field without them.
+func suggestions(e *view.Element, input *node) *node {
+	if e.Suggestions == nil || input.tag != "input" {
+		return nil
+	}
+	id := partID(e.ID, partList)
+	input.set("list", id)
+	n := el("datalist", "id", id)
+	for _, s := range e.Suggestions {
+		n.add(el("option", "value", s))
+	}
+	return n
 }
 
 // label is a control's label, if it has one.
