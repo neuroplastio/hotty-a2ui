@@ -26,7 +26,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 ## Phase 1 — Cells parity
 
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
-- [ ] **KIT-14c** — Timer and stopwatch, with `onTimeout`.
 - [ ] **KIT-15c** — Paginator.
 - [ ] **KIT-19c** — Big text.
 - [ ] **KIT-20c** — QR code.
@@ -210,6 +209,17 @@ built on it).
 
 ## Done
 
+- [x] **KIT-14c** — `HottyTimer` and `HottyStopwatch` (journal 2026-10-10.24,
+  profile §6.25, instruction 25): a label and the time, bubbles'
+  `4m59s` or `clock` `4:59`, `fg` while it counts and `muted` while still;
+  `duration` (ms), `running` (bindable; a timer that runs out writes
+  false), `interval`, `format`, `onTimeout` (once, at 0). The time lives in
+  the surface's state and counts on the rendition's clock
+  (`TickTimers`), a hidden one too; hottyStartTimer, hottyStopTimer,
+  hottyToggleTimer, hottyResetTimer for Buttons and HottyShortcuts. Story
+  `hotty/timer`. Open for the maintainer: a bound `elapsed` for a
+  stopwatch's time in an action's context; the default format; a focused
+  Button that becomes disabled keeps the keyboard.
 - [x] **KIT-16c** — Confirm, as a pattern of two Buttons and HottyShortcuts,
   not a component (journal 2026-10-10.26, profile §6.24, instruction 24):
   y and n press, ← → move (`hottyFocus`), Enter picks, the focused one
