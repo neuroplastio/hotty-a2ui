@@ -403,9 +403,12 @@ func (l *layout) paintBox(cv *canvas, id string, on bool, label string, x, y, w 
 	return cv.write(x, y, w, fit(boxFace(on, label, st), w))
 }
 
+// paintError paints a control's error under it, in its box of w past the
+// gutter, a one-line field's from its input's column (errorIndent).
 func (l *layout) paintError(cv *canvas, e *view.Element, x, y, w int) {
-	for i, gs := range errorLines(e, w) {
-		cv.write(x, y+i, w, gs)
+	n := l.errorIndent(e, w)
+	for i, gs := range errorLines(e, w-n) {
+		cv.write(x+n, y+i, w-n, gs)
 	}
 }
 
@@ -431,7 +434,7 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	if isSelect(e) {
 		vx, vw := ux+inset, min(max(uw-inset, 0), inputWidth(e))
 		cv.write(vx, row, vw, selectValue(e, vw))
-		underline(cv, vx, row, vw, focused)
+		underline(cv, vx, row, vw)
 		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + 1, id: e.ID, opt: -1})
 		row++
 		if l.r.listOpen(e) {

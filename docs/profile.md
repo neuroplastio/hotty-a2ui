@@ -383,7 +383,7 @@ How the containers lay their children out:
 | HottySparkline | as ntcharts' sparkline: a column a value, in `info`, rising from its bottom in eighths of a row (hotty-go's `blocks`), `height` rows tall, from its `min` at the bottom to its `max` at the top: the newest value in its last column and those before it to the left, as many as fit, so that a sparkline with a `window` keeps its width as values arrive. A value at `min` or below is `▁`, so that only a missing value is blank. |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
-| an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
+| an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2. A one-line field's starts in its input's column, under the value it is about (the maintainer, round 3), unless that leaves it fewer than 16 columns |
 
 **Text blocks:**
 - A heading is bold, and an h1 is also underlined.
@@ -444,8 +444,7 @@ without colour:
 - A HottyRangeSlider's range is in `accent`, and so is the knob with the
   keyboard, whose number in the value is in `accent` and bold, so that
   without colour the value still says which knob the keys move.
-- A one-line text field's and a select's underline is in `accent`. What
-  Shift, Control+a or a drag selected (§5) is on the `selection` colour,
+- What Shift, Control+a or a drag selected (§5) is on the `selection` colour,
   or reversed where the theme can't tint, as a terminal shows its own.
 
 **A drag** (§6.21) is painted over the frame, so that no row moves:
@@ -480,11 +479,15 @@ without colour:
   room for an email address; a DateTime's, its value's form or its
   value, whichever is wider, and a column for the caret; a select's, its
   widest option, a space and `▾` (§3.4). It takes less where the field's
-  box is narrower, and scrolls. The underline's colour is `border`,
-  `accent` while the field has the keyboard (SGR 58, as a drag's line in
-  §3.4; a terminal without it draws the line in the text's colour), so
-  the value keeps its own. There is no prompt: the underline says where
-  to type. A longText is not underlined: its rows carry `┃` in the
+  box is narrower, and scrolls. The underline's colour is the accent
+  toned halfway to the background, with the keyboard or without it, so
+  that it is there without drawing the eye from the text (the
+  maintainer, round 3); the gutter and the label say which field has the
+  keyboard. It is SGR 58, as a drag's line in §3.4, so the value keeps
+  its own colour; a terminal without SGR 58 draws the line in the text's.
+  Where the accent's or the background's colour is unknown (the terminal
+  has not said them, §3.6), the line is in `border`. There is no prompt:
+  the underline says where to type. A longText is not underlined: its rows carry `┃` in the
   gutter, in `border`, as bubbles' textarea does. The placeholder shows
   while the value is empty, in `muted` and faint. A DateTime's
   placeholder is the form its value takes: `YYYY-MM-DD`, `HH:MM` or
@@ -503,8 +506,7 @@ without colour:
   ```
 
   where `Ada` and the columns after it, to the field's edge here, are
-  Name's input, underlined in `accent`, and Email's from the same column,
-  underlined in `border`.
+  Name's input, and Email's from the same column, both underlined.
 - **obscured** shows `•` for each cluster.
 - **longText** shows its hard lines, at least 3 rows and at most 8, with no
   soft wrap.

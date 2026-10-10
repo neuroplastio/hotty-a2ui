@@ -3,10 +3,10 @@
 Last updated: 2026-10-10
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** round 3 of the review
-(`.shots/round3/blind`, in the review pane), the fixes for
-[round 2](../feedback/2026-10-10-review-round-2.md) (journals
-2026-10-10.15–.18). Round 1 left out, still to look at: the
+**Waiting on the maintainer:** round 4 of the review
+(`.shots/round4/blind`, in the review pane), the fixes for
+[round 3](../feedback/2026-10-10-review-round-3.md) (journal
+2026-10-10.19). Round 1 left out, still to look at: the
 icons (journal 2026-10-10.1, story `basic/icons`); KIT-BOOK (2026-10-10.4):
 the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
 (2026-10-10.7): the sliders, and its four open points; KIT-23c
@@ -142,10 +142,13 @@ As of 2026-10-09, from the hotty agent:
 
 ## For the docs (gov NEIO-14)
 
-Asked by web on 2026-10-10, on the maintainer's go-ahead: every project's
-docs site draws its components with the kit, as a plain web page, as HOTTY
-surfaces (xterm.js with the addon) and in cells (NEIO-14, a draft, *On the
-kit*; web's pilot is its branch `docs-pilot`). None of these blocks the
+Asked by web on 2026-10-10, on the maintainer's go-ahead. The maintainer
+OK'd them for the kit "as long as it fits the framework": A2UI's extension
+points only (no forked basic component), SPEC changes through hotty first,
+hotty-go protocol-only (AGENTS.md). Every project's docs site draws its
+components with the kit, as a plain web page, as HOTTY surfaces (xterm.js
+with the addon) and in cells (NEIO-14, a draft, *On the kit*; web's pilot
+is its branch `docs-pilot`). None of these blocks the
 docs: until the kit has a piece, the docs module draws it and switches when
 it lands. The docs also wait on KIT-09h, KIT-05h, KIT-01h and KIT-18c/18h,
 and want Terminal to play an asciicast: screencasts, and one-frame HOTTY

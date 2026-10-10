@@ -172,9 +172,13 @@ type Cell struct {
 	BackShade bool
 	// Line colours the cell's underline in a role's colour (SGR 58) when
 	// LineSet, so that a drag's line is in the accent under text in its
-	// own colour.
+	// own colour. LineMix tones it: LineMix/255 of the way from the
+	// background to Line's colour, where both are known, the theme's or
+	// the terminal's (a field's underline, there without drawing the eye);
+	// where they are not, a toned line is in border, the floor's quiet one.
 	Line    Role
 	LineSet bool
+	LineMix uint8
 }
 
 var blank = Cell{Text: " ", Width: 1}
@@ -344,10 +348,8 @@ func (c Cell) style(th *theme.Theme) string {
 		p = append(p, ansi16[c.Role])
 	}
 	if c.LineSet && attr&Underline != 0 {
-		if line := th.Colour(roleNames[c.Line]); line != "" {
-			p = append(p, truecolour("58", line))
-		} else if n, ok := ansi256[ansi16[c.Line]]; ok {
-			p = append(p, "58;5;"+n)
+		if l := c.lineColour(th); l != "" {
+			p = append(p, l)
 		}
 	}
 	// A theme's background goes under every cell; a terminal's, which it
@@ -361,6 +363,26 @@ func (c Cell) style(th *theme.Theme) string {
 		p = append(p, truecolour("48", th.Bg))
 	}
 	return strings.Join(p, ";")
+}
+
+// lineColour is the SGR for the colour of the cell's underline (Line,
+// LineMix): the theme's colour, else the 256-colour index of the ANSI one;
+// "" where Line has neither (the text's colour).
+func (c Cell) lineColour(th *theme.Theme) string {
+	line := c.Line
+	if c.LineMix > 0 {
+		if m := mix(colour(th, Bg), colour(th, c.Line), c.LineMix); m != "" {
+			return truecolour("58", m)
+		}
+		line = Border
+	}
+	if hex := th.Colour(roleNames[line]); hex != "" {
+		return truecolour("58", hex)
+	}
+	if n, ok := ansi256[ansi16[line]]; ok {
+		return "58;5;" + n
+	}
+	return ""
 }
 
 // fillColour is a HottyProgress fill cell's colour in the terminal's own

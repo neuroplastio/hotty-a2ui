@@ -211,7 +211,7 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 		paintGhost(cv, e, area, vw, colOf(lines[0], len(lines[0]), obscured))
 	}
 	if !long {
-		underline(cv, vx, row, vw, focused)
+		underline(cv, vx, row, vw)
 	}
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff

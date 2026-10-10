@@ -246,7 +246,7 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 			h++
 		}
 	}
-	return h + len(errorLines(e, w))
+	return h + len(errorLines(e, w-l.errorIndent(e, w)))
 }
 
 // errorLines are a control's error, "✗ message", wrapped.
@@ -256,6 +256,28 @@ func errorLines(e *view.Element, w int) [][]glyph {
 	}
 	return wrap(line("✗ "+e.Error, style{role: Error}), w, nil, repeat(" ", 2, style{}))
 }
+
+// errorIndent is the columns before a field's error in its box of w past
+// the gutter: a one-line field's input's, its label, a space and the
+// inset, so that the error starts under the value it is about (the
+// maintainer, round 3); none for other controls, or where that would
+// leave the error fewer than minErrorWidth columns.
+func (l *layout) errorIndent(e *view.Element, w int) int {
+	if !isOneLine(e) {
+		return 0
+	}
+	n := inset
+	if inlineRow(e) {
+		n += min(l.labelWidth(e), max(w-4, 0)) + 1
+	}
+	if w-n < minErrorWidth {
+		return 0
+	}
+	return n
+}
+
+// minErrorWidth is the fewest columns an error is indented into.
+const minErrorWidth = 16
 
 // fieldRows is how many rows a field's value takes: one, or a longText's
 // lines, at least 3 and at most 8.
@@ -431,16 +453,20 @@ func titleStyle(focused bool) style {
 	return style{role: Muted}
 }
 
+// fieldLineMix is how far a field's underline is from the background
+// toward the accent: the accent, toned down, so that it is there without
+// drawing the eye from the text (the maintainer, round 3).
+const fieldLineMix = 128 // 50%
+
 // underline rules a one-line field's input, x to x+w, as a GUI form's
-// input is outlined: the line in border, in the accent while the field has the
-// keyboard (SGR 58; a terminal without it draws the line in the text's
+// input is outlined: the line in the accent toned toward the background,
+// with the keyboard or without it, the gutter and the label saying which
+// field has it (SGR 58; a terminal without it draws the line in the text's
 // colour).
-func underline(cv *canvas, x, y, w int, focused bool) {
-	rule := Border
-	if focused {
-		rule = Accent
-	}
-	cv.restyle(x, y, w, 1, func(c *Cell) { c.Attr, c.Line, c.LineSet = c.Attr|Underline, rule, true })
+func underline(cv *canvas, x, y, w int) {
+	cv.restyle(x, y, w, 1, func(c *Cell) {
+		c.Attr, c.Line, c.LineSet, c.LineMix = c.Attr|Underline, Accent, true, fieldLineMix
+	})
 }
 
 // picked is the index of a select's value among its options, or -1.

@@ -290,6 +290,66 @@ func TestFieldInput(t *testing.T) {
 	}
 }
 
+// TestFieldUnderline: a one-line field's underline is the accent toned
+// toward the background, with the keyboard or without it; where the
+// terminal has not said its colours, the floor's quiet line, border.
+func TestFieldUnderline(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	for _, focus := range []bool{false, true} {
+		if focus {
+			c.Focus(c.V.Focusables()[0])
+		}
+		f := r.Draw(60)
+		cell := f.Cells[0][nameAt]
+		if cell.Attr&Underline == 0 || !cell.LineSet || cell.Line != Accent || cell.LineMix != fieldLineMix {
+			t.Fatalf("focused %v: %+v, want the accent toned by %d", focus, cell, fieldLineMix)
+		}
+	}
+	term := theme.Default
+	term.Term = theme.Terminal{Bg: "#000000"}
+	term.Term.ANSI[12] = "#ffffff"
+	line := Cell{Text: "a", Width: 1, Attr: Underline, Line: Accent, LineSet: true, LineMix: fieldLineMix}
+	if got := line.style(&term); got != "4;58;2;128;128;128" {
+		t.Errorf("the terminal's colours said: %q", got)
+	}
+	if got := line.style(&theme.Default); got != "4;58;5;8" {
+		t.Errorf("the terminal's colours unknown: %q, want border's", got)
+	}
+}
+
+// TestFieldError: a one-line field's error starts in its input's column,
+// under the value it is about; a narrow field's, at the field's edge.
+func TestFieldError(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"email":"ada@exa"}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","align":"start","children":["a","b"]},
+	 {"id":"a","component":"TextField","label":"Name","value":"Ada"},
+	 {"id":"b","component":"TextField","label":"Email","value":{"@path":"/email"},
+	  "checks":[{"condition":{"@call":"email","args":{"value":{"@path":"/email"}}},"message":"An email address, please"}]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	c.St.Touched["b"] = true // the user typed it
+	c.Rebuild()
+	r := New(c)
+	want := "  Name   Ada\n" +
+		"  Email  ada@exa\n" +
+		"         ✗ An email address, please"
+	if got := r.Draw(60).Plain(); got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+	want = "  Name   Ada\n" +
+		"  Email  ada@exa\n" +
+		"  ✗ An email address,\n" +
+		"    please"
+	if got := r.Draw(22).Plain(); got != want {
+		t.Errorf("narrow, got\n%s\nwant\n%s", got, want)
+	}
+}
+
 // TestLabelRun: the labels of a run of one-line fields are padded to the
 // widest, so that their inputs start in one column, in a Column that
 // does not stretch them too, none of them cut for it.
