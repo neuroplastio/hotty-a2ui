@@ -102,3 +102,16 @@ func Hex(c color.Color) string {
 	r, g, b, _ := c.RGBA()
 	return fmt.Sprintf("#%02x%02x%02x", r>>8, g>>8, b>>8)
 }
+
+// RGB is a "#rrggbb" colour as a colour a terminal library takes (Bubble
+// Tea's cursor colour, say); nil for "" or anything else.
+func RGB(hex string) color.Color {
+	if len(hex) != 7 || hex[0] != '#' {
+		return nil
+	}
+	n, err := strconv.ParseUint(hex[1:], 16, 32)
+	if err != nil {
+		return nil
+	}
+	return color.RGBA{uint8(n >> 16), uint8(n >> 8), uint8(n), 0xff}
+}

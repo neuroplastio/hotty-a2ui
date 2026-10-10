@@ -526,6 +526,11 @@ without colour:
     turns, 530 ms each, and the frame says when to draw it again
     (`Animating`). The terminal's cursor is asked to hold steady, so the
     two don't blink at odds.
+  - It is in `accent` where its colour is known, the theme's or what the
+    terminal said (§3.6, `Known`): a program sets the terminal's cursor
+    colour (OSC 12), as Bubble Tea's `Cursor.Color` does, and the
+    terminal's own comes back when the program exits. Elsewhere, and
+    without colours (NO_COLOR), it is the terminal's.
   - The pointer is an I-beam over a field's input (`Rendition.Pointer`
     is `"text"`; a program sets it with OSC 22, and hears the pointer move
     with no button down), as a browser shows over a field. On a host the

@@ -84,6 +84,11 @@ func TerminalQuery() string {
 	return b.String()
 }
 
+// Known is a role's colour as "#rrggbb" where the theme colours it or the
+// terminal said it (TerminalQuery), else "": for what a program hands the
+// terminal itself, as the caret's colour (profile §3.5).
+func Known(th theme.Theme, r Role) string { return colour(&th, r) }
+
 // colour is a role's colour as "#rrggbb", for a blend or a tint: the
 // theme's, else what the terminal said (theme.Theme.Term), else "".
 func colour(th *theme.Theme, r Role) string {

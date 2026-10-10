@@ -1039,6 +1039,8 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			}
 		}
 	}
+	th := b.theme
+	th.Term = b.term
 	if f := b.focus; f != nil && f.kind == asCells && f.s.C.St.Keyboard && f.frame != nil {
 		if c, row, ok := f.frame.Cursor(); ok && row >= f.top && row < f.top+f.rect.H {
 			b.cursor = tea.NewCursor(r.X+f.rect.X+c, r.Y+f.rect.Y+row-f.top)
@@ -1046,13 +1048,14 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			if !f.frame.BlockCursor() {
 				b.cursor.Shape = tea.CursorBar
 			}
+			if !b.o.Plain {
+				b.cursor.Color = theme.RGB(cells.Known(th, cells.Accent))
+			}
 		}
 	}
 	if b.o.Plain {
 		return scr.ANSI(false), want
 	}
-	th := b.theme
-	th.Term = b.term
 	return scr.Themed(th), want
 }
 

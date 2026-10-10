@@ -245,6 +245,9 @@ func (m *bareModel) draw() {
 			if !p.f.BlockCursor() {
 				m.cur.Shape = tea.CursorBar
 			}
+			if !m.plain {
+				m.cur.Color = theme.RGB(cells.Known(m.th, cells.Accent))
+			}
 		}
 		if m.plain {
 			b.WriteString(strings.TrimRight(p.f.ANSI(false), "\n"))

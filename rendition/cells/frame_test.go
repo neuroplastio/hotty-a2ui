@@ -21,6 +21,22 @@ func TestTerminalQuery(t *testing.T) {
 	}
 }
 
+// A role's colour is known where the theme colours it or the terminal
+// said it, for what a program hands the terminal (the caret's colour).
+func TestKnown(t *testing.T) {
+	if got := Known(theme.Default, Accent); got != "" {
+		t.Errorf("the accent, the terminal's colours unknown: %q", got)
+	}
+	term := theme.Default
+	term.Term.ANSI[12] = "#0000ff"
+	if got := Known(term, Accent); got != "#0000ff" {
+		t.Errorf("the accent the terminal said: %q", got)
+	}
+	if got := Known(theme.Theme{Accent: "#ff8800", Term: term.Term}, Accent); got != "#ff8800" {
+		t.Errorf("the accent the theme colours: %q", got)
+	}
+}
+
 // Where the theme leaves the roles to the terminal and the terminal said
 // its colours, a tint paints a background on the cells it changes, and
 // nowhere else, so a transparent terminal stays so: a surface a little

@@ -50,3 +50,14 @@ func TestHex(t *testing.T) {
 		t.Errorf("Hex(nil) = %q", got)
 	}
 }
+
+func TestRGB(t *testing.T) {
+	if got := RGB("#1e1e2e"); got != (color.RGBA{R: 0x1e, G: 0x1e, B: 0x2e, A: 0xff}) {
+		t.Errorf("RGB = %v", got)
+	}
+	for _, bad := range []string{"", "1e1e2e", "#1e1e2", "#1e1e2g", "rgb:1e/1e/2e"} {
+		if got := RGB(bad); got != nil {
+			t.Errorf("RGB(%q) = %v, want nil", bad, got)
+		}
+	}
+}
