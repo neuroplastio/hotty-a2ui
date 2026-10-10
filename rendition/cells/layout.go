@@ -90,7 +90,7 @@ func (l *layout) minimum(e *view.Element) int {
 		}
 	case view.TextField, view.DateTime:
 		n = gutter + max(longestWord(line(e.Label, style{})), 1)
-	case view.Slider:
+	case view.Slider, view.RangeSlider:
 		n = gutter + 4 + sliderValueWidth(e)
 	case view.Choice:
 		n = l.natural(e)

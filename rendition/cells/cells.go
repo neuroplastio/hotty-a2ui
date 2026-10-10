@@ -43,7 +43,8 @@ type Rendition struct {
 	// ids in the order painted, the innermost last (Wheel).
 	scrolls     map[string]scrolled
 	scrollOrder []string
-	drag        string        // the Slider a click on its track started dragging
+	drag        string        // the Slider or HottyRangeSlider a click on its track started dragging
+	knob        int           // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
 	anim        time.Duration // how soon the last Draw changes again (Animating)
 
 	// Clock is the time a Draw paints at: a Spinner's frame, an
@@ -243,27 +244,53 @@ func (r *Rendition) Click(col, row int) error {
 			return r.slideTo(e, t, col)
 		}
 		return nil
+	case e.Kind == view.RangeSlider:
+		// The track off the knobs: the nearer knob takes the keyboard and
+		// goes there, and a drag moves it on (view.Controller.PressKnob).
+		var err error
+		r.drag = e.ID
+		r.knob, err = c.PressKnob(e.ID, trackValue(e, h.track, col))
+		return err
+	case e.Kind == view.Knob:
+		// A knob takes the keyboard, where it is, and a drag moves it; where
+		// the knobs meet, the drag's first move picks the one it goes
+		// towards, as from the track.
+		if anc := c.Ancestors(e.ID); len(anc) > 0 {
+			rg := anc[len(anc)-1]
+			r.drag, r.knob = rg.ID, e.Selected
+			if lo, hi := rg.Range(); lo == hi {
+				r.knob = -1
+			}
+		}
+		return nil
 	}
 	return c.Activate(e.ID)
 }
 
 // Drag is the pointer at a cell with the primary button still down,
-// after a Click: a Slider whose track the click landed on follows it,
-// clamped to the track's ends, as last drawn. After any other click it
-// does nothing.
+// after a Click: a Slider whose track the click landed on follows it, and
+// so does the knob of a HottyRangeSlider the click picked (stopped where
+// it meets the other), clamped to the track's ends, as last drawn. After
+// any other click it does nothing.
 func (r *Rendition) Drag(col, row int) error {
 	if r.drag == "" {
 		return nil
 	}
 	e := r.c.V.Find(r.drag)
-	if e == nil || e.Kind != view.Slider {
+	if e == nil || e.Kind != view.Slider && e.Kind != view.RangeSlider {
 		r.drag = ""
 		return nil
 	}
 	for _, h := range r.hits {
-		if h.id == e.ID && h.track != nil {
-			return r.slideTo(e, h.track, col)
+		if h.id != e.ID || h.track == nil {
+			continue
 		}
+		if e.Kind == view.RangeSlider {
+			k, err := r.c.DragKnob(e.ID, r.knob, trackValue(e, h.track, col))
+			r.knob = k
+			return err
+		}
+		return r.slideTo(e, h.track, col)
 	}
 	return nil
 }
@@ -271,14 +298,36 @@ func (r *Rendition) Drag(col, row int) error {
 // Release is the primary button let go: a drag ends.
 func (r *Rendition) Release() { r.drag = "" }
 
-// slideTo sets a Slider to the value at a column of its track:
-// min + (max − min) × column / (track − 1), clamped and stepped.
+// slideTo sets a Slider to the value at a column of its track (trackValue).
 func (r *Rendition) slideTo(e *view.Element, t *trackArea, col int) error {
+	return r.c.SetValue(e.ID, trackValue(e, t, col))
+}
+
+// trackValue is the value at a column of a Slider's track:
+// min + (max − min) × column / (track − 1), the column clamped to the
+// track; the controller steps it.
+func trackValue(e *view.Element, t *trackArea, col int) float64 {
 	f := 0.0
-	if t.n > 1 {
+	if t != nil && t.n > 1 {
 		f = float64(min(max(col-t.x, 0), t.n-1)) / float64(t.n-1)
 	}
-	return r.c.SetValue(e.ID, e.Min+f*(e.Max-e.Min))
+	return e.Min + f*(e.Max-e.Min)
+}
+
+// TrackCell is the cell of a Slider's or a HottyRangeSlider's track that
+// stands for v, in the last frame drawn (profile §3.4): where a click sets
+// v, or the nearest to it. ok is false when the track was not drawn.
+func (r *Rendition) TrackCell(id string, v float64) (col, row int, ok bool) {
+	e := r.c.V.Find(id)
+	if e == nil {
+		return 0, 0, false
+	}
+	for _, h := range r.hits {
+		if h.id == id && h.track != nil {
+			return h.track.x + trackCol(e, v, h.track.n), h.y, true
+		}
+	}
+	return 0, 0, false
 }
 
 // toggleList opens a select's list, its value highlighted, or closes it.

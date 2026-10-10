@@ -146,7 +146,7 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		n := cv.write(x, y, w, face)
 		l.r.boxes[e.ID] = box{x, y, n, 1}
 		l.r.hits = append(l.r.hits, hit{x: x, y: y, w: n, h: 1, id: e.ID, opt: -1, disabled: e.Disabled})
-	case view.TextField, view.DateTime, view.CheckBox, view.Switch, view.Choice, view.Slider:
+	case view.TextField, view.DateTime, view.CheckBox, view.Switch, view.Choice, view.Slider, view.RangeSlider:
 		if w <= gutter {
 			return
 		}
@@ -172,6 +172,8 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 			l.paintChoice(cv, e, fx, y, fw)
 		case view.Slider:
 			l.paintSlider(cv, e, fx, y, fw)
+		case view.RangeSlider:
+			l.paintRange(cv, e, fx, y, fw)
 		}
 		if l.hasKeyboard(e) {
 			bar := style{role: Accent}
@@ -350,13 +352,13 @@ func (l *layout) paintTabBar(cv *canvas, bar []*view.Element, x, y, w int) int {
 }
 
 // hasKeyboard reports whether a field has the keyboard: itself, or for
-// a Choice's options, one of them.
+// a Choice's options or a HottyRangeSlider's knobs, one of them.
 func (l *layout) hasKeyboard(e *view.Element) bool {
 	if l.r.focused(e.ID) {
 		return true
 	}
 	for _, o := range e.Children {
-		if o.Kind == view.Option && l.r.focused(o.ID) {
+		if (o.Kind == view.Option || o.Kind == view.Knob) && l.r.focused(o.ID) {
 			return true
 		}
 	}
@@ -440,6 +442,7 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 // HottySwitch's: it sits on the line's middle, where a circle sits low in
 // some fonts. The rest of the track is ⎯, as a HottySwitch's thin line
 // is, which a font draws, as it does the knob, where ─ is the terminal's.
+// One that fills from its end (io_neuroplast_hotty.fill) is "⎯⎯⎯⎯■━━━━".
 func (l *layout) paintSlider(cv *canvas, e *view.Element, x, y, w int) {
 	v, _ := e.Value.(float64)
 	vw := sliderValueWidth(e)
@@ -454,20 +457,125 @@ func (l *layout) paintSlider(cv *canvas, e *view.Element, x, y, w int) {
 		col += cv.write(col, y, w, line(label+" ", titleStyle(focused)))
 	}
 	if n >= 1 {
-		k := 0
-		if e.Max > e.Min && n > 1 {
-			k = int(math.Round((v - e.Min) / (e.Max - e.Min) * float64(n-1)))
-			k = min(max(k, 0), n-1)
-		}
+		k := trackCol(e, v, n)
 		done, knob, rest := style{}, style{}, style{role: Border}
 		if focused {
 			done, knob = style{role: Accent}, style{role: Accent}
 		}
-		track := concat(repeat("━", k, done), glyphs("■", knob), repeat("⎯", n-1-k, rest))
+		before, after := repeat("━", k, done), repeat("⎯", n-1-k, rest)
+		if e.Fill == "end" {
+			before, after = repeat("⎯", k, rest), repeat("━", n-1-k, done)
+		}
+		track := concat(before, glyphs("■", knob), after)
 		cv.write(col, y, n, track)
 		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: 1, id: e.ID, opt: -1, track: &trackArea{x: col, n: n}})
 		col += n + 1
 	}
 	cv.write(col, y, x+w-col, line(a2ui.NumberString(v), style{}))
 	l.paintError(cv, e, x, y+1, w)
+}
+
+// trackCol is the column of a Slider's track of n that stands for v:
+// round((v − min) / (max − min) × (n − 1)), within the track.
+func trackCol(e *view.Element, v float64, n int) int {
+	if e.Max <= e.Min || n <= 1 {
+		return 0
+	}
+	k := int(math.Round((v - e.Min) / (e.Max - e.Min) * float64(n-1)))
+	return min(max(k, 0), n-1)
+}
+
+// paintRange paints a HottyRangeSlider, "label ⎯⎯■━━━━■⎯⎯ 20–70": a
+// Slider's row with two knobs, the start's and the end's, each where its
+// value is, the range between them ━ and the rest ⎯ in border. The range
+// is in the accent while either knob has the keyboard, and so is that
+// knob; its number is in the accent and bold, so that without colour the
+// value still says which knob the keys move. Where both knobs would take
+// one column, the end's goes a column right (the start's a column left,
+// at the track's end), so that both show. A disabled one is muted and
+// faint throughout. The track takes a click and a drag, each knob's cell
+// first.
+func (l *layout) paintRange(cv *canvas, e *view.Element, x, y, w int) {
+	lo, hi := e.Range()
+	vw := sliderValueWidth(e)
+	label := e.Label
+	n := w - 1 - vw - Width(label) - 1
+	if label == "" || n < 3 {
+		label, n = "", w-1-vw
+	}
+	knobs := rangeKnobs(e)
+	var on [2]bool
+	for i, k := range knobs {
+		on[i] = k != nil && l.r.focused(k.ID)
+	}
+	focused := on[0] || on[1]
+	dim := style{role: Muted, attr: Faint}
+	col := x
+	if label != "" {
+		st := titleStyle(focused)
+		if e.Disabled {
+			st = style{role: Muted, attr: Bold | Faint}
+		}
+		col += cv.write(col, y, w, line(label+" ", st))
+	}
+	if n >= 2 {
+		k0, k1 := trackCol(e, lo, n), trackCol(e, hi, n)
+		if k1 <= k0 {
+			if k0 < n-1 {
+				k1 = k0 + 1
+			} else {
+				k0, k1 = n-2, n-1
+			}
+		}
+		rest, span, knob := style{role: Border}, style{}, [2]style{}
+		if focused {
+			span = style{role: Accent}
+		}
+		for i := range knob {
+			if on[i] {
+				knob[i] = style{role: Accent}
+			}
+		}
+		if e.Disabled {
+			rest, span, knob = dim, dim, [2]style{dim, dim}
+		}
+		track := concat(repeat("⎯", k0, rest), glyphs("■", knob[0]), repeat("━", k1-k0-1, span), glyphs("■", knob[1]), repeat("⎯", n-1-k1, rest))
+		cv.write(col, y, n, track)
+		t := &trackArea{x: col, n: n}
+		l.r.hits = append(l.r.hits, hit{x: col, y: y, w: n, h: 1, id: e.ID, opt: -1, track: t, disabled: e.Disabled})
+		for i, k := range [2]int{k0, k1} {
+			if knobs[i] != nil && !e.Disabled {
+				l.r.boxes[knobs[i].ID] = box{col + k, y, 1, 1}
+				l.r.hits = append(l.r.hits, hit{x: col + k, y: y, w: 1, h: 1, id: knobs[i].ID, opt: -1, track: t})
+			}
+		}
+		col += n + 1
+	}
+	num := [2]style{}
+	for i := range num {
+		switch {
+		case e.Disabled:
+			num[i] = dim
+		case on[i]:
+			num[i] = style{role: Accent, attr: Bold}
+		}
+	}
+	dash := style{}
+	if e.Disabled {
+		dash = dim
+	}
+	value := concat(line(a2ui.NumberString(lo), num[0]), line("–", dash), line(a2ui.NumberString(hi), num[1]))
+	cv.write(col, y, x+w-col, value)
+	l.paintError(cv, e, x, y+1, w)
+}
+
+// rangeKnobs are a HottyRangeSlider's knobs, the start's and the end's.
+func rangeKnobs(e *view.Element) [2]*view.Element {
+	var ks [2]*view.Element
+	for _, k := range e.Children {
+		if k.Kind == view.Knob && k.Selected >= 0 && k.Selected < 2 {
+			ks[k.Selected] = k
+		}
+	}
+	return ks
 }

@@ -29,7 +29,7 @@ func isField(e *view.Element) bool {
 		return false
 	}
 	switch e.Kind {
-	case view.TextField, view.DateTime, view.CheckBox, view.Switch, view.Choice, view.Slider:
+	case view.TextField, view.DateTime, view.CheckBox, view.Switch, view.Choice, view.Slider, view.RangeSlider:
 		return true
 	}
 	return false
@@ -137,7 +137,7 @@ func controlWidth(e *view.Element) int {
 		return gutter + max(Width(e.Label), n)
 	case view.Option:
 		return Width(e.Label) + 4
-	case view.Slider:
+	case view.Slider, view.RangeSlider:
 		n := trackWidth + 1 + sliderValueWidth(e)
 		if e.Label != "" {
 			n += Width(e.Label) + 1
@@ -413,7 +413,14 @@ func pickedLabel(e *view.Element) string {
 	return ""
 }
 
-func sliderValueWidth(e *view.Element) int { return e.SliderWidth() }
+// sliderValueWidth is the columns a Slider's value takes at most, or a
+// HottyRangeSlider's two ("20–70").
+func sliderValueWidth(e *view.Element) int {
+	if e.Kind == view.RangeSlider {
+		return e.RangeWidth()
+	}
+	return e.SliderWidth()
+}
 
 func imageText(e *view.Element) string {
 	if e.Alt == "" {
