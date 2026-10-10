@@ -201,6 +201,15 @@ func element(e *view.Element) []string {
 			return nil
 		}
 		return strings.Split(e.Label, "\n")
+	case view.QRCode:
+		// What it holds, as a field's value, "Scan to open: https://…":
+		// text has no code to scan, and needs none, whether a code holds
+		// the value or not.
+		v, _ := e.Value.(string)
+		if v == "" {
+			return nil
+		}
+		return []string{field(e.Label, v)}
 	case view.Tabs:
 		var titles []string
 		var rest []string

@@ -1,0 +1,102 @@
+{
+  "name": "QR code",
+  "kind": "component",
+  "component": "HottyQRCode",
+  "icon": "qr_code",
+  "description": "A QR code, as OpenTUI's QRCodeRenderable draws it: half blocks, a module a column wide and half a row tall, black on white with a quiet zone of four modules in any theme. A URL bound to a text field, its code following the field, and a Wi-Fi network at error correction H.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "qr",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "url": "https://hotty.neuroplast.io"
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "qr",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "site",
+              "wifi"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## QR code"
+          },
+          {
+            "id": "site",
+            "component": "Row",
+            "children": [
+              "siteCode",
+              "siteSide"
+            ]
+          },
+          {
+            "id": "siteCode",
+            "component": "HottyQRCode",
+            "value": {
+              "@path": "/url"
+            },
+            "label": "Scan to open",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "siteSide",
+            "component": "Column",
+            "weight": 1,
+            "children": [
+              "siteText",
+              "siteField"
+            ]
+          },
+          {
+            "id": "siteText",
+            "component": "Text",
+            "text": "**Bound** to the data model: edit the URL and the code follows. It is black on white whatever the terminal's colours, with its quiet zone, as a phone's camera reads it."
+          },
+          {
+            "id": "siteField",
+            "component": "TextField",
+            "label": "URL",
+            "value": {
+              "@path": "/url"
+            }
+          },
+          {
+            "id": "wifi",
+            "component": "Row",
+            "children": [
+              "wifiCode",
+              "wifiText"
+            ]
+          },
+          {
+            "id": "wifiCode",
+            "component": "HottyQRCode",
+            "value": "WIFI:T:WPA;S:hotty;P:terminal;;",
+            "errorCorrection": "H",
+            "label": "Join hotty's Wi-Fi",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "wifiText",
+            "component": "Text",
+            "text": "**Error correction** H: a third of the code may be lost and it still reads, for a larger code. A Wi-Fi network's name and password, which a phone offers to join.",
+            "weight": 1
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/diff"
 	"github.com/neuroplastio/hotty-a2ui/highlight"
+	"github.com/neuroplastio/hotty-a2ui/qr"
 )
 
 // Kind is what an element is, for the renditions.
@@ -152,6 +153,11 @@ const (
 	// BigMedium, BigLarge); Align, where each line goes across its box
 	// (start, center, end).
 	BigText Kind = "bigtext"
+	// QRCode is a QR code (HottyQRCode): Value, the text it holds; QR,
+	// its modules (nil where it holds nothing or Error says why it cannot);
+	// Label, a caption under it; Variant, its error correction level (L,
+	// M, Q, H).
+	QRCode Kind = "qrcode"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -216,10 +222,11 @@ type Element struct {
 	Placeholder string `json:"placeholder,omitempty"`
 	// Value is a TextField's or a DateTime's string, a CheckBox's or a
 	// Switch's bool, a Choice's []string, a Slider's float64, a Timer's
-	// time as text.
+	// time as text, a QRCode's text.
 	Value any `json:"value,omitempty"`
 	// Error is the message of the first check that fails, once the user
-	// has touched the control or tried to submit.
+	// has touched the control or tried to submit; a QRCode's, why its text
+	// has no code.
 	Error string `json:"error,omitempty"`
 	// Disabled: a Button or a Form whose checks fail does nothing, and
 	// neither does a Switch its disabled prop holds.
@@ -323,6 +330,9 @@ type Element struct {
 	// its widest and tallest page; not in the tree, so not walked).
 	PageCount int          `json:"pageCount,omitempty"`
 	Paged     [][]*Element `json:"-"`
+
+	// QRCode: the code its Value encodes (shared: not to be changed).
+	QR *qr.Code `json:"qr,omitempty"`
 
 	// Drag and drop (profile §6.21). Movable: a HottyList, HottyTable or
 	// HottyTree that is reorderable, or a List of a template with

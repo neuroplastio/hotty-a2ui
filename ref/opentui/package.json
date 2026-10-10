@@ -2,6 +2,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@opentui/core": "0.5.17"
+    "@opentui/core": "0.5.17",
+    "@opentui/qrcode": "0.5.17"
   }
 }

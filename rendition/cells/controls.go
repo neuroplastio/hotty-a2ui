@@ -196,6 +196,8 @@ func controlWidth(e *view.Element) int {
 		return sparkWidth(e)
 	case view.BigText:
 		return bigWidth(e)
+	case view.QRCode:
+		return qrWidth(e)
 	case view.Image:
 		return Width(imageText(e))
 	case view.Icon:
@@ -239,6 +241,8 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 		h = max(e.Height, 1)
 	case view.BigText:
 		h = bigHeight(e, w)
+	case view.QRCode:
+		h = qrHeight(e, w)
 	case view.KeyHints:
 		h = len(l.r.keyHints(e, w))
 	case view.Choice:

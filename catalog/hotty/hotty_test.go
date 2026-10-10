@@ -85,6 +85,11 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"b","component":"HottyBigText","size":"small"}`, false},
 		{`{"id":"b","component":"HottyBigText","text":"HOTTY","size":"huge"}`, false},
 		{`{"id":"b","component":"HottyBigText","text":"HOTTY","align":"middle"}`, false},
+		{`{"id":"q","component":"HottyQRCode","value":"https://hotty.neuroplast.io","errorCorrection":"H","label":"Scan me"}`, true},
+		{`{"id":"q","component":"HottyQRCode","value":{"@path":"/url"},"label":{"@path":"/hint"}}`, true},
+		{`{"id":"q","component":"HottyQRCode","label":"Scan me"}`, false},
+		{`{"id":"q","component":"HottyQRCode","value":"x","errorCorrection":"X"}`, false},
+		{`{"id":"q","component":"HottyQRCode","value":"x","errorCorrection":"m"}`, false},
 	} {
 		var d map[string]any
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {

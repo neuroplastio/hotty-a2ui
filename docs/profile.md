@@ -112,6 +112,7 @@ so that an error comes and goes as a text delta.
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 | HottyTimer, HottyStopwatch | `span role=timer`, which a screen reader does not read out at each tick: its label, then its time as cells writes it (§6.25), in a span whose id is the timer's and `~f`, so that a tick is one text's delta, in tabular figures (`font-variant-numeric`), so that it does not jitter as it ticks, and in `--k-muted` while it stands still (`k-still`, one attribute's delta). The program's draws move it on the clock (§3.4), as a Spinner's frames: a host runs nothing of its own here. The time in display type is vault KIT-14h |
 | HottyBigText | `div` (`k-big`) holding its text as it is, its lines apart at a `br`, in display type: weight 800, tabular figures, as many terminal rows high (`--hotty-cell-h`) as cells' letters, 3, 4 or 5 by its size (`k-big-small`, `k-big-medium`, `k-big-large`), a line one row more, which leaves room for descenders; `k-big-center` or `k-big-end` aligns its lines. A line too long wraps as text does. A screen reader reads the text. The host's own look is vault KIT-19h |
+| HottyQRCode | `div` (`k-qr`) holding its code, an inline `svg role=img` named `QR code:` and its value: a `viewBox` a module a unit, its quiet zone's four included, a white `rect` under it all and one black `path` (`~c`) of its dark modules, a rectangle a run of them across a row, `shape-rendering=crispEdges`, so that a new value is one attribute's delta. Black on white in every theme (§3.6), with presentation attributes only. The `svg` is `--k-modules` half rows a side (`--hotty-cell-h`), a module as large as in cells, smaller where its box is narrower (`max-width: 100%`); its label (`~l`) is centred under it. A value too long for a code is its error (`~e`, `k-error`) alone. The host's own look is vault KIT-20h |
 
 **Updates are deltas.** The document goes once. After it, the renderer
 diffs the elements it sent against the elements the view makes now, and
@@ -333,6 +334,7 @@ Natural widths:
 | HottySparkline | its `window`, else its values' count |
 | HottyPaginator | 2 for the gutter, plus its widest page's natural width (its child as it stands for each page) or its dots, a column a page, whichever is wider; with `numbers`, its last page's of its pages (`10/10`), so that it stays put as the pages turn |
 | HottyBigText | its widest line unwrapped, in its letters (§3.4) |
+| HottyQRCode | its code's, its modules and its quiet zone's 8 (§3.4), or its label's, whichever is wider; `✗` and its error where its value has no code |
 | Image, Icon, HottyIcon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -369,6 +371,8 @@ Minimums:
   numbers (`10/10`), which its dots become where they do not fit.
 - A HottyBigText's is its widest word; narrower, a word breaks between
   its letters (§3.4).
+- A HottyQRCode's is its code's: a code does not shrink. Narrower, its
+  value shows as text instead (§3.4).
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -475,6 +479,7 @@ How the containers lay their children out:
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | HottyTimer, HottyStopwatch | on one row, as bubbles' timer and stopwatch examples draw theirs (`Exiting in 4s`, `Elapsed: 1.5s`): its label and a space, then its time as its `format` writes it (§6.25), `4m59s` or `4:59`, in `fg` while it counts and in `muted` while it stands still, stopped or run out, so that a time that does not move does not look stuck. Without a label, the time alone. Its width is its time's, which changes as it ticks (`9s` after `10s`), as bubbles' does: put it at the end of its row. |
 | HottyBigText | as OpenTUI's ASCIIFont, block letters in `fg`, of the kit's own pixel fonts (§6.28): its size's glyphs, a column apart, a word a space's glyph and a column each side; at small (3 rows) and medium (4) a pixel is a column and half a row, two pixels a cell (`▀ ▄ █`), at large (5) two columns and a row (`██`). Each line at its `align` across its box; a line too long wraps at its last space that fits, and a word too long for a line of its own between letters, so that nothing is cut; its lines a blank row apart. Lowercase is drawn in capitals, a Latin letter's mark is left off (`É` is `E`), and a character the fonts lack is `?` |
+| HottyQRCode | as OpenTUI's QR code: its modules a column wide and half a row tall, about square, two to a cell in half blocks (`▀ ▄ █`), with a quiet zone of four modules round it (4 columns each side, 2 rows above, 2½ below, as its modules' rows are odd), in ink on paper, black on white whatever the theme (§3.6), at its box's start; then its label, wrapped, centred under it. A box narrower than the code has its label and its value as text instead, wrapped, since a code cut does not scan; a value too long for any code is `✗ Too long for a QR code` in `error`; an empty one draws nothing |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2. A one-line field's starts in its input's column, under the value it is about (the maintainer, round 3), unless that leaves it fewer than 16 columns |
 
@@ -686,8 +691,9 @@ without colour:
 
 Cells name NEIO-4's roles (`fg`, `bg`, `muted`, `accent`, `selection`,
 `surface`, `border`, `success`, `warning`, `error`, `info`), never colours,
-but for one: a HottyProgress's fill may blend into the terminal's own
-magenta, where the terminal said it (§3.4). `accent` goes only on focus, and on a HottySwitch that is on, as a
+but for two: a HottyProgress's fill may blend into the terminal's own
+magenta, where the terminal said it (§3.4), and a HottyQRCode is ink on
+paper, black on white (below). `accent` goes only on focus, and on a HottySwitch that is on, as a
 switch's colour says so. Every state that has a colour also has a glyph
 or an attribute: `✗`, `!` and `…`, reverse for focus, faint for disabled
 and for placeholders. A toast's kind (§6.23) is its border's and its
@@ -710,6 +716,17 @@ In a theme (`rendition/theme`), a role the theme colours is that colour
 in truecolor (`38;2;r;g;b`), and the theme's `bg` is under every cell
 (`48;2;r;g;b`), so a row keeps its blank cells to the end. A role the
 theme leaves to the terminal keeps the floor above.
+
+**Ink on paper.** A HottyQRCode's cells, its quiet zone's too, are black
+on white whatever the theme and the terminal, since a phone's camera
+reads a code dark on light, and a dark terminal's text on its background
+would be the code reversed, which not every reader takes. At the floor
+they are the 256 colours' darkest grey on their white, `38;5;232;48;5;231`:
+a palette that sets the sixteen, or base16-shell's 16 to 21, leaves those
+as they are, where the sixteen's black and white are the theme's. In a
+theme that paints its own background, `38;2;0;0;0;48;2;255;255;255`.
+Under NO_COLOR they are the glyphs alone, the terminal's text as the dark
+modules: dark on a light terminal, reversed on a dark one.
 
 A cell may blend two roles (a HottyProgress's fill): k/255 of the way
 from the first to the second, which is, channel by channel, p + (q − p) ×
@@ -748,8 +765,8 @@ These are only what a blend or a tint is worked out from. A role the
 theme leaves to the terminal is still painted in the terminal's palette,
 by its number, so that the terminal's own colours change it, and the
 terminal's background is never painted under every cell: a cell has a
-background only where a tint changes it, so a terminal drawn through (a
-transparent one) stays so elsewhere.
+background only where a tint changes it, or where it is paper (above), so
+a terminal drawn through (a transparent one) stays so elsewhere.
 
 The attributes are bold (1), faint (2), italic (3), underline (4), reverse
 (7) and strikethrough (9). Under NO_COLOR, the attributes are written and
@@ -1043,6 +1060,9 @@ reference is `rendition/text`.
   time alone without a label. A pipe has no time to tick in.
 - A HottyBigText is its text as it is, a line each of its lines, its case
   and its accents kept: what it says, not its letters' blocks.
+- A HottyQRCode is `Label: value`, the value alone without a label: what
+  it holds, which text needs no code for, whether a code holds it or not;
+  nothing without a value.
 - A HottyTable is its header and every row, whatever its `height`: the
   columns two spaces apart, each as wide as its widest cell and aligned as
   it says, after `> ` for the selected row and two spaces for the others.
@@ -2033,6 +2053,45 @@ It takes no focus and no keys.
 | cells | block letters in `fg`, its lines a blank row apart, then a blank row (§3.3, §3.4); lowercase in capitals, a Latin letter's mark left off, `?` for a character the fonts lack |
 | host | its text as it is in display type, as many rows high as cells' letters (§2); the host's own look is vault KIT-19h |
 | text | its text as it is, a line each of its lines (§4) |
+
+### 6.29 HottyQRCode
+
+A QR code for a phone's camera, as OpenTUI's QR code draws it: a link
+to open, a device to pair, a Wi-Fi network to join, carried from the
+screen to the phone. Bubble Tea has none.
+
+| prop | |
+| --- | --- |
+| `value` | required, a DynamicString: what the code holds, as the phone reads it (a URL; `WIFI:T:WPA;S:name;P:password;;`; `mailto:`, `tel:`). Bound, the code follows the data model, a field's value as it is typed. Empty, it draws nothing |
+| `errorCorrection` | `L`, `M` (the default), `Q` or `H`: how much of the code may be lost and still read, about 7%, 15%, 25% and 30%, the larger the code. The least it gets: the code has the highest level its size holds the value at, as OpenTUI's encoder and Nayuki's raise it, since that costs nothing |
+| `label` | a DynamicString: a caption under the code that says what scanning it does (`Scan to open`) |
+
+`value`, as A2UI's TextField and ChoicePicker name what they hold, and
+`errorCorrection` by its letters, which every QR library and reader
+names it by (OpenTUI's `errorCorrectionLevel`). No size, colour or quiet
+zone prop: the size is the value's, a module a column in cells, and the
+colours and the quiet zone are what a camera needs, not a choice.
+
+**The encoder** is `qr` (`qr/qr.go`): rsc.io/qr's coding (BSD-3-Clause),
+which builds a code of a version, a level and a mask, and the kit's
+choice of them: the smallest version that holds the value, as digits, as
+QR's capitals and marks, else as its UTF-8 bytes (no ECI header: readers
+guess the bytes' encoding, and take valid UTF-8 as UTF-8, as ZXing and
+zbar read accents and kanji back); the level raised as above; of the eight
+masks, the one ISO/IEC 18004's penalty rules (§7.8.3) score lowest,
+where rsc.io/qr leaves mask 0. A value no version holds at its level,
+more than 2,953 bytes at L down to 1,273 at H, is an error. A view
+encodes a code once a value and level (a small cache), so that a field
+typed into does not encode every other code again.
+
+It takes no focus and no keys. A screen reader has it as an image named
+`QR code:` and its value.
+
+| rendition | a HottyQRCode |
+| --- | --- |
+| cells | its modules in half blocks, a quiet zone of four, black on white whatever the theme (§3.4, §3.6), its label centred under it; narrower than its code, its label and value as text; too long, `✗ Too long for a QR code` |
+| host | an `svg` of one path on white, crisp, a module as large as in cells, its label under it (§2); the host's own look is vault KIT-20h |
+| text | `Label: value` (§4) |
 
 ## 7. Fallbacks
 

@@ -179,7 +179,20 @@ type Cell struct {
 	Line    Role
 	LineSet bool
 	LineMix uint8
+	// Paper is ink on paper, black on white whatever the theme and the
+	// terminal, Role aside: a HottyQRCode's, which a phone reads dark on
+	// light (profile §3.6). Under NO_COLOR it is the glyph alone.
+	Paper bool
 }
+
+// A paper cell's colours (Cell.Paper): the 256 colours' white (the 6×6×6
+// cube's last) and its darkest grey, which a palette that sets the
+// sixteen, or base16-shell's 16 to 21, leaves as they are; truecolor in a
+// theme that paints its own background.
+const (
+	paper256, ink256 = "48;5;231", "38;5;232"
+	paperHex, inkHex = "#ffffff", "#000000"
+)
 
 var blank = Cell{Text: " ", Width: 1}
 
@@ -308,6 +321,9 @@ func (c Cell) bare(th *theme.Theme) bool {
 	if c.Text != " " || c.Attr != 0 || c.Link != "" {
 		return false
 	}
+	if c.Paper {
+		return th == nil
+	}
 	if th == nil {
 		return c.BackMix == 0 || c.MonoAttr == 0
 	}
@@ -333,6 +349,12 @@ func (c Cell) style(th *theme.Theme) string {
 	}
 	if th == nil {
 		return strings.Join(p, ";")
+	}
+	if c.Paper {
+		if th.Bg != "" {
+			return strings.Join(append(p, truecolour("38", inkHex), truecolour("48", paperHex)), ";")
+		}
+		return strings.Join(append(p, ink256, paper256), ";")
 	}
 	hex := th.Colour(roleNames[c.Role])
 	if f := c.fillColour(th); f != "" {

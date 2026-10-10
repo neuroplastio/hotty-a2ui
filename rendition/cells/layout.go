@@ -160,6 +160,9 @@ func (l *layout) minimum(e *view.Element) int {
 	case view.BigText:
 		// Narrower, a word breaks between letters.
 		n = bigMinimum(e)
+	case view.QRCode:
+		// A code does not shrink; narrower, its value shows as text.
+		n = qrMinimum(e)
 	case view.KeyHints:
 		// It cuts what does not fit (shortHints).
 		n = 1

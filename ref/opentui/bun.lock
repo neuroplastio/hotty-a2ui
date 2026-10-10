@@ -5,6 +5,7 @@
     "": {
       "dependencies": {
         "@opentui/core": "0.5.17",
+        "@opentui/qrcode": "0.5.17",
       },
     },
   },
@@ -26,6 +27,8 @@
     "@opentui/core-win32-arm64": ["@opentui/core-win32-arm64@0.5.17", "", { "os": "win32", "cpu": "arm64" }, "sha512-MyVVpZ0CyGDQ+g4eM0zURqEd/9jDrBIPcZdLyZOmWbdoVu36PLM9KAkqwl/n5ASn/rOrQd+d14jUAsZJvFTqzw=="],
 
     "@opentui/core-win32-x64": ["@opentui/core-win32-x64@0.5.17", "", { "os": "win32", "cpu": "x64" }, "sha512-etkuzyfclRX9wel4ivCOk90dUdZNtjK7U6vr7ZHmwkZyOik34ec3Gse0B/jyk192Xdx0l50Tl2xgC1h68XRiEQ=="],
+
+    "@opentui/qrcode": ["@opentui/qrcode@0.5.17", "", { "dependencies": { "@opentui/core": "0.5.17" }, "peerDependencies": { "@opentui/react": "0.5.17", "@opentui/solid": "0.5.17" }, "optionalPeers": ["@opentui/react", "@opentui/solid"] }, "sha512-A83FFDlIADLXz9SPJVNOqwBO6yvExxJw8H4eT7y7RTP6zQGyLjohsLOZRtwEM7MnrIr62dEAO7V+aHPhSW7dSg=="],
 
     "ansi-regex": ["ansi-regex@6.4.0", "", {}, "sha512-KzTVk2tCWAHtYrvvvaP8bJKJq2pVinhLcGEQdtLIYPbmNGNyYe8QwNaTUYQp2J7/vIsUKt5QCqAfUkYyG9DkOw=="],
 

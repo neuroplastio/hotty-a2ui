@@ -23,6 +23,7 @@ require (
 	github.com/neuroplastio/hotty-go/hottytest v0.0.0-20261010155854-1ddaac3bfc10
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/yuin/goldmark v1.8.6
+	rsc.io/qr v0.2.0
 )
 
 require (

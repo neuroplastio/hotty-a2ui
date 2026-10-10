@@ -159,7 +159,7 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 | KIT-17 File picker | `root` (a grant's name), bound `path`, `filter` | Fits. **L10** |
 | KIT-18 Terminal | `command` (a registered id), `lines` or a stream | Fits. L4, **L10** |
 | KIT-19 Big text | Settled (KIT-19c, profile §6.28): `HottyBigText`, `text` (a DynamicString, as it is), `size` (small, medium or large: letters 3, 4 or 5 rows tall in cells) and `align`; a size rather than a font, since the three are what an agent picks between | Fits |
-| KIT-20 QR code | `value` | Fits |
+| KIT-20 QR code | Settled (KIT-20c, profile §6.29): `HottyQRCode`, `value` (a DynamicString, bound to follow a field), `errorCorrection` (L, M, Q, H; raised where the code's size allows) and `label`; no size or colour props, since a camera needs black on white and the size is the value's | Fits |
 | KIT-22 Toggle | `label`, a bound `value` (DynamicBoolean), `checks`, `disabled` | Fits. L1 |
 
 The prop names above are sketches. Each phase-1 leg settles its component's

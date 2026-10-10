@@ -555,6 +555,15 @@ textarea.k-input { min-height: 5.5rem; }
 .k-big-center { text-align: center; }
 .k-big-end { text-align: end; }
 
+/* HottyQRCode: its code an svg, black on white with its quiet zone in
+   every theme, as a phone reads it; a module half a row a side, as in
+   cells, smaller where its box is narrower. Its label centred under it.
+   KIT-20h is the host's own. */
+.k-qr { display: flex; flex-direction: column; align-items: center; row-gap: var(--k-1); width: max-content; max-width: 100%; }
+.k-qr-code { display: block; width: calc(var(--k-modules) * var(--hotty-cell-h, 1.25rem) / 2); max-width: 100%;
+  height: auto; aspect-ratio: 1; }
+.k-qr-label { text-align: center; }
+
 /* HottyTable: a baseline (phase 1). The body holds the rows the view
    shows, as cells does; a host's own scrolling, a sticky header and
    hover are KIT-01h. Separate borders draw the header's rule on Blitz,

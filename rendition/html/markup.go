@@ -242,6 +242,8 @@ func (m *markup) element(e *view.Element) *node {
 		n = timer(e)
 	case view.BigText:
 		n = bigText(e)
+	case view.QRCode:
+		n = qrCode(e)
 	case view.Table:
 		n = table(e)
 	case view.RichList:

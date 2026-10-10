@@ -38,7 +38,7 @@ const (
 	partNode   = "q" // a HottyTree's nodes, "q0" to "qN", by their index
 	partPlot   = "a" // a HottyChart's plot
 	partSeries = "g" // a HottyChart's lines' svgs, "g0" to "gN", a series each
-	partPath   = "c" // the line in each, "c0" to "cN": a new point is its d's delta
+	partPath   = "c" // the line in each, "c0" to "cN": a new point is its d's delta; a HottyQRCode's dark modules
 	partTip    = "z" // a HottyKeyHints' tooltip row
 	surfaceID  = "~s"
 	layerID    = "~o" // the overlay an open Modal or list shows in

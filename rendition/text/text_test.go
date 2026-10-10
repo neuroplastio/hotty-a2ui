@@ -167,6 +167,30 @@ func TestBigText(t *testing.T) {
 	}
 }
 
+// TestQRCode: a HottyQRCode reads as what it holds, "Label: value", or
+// the value alone; too long for a code, still its value; with none, as
+// nothing.
+func TestQRCode(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	h := `"catalogId":"` + hotty.ID + `"`
+	long := strings.Repeat("7", 8000)
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["site","wifi","none","long"]},
+	 {"id":"site","component":"HottyQRCode",` + h + `,"value":"https://hotty.neuroplast.io","label":"Scan to open"},
+	 {"id":"wifi","component":"HottyQRCode",` + h + `,"value":"WIFI:T:WPA;S:hotty;P:terminal;;","errorCorrection":"H"},
+	 {"id":"none","component":"HottyQRCode",` + h + `,"value":"","label":"Nothing"},
+	 {"id":"long","component":"HottyQRCode",` + h + `,"value":"` + long + `"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	want := "Scan to open: https://hotty.neuroplast.io\nWIFI:T:WPA;S:hotty;P:terminal;;\n" + long + "\n"
+	if got != want {
+		t.Errorf("got\n%.200s\nwant\n%.200s", got, want)
+	}
+}
+
 // TestRangeSlider: a range reads as a field does, "Label: start–end",
 // "(disabled)" after a disabled one, its error on the next line; a Slider
 // that fills from its end reads as any Slider.
