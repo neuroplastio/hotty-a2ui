@@ -28,7 +28,7 @@ import (
 
 // The groups of stories.
 const (
-	Basic    = "basic"    // A2UI's basic catalog examples, as A2UI has them
+	Basic    = "basic"    // the basic catalog: A2UI's examples as A2UI has them, then the kit's own
 	Hotty    = "hotty"    // the hotty catalog: Shortcut, Form, focus, blur
 	Fallback = "fallback" // what has no terminal meaning, and what fails
 )
@@ -64,6 +64,7 @@ func All() []*Story {
 		}
 	}
 	add(thirdparty.BasicExamples, "a2ui/catalogs/basic/v1/examples/*.json", Basic)
+	add(stories, "stories/basic/*.json", Basic)
 	add(stories, "stories/hotty/*.json", Hotty)
 	add(stories, "stories/fallback/*.json", Fallback)
 	return out

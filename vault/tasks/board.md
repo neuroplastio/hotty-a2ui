@@ -11,7 +11,7 @@ at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 (journal 2026-10-09.11): the scroll view; at KIT-05c (journal
 2026-10-09.12): code and its colours; and at KIT-06c (journal
 2026-10-09.13): the diff; and at the icons (journal 2026-10-10.1,
-story `fallback/icons`). Phase 1 is a go
+story `basic/icons`). Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 

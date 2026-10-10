@@ -36,7 +36,8 @@ func TestStories(t *testing.T) {
 			}
 		}
 	}
-	if groups[Basic] != 43 || groups[Hotty] == 0 || groups[Fallback] == 0 {
+	// Basic: A2UI's 43 examples, then the kit's icons.
+	if groups[Basic] != 43+1 || groups[Hotty] == 0 || groups[Fallback] == 0 {
 		t.Errorf("groups %v", groups)
 	}
 	if Find("00_simple-login-form") == nil || Find("hotty/form") == nil {
