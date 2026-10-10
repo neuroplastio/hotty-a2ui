@@ -24,7 +24,7 @@ Set Padding 20
 Set TypingSpeed 0
 Set Theme "Catppuccin Mocha"
 Hide
-Type "unset PLX_PANE PLX_SOCKET PLX_WORKSPACE; clear; stty cols $cols rows $rows; $2"
+Type "unset PLX_PANE PLX_SOCKET PLX_WORKSPACE; clear; stty cols $cols rows $rows tab3; $2"
 Enter
 Sleep 2s
 Show

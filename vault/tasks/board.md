@@ -3,15 +3,8 @@
 Last updated: 2026-10-10
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** round 2 of the review (`.shots/round2/blind`
-in `cmd/review`, made with `scripts/pair-shot.sh` and
-`scripts/blind-shots.sh`), the fixes for
-[round 1](../feedback/2026-10-10-review-round-1.md): the terminal's colours
-learned, tinted diffs, the progress gradient (journal 2026-10-10.11);
-underlined fields, labels above or inline, which the maintainer picks
-(2026-10-10.12); suggestions over the form, and a ghost-only style
-(2026-10-10.13); the table's scrollbar, code scrolled sideways, the
-viewport filled (2026-10-10.14). Round 1 left out, still to look at: the
+**Waiting on the maintainer:** round 3 of the review, the fixes for
+[round 2](../feedback/2026-10-10-review-round-2.md) (in progress). Round 1 left out, still to look at: the
 icons (journal 2026-10-10.1, story `basic/icons`); KIT-BOOK (2026-10-10.4):
 the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
 (2026-10-10.7): the sliders, and its four open points; KIT-23c
