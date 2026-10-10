@@ -129,6 +129,7 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 | [`story/`](story) | the stories (A2UI's basic examples, the hotty catalog's, the fallbacks), and a story as it runs |
 | [`storybook/`](storybook) | the storybook, for a program to show in a part of its screen |
 | [`cmd/storybook/`](cmd/storybook) | the storybook on the whole screen, as plain text in a pipe, or a story's HTML |
+| [`cmd/review/`](cmd/review) | a small app on the kit: pictures beside a box for feedback on each, kept in `feedback.md`; the pictures go to the host in band (`cid:`) |
 | [`ref/`](ref) | what the kit is held against: Bubble Tea's bubbles, huh and lipgloss, with the kit's stories' content (a module of its own), and OpenTUI's where Bubble Tea has none ([`ref/opentui`](ref/opentui), a Bun package) |
 | [`vault/`](vault/README.md) | the work: the gap analysis, the board, questions and the journal |
 | [`third_party/a2ui/`](third_party/a2ui) | A2UI at one commit ([`REV`](third_party/a2ui/REV)): the v1.0 schemas, the basic catalog and its examples, the conformance suites |

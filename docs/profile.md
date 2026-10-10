@@ -80,7 +80,7 @@ so that an error comes and goes as a text delta.
 | Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures); a Row of columns or cards shrinks them instead. A weighted child of a Row takes its share of it, whatever it holds (`flex: weight`, as A2UI's Lit renderer has it), so Rows weighted alike line up as a grid's; in a Column, a weight is a share of the rows to spare. A List whose items move (`reorder`, §6.21) gives the program Alt+ArrowUp and Alt+ArrowDown (`data-keys`), so that they move the item the keyboard is in, as in cells; its drags are cells' alone until KIT-23h |
 | Card | `div`, a raised fill and a rounded border |
 | Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9). A word breaks only when it fills a line alone. A Text that is one number (`$850,000,000.00`, a grid's cell) may also break after its group separators, a zero-width space after each, so a narrow column breaks it between groups, not between any two digits. An ordered list item's number is written out, a `span.k-n` the sheet sets in the indent with a gap, ending at the same place for `9.` and `10.`, because Blitz draws a list's own numbers flush against the text and has no counters to draw them otherwise |
-| Image | `img`, sized by its variant in `rem` |
+| Image | `img`, sized by its variant in `rem`. A weighted one in a Row takes its share of the row whatever its variant, and is as tall as its picture at that width, no taller than the surface: a picture to look at, beside what is said about it |
 | Icon | `span role=img`, holding an inline `svg` 1em square whose one `path` is filled with `currentColor`, so it takes the text's colour, the theme's or a Button's. One of the 59 names is its Material Symbols shape (Sharp, filled; `favoriteOff` and `starOff` unfilled), generated into `icons/` by `make icons` (gov R-4). An `svgPath` is drawn as A2UI's reference renderers draw it, in a 24 box, and only when it is path data and nothing else, at most 8 KB (`icons.Path`). The kit writes the `svg` itself, so a path is only ever an attribute. A name with no shape, or a path it doesn't accept, is the glyph cells draw. A HottyIcon is drawn the same way (§6.15); its path, with a `strokeWidth`, is stroked with `currentColor` that wide, with round caps and joins, and not filled |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
@@ -1407,7 +1407,8 @@ A component never fails the surface it is in.
   an OSC 8 hyperlink, in text the label and the URL. It takes focus, and
   Enter or Space opens it, through the renderer's `openUrl`.
 - **Image** is a picture on a host, fetched only as the network policy
-  allows (§2). In cells and text it is `[image: description]`.
+  allows (§2), or sent by the program in band and named by a `cid:` URL
+  (SPEC.md §7.1). In cells and text it is `[image: description]`.
 - **A child still to come.** A component may name one the agent has not
   sent yet, as a stream does. It shows `…` in `muted` until it comes.
 - **A component that contains itself.** Where the loop closes, it shows
