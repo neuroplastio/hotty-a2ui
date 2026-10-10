@@ -34,6 +34,18 @@ var pageSheet string
 // is the page's too.
 func PageCSS() string { return kitCSS + "\n" + pageSheet }
 
+// PageOptions is what a page knows of itself that the kit can't (Page).
+type PageOptions struct {
+	// Heading is the level, 1 to 6, of the heading a Tabs' titles are, so
+	// that they take their place in the page's outline: 3 for tabs under
+	// a ## section. 0 (or any other) leaves them titles, no heading.
+	Heading int
+	// Origin is the page's own site, as "https://kubecom.neuroplast.io":
+	// an absolute link to it stays in the tab, as a relative one does,
+	// where a link to another site opens a new one. "" when none is.
+	Origin string
+}
+
 // Page is the surface's markup for an ordinary web page: a fragment for
 // the page's body, under the stylesheet the page puts in once (PageCSS).
 // It needs no program: nothing in it is read through a host's events or
@@ -45,14 +57,16 @@ func PageCSS() string { return kitCSS + "\n" + pageSheet }
 // every id in it, so that a page's surfaces share none; a theme
 // (SetTheme) is set on it as on a host. The view is built from the
 // controller's surface and state (view.BuildPage), not taken from its
-// view, which holds only the tab shown.
-func (r *Rendition) Page() string {
+// view, which holds only the tab shown. What o says of the page places
+// the tabs' titles in its outline and keeps its own site's links in the
+// tab.
+func (r *Rendition) Page(o PageOptions) string {
 	now := time.Now
 	if r.Clock != nil {
 		now = r.Clock
 	}
 	v := view.BuildPage(r.C.S, r.C.St)
-	m := &markup{page: true, now: now()}
+	m := &markup{page: true, now: now(), heading: o.Heading, site: siteOf(o.Origin)}
 	n := el("div", "class", "k-surface k-page").add(m.element(v.Root))
 	if css := themeCSS(r.theme); css != "" {
 		// A surface in a theme's colours is a box of them on the page.
@@ -62,7 +76,7 @@ func (r *Rendition) Page() string {
 	if r.name != "" {
 		prefix = domID(r.name) + "~~"
 	}
-	static(n, prefix)
+	m.site.static(n, prefix)
 	if r.name != "" {
 		n.id = domID(r.name)
 	}
@@ -93,14 +107,19 @@ func onPage(e *view.Element) *view.Element {
 // pageTabs is a Tabs on a page: every tab, each a section under its title,
 // as GitHub shows the same Markdown, where a host shows one tab at a time
 // and a program switches them. The title is drawn as a tab bar of one tab,
-// the tab shown's look.
+// the tab shown's look; it is a heading of the level the page gave
+// (PageOptions.Heading), else a title that is none.
 func (m *markup) pageTabs(e *view.Element) *node {
+	tag := "div"
+	if m.heading >= 1 && m.heading <= 6 {
+		tag = "h" + strconv.Itoa(m.heading)
+	}
 	n := el("div", "id", domID(e.ID), "class", "k-tabs k-stack k-col")
 	for _, t := range e.Children {
 		if t.Kind != view.Tab {
 			continue
 		}
-		title := el("div", "id", domID(t.ID), "class", "k-tab k-tab-title").add(beside(t.Name)).add(texts(t.Label)...)
+		title := el(tag, "id", domID(t.ID), "class", "k-tab k-tab-title").add(beside(t.Name)).add(texts(t.Label)...)
 		n.add(el("section", "class", "k-tab-section k-stack k-col", "aria-labelledby", domID(t.ID)).add(
 			el("div", "class", "k-tablist").add(title),
 			el("div", "class", "k-tabpanel k-stack k-col").add(m.all(t.Children)...)))
@@ -148,7 +167,7 @@ func (m *markup) pageTree(e *view.Element) *node {
 		}
 		// KIT-26: a node's href, once view.TreeNode has one, goes here in
 		// place of "".
-		row.add(treeLabel(n.Label, "", i == sel))
+		row.add(m.site.treeLabel(n.Label, "", i == sel))
 		item := el("li")
 		if n.Branch() {
 			row.tag = "summary"
@@ -167,8 +186,8 @@ func (m *markup) pageTree(e *view.Element) *node {
 // treeLabel is a HottyTree node's label on a page: a link (link) when the
 // node has an href, the current page's when the node is the one selected;
 // else its text, the current one's when selected.
-func treeLabel(label, href string, selected bool) *node {
-	if a := link(href); a != nil {
+func (s site) treeLabel(label, href string, selected bool) *node {
+	if a := s.link(href); a != nil {
 		a.set("class", "k-node-label")
 		if selected {
 			a.set("aria-current", "page")
@@ -197,14 +216,35 @@ func (m *markup) pagePaginator(e *view.Element) *node {
 	return el("div", "id", domID(e.ID), "class", "k-pager").add(m.element(&child))
 }
 
+// site is a page's own site, its host as PageOptions.Origin names it,
+// lowercased: "" when the page named none, and every absolute link
+// leaves it.
+type site string
+
+// siteOf is the site an origin names: "https://x.io" (its scheme, any
+// path, ignored) or a bare "x.io".
+func siteOf(origin string) site {
+	origin = strings.TrimSpace(origin)
+	u, err := url.Parse(origin)
+	switch {
+	case origin == "" || err != nil:
+		return ""
+	case u.Host != "":
+		return site(strings.ToLower(u.Host))
+	case u.Scheme == "" && !strings.ContainsAny(origin, "/?#"):
+		return site(strings.ToLower(origin))
+	}
+	return ""
+}
+
 // link is an <a> to href as a page has it (pageLink); nil when href is
 // "" or goes nowhere a page links to.
-func link(href string) *node {
+func (s site) link(href string) *node {
 	if href == "" {
 		return nil
 	}
 	a := el("a", "href", href)
-	pageLink(a)
+	s.pageLink(a)
 	if _, ok := a.attr("href"); !ok {
 		return nil
 	}
@@ -213,17 +253,18 @@ func link(href string) *node {
 
 // pageLink makes an <a> a page's link, in place: the one place where page
 // mode decides where links go and how they open. A link that leaves the
-// site (http or https, or //host) opens in a new tab, and any other (a
-// path, a fragment, a query, mailto: or tel:) in the same one. One to any
-// other scheme (javascript:, data:) loses its href. What the host's
-// markup said (Text's Markdown opens every link in the terminal, with
-// target=_blank) and any event of a host's on it (data-*) go.
-func pageLink(a *node) {
+// site (http or https, or //host, to a host not the page's own) opens in
+// a new tab, and any other (a path, a fragment, a query, the page's own
+// site, mailto: or tel:) in the same one. One to any other scheme
+// (javascript:, data:) loses its href. What the host's markup said
+// (Text's Markdown opens every link in the terminal, with target=_blank)
+// and any event of a host's on it (data-*) go.
+func (s site) pageLink(a *node) {
 	href, _ := a.attr("href")
 	a.attrs = slices.DeleteFunc(a.attrs, func(at attr) bool {
 		return at.k == "target" || at.k == "rel" || at.k == "href" || strings.HasPrefix(at.k, "data-")
 	})
-	h, away, ok := pageHref(href)
+	h, away, ok := s.href(href)
 	if !ok {
 		return
 	}
@@ -233,19 +274,18 @@ func pageLink(a *node) {
 	}
 }
 
-// pageHref is where a page's link goes, and whether it leaves the site;
-// ok is false for one a page doesn't link to.
-func pageHref(href string) (h string, away, ok bool) {
+// href is where a page's link goes, and whether it leaves the site; ok is
+// false for one a page doesn't link to.
+func (s site) href(href string) (h string, away, ok bool) {
 	h = strings.TrimSpace(href)
 	u, err := url.Parse(h)
 	if h == "" || err != nil {
 		return "", false, false
 	}
+	elsewhere := u.Host != "" && (s == "" || !strings.EqualFold(u.Host, string(s)))
 	switch strings.ToLower(u.Scheme) {
-	case "":
-		return h, u.Host != "", true
-	case "http", "https":
-		return h, true, true
+	case "", "http", "https":
+		return h, elsewhere, true
 	case "mailto", "tel":
 		return h, false, true
 	}
@@ -260,13 +300,13 @@ var (
 )
 
 // pageLinks makes the links in a Text's HTML a page's (pageLink).
-func pageLinks(h string) string {
+func (s site) pageLinks(h string) string {
 	return anchorTag.ReplaceAllStringFunc(h, func(tag string) string {
 		a := el("a")
 		for _, m := range tagAttr.FindAllStringSubmatch(tag[2:len(tag)-1], -1) {
 			a.set(m[1], stdhtml.UnescapeString(m[2]))
 		}
-		pageLink(a)
+		s.pageLink(a)
 		return strings.TrimSuffix(a.html(), "</a>")
 	})
 }
@@ -282,12 +322,12 @@ func pageLinks(h string) string {
 //     clicks), and a text field is readonly: its text can be selected and
 //     copied, not changed;
 //   - every id, and every attribute that names one, gets prefix.
-func static(n *node, prefix string) {
+func (s site) static(n *node, prefix string) {
 	if n.tag == "" {
 		return
 	}
 	if n.raw {
-		n.text = pageLinks(n.text)
+		n.text = s.pageLinks(n.text)
 	}
 	if n.id != "" {
 		n.id = prefix + n.id
@@ -318,7 +358,7 @@ func static(n *node, prefix string) {
 	n.attrs = attrs
 	switch typ, _ := n.attr("type"); {
 	case n.tag == "a":
-		pageLink(n)
+		s.pageLink(n)
 	case n.tag == "button", n.tag == "input" && typ == "checkbox":
 		n.set("tabindex", "-1")
 	case n.tag == "input", n.tag == "textarea":
@@ -326,6 +366,6 @@ func static(n *node, prefix string) {
 	}
 	n.kids = slices.DeleteFunc(n.kids, func(k *node) bool { return k.tag == "datalist" })
 	for _, k := range n.kids {
-		static(k, prefix)
+		s.static(k, prefix)
 	}
 }

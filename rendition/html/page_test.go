@@ -33,8 +33,8 @@ func count(s, re string) int { return len(regexp.MustCompile(re).FindAllString(s
 // components share no id.
 func TestPageStylesheetOnce(t *testing.T) {
 	const comps = `[{"id":"root","component":"Column","children":["name"]},{"id":"name","component":"TextField","label":"Name","value":{"@path":"/name"}}]`
-	a := pageRendition(t, "a", `{"name":"Ada"}`, comps).Page()
-	b := pageRendition(t, "b", `{"name":"Bo"}`, comps).Page()
+	a := pageRendition(t, "a", `{"name":"Ada"}`, comps).Page(PageOptions{})
+	b := pageRendition(t, "b", `{"name":"Bo"}`, comps).Page(PageOptions{})
 	page := "<style>" + PageCSS() + "</style>" + a + b
 	if n := strings.Count(page, ".k-surface {"); n != 1 {
 		t.Errorf("the kit's sheet is in the page %d times", n)
@@ -65,7 +65,7 @@ func TestPageStylesheetOnce(t *testing.T) {
 func TestPageTabs(t *testing.T) {
 	r := pageRendition(t, "p", `{}`, `[{"id":"root","component":"Tabs","tabs":[{"title":"macOS","child":"mac"},{"title":"Linux","child":"linux"},{"title":"Source","child":"src"}]},
  {"id":"mac","component":"Text","text":"brew install x"},{"id":"linux","component":"Text","text":"apt install x"},{"id":"src","component":"Text","text":"go install x"}]`)
-	h := r.Page()
+	h := r.Page(PageOptions{})
 	if n := count(h, `<section class="k-tab-section`); n != 3 {
 		t.Fatalf("%d sections, want 3:\n%s", n, h)
 	}
@@ -91,6 +91,15 @@ func TestPageTabs(t *testing.T) {
 	if doc := r.Doc(); !strings.Contains(doc, `role="tab"`) || strings.Contains(doc, "apt install x") {
 		t.Error("Page changed the host's document")
 	}
+	// Under a page's ## section, the titles are h3s in its outline; a
+	// level that is none leaves them titles.
+	h = r.Page(PageOptions{Heading: 3})
+	if n := count(h, `<h3 id="p~~root/tab/\d" class="k-tab k-tab-title">`); n != 3 {
+		t.Errorf("%d h3 titles, want 3:\n%s", n, h)
+	}
+	if h := r.Page(PageOptions{Heading: 7}); strings.Contains(h, "<h7") || count(h, `<div id="p~~root/tab/\d" class="k-tab k-tab-title">`) != 3 {
+		t.Errorf("heading 7 is not titles:\n%s", h)
+	}
 }
 
 // A HottyTree on a page has every node as a row, in lists that nest as
@@ -103,7 +112,7 @@ func TestPageTree(t *testing.T) {
   {"label":"Start","value":"start","children":[{"label":"Install","value":"install"},{"label":"Quick start","value":"quick"}]},
   {"label":"Guides","value":"guides","children":[{"label":"Configuration","value":"config"}]},
   {"label":"Reference","value":"ref","children":[{"label":"Commands","value":"commands","children":[{"label":"get","value":"get"}]}]}]}]`)
-	h := r.Page()
+	h := r.Page(PageOptions{})
 	if n := count(h, `<li>`); n != 9 {
 		t.Errorf("%d rows, want every node's 9:\n%s", n, h)
 	}
@@ -139,7 +148,7 @@ func TestPageLinks(t *testing.T) {
 	r := pageRendition(t, "p", `{}`, `[{"id":"root","component":"Column","children":["t","v"]},
  {"id":"t","component":"Text","text":"[next](../quick/) [files](/docs/config/#files) [here](#top) [src](https://github.com/x/y?a=1&b=2) [host](//cdn.example.com/x) [mail](mailto:a@b.c) [bad](javascript:alert(1))"},
  {"id":"v","component":"Video","url":"https://example.com/talk.mp4"}]`)
-	h := r.Page()
+	h := r.Page(PageOptions{})
 	for _, want := range []string{
 		`<a href="../quick/">next</a>`,
 		`<a href="/docs/config/#files">files</a>`,
@@ -166,7 +175,7 @@ func TestPageLinks(t *testing.T) {
 		{"https://x.io", false, `<a href="https://x.io" target="_blank" rel="noopener" class="k-node-label">Install</a>`},
 		{"javascript:x()", false, `<span class="k-node-label">Install</span>`},
 	} {
-		if got := treeLabel("Install", tc.href, tc.selected).html(); got != tc.want {
+		if got := site("").treeLabel("Install", tc.href, tc.selected).html(); got != tc.want {
 			t.Errorf("treeLabel(%q, %v) = %s, want %s", tc.href, tc.selected, got, tc.want)
 		}
 	}
@@ -194,7 +203,7 @@ func TestPageStatic(t *testing.T) {
  {"id":"hints","component":"HottyKeyHints","catalogId":"HOTTY"}]`)
 	r.C.St.Modal = "modal"
 	r.C.Rebuild()
-	h := r.Page()
+	h := r.Page(PageOptions{})
 	for _, want := range []string{
 		`<div id="p~~root" class="k-form" role="form">`,
 		`<input id="p~~name" class="k-input" type="text" value="Ada" readonly>`,
@@ -232,8 +241,56 @@ func TestPageHref(t *testing.T) {
 		{"", "", false, false},
 		{"%zz", "", false, false},
 	} {
-		if h, away, ok := pageHref(tc.href); h != tc.h || away != tc.away || ok != tc.ok {
-			t.Errorf("pageHref(%q) = %q %v %v, want %q %v %v", tc.href, h, away, ok, tc.h, tc.away, tc.ok)
+		if h, away, ok := site("").href(tc.href); h != tc.h || away != tc.away || ok != tc.ok {
+			t.Errorf("href(%q) = %q %v %v, want %q %v %v", tc.href, h, away, ok, tc.h, tc.away, tc.ok)
+		}
+	}
+}
+
+// A page that names its origin keeps links to its own site in the tab,
+// as relative ones, http or https, any case; other hosts, the site's
+// subdomains among them, open a new one.
+func TestPageOrigin(t *testing.T) {
+	for _, tc := range []struct {
+		origin string
+		want   site
+	}{
+		{"https://kubecom.neuroplast.io", "kubecom.neuroplast.io"},
+		{"https://Kubecom.Neuroplast.io/docs/", "kubecom.neuroplast.io"},
+		{"http://localhost:8869", "localhost:8869"},
+		{"kubecom.neuroplast.io", "kubecom.neuroplast.io"},
+		{"/docs/", ""},
+		{"", ""},
+	} {
+		if got := siteOf(tc.origin); got != tc.want {
+			t.Errorf("siteOf(%q) = %q, want %q", tc.origin, got, tc.want)
+		}
+	}
+	s := siteOf("https://kubecom.neuroplast.io")
+	for _, tc := range []struct {
+		href string
+		away bool
+	}{
+		{"https://kubecom.neuroplast.io/docs/install/", false},
+		{"http://KUBECOM.neuroplast.io/", false},
+		{"//kubecom.neuroplast.io/x", false},
+		{"/docs/", false},
+		{"https://neuroplast.io/", true},
+		{"https://docs.kubecom.neuroplast.io/", true},
+		{"https://github.com/neuroplastio/kubecom", true},
+	} {
+		if _, away, ok := s.href(tc.href); !ok || away != tc.away {
+			t.Errorf("href(%q): away %v (ok %v), want %v", tc.href, away, ok, tc.away)
+		}
+	}
+	r := pageRendition(t, "p", `{}`, `[{"id":"root","component":"Text","text":"[install](https://kubecom.neuroplast.io/docs/install/) [src](https://github.com/x/y)"}]`)
+	h := r.Page(PageOptions{Origin: "https://kubecom.neuroplast.io"})
+	for _, want := range []string{
+		`<a href="https://kubecom.neuroplast.io/docs/install/">install</a>`,
+		`<a href="https://github.com/x/y" target="_blank" rel="noopener">src</a>`,
+	} {
+		if !strings.Contains(h, want) {
+			t.Errorf("no %s in:\n%s", want, h)
 		}
 	}
 }

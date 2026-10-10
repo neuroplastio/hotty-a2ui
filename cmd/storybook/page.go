@@ -89,7 +89,8 @@ func printPage(w io.Writer, args []string, stream string, th theme.Theme) error 
 		for _, s := range p.ss {
 			r := html.New(s.C, "s"+strconv.Itoa(i)+"-"+s.S.ID)
 			r.SetTheme(th)
-			b.WriteString(r.Page() + "\n")
+			// Under the story's h2, a Tabs' titles are h3s.
+			b.WriteString(r.Page(html.PageOptions{Heading: 3}) + "\n")
 		}
 		b.WriteString("</section>\n")
 	}

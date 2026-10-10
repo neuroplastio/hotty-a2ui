@@ -33,6 +33,9 @@
    tab, the tab shown's look. */
 .k-page .k-tabs { row-gap: var(--k-5); }
 .k-tab-title { color: var(--k-fg); border-bottom-color: var(--k-accent); font-weight: 600; cursor: default; }
+/* A title that is a heading of the page's outline (PageOptions.Heading)
+   keeps the tab's look, not the page's for its headings. */
+.k-page :is(h1, h2, h3, h4, h5, h6).k-tab-title { margin: 0; font-size: inherit; line-height: inherit; letter-spacing: normal; }
 
 /* A HottyTree: lists that nest as its nodes do, each node the host's row.
    A branch is a details element whose summary is its row, which the

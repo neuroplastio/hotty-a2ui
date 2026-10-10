@@ -182,8 +182,13 @@ stories, or a stream, as one such page.
 
 **The stylesheet goes in once** a page, however many surfaces it shows.
 `PageCSS()` is the kit's sheet, then page mode's rules, for a `<style>` in
-the page's head or a file it links. `Page()` is a surface's markup alone,
-a fragment for the page's body: no head, no sheet. The rendition's name
+the page's head or a file it links. `Page(o)` is a surface's markup alone,
+a fragment for the page's body: no head, no sheet. `o` (`PageOptions`)
+is what the page knows of itself that the kit can't: `Heading`, the level
+of the heading a Tabs' titles are in its outline (3 under a `##`
+section; 0, titles that are no heading), and `Origin`, its own site
+(`https://kubecom.neuroplast.io`), whose absolute links stay in the tab
+as relative ones do. The rendition's name
 is its top element's id (`k-surface k-page`) and prefixes every id in it
 and every attribute that names one (`for`, `aria-labelledby`,
 `aria-describedby`): `<name>~~<id>`, `~~` being no element's own (§2), so
@@ -216,9 +221,9 @@ on a host:
 
 | component | on a page |
 | --- | --- |
-| Tabs | every tab, in order, each a `section` named by its title (`aria-labelledby`): the title drawn as a tab bar of one tab, the tab shown's look, then its content, as GitHub shows the same Markdown. A host's tabs, one at a time, are a program's |
+| Tabs | every tab, in order, each a `section` named by its title (`aria-labelledby`): the title drawn as a tab bar of one tab, the tab shown's look, then its content, as GitHub shows the same Markdown. The title is a heading of the level the page gives (`PageOptions.Heading`), still in the tab's look, else a `div`. A host's tabs, one at a time, are a program's |
 | HottyTree | every node a row, the host's row (fold, icon, label, a closed branch's count), in `ul`s (`role=list`) that nest as the nodes do. A branch is a `details`, open or closed as given (`expanded`, and the branches the selection is in), whose `summary` is its row: the browser opens and closes it with no program, and the sheet draws its fold, `▸` or `▾`, and its count while it is closed. The selected node is marked as on a host, its label `aria-current`. A node with an `href` has an `<a>` for its label, `aria-current=page` when selected (vault KIT-26 adds the `href`). A filter is a program's: a page draws every node |
-| Text, Video, AudioPlayer | links are `<a href>`: one that leaves the site (`http`, `https`, `//host`) opens in a new tab (`target=_blank rel=noopener`), any other (a path, a fragment, a query, `mailto:`, `tel:`) in the same one, and one to any other scheme loses its `href`. The host's `target=_blank` (§2) goes. One function decides this for every link on a page |
+| Text, Video, AudioPlayer | links are `<a href>`: one that leaves the site (`http`, `https`, `//host`, to a host not the page's `Origin`) opens in a new tab (`target=_blank rel=noopener`), any other (a path, a fragment, a query, the page's own site, `mailto:`, `tel:`) in the same one, and one to any other scheme loses its `href`. The host's `target=_blank` (§2) goes. One function decides this for every link on a page |
 | TextField, DateTimeInput | the value, `readonly`: it can be selected and copied, not changed. Suggestions' `datalist` goes |
 | CheckBox, HottySwitch, Slider, HottyRangeSlider, ChoicePicker, Button | as on a host, their state shown (a select's picked option, closed; a chip pressed or not), taking no click (`pointer-events: none`, a checkbox's label too) and out of the Tab order (`tabindex=-1`): no program would hear them |
 | HottyForm | a `div role=form`: a submit would leave the page |

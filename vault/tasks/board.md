@@ -11,9 +11,10 @@ the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
 (2026-10-10.7): the sliders, and its four open points; KIT-23c
 (2026-10-10.8): drag and drop in cells, and its three proposals; and the
 proposals of KIT-11c (2026-10-10.9) and KIT-13c (2026-10-10.10).
-KIT-24's four questions (2026-10-10.29): a heading level for tab titles,
-the page's origin for its own absolute links, live-looking controls that
-take no input, and GitHub's colours as the default palette.
+KIT-24's two look questions (2026-10-10.29): live-looking controls that
+take no input, and GitHub's colours as the default palette. (Its other
+two, a heading level for tab titles and the page's origin, the docs
+answered: `PageOptions`, 2026-10-11.1.)
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -34,7 +35,11 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 - [ ] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [ ] **KIT-18c** — Terminal, with the profile's rule for registered
-  commands (L10).
+  commands (L10). The docs want it to play recordings (asciicast), and
+  will switch to it when it does. They play screencasts already, from
+  frames made at build time with hotty-go's `hottyvt`. That format (web
+  docs-pilot `internal/view`: a Cast, then one Frame per change, each with
+  its rows and title) is there to reuse (docs, 2026-10-11).
 
 ## Phase 2 — The HOTTY layer
 
@@ -204,8 +209,10 @@ built on it).
 ## Done
 
 - [x] **KIT-24** — Page mode (journal 2026-10-10.29, profile §2.1):
-  `html.PageCSS()` once in a page's head, `Rendition.Page()` a surface's
-  fragment for its body (ids prefixed by the surface's name), and
+  `html.PageCSS()` once in a page's head, `Rendition.Page(PageOptions)` a
+  surface's fragment for its body (ids prefixed by the surface's name;
+  tab titles as headings of a level the page gives, and its own origin's
+  links in the tab, journal 2026-10-11.1), and
   `storybook -page`. The page sets SPEC §8's `--hotty-*` (bg, fg, accent,
   ansi-8, and -9/-3/-2/-6 for the signals); what it leaves out is GitHub's
   light or dark. No program behind it: Tabs are sections, a HottyTree's

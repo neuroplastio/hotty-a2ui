@@ -45,8 +45,11 @@ type markup struct {
 	// has none.
 	keyboard string
 	// page: the markup is for a web page with no program behind it
-	// (Rendition.Page, page.go).
-	page bool
+	// (Rendition.Page, page.go); heading and site are what the page said
+	// of itself (PageOptions).
+	page    bool
+	heading int
+	site    site
 }
 
 // animate notes that the markup changes again after d.
