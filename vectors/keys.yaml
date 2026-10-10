@@ -434,7 +434,7 @@
     - expect: {data: {/selected: a2ui, /expanded: [a2ui, rendition, rendition/cells]}, actions: [openFile]}
     - focus: filter
     - type: kit
-    - focus: tree
+    - key: Tab
     - key: ArrowDown
     - expect: {focused: tree, data: {/selected: rendition}}
     - key: j

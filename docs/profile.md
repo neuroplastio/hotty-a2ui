@@ -154,13 +154,13 @@ that first.
 
 **The keyboard.** The renderer gives the host the keyboard it has in mind
 when they differ: `a=focus` at the element `autofocus` (§6.4) or `hottyFocus`
-(§6.3) names, `a=blur` for `hottyBlur`. Within the surface, Tab moves focus
-where the program does not see it (SPEC.md §9), so the renderer knows the
-element last clicked or edited, not always the one focused. Edited means
-typed in (`input`), or a control's `change`, which comes at once: a text
-field's `change` is its commit as the host's focus leaves it, often for
-where the renderer just moved the keyboard, so it says nothing about where
-the keyboard is.
+(§6.3) names, `a=blur` for `hottyBlur`. When the user moves focus within
+the surface, by Tab or a click, the host sends `focus` naming the element
+(SPEC.md §10.1, `t` the nearest id from it outward), and the renderer
+takes that element as focused. Typing (`input`) and a control's `change`,
+which comes at once, say so too. A text field's `change` is its commit as
+the host's focus leaves it, often for where the renderer just moved the
+keyboard, so it says nothing about where the keyboard is.
 
 ## 3. Cells
 

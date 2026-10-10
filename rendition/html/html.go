@@ -211,6 +211,17 @@ func (r *Rendition) Event(ev hotty.Event) error {
 	switch ev.Kind {
 	case hotty.EventFocus:
 		c.St.Keyboard, r.host.on = true, true
+		// The user moved the focus (SPEC §10.1): t names the element, the
+		// nearest one with an id. The program's own a=focus names none.
+		if id, part, ok := viewID(ev.Target); ok && c.V.Find(id) != nil {
+			r.host.focus = id
+			if part != "" {
+				r.host.focus = partID(id, part)
+			}
+			if !r.Away {
+				c.St.Focus = id
+			}
+		}
 		return nil
 	case hotty.EventBlur:
 		if r.openList() != nil && !r.host.on {
