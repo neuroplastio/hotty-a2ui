@@ -73,9 +73,9 @@ func newApp(shots []shot, n *notes, brief string, th theme.Theme) (*app, error) 
 	return a, nil
 }
 
-// surface is the messages that make the surface: the picture's name, what
-// to look for in it, the list of pictures, the feedback box and Save down
-// the side; the picture beside them.
+// surface is the messages that make the surface: the picture's name, the
+// list of pictures, the feedback box and Save down the side; the picture
+// beside them, and what to look for in it under it.
 func (a *app) surface() []map[string]any {
 	sh := a.shots[0]
 	data := map[string]any{
@@ -87,8 +87,13 @@ func (a *app) surface() []map[string]any {
 	return []map[string]any{
 		msg("createSurface", obj("surfaceId", surfaceID, "catalogId", basicCatalog, "dataModel", data)),
 		msg("updateComponents", obj("surfaceId", surfaceID, "components", []any{
-			obj("id", "root", "component", "Row", "children", []any{"side", "shot"}),
-			obj("id", "side", "component", "Column", "children", []any{"title", "brief", "files", "note", "act", "help", "save_key"}, "weight", 1),
+			obj("id", "root", "component", "Row", "children", []any{"side", "main"}),
+			obj("id", "side", "component", "Column", "children", []any{"title", "files", "note", "act", "help", "save_key"}, "weight", 1),
+			obj("id", "main", "component", "Column", "children", []any{"pic", "brief"}, "weight", 3),
+			// The picture weighted alone in a Row: as wide as the column, as
+			// tall as the picture is at that width, no taller than the
+			// surface (profile §2).
+			obj("id", "pic", "component", "Row", "children", []any{"shot"}),
 			obj("id", "files", "component", "HottyList", "catalogId", cat, "title", "Pictures",
 				"items", bind("/files"), "selected", bind("/cur"), "filterable", true, "height", 8,
 				"onActivate", obj("functionCall", obj("@call", "hottyFocus", "catalogId", cat, "args", obj("id", "note")))),
@@ -102,9 +107,7 @@ func (a *app) surface() []map[string]any {
 			obj("id", "save_key", "component", "HottyShortcut", "catalogId", cat, "key", "Control+s", "press", "save", "label", "Save"),
 			obj("id", "title", "component", "Text", "text", bind("/title")),
 			obj("id", "brief", "component", "Text", "text", bind("/brief")),
-			// Weighted in a Row: as wide as its share, as tall as the picture
-			// is at that width, no taller than the surface (profile §2).
-			obj("id", "shot", "component", "Image", "url", bind("/img"), "description", bind("/cur"), "fit", "contain", "weight", 3),
+			obj("id", "shot", "component", "Image", "url", bind("/img"), "description", bind("/cur"), "fit", "contain", "weight", 1),
 		})),
 	}
 }

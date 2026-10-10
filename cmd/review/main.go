@@ -4,7 +4,9 @@
 // The feedback is kept in a Markdown file, a section for each picture,
 // where whoever asked for it reads it. Whoever asks says what to look for
 // in each the same way, in brief.md beside the pictures: a section headed
-// `## <name>`, shown under the picture's name.
+// `## <name>`, shown under the picture. For a review that mustn't know
+// which side of a picture is which, scripts/blind-shots.sh makes blind
+// copies to show instead.
 //
 //	review                  the pictures in this directory
 //	review .shots           in another
