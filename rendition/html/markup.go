@@ -183,6 +183,10 @@ func (m *markup) element(e *view.Element) *node {
 		n.text = groupBreaks(strings.TrimSpace(view.PlainText(view.Markdown(e.Markdown))), n.text)
 	case view.Document:
 		n = el("div", "id", id, "class", "k-text k-doc")
+		if m.page {
+			n.text, n.raw = emojiHTML(pageDocument(e)), true
+			break
+		}
 		n.text, n.raw = emojiHTML(document(e)), true
 	case view.Image:
 		n = el("img", "id", id, "class", "k-img k-v-"+e.Variant+" k-fit-"+e.Fit, "src", e.URL, "alt", e.Alt)

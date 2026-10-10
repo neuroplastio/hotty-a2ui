@@ -165,9 +165,7 @@ func (m *markup) pageTree(e *view.Element) *node {
 		case icons:
 			row.add(el("span", "class", "k-icon k-icon-blank", "aria-hidden", "true"))
 		}
-		// KIT-26: a node's href, once view.TreeNode has one, goes here in
-		// place of "".
-		row.add(m.site.treeLabel(n.Label, "", i == sel))
+		row.add(m.site.treeLabel(n.Label, n.Href, i == sel))
 		item := el("li")
 		if n.Branch() {
 			row.tag = "summary"

@@ -5,7 +5,7 @@ Last updated: 2026-10-11
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** the look questions below, kept for one
 feedback loop (blind review rounds, as rounds 3–6) once the legs in flight
-land (KIT-25/26 now), the maintainer said 2026-10-11. Nothing from the
+land, the maintainer said 2026-10-11. Nothing from the
 review rounds: round 5
 settled the fields' look, round 6 the unfocused selections
 ([round 6](../feedback/2026-10-10-review-round-6.md)). Round 1 left out, still to look at: the
@@ -164,29 +164,6 @@ built on it).
   code (DOM, events, deltas) without the terminal, so that a wasm program
   running the kit makes page mode's HTML live. Progressive enhancement,
   never needed to read.
-- [ ] **KIT-25c**, **KIT-25h** — Long-form Markdown in every rendition;
-  A2UI's Text promises "simple Markdown".
-  - Headings carry GitHub's IDs, built from the heading's text (goldmark
-    builds them from its source line, so `## See [docs](url)` differs).
-  - Fenced code as HottyCode (chroma), GFM tables, images (cells show the
-    alt text), GitHub alerts (`> [!NOTE]`).
-  - Component markers: `<!-- docs:<name> key=value -->` on a line of its
-    own makes the next block a component's fallback, and
-    `<!-- docs:x -->` … `<!-- /docs:x -->` wraps a region. A renderer
-    that doesn't know the component shows the fallback.
-  - Its shape, an option of Text under `io_neuroplast_hotty` or a Hotty
-    component, is to decide. The cells start is the pilot's
-    `internal/textview/render.go` (wrap, lists, code, tables, quotes).
-    Once it lands, the docs' terminal viewers become kit surfaces: a
-    HottyTree beside a page.
-- [ ] **KIT-26c**, **KIT-26h** — Links that go to a page in place: the
-  nav's leaves, the page's contents, the pager, "Edit this page". On a
-  plain page a same-tab `href`; on a host and in cells, an event the
-  program handles (the docs viewer shows the page and updates the address
-  bar). Today Text's links open in the terminal (`target=_blank`, SPEC
-  §9). HottyTree's leaves can be such links. Check that SPEC's events
-  cover the host's side before asking hotty for anything.
-
 ## Later
 
 - [ ] **KIT-SIZE** — A program carries only the components it uses: the
@@ -213,6 +190,22 @@ built on it).
 
 ## Done
 
+- [x] **KIT-25c/25h**, **KIT-26c/26h** — `HottyMarkdown` and links in place
+  (journal 2026-10-10.28, profile §6.27, instruction 27): long-form
+  Markdown as GitHub reads it: headings with GitHub's anchors
+  (github-slugger, numbered across the surface), alerts as callouts,
+  tables as a HottyTable's, code as a Text's, images as alt text or
+  `<img>`, HTML and comments (the docs' markers) as nothing. A link with no
+  scheme goes in place: a Tab stop that Enter or a click follows; a
+  `#fragment` the renderer follows to its heading (cells scrolls it to the
+  top of its HottyScrollView; a host gets `a=focus`), any other href is
+  written to `link` and `onLink` runs. HottyTree nodes take an `href`.
+  On a page they are `<a href>` (2026-10-11.3). Story `hotty/markdown`.
+  Open (for the feedback loop): IMPORTANT in the accent, no gap after an
+  alert before a list on a host, no fill for code in a HottyScrollView,
+  nothing marking the document focused after a jump; hottytest's Space
+  and Enter on a click span and its Tab after a jump (hotty-go questions,
+  journal 2026-10-10.28).
 - [x] **KIT-20c** — `HottyQRCode` (journal 2026-10-10.31, profile §6.29,
   instruction 29): `value`, `errorCorrection` (a minimum, raised when the
   version holds more for free), `label`. Package `qr/` on rsc.io/qr's
@@ -243,7 +236,8 @@ built on it).
   branches are `<details>` open or closed as given, one `pageLink` decides
   every link (relative same tab, absolute new tab, other schemes
   dropped), and controls show their state and take no input. A tree
-  node's `href` waits for KIT-26 (`pageTree` in page.go).
+  node's `href` and a HottyMarkdown's links in place are `<a href>`, its
+  headings' ids GitHub's anchors (journal 2026-10-11.3).
 - [x] **KIT-15c** — `HottyPaginator` (journal 2026-10-10.25, profile §6.26,
   instruction 26): with a `child` (a List, Column or Row) it pages the
   child's items itself, `perPage` a page, so a turn needs no round trip;

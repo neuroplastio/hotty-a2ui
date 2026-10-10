@@ -32,11 +32,40 @@ func document(e *view.Element) string {
 				"data-on", "click", "data-keys", linkKeys).html()
 			return s[:len(s)-len("</span>")], "</span>"
 		},
-		Alert: func(kind string) (string, string) {
-			a := view.Alerts[kind]
-			title := el("p", "class", "k-alert-title").add(beside(a.Icon)).add(texts(a.Title)...)
-			box := el("div", "class", "k-alert k-alert-"+kind, "role", "note").html()
-			return box[:len(box)-len("</div>")] + title.html(), "</div>"
-		},
+		Alert: alert,
 	})
+}
+
+// pageDocument is a HottyMarkdown's HTML on a page (Rendition.Page), where
+// no program follows a link: a link in place is a link, to its href, which
+// the page's links decide (pageLink: a path or a fragment in the same tab),
+// and a heading's id is its anchor itself, GitHub's, so that a #fragment,
+// the page's own or another's link to it, finds it.
+func pageDocument(e *view.Element) string {
+	return view.DocHTML(e.Markdown, view.DocMarkup{
+		Heading: func(i int) []string {
+			if i >= len(e.Anchors) {
+				return nil
+			}
+			return []string{"id", e.Anchors[i]}
+		},
+		Link: func(i int) (string, string) {
+			href := ""
+			if i < len(e.Children) {
+				href = e.Children[i].URL
+			}
+			a := el("a", "href", href).html()
+			return a[:len(a)-len("</a>")], "</a>"
+		},
+		Alert: alert,
+	})
+}
+
+// alert is the tags around an alert of its kind: a div of role note, its
+// title row (its icon and its title) first.
+func alert(kind string) (string, string) {
+	a := view.Alerts[kind]
+	title := el("p", "class", "k-alert-title").add(beside(a.Icon)).add(texts(a.Title)...)
+	box := el("div", "class", "k-alert k-alert-"+kind, "role", "note").html()
+	return box[:len(box)-len("</div>")] + title.html(), "</div>"
 }

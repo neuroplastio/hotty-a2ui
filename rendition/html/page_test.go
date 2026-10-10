@@ -294,3 +294,32 @@ func TestPageOrigin(t *testing.T) {
 		}
 	}
 }
+
+// A HottyMarkdown on a page: a link in place is an <a> to its href, in the
+// same tab, and a heading's id is its GitHub anchor, which a #fragment
+// finds; a link with a scheme opens a new tab; nothing a program hears is
+// there. A HottyTree's node with an href is a link to it.
+func TestPageDocument(t *testing.T) {
+	r := pageRendition(t, "p", `{"page":"install"}`, `[{"id":"root","component":"Column","children":["doc","nav"]},
+ {"id":"doc","component":"HottyMarkdown","catalogId":"HOTTY","text":"# Guide\n\nRead [install](install.md), then [usage](#usage), or [the source](https://github.com/x/y).\n\n## Usage\n\nRun it.\n\n## Usage\n\nAgain."},
+ {"id":"nav","component":"HottyTree","catalogId":"HOTTY","selected":{"@path":"/page"},"items":[
+  {"label":"Install","value":"install","href":"install.md"},{"label":"Usage","value":"usage","href":"#usage"}]}]`)
+	h := r.Page(PageOptions{})
+	for _, want := range []string{
+		`<a href="install.md">install</a>`,
+		`<a href="#usage">usage</a>`,
+		`<a href="https://github.com/x/y" target="_blank" rel="noopener">the source</a>`,
+		`<h1 id="guide">`, `<h2 id="usage">`, `<h2 id="usage-1">`,
+		`<a class="k-node-label" aria-current="page" href="install.md">Install</a>`,
+		`<a class="k-node-label" href="#usage">Usage</a>`,
+	} {
+		if !strings.Contains(h, want) {
+			t.Errorf("no %s in:\n%s", want, h)
+		}
+	}
+	for _, gone := range []string{`k-link`, `role="link"`, `data-on`, `data-keys`, `tabindex`, `~#`} {
+		if strings.Contains(h, gone) {
+			t.Errorf("a page's document has %s:\n%s", gone, h)
+		}
+	}
+}
