@@ -232,10 +232,10 @@ Natural widths:
 | --- | --- |
 | Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0 |
 | Button | the label + 2, a column of padding each side, a List's too; borderless, the label |
-| TextField, DateTime | 2 for the gutter, plus the label's width or 22 (an HTML input's size of 20 and its inset either side, §3.5), whichever is wider; with the labels inline (§3.5), the label, a space and 22; a longText, the label's or 20 |
+| TextField, DateTime | 2 for the gutter, the label and a space when it has one (padded to its run's widest label, §3.5), the inset (1) and its input: a text field's 32, as wide as an email address takes, whatever is typed; a DateTime's, its value's form (`YYYY-MM-DDTHH:MM`, `YYYY-MM-DD` or `HH:MM`) or its value, whichever is wider, and a column for the caret. A longText, the label's or 20 (an HTML textarea's size) |
 | CheckBox | 2 for the gutter, 3 for the box, plus 1 and the label when it has one |
 | HottySwitch | 2 for the gutter, 3 for the switch, plus 1 and the label when it has one |
-| a select | 2 for the gutter, plus the label's width or its value row's, whichever is wider: the inset, the widest option's label, a space and `▾`; with the labels inline, the label, a space and that row |
+| a select | a one-line text field's, its input the widest option's label, a space and `▾` |
 | a Choice's options | 2 for the gutter, plus the label's width or the widest option row (`> [ ] label`, or `> ( ) label` for chips that pick one), whichever is wider |
 | Slider | 2 for the gutter, the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
 | HottyRangeSlider | a Slider's, its value's width that of the widest range: twice a Slider's value's width, and 1 for the `–` |
@@ -261,7 +261,9 @@ Minimums:
 
 - A Text's minimum is its longest word. A list item's indent and marker
   count with its first word.
-- A field's is the gutter and its label's longest word, and at least 3.
+- A one-line text field's and a DateTime's is the gutter, its label and a
+  space when it has one, the inset and 3 columns of input, which scrolls;
+  a longText's, the gutter and its label's longest word, and at least 3.
 - A Slider's is the gutter, 4 and its value's width; a HottyRangeSlider's
   too, its value's width a range's.
 - A Choice's options' is the gutter and its widest option, or its label's
@@ -296,7 +298,7 @@ How the containers lay their children out:
     sets a form's button apart, or when neither is a field and either has
     a title row (§3.4; a HottyProgress's label is one, a HottyTable's
     header, and a HottyList's status line). Fields follow one another with
-    no blank row, as a GUI form's do: a label and an underline (§3.5) part
+    no blank row, as a GUI form's do: an input's underline (§3.5) parts
     one from the next. A stack of Buttons or of HottySpinners stays tight
     too. A control after a Text whose last block is a heading has a blank
     row before it, as huh sets a form's title apart from its fields; a
@@ -361,10 +363,10 @@ How the containers lay their children out:
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
 | Divider, Card, Tabs | §3.3 |
 | Button | ` label ` on one row, a column of padding each side, filled as huh's buttons are: a grey a step or two off the background, a tint 48/255 of the way from `bg` to `fg` (§3.6). The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold, and otherwise as the others, since `accent` is focus's. While it has the keyboard it is reversed in `accent`, unfilled. Disabled, its label is `fg` and faint on half the fill (24/255): `muted` would vanish at the floor, where the fill is `muted`'s bright black too. Borderless, it is its label alone, underlined and unfilled. Under NO_COLOR, where nothing fills, it is underlined, padding too, so that it still reads as a control, and a Row's column between two keeps them apart; brackets would make it wider there than in colour, and every output mode draws one layout. A vertical List's Button is its row: ` label `, unfilled, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
-| TextField, DateTime | in the field's box past the gutter: a title row, then the value row (§3.5), or with the labels inline the label and the value on one row; then the error. A text field's suggestions go over what is under it (§3.5) |
+| TextField, DateTime | in the field's box past the gutter: a one-line field's label and its input on one row (§3.5), a longText's title row and its rows; then the error. A text field's suggestions go over what is under it (§3.5) |
 | CheckBox | past the gutter, `[•] label` or `[ ] label`, its box reversed in `accent` while it has the keyboard; then the error |
 | HottySwitch | past the gutter, its track with the knob at one end, then a space and its label, on one row: `▬▬■` in `accent` while it is on, a bar into a filled knob, and `□⎯⎯` in `muted` while it is off, a hollow knob on a thin line (`⎯`, not `─`: a terminal draws `─` itself at the cell's middle, where the font's square need not sit, and a font draws `⎯`, often a symbol font by fallback, since few coding fonts have it; a Slider's thin track is the same), so that without colour the knob's end, its fill and the track's weight still say which; then the error. Its label is in `accent` while it has the keyboard. A disabled one is `muted` and faint throughout, its knob still at its end. The switch and its label take a click |
-| a select (one value, `checkbox` display) | past the gutter, a title row, then a value row drawn as a one-line text field's (§3.5), underlined, its text inset a column: the picked option's label, or `…` in `muted` when none is picked, and `▾` in `muted` at the row's end, a space after the label at least; with the labels inline, the label and the value row on one row. While its list is open (§3.7), the options follow one a row: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
+| a select (one value, `checkbox` display) | past the gutter, its label and its input on one row, as a one-line text field's (§3.5): the picked option's label, or `…` in `muted` when none is picked, and `▾` in `muted` at the input's end, a column after the widest option's label, so that the chevron stays put as the pick changes. While its list is open (§3.7), the options follow one a row under the input, their labels under its value's: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
 | a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options one a row, each after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect): `[•] label` or `[ ] label` where several may be picked, and `(•) label` or `( ) label` for chips that pick one, as a GUI's radio buttons; pills wrapped across the field read as neither a form nor a list. Then the error. |
 | Slider | past the gutter, `label ━━━━■⎯⎯⎯⎯ 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `■` at round((value − min) / (max − min) × (track − 1)), and after it the track is `⎯` in `border`. With `fill` `"end"` (§6.16) the two sides swap, `⎯⎯⎯⎯■━━━━ 50`: `⎯` in `border` up to the knob and `━` after it, the glyphs the same. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
 | HottyRangeSlider | a Slider's row with two knobs, `label ⎯⎯■━━━━■⎯⎯ 20–70`: the start's and the end's, each `■` where a Slider's would stand at its value, `━` between them and `⎯` in `border` either side, then the range, `start–end`. Where both would take one column, the end's goes a column right (the start's a column left, at the track's end), so that both show, `■■`. A disabled one is `muted` and faint throughout. Then the error. |
@@ -419,18 +421,18 @@ draws them.
 - **The gutter.** A field's first two columns are its gutter. While the
   field has the keyboard (for a Choice's options, one of them), the
   gutter is `┃ ` in `accent` down the field's rows; otherwise it is blank.
-- **The title.** A text field, a DateTime or a Choice with a label has a
-  title row: the label, in `muted`, in `accent` while the field has the
-  keyboard, as a GUI form's label over its input. With the labels inline
-  (§3.5), a one-line field's and a select's label is on its value row
-  instead. A CheckBox's, a HottySwitch's, a Slider's and a
+- **The label** is in `muted`, in `accent` while the field has the
+  keyboard. A one-line text field's, a DateTime's and a select's is on its
+  input's row, before it (§3.5). A longText's and a Choice's options'
+  label is a title row above them, as a GUI form's label over a textarea
+  or a group. A CheckBox's, a HottySwitch's, a Slider's and a
   HottyRangeSlider's labels are on their one row. A HottyRangeSlider has
   the keyboard while either knob does.
 
 **Focus** (the element with the keyboard). Each focused element is in
 `accent`, with a glyph or an attribute so that the focus still shows
 without colour:
-- A field shows its gutter's bar, and its title is in `accent`.
+- A field shows its gutter's bar, and its label is in `accent`.
 - A Button, a Tabs' title, a Media link and a Modal trigger that is not
   a control are reversed whole; a Button's fill gives way to the reverse,
   its padding reversed too.
@@ -466,44 +468,43 @@ without colour:
 
 ### 3.5 Text fields
 
-- **The value row.** A one-line field's value row is underlined (SGR 4)
-  across the field, as a GUI form's input is, and its text is inset a
-  column from either end. The underline's colour is `border`, `accent`
-  while the field has the keyboard (SGR 58, as a drag's line in §3.4; a
-  terminal without it draws the line in the text's colour), so the value
-  keeps its own. There is no prompt: the underline says where to
-  type. A longText is not underlined: its rows carry `┃` in the gutter, in
-  `border`, as bubbles' textarea does. The placeholder shows while the
-  value is empty, in `muted` and faint. A DateTime's placeholder is the
-  form its value takes: `YYYY-MM-DD`, `HH:MM` or `YYYY-MM-DDTHH:MM`.
-- **The label** goes on a title row above the value (§3.4), by default.
-  With the labels inline (`cells.InlineLabels`, `storybook -labels
-  inline`), a one-line field's, a DateTime's and a select's label goes on
-  the value row before the underline, a space after it; in a run of such
-  fields next to each other in a Column, the labels are padded to the
-  widest, so that their values line up. A label too wide for the field
-  is cut to leave a space and 3 columns of value row. A click on an
-  inline label puts the cursor
-  at the value's start. The two are on trial: the maintainer picks one,
-  and the other goes (vault journal 2026-10-10.12). At 30 columns, Name
-  with the keyboard, Ada typed, and an empty Email after it, the labels
-  above:
-
-  ```
-  ┃ Name
-  ┃  Ada
-    Email
-  ```
-
-  then Email's value row, blank; and inline:
+- **The input.** A one-line field's (a text field's, a DateTime's, a
+  select's) value is in its input, after its label and a blank column,
+  the inset, or after the gutter and the inset when it has no label. The
+  input is underlined (SGR 4), as a GUI form's input is outlined, and
+  nothing else on its row is: not the label, not the inset, which parts
+  the line from the label (the maintainer, round 2, vault feedback
+  2026-10-10). The underline starts at the value's first column and ends
+  where the input does. The input is a fixed width, as a GUI form's is,
+  and never grows as the value is typed: a text field's is 32 columns,
+  room for an email address; a DateTime's, its value's form or its
+  value, whichever is wider, and a column for the caret; a select's, its
+  widest option, a space and `▾` (§3.4). It takes less where the field's
+  box is narrower, and scrolls. The underline's colour is `border`,
+  `accent` while the field has the keyboard (SGR 58, as a drag's line in
+  §3.4; a terminal without it draws the line in the text's colour), so
+  the value keeps its own. There is no prompt: the underline says where
+  to type. A longText is not underlined: its rows carry `┃` in the
+  gutter, in `border`, as bubbles' textarea does. The placeholder shows
+  while the value is empty, in `muted` and faint. A DateTime's
+  placeholder is the form its value takes: `YYYY-MM-DD`, `HH:MM` or
+  `YYYY-MM-DDTHH:MM`.
+- **The label** of a one-line field is on its input's row, a space after
+  it; in a run of such fields next to each other in a Column, the labels
+  are padded to the widest, so that their inputs start in one column. A
+  label too wide for the field is cut to leave a space and 3 columns. A
+  click on the label puts the cursor at the value's start. A longText's
+  label is a title row above it. At 40 columns, Name with the keyboard,
+  Ada typed, and an empty Email after it:
 
   ```
   ┃ Name   Ada
     Email
   ```
 
-  where each value row is underlined to the field's edge, Name's in
-  `accent`.
+  where `Ada` and the columns after it, to the field's edge here, are
+  Name's input, underlined in `accent`, and Email's from the same column,
+  underlined in `border`.
 - **obscured** shows `•` for each cluster.
 - **longText** shows its hard lines, at least 3 rows and at most 8, with no
   soft wrap.
@@ -525,7 +526,7 @@ without colour:
     turns, 530 ms each, and the frame says when to draw it again
     (`Animating`). The terminal's cursor is asked to hold steady, so the
     two don't blink at odds.
-  - The pointer is an I-beam over a field's value (`Rendition.Pointer`
+  - The pointer is an I-beam over a field's input (`Rendition.Pointer`
     is `"text"`; a program sets it with OSC 22, and hears the pointer move
     with no button down), as a browser shows over a field. On a host the
     field's `cursor: text` asks for the same (SPEC.md §9).
@@ -550,19 +551,18 @@ without colour:
     as a menu's item. At most 5 show: past that, the 5 from the first,
     moved as little as keeps the highlight in view, then a row
     `1–5 of 12` in `muted`, inside the box. A row too wide is cut with
-    `…`. The gutter's bar stops at the value row. At 30 columns, `git c`
-    typed:
+    `…`. The gutter's bar stops at the input's row. At 30 columns, `git c`
+    typed, a Note field after it:
 
     ```
-    ┃ Command
-    ┃  git commit
-     ╭─────────────────╮
-     │ git commit      │
-     │ git checkout    │
-     │ git cherry-pick │
-     │ git clone       │
-     │ git config      │
-     ╰─────────────────╯
+    ┃ Command  git commit
+      Note   ╭─────────────────╮
+             │ git commit      │
+             │ git checkout    │
+             │ git cherry-pick │
+             │ git clone       │
+             │ git config      │
+             ╰─────────────────╯
     ```
 
     where the first `ommit` is the ghost and the others' rests are `muted`.

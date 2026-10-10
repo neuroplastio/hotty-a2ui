@@ -106,17 +106,18 @@ func indexAt(line []string, col int, obscured bool) int {
 }
 
 // paintField paints a TextField or a DateTime (profile §3.5) in its box
-// past the gutter: its label, on a row above the value or (InlineLabels)
-// before it, then the value. A one-line field's value row is underlined
-// to the field's edge, its text a column in, as a GUI form's input; a
-// longText's rows carry the textarea's "┃" in the gutter. It scrolls to
-// keep the cursor in it while it has the keyboard.
+// past the gutter: its label, before a one-line field's value and on a
+// row above a longText's, then the value. A one-line field's value is an
+// input of inputWidth columns after a blank one, underlined as a GUI
+// form's input is outlined; a longText's rows carry the textarea's "┃" in
+// the gutter. It scrolls to keep the cursor in it while it has the
+// keyboard.
 func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	focused := r.focused(e.ID)
 	long := isLongText(e)
 	row := y
-	// ux, uw are the value row's underline; vx, vw the value's text.
+	// ux, uw are the value's row past the label.
 	ux, uw := x, w
 	if e.Label != "" {
 		if inlineRow(e) {
@@ -137,11 +138,13 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	rows := fieldRows(e)
 	r.rows[e.ID] = rows
+	// vx, vw are the value's columns: a one-line field's input, after the
+	// blank inset and as wide as inputWidth, or less where the room is.
 	vx, vw := ux, uw
-	if !long && uw > 2*inset+1 {
-		vx, vw = ux+inset, uw-2*inset
+	if !long {
+		vx, vw = ux+inset, min(max(uw-inset, 0), inputWidth(e))
 	}
-	area := &fieldArea{x: vx, y: row, rows: rows}
+	area := &fieldArea{x: vx, y: row, w: vw, rows: rows}
 	li, ci, curCol := 0, 0, 0
 	// What Shift and select-all selected (SPEC §10.2), while the field
 	// editKey keeps is the one shown.
@@ -208,7 +211,7 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 		paintGhost(cv, e, area, vw, colOf(lines[0], len(lines[0]), obscured))
 	}
 	if !long {
-		underline(cv, ux, row, uw, focused)
+		underline(cv, vx, row, vw, focused)
 	}
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff

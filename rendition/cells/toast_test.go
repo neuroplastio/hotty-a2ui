@@ -172,6 +172,11 @@ func TestToastClock(t *testing.T) {
 // leaves the element.
 func TestTooltipRow(t *testing.T) {
 	r, c, _, _ := toasting(t)
+	// The story's four toasts reach down over its tip's row, which is
+	// what they do to anything under them; three leave it clear.
+	if ts := c.St.Toasts; len(ts) == 0 || !c.DismissToast(ts[len(ts)-1].ID) {
+		t.Fatal("no toast to dismiss")
+	}
 	last2 := func(f *Frame) [2]string {
 		rows := strings.Split(f.Plain(), "\n")
 		return [2]string{rows[len(rows)-2], rows[len(rows)-1]}

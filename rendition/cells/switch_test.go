@@ -48,8 +48,7 @@ func TestSwitchDraws(t *testing.T) {
 	want := "  ▬▬■ Wi-Fi\n" +
 		"  □⎯⎯ Bluetooth\n" +
 		"  ▬▬■ Locked\n" +
-		"  Name\n" +
-		"   Ada"
+		"  Name  Ada"
 	f := r.Draw(30)
 	if got := f.Plain(); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)

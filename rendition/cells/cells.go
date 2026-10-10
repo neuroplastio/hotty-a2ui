@@ -255,7 +255,7 @@ func (r *Rendition) ShiftClick(col, row int) error {
 // terminal's own.
 func (r *Rendition) Pointer(col, row int) string {
 	if h := r.hitAt(col, row); h != nil && !h.disabled && h.field != nil {
-		if a := h.field; row >= a.y && row < a.y+a.rows && col >= a.x {
+		if a := h.field; row >= a.y && row < a.y+a.rows && col >= a.x && col < a.x+a.w {
 			return "text"
 		}
 	}

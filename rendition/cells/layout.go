@@ -13,8 +13,8 @@ type layout struct {
 	min  map[*view.Element]int
 	hgt  map[sized]int
 	text map[sized][]tline
-	// labelW is the width a field pads its label to on its value's row
-	// (InlineLabels): its run's widest (labelRuns).
+	// labelW is the width a one-line field pads its label to on its
+	// value's row: its run's widest (labelRuns).
 	labelW map[*view.Element]int
 }
 
@@ -123,10 +123,15 @@ func (l *layout) minimum(e *view.Element) int {
 		}
 	case view.TextField, view.DateTime:
 		n = gutter + max(longestWord(line(e.Label, style{})), 1)
+		if !isLongText(e) {
+			// Its label and a space, the inset and 3 columns of input,
+			// which scrolls.
+			n = gutter + labelled(e, inset+3)
+		}
 	case view.Slider, view.RangeSlider:
 		n = gutter + 4 + sliderValueWidth(e)
 	case view.Choice:
-		n = l.natural(e)
+		n = gutter + labelled(e, inset+inputWidth(e))
 		if !isSelect(e) {
 			n = longestWord(line(e.Label, style{}))
 			for _, ow := range optionWidths(e) {
@@ -189,6 +194,7 @@ func (l *layout) measure(e *view.Element) int {
 	case view.Stack:
 		kids := shown(e.Children)
 		if e.Dir != view.Horizontal {
+			l.labelRuns(kids)
 			return l.widest(kids)
 		}
 		n := 0
@@ -200,9 +206,13 @@ func (l *layout) measure(e *view.Element) int {
 		}
 		return n
 	case view.Card:
-		return l.widest(shown(e.Children)) + 4
+		kids := shown(e.Children)
+		l.labelRuns(kids)
+		return l.widest(kids) + 4
 	case view.Form, view.Modal:
-		return l.widest(shown(e.Children))
+		kids := shown(e.Children)
+		l.labelRuns(kids)
+		return l.widest(kids)
 	case view.Tabs:
 		bar, content := tabParts(e)
 		n := 0
@@ -229,6 +239,11 @@ func (l *layout) measure(e *view.Element) int {
 		return codeWidth(e)
 	case view.DiffView:
 		return diffWidth(e)
+	}
+	if inlineRow(e) {
+		// Its label padded to its run's widest, so that the inputs of a
+		// run start in one column and none is cut for it.
+		return gutter + l.labelWidth(e) + 1 + inset + inputWidth(e)
 	}
 	return controlWidth(e)
 }
@@ -300,6 +315,9 @@ func (l *layout) columnWidth(e *view.Element, align string, w int) int {
 }
 
 func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
+	// Before a child's natural width is asked for, which its run's labels
+	// widen.
+	l.labelRuns(kids)
 	h := 0
 	for i, k := range kids {
 		h += l.height(k, l.columnWidth(k, align, w)) + separator(kids, i)
@@ -308,8 +326,8 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 }
 
 // separator is the blank rows a Column puts before its child i: none
-// between two fields, which their labels and underlines part as a GUI
-// form's; one between a field and another control, as bubbles sets a
+// between two fields, which their underlines part as a GUI form's
+// outlines do; one between a field and another control, as bubbles sets a
 // form's button apart, and between two other controls when either has a
 // title row; one before a control after a heading, a form's title; before
 // a HottyKeyHints, as bubbles' help sits a row under what it is for; after
@@ -331,8 +349,8 @@ func separator(kids []*view.Element, i int) int {
 		return 1
 	}
 	if !isControlElement(a) || !isControlElement(b) || isField(a) && isField(b) {
-		// Fields stack tight: a value's underline parts it from the next
-		// field's label.
+		// Fields stack tight: an input's underline parts it from the next
+		// field.
 		return 0
 	}
 	if hasTitle(a) || hasTitle(b) || isField(a) != isField(b) {

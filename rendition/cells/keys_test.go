@@ -46,6 +46,11 @@ func form(t *testing.T) (c *view.Controller, data func() map[string]any, actions
 	return view.NewController(s), func() map[string]any { return s.Data.Root().(map[string]any) }, actions
 }
 
+// nameAt is the column of the form's Name field's value, on its label's
+// row, the first: "┃ Name  abc", past the gutter, the label and a space,
+// and the inset.
+const nameAt = gutter + len("Name") + 1 + inset
+
 func keys(t *testing.T, r *Rendition, ks ...string) {
 	t.Helper()
 	for _, k := range ks {
@@ -74,11 +79,12 @@ func TestTyping(t *testing.T) {
 		t.Fatalf("after editing: %q", got)
 	}
 	f := r.Draw(40)
-	// The gutter's bar and the value's inset come first: "┃  Lda!".
-	if col, row, ok := f.Cursor(); !ok || col != 7 || row != 1 {
+	// The gutter's bar, the label and the value's inset come first:
+	// "┃ Name  Lda!".
+	if col, row, ok := f.Cursor(); !ok || col != nameAt+4 || row != 0 {
 		t.Errorf("cursor %d,%d %v", col, row, ok)
 	}
-	if !strings.HasPrefix(strings.Split(f.Plain(), "\n")[1], "┃  Lda!") {
+	if !strings.HasPrefix(strings.Split(f.Plain(), "\n")[0], "┃ Name  Lda!") {
 		t.Errorf("field shows\n%s", f.Plain())
 	}
 }
@@ -96,10 +102,10 @@ func TestFieldSelection(t *testing.T) {
 	shows := func(when string, sel []bool, block int) {
 		t.Helper()
 		f := r.Draw(40)
-		// "┃  abc": the value from column 3, on the title's next row.
-		row := f.Cells[1]
+		// "┃ Name  abc": the value from nameAt, on the label's row.
+		row := f.Cells[0]
 		for i, want := range sel {
-			cell := row[3+i]
+			cell := row[nameAt+i]
 			if got := cell.Back == Selection && cell.BackMix == 255 && cell.BackAttr == Reverse; got != want {
 				t.Errorf("%s: %q selected %v", when, cell.Text, got)
 			}
@@ -113,8 +119,8 @@ func TestFieldSelection(t *testing.T) {
 	}
 	keys(t, r, "a", "b", "c", "Shift+ArrowLeft", "Shift+ArrowLeft")
 	shows("Shift+ArrowLeft twice", []bool{false, true, true, false}, -1)
-	if col, _, ok := r.Draw(40).Cursor(); !ok || col != 4 {
-		t.Errorf("the cursor at %d %v, want 4", col, ok)
+	if col, _, ok := r.Draw(40).Cursor(); !ok || col != nameAt+1 {
+		t.Errorf("the cursor at %d %v, want %d", col, ok, nameAt+1)
 	}
 	keys(t, r, "End")
 	shows("End", []bool{false, false, false, false}, -1)
@@ -137,33 +143,33 @@ func TestFieldMouseSelection(t *testing.T) {
 	c.Focus("name")
 	r.Draw(40)
 	keys(t, r, "a", "b", "c", "d")
-	// "┃  abcd" on row 1: b is at column 4.
+	// "┃ Name  abcd" on row 0: b is at column nameAt+1.
 	must := func(err error) {
 		t.Helper()
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
-	must(r.Click(4, 1))
+	must(r.Click(nameAt+1, 0))
 	f := r.Draw(40)
-	if col, _, _ := f.Cursor(); col != 4 {
+	if col, _, _ := f.Cursor(); col != nameAt+1 {
 		t.Errorf("a press at b: the cursor at %d", col)
 	}
-	must(r.Drag(5, 1))
-	must(r.Drag(30, 1))
+	must(r.Drag(nameAt+2, 0))
+	must(r.Drag(30, 0))
 	r.Release()
 	f = r.Draw(40)
 	for i, want := range []bool{false, true, true, true} {
-		if got := f.Cells[1][3+i].Back == Selection; got != want {
-			t.Errorf("dragged past the end: %q selected %v", f.Cells[1][3+i].Text, got)
+		if got := f.Cells[0][nameAt+i].Back == Selection; got != want {
+			t.Errorf("dragged past the end: %q selected %v", f.Cells[0][nameAt+i].Text, got)
 		}
 	}
 	keys(t, r, "x")
 	if got := data()["name"]; got != "ax" {
 		t.Errorf("typing over the selection: %q", got)
 	}
-	must(r.Click(5, 1))
-	must(r.Drag(0, 1))
+	must(r.Click(nameAt+2, 0))
+	must(r.Drag(0, 0))
 	r.Release()
 	keys(t, r, "Delete")
 	if got := data()["name"]; got != "" {
@@ -210,8 +216,8 @@ func TestFieldShiftClick(t *testing.T) {
 	c.Focus("name")
 	r.Draw(40)
 	keys(t, r, "a", "b", "c", "d", "Home")
-	// "┃  abcd" on row 1: d is at column 6.
-	if err := r.ShiftClick(6, 1); err != nil {
+	// "┃ Name  abcd" on row 0: d is at column nameAt+3.
+	if err := r.ShiftClick(nameAt+3, 0); err != nil {
 		t.Fatal(err)
 	}
 	r.Release()
@@ -220,8 +226,8 @@ func TestFieldShiftClick(t *testing.T) {
 		t.Fatalf("Shift with a press from the caret, then x: %q", got)
 	}
 	keys(t, r, "End")
-	for _, col := range []int{3, 4} {
-		if err := r.ShiftClick(col, 1); err != nil {
+	for _, col := range []int{nameAt, nameAt + 1} {
+		if err := r.ShiftClick(col, 0); err != nil {
 			t.Fatal(err)
 		}
 		r.Release()
@@ -232,7 +238,7 @@ func TestFieldShiftClick(t *testing.T) {
 	}
 	c.Focus("note")
 	r.Draw(40)
-	if err := r.ShiftClick(5, 1); err != nil {
+	if err := r.ShiftClick(nameAt+1, 0); err != nil {
 		t.Fatal(err)
 	}
 	if c.St.Focus != "name" {
@@ -240,19 +246,71 @@ func TestFieldShiftClick(t *testing.T) {
 	}
 }
 
-// TestPointer: the pointer is an I-beam over a field's value, and the
-// terminal's own elsewhere.
+// TestPointer: the pointer is an I-beam over a field's input, and the
+// terminal's own elsewhere: on its label, its inset, and past its end.
 func TestPointer(t *testing.T) {
 	c, _, _ := form(t)
 	r := New(c)
-	r.Draw(40)
+	r.Draw(60)
 	for _, at := range []struct {
 		col, row int
 		want     string
-	}{{5, 1, "text"}, {30, 1, "text"}, {5, 0, ""}, {2, 1, ""}} {
+	}{{nameAt + 1, 0, "text"}, {nameAt + textInput - 1, 0, "text"}, {nameAt + textInput, 0, ""}, {5, 0, ""}, {nameAt - 1, 0, ""}} {
 		if got := r.Pointer(at.col, at.row); got != at.want {
 			t.Errorf("at %d,%d: %q, want %q", at.col, at.row, got, at.want)
 		}
+	}
+}
+
+// TestFieldInput: a one-line field's input is underlined, and nothing
+// else on its row: not its label, the space after it or the inset, nor
+// what is past the input's width, however wide the field's box; a select's
+// input is its widest option, a space and "▾".
+func TestFieldInput(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	f := r.Draw(60)
+	under := func(row, from, to int) {
+		t.Helper()
+		for col := 0; col < f.Cols; col++ {
+			if got, want := f.Cells[row][col].Attr&Underline != 0, col >= from && col < to; got != want {
+				t.Errorf("row %d col %d %q: underlined %v", row, col, f.Cells[row][col].Text, got)
+			}
+		}
+	}
+	under(0, nameAt, nameAt+textInput)
+	size := strings.Split(f.Plain(), "\n")
+	for y, l := range size {
+		if strings.HasPrefix(l, "  Size") {
+			if l != "  Size  Medium ▾" {
+				t.Errorf("the select's row %q", l)
+			}
+			under(y, nameAt, nameAt+len("Medium")+2)
+		}
+	}
+}
+
+// TestLabelRun: the labels of a run of one-line fields are padded to the
+// widest, so that their inputs start in one column, in a Column that
+// does not stretch them too, none of them cut for it.
+func TestLabelRun(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","align":"start","children":["a","b"]},
+	 {"id":"a","component":"TextField","label":"To","value":"ada@example.com"},
+	 {"id":"b","component":"TextField","label":"Subject","value":"Hello"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	f := New(view.NewController(p.Surface("s"))).Draw(80)
+	want := "  To       ada@example.com\n" +
+		"  Subject  Hello"
+	if got := f.Plain(); got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+	if end := gutter + len("Subject") + 1 + inset + textInput; f.Cells[0][end-1].Attr&Underline == 0 {
+		t.Errorf("To's input is cut before column %d", end)
 	}
 }
 
@@ -367,8 +425,10 @@ func TestSelect(t *testing.T) {
 	}
 	keys(t, r, "Enter", "ArrowDown")
 	f := r.Draw(40).Plain()
-	// The value row is a text field's: inset, the chevron at its end.
-	if !strings.Contains(f, "┃ Size\n┃  Small"+strings.Repeat(" ", 31)+"▾\n") || !strings.Contains(f, "┃   ● Small\n┃ > ○ Medium") {
+	// The input is a text field's, after the label and the inset, as wide
+	// as the widest option and the chevron; the list's labels under the
+	// value's.
+	if !strings.Contains(f, "┃ Size  Small  ▾\n") || !strings.Contains(f, "┃     ● Small\n┃   > ○ Medium") {
 		t.Fatalf("open list:\n%s", f)
 	}
 	keys(t, r, " ")
@@ -406,7 +466,7 @@ func TestClick(t *testing.T) {
 	}
 	_ = c.SetValue("name", "Ada")
 	f = r.Draw(40)
-	if err := r.Click(gutter+inset+1, row("  Name")+1); err != nil || !c.St.Keyboard || c.St.Focus != "name" {
+	if err := r.Click(nameAt+1, row("  Name")); err != nil || !c.St.Keyboard || c.St.Focus != "name" {
 		t.Fatal("a click on the field did not focus it")
 	}
 	keys(t, r, "x")
@@ -443,7 +503,7 @@ func TestBox(t *testing.T) {
 	if !ok || w != 4 || h != 1 || strings.Split(f.Plain(), "\n")[row][col:] != " Go" {
 		t.Errorf("go: %d,%d %dx%d %v", col, row, w, h, ok)
 	}
-	if col, row, w, h, ok := r.Box("name"); !ok || col != 0 || row != 0 || w != 40 || h != 2 {
+	if col, row, w, h, ok := r.Box("name"); !ok || col != 0 || row != 0 || w != 40 || h != 1 {
 		t.Errorf("name: %d,%d %dx%d %v", col, row, w, h, ok)
 	}
 	if _, _, _, _, ok := r.Box("nothing"); ok {

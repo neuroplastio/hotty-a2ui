@@ -32,7 +32,7 @@ func (r *Rendition) suggestRows(e *view.Element) int {
 }
 
 // suggestPlace is where the focused text field's list of suggestions goes
-// over the frame: from row y, under the value row, its text in the value
+// over the frame: from row y, under the input, its text in the value
 // text's column x.
 type suggestPlace struct {
 	e    *view.Element
@@ -53,7 +53,7 @@ func paintGhost(cv *canvas, e *view.Element, a *fieldArea, vw int, end int) {
 // paintSuggestions paints the focused text field's list of suggestions
 // over the frame, as an open Modal's panel and a toast are: it moves no
 // row, hides what it covers and takes its clicks. It is a rounded box in
-// border right under the value row, a column of padding inside it, so
+// border right under the input, a column of padding inside it, so
 // that its text stands under the value's: a row each, what the value
 // typed of it plain and its rest in muted, as the ghost is. The
 // highlighted one is reversed in the accent across the box, as a menu's

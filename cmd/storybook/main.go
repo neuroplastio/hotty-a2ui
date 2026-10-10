@@ -31,7 +31,6 @@ import (
 	"github.com/charmbracelet/x/term"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
-	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/rendition/html"
 	"github.com/neuroplastio/hotty-a2ui/rendition/text"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
@@ -48,9 +47,6 @@ func main() {
 	rend := flag.String("rendition", "", "start in this `rendition`: surfaces, cells, text or side (surfaces beside cells)")
 	out := flag.String("out", "", "write what the renderer sends the agent (actions, errors, function calls) to `file` as JSON lines (- for stdout)")
 	bare := flag.Bool("bare", false, "show one story's surfaces alone, in cells, on the whole screen: no list, pickers or panel")
-	// For the maintainer's pick between the two (vault journal
-	// 2026-10-10.12); the flag goes with the one not picked.
-	labels := flag.String("labels", "above", "where a one-line field's label goes in cells: `above` its value, or inline before it")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: storybook [flags] [story]")
 		flag.PrintDefaults()
@@ -63,13 +59,6 @@ func main() {
 			break
 		}
 		args = append(args, flag.Arg(0))
-	}
-	switch *labels {
-	case "above", "inline":
-		cells.InlineLabels = *labels == "inline"
-	default:
-		fmt.Fprintf(os.Stderr, "storybook: -labels is above or inline, not %q\n", *labels)
-		os.Exit(2)
 	}
 	th := theme.Default
 	if *themeName != "" {

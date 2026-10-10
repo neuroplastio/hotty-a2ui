@@ -28,7 +28,7 @@ type hit struct {
 type fieldArea struct {
 	x, y       int
 	hoff, voff int
-	rows       int
+	w, rows    int
 }
 
 type trackArea struct{ x, n int }
@@ -297,6 +297,7 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 	if w <= 0 {
 		return
 	}
+	l.labelRuns(kids)
 	n := len(kids)
 	ws, hs, weights := make([]int, n), make([]int, n), make([]float64, n)
 	sum := 0
@@ -307,7 +308,6 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 		sum += hs[i] + separator(kids, i)
 	}
 	gaps := l.spread(hs, weights, justify, h-sum)
-	l.labelRuns(kids)
 	yy := y
 	for i, k := range kids {
 		yy += gaps[i] + separator(kids, i)
@@ -409,9 +409,10 @@ func (l *layout) paintError(cv *canvas, e *view.Element, x, y, w int) {
 	}
 }
 
-// paintChoice paints a Choice in its field's box (past the gutter): its
-// label, then a select's value row, underlined as a one-line text field's,
-// and while open its list, "> ● label" on the highlighted row; or the
+// paintChoice paints a Choice in its field's box (past the gutter): a
+// select's label and input on one row, the input placed and underlined as
+// a one-line text field's, and while open its list under the input,
+// "> ● label" on the highlighted row; or the label on a row above the
 // options, a row each.
 func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	row := y
@@ -428,11 +429,16 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 		}
 	}
 	if isSelect(e) {
-		cv.write(ux, row, uw, selectValue(e, uw))
-		underline(cv, ux, row, uw, focused)
+		vx, vw := ux+inset, min(max(uw-inset, 0), inputWidth(e))
+		cv.write(vx, row, vw, selectValue(e, vw))
+		underline(cv, vx, row, vw, focused)
 		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + 1, id: e.ID, opt: -1})
 		row++
 		if l.r.listOpen(e) {
+			// Under the input, the marks in the columns before it, so that
+			// the options' labels are under the value's, as a GUI select's
+			// list is.
+			lx := max(x, vx-4)
 			cur := picked(e)
 			for i, o := range e.Options {
 				mark, dot, st := glyphs("  ", style{}), "○ ", style{}
@@ -443,7 +449,7 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 					mark, st = glyphs("> ", style{role: Accent}), style{role: Accent, attr: Bold}
 				}
 				gs := concat(mark, glyphs(dot, st), line(o.Label, st))
-				cv.write(x, row, w, fit(gs, w))
+				cv.write(lx, row, x+w-lx, fit(gs, x+w-lx))
 				l.r.hits = append(l.r.hits, hit{x: x - gutter, y: row, w: w + gutter, h: 1, id: e.ID, opt: i})
 				row++
 			}

@@ -205,7 +205,8 @@ func TestSideInput(t *testing.T) {
 	lines := strings.Split(h.Screen(), "\n")
 	row := lineOf(h.Screen(), "Name")
 	col := utf8.RuneCountInString(lines[row][:strings.Index(lines[row], "Name")])
-	click := "\x1b[<0;" + itoa(col+1) + ";" + itoa(row+2) + "M\x1b[<0;" + itoa(col+1) + ";" + itoa(row+2) + "m"
+	// A click on the field's label, on its input's row, as in a GUI form.
+	click := "\x1b[<0;" + itoa(col+1) + ";" + itoa(row+1) + "M\x1b[<0;" + itoa(col+1) + ";" + itoa(row+1) + "m"
 	h.Type(click)
 	eventually(t, "the host's surface without the keyboard", func() bool { return h.Surface("s1-0-h").Focused() == "" })
 	h.Type("Ada")

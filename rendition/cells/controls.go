@@ -8,9 +8,14 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
-// fieldWidth is a text field's natural width when its label is shorter:
-// an HTML input's default size.
+// fieldWidth is a longText's natural width when its label is shorter: an
+// HTML textarea's default size.
 const fieldWidth = 20
+
+// textInput is a one-line text field's input: the underlined columns its
+// value shows in, fixed as a GUI form's input is, whatever is typed, and
+// wide enough for an email address.
+const textInput = 32
 
 // trackWidth is a Slider's natural track width.
 const trackWidth = 10
@@ -19,23 +24,42 @@ const trackWidth = 10
 // while it has the keyboard, as huh draws its fields.
 const gutter = 2
 
-// inset is the column of padding either side of a one-line field's value,
-// inside its underline, as a GUI's input insets its text.
+// inset is the blank column before a one-line field's input, between it
+// and its label or gutter. The underline starts after it, at the value's
+// first column (the maintainer, round 2: "keeping underline only on the
+// input area").
 const inset = 1
 
-// InlineLabels puts a one-line field's label on its value's row, the
-// labels of a run of such fields in a Column padded to the widest, where
-// by default it is on a title row above. It is the maintainer's pick to
-// make (vault journal 2026-10-10.12): one of the two goes once they have.
-var InlineLabels bool
-
 // inlineRow reports whether a field's label is on its value's row: a
-// one-line text field's, a DateTime's or a select's, under InlineLabels.
+// one-line text field's, a DateTime's or a select's, the labels of a run
+// of them in a Column padded to the widest (labelRuns). A longText's and
+// a Choice's options' labels are on a title row above.
 func inlineRow(e *view.Element) bool {
-	if !InlineLabels || e == nil || e.Label == "" {
+	if e == nil || e.Label == "" {
 		return false
 	}
+	return isOneLine(e)
+}
+
+// isOneLine reports whether a field has an input on one row: a one-line
+// text field, a DateTime or a select.
+func isOneLine(e *view.Element) bool {
 	return isTextControl(e) && !isLongText(e) || isSelect(e)
+}
+
+// inputWidth is the columns of a one-line field's input (profile §3.5),
+// at most the room it is given: a text field's textInput; a DateTime's,
+// its value's form or its value, whichever is wider, and a column for the
+// caret after it; a select's, its widest option, a space and "▾".
+func inputWidth(e *view.Element) int {
+	switch {
+	case isSelect(e):
+		return width(selectValue(e, noWrap))
+	case e.Kind == view.DateTime:
+		v, _ := e.Value.(string)
+		return max(Width(e.DateHint()), Width(v)) + 1
+	}
+	return textInput
 }
 
 // isField reports whether an element is a field: a control with a gutter
@@ -69,16 +93,17 @@ func isControlElement(e *view.Element) bool {
 		e.Kind == view.Tree
 }
 
-// hasTitle reports whether an element has a title row of its own: a text
-// field, a DateTime, a Choice or a Progress with a label, a Table, its
-// header, and a HottyList, its status line. A CheckBox's, a HottySwitch's,
-// a Slider's and a Spinner's labels are on their one row.
+// hasTitle reports whether an element has a title row of its own: a
+// longText, a Choice's options or a Progress with a label, a Table, its
+// header, and a HottyList, its status line. A one-line field's, a
+// CheckBox's, a HottySwitch's, a Slider's and a Spinner's labels are on
+// their one row.
 func hasTitle(e *view.Element) bool {
 	switch e.Kind {
 	case view.Table, view.RichList:
 		return true
 	case view.TextField, view.DateTime, view.Choice, view.Progress:
-		return e.Label != ""
+		return e.Label != "" && !inlineRow(e)
 	}
 	return false
 }
@@ -126,14 +151,14 @@ func controlWidth(e *view.Element) int {
 		if isLongText(e) {
 			return gutter + max(Width(e.Label), fieldWidth)
 		}
-		return gutter + labelled(e, fieldWidth+2*inset)
+		return gutter + labelled(e, inset+inputWidth(e))
 	case view.CheckBox:
 		return gutter + width(boxFace(false, e.Label, style{}))
 	case view.Switch:
 		return gutter + width(switchFace(e, false))
 	case view.Choice:
 		if isSelect(e) {
-			return gutter + labelled(e, width(selectValue(e, noWrap)))
+			return gutter + labelled(e, inset+inputWidth(e))
 		}
 		n := 0
 		for _, ow := range optionWidths(e) {
@@ -242,14 +267,13 @@ func fieldRows(e *view.Element) int {
 	return min(max(len(splitClusters(clusters(v))), 3), 8)
 }
 
-// labelled is a field's width past its gutter for a value n wide: its
-// label and a space before the value on one row (InlineLabels), or the
-// wider of the two on their own rows.
+// labelled is a one-line field's width past its gutter for a value n
+// wide: its label and a space before the value, on one row.
 func labelled(e *view.Element, n int) int {
 	if inlineRow(e) {
 		return Width(e.Label) + 1 + n
 	}
-	return max(Width(e.Label), n)
+	return n
 }
 
 // buttonFace is a Button as drawn: " label ", a column of padding either
@@ -372,30 +396,30 @@ func optionWidths(e *view.Element) []int {
 	return ws
 }
 
-// selectValue is a select's value row, w wide, as a one-line text field's
-// is: a column of padding, the picked option's label, or "…" in muted, cut
-// to fit, and "▾" in muted at the row's end, a space after the label at
-// least. At noWrap it is as wide as the widest option makes it.
+// selectValue is a select's input, w wide, as a one-line text field's is:
+// the picked option's label, or "…" in muted, cut to fit, and "▾" in muted
+// at the input's end, a space after the label at least. At noWrap it is
+// as wide as the widest option makes it, so the chevron sits a space after
+// the widest.
 func selectValue(e *view.Element, w int) []glyph {
 	value := line(pickedLabel(e), style{})
 	if len(value) == 0 {
 		value = line("…", style{role: Muted})
 	}
 	if w == noWrap {
+		n := width(value)
 		for _, o := range e.Options {
-			if Width(o.Label) > width(value) {
-				value = line(o.Label, style{})
-			}
+			n = max(n, Width(o.Label))
 		}
-		w = inset + width(value) + 2
+		w = n + 2
 	}
 	arrow := glyphs("▾", style{role: Muted})
-	room := w - inset - 2
+	room := w - 2
 	if room < 1 {
 		return fit(concat(value, arrow), w)
 	}
 	value = fit(value, room)
-	return concat(glyphs(" ", style{}), value, repeat(" ", w-inset-width(value)-1, style{}), arrow)
+	return concat(value, repeat(" ", w-width(value)-1, style{}), arrow)
 }
 
 // titleStyle is a field's label: muted, in the accent while the field has
@@ -407,8 +431,8 @@ func titleStyle(focused bool) style {
 	return style{role: Muted}
 }
 
-// underline rules a one-line field's value row, x to x+w, as a GUI form's
-// input is: the line in border, in the accent while the field has the
+// underline rules a one-line field's input, x to x+w, as a GUI form's
+// input is outlined: the line in border, in the accent while the field has the
 // keyboard (SGR 58; a terminal without it draws the line in the text's
 // colour).
 func underline(cv *canvas, x, y, w int, focused bool) {
