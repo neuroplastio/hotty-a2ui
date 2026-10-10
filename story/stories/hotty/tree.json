@@ -1341,7 +1341,7 @@
             "action": {
               "functionCall": {
                 "@call": "hottyExpandAll",
-                "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
                 "args": {
                   "id": "tree"
                 }
@@ -1360,7 +1360,7 @@
             "action": {
               "functionCall": {
                 "@call": "hottyCollapseAll",
-                "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
                 "args": {
                   "id": "tree"
                 }
@@ -1375,7 +1375,7 @@
           {
             "id": "tree",
             "component": "HottyTree",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "items": {
               "@path": "/files"
             },
@@ -1411,7 +1411,7 @@
           {
             "id": "help",
             "component": "HottyKeyHints",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
           }
         ]
       }

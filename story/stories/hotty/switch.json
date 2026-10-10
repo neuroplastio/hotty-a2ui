@@ -52,7 +52,7 @@
           {
             "id": "airplane",
             "component": "HottySwitch",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Airplane mode",
             "value": {
               "@path": "/airplane"
@@ -61,7 +61,7 @@
           {
             "id": "wifi",
             "component": "HottySwitch",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Wi-Fi",
             "value": {
               "@path": "/wifi"
@@ -77,7 +77,7 @@
           {
             "id": "bluetooth",
             "component": "HottySwitch",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Bluetooth",
             "value": {
               "@path": "/bluetooth"
@@ -86,7 +86,7 @@
           {
             "id": "hotspot",
             "component": "HottySwitch",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Personal hotspot",
             "value": {
               "@path": "/hotspot"
@@ -98,7 +98,7 @@
           {
             "id": "location",
             "component": "HottySwitch",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Location services",
             "value": true,
             "disabled": true
@@ -120,7 +120,7 @@
           {
             "id": "dark",
             "component": "HottySwitch",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "value": {
               "@path": "/dark"
             },
@@ -135,7 +135,7 @@
           {
             "id": "form",
             "component": "HottyForm",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "child": "form_fields",
             "onSubmit": {
               "event": {
@@ -181,7 +181,7 @@
           {
             "id": "two_factor",
             "component": "HottySwitch",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Two-factor sign-in",
             "value": {
               "@path": "/twoFactor"
@@ -198,7 +198,7 @@
           {
             "id": "digest",
             "component": "HottySwitch",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Weekly digest by email",
             "value": {
               "@path": "/digest"
@@ -213,7 +213,7 @@
           {
             "id": "help",
             "component": "HottyKeyHints",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
           }
         ]
       }

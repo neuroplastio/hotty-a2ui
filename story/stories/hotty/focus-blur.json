@@ -75,7 +75,7 @@
             "action": {
               "functionCall": {
                 "@call": "hottyFocus",
-                "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
                 "args": {
                   "id": "city"
                 }
@@ -94,7 +94,7 @@
             "action": {
               "functionCall": {
                 "@call": "hottyBlur",
-                "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
               }
             }
           },

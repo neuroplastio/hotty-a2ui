@@ -36,7 +36,7 @@
           {
             "id": "form",
             "component": "HottyForm",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "child": "fields",
             "onSubmit": {
               "event": {
@@ -139,12 +139,12 @@
           {
             "id": "hints",
             "component": "HottyKeyHints",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
           },
           {
             "id": "save_key",
             "component": "HottyShortcut",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "key": "Control+s",
             "press": "save",
             "label": "save"
@@ -152,7 +152,7 @@
           {
             "id": "discard_key",
             "component": "HottyShortcut",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "key": "Control+d",
             "action": {
               "event": {

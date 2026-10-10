@@ -36,7 +36,7 @@
           {
             "id": "go",
             "component": "HottyCode",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "code": "package api\n\nimport (\n\t\"errors\"\n\t\"net/http\"\n)\n\n// Handle serves a request, or says why it cannot.\nfunc Handle(w http.ResponseWriter, r *http.Request) error {\n\tif r.Method != http.MethodGet {\n\t\treturn errors.New(\"only GET\")\n\t}\n\tw.WriteHeader(http.StatusOK)\n\t_, err := w.Write([]byte(\"ok\\n\"))\n\treturn err\n}\n",
             "language": "go",
             "lineNumbers": true,
@@ -60,7 +60,7 @@
           {
             "id": "py",
             "component": "HottyCode",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "code": "def fetch(url, tries=3):\n    for attempt in range(tries):\n        try:\n            return requests.get(url, timeout=5)\n            return requests.get(url, timeout=5, headers={\"User-Agent\": \"hotty-a2ui/0.1 (+https://hotty.neuroplast.io)\"})\n        except requests.Timeout:\n            time.sleep(2 ** attempt)\n    raise RuntimeError(f\"gave up on {url} after {tries} tries\")\n",
             "language": "fetch.py",
             "lineNumbers": true,

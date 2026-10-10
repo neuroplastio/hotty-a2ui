@@ -63,7 +63,7 @@
           {
             "id": "s-line",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "line",
             "label": "Line",
             "active": {
@@ -73,7 +73,7 @@
           {
             "id": "s-dot",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "dot",
             "label": "Dot",
             "active": {
@@ -83,7 +83,7 @@
           {
             "id": "s-miniDot",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "miniDot",
             "label": "MiniDot",
             "active": {
@@ -93,7 +93,7 @@
           {
             "id": "s-jump",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "jump",
             "label": "Jump",
             "active": {
@@ -103,7 +103,7 @@
           {
             "id": "s-pulse",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "pulse",
             "label": "Pulse",
             "active": {
@@ -113,7 +113,7 @@
           {
             "id": "s-points",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "points",
             "label": "Points",
             "active": {
@@ -123,7 +123,7 @@
           {
             "id": "s-globe",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "globe",
             "label": "Globe",
             "active": {
@@ -133,7 +133,7 @@
           {
             "id": "s-moon",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "moon",
             "label": "Moon",
             "active": {
@@ -143,7 +143,7 @@
           {
             "id": "s-monkey",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "monkey",
             "label": "Monkey",
             "active": {
@@ -153,7 +153,7 @@
           {
             "id": "s-meter",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "meter",
             "label": "Meter",
             "active": {
@@ -163,7 +163,7 @@
           {
             "id": "s-hamburger",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "hamburger",
             "label": "Hamburger",
             "active": {
@@ -173,7 +173,7 @@
           {
             "id": "s-ellipsis",
             "component": "HottySpinner",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "spinner": "ellipsis",
             "label": "Ellipsis",
             "active": {

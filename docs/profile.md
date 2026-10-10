@@ -730,8 +730,13 @@ as SPEC.md §10.2 has a host take them.
 
 ## 6. The hotty catalog
 
-`https://neuroplast.io/hotty/a2ui/v1/catalog.json`, in
-[catalog/hotty/catalog.json](../catalog/hotty/catalog.json).
+`https://hotty.neuroplast.io/a2ui/v1/catalog`, in
+[catalog/hotty/catalog.json](../catalog/hotty/catalog.json). The id is a
+name, as A2UI's catalog ids are ("not a resolvable URI"): nothing is
+served there. An agent gets the catalog document from its program
+(`hotty.Doc`), in its prompt or as an inline catalog. `v1` is this
+catalog's own major version; the A2UI version it targets is its
+`protocolVersion`.
 
 **Names.** Every component's name starts with `Hotty` and every function's
 with `hotty`: the plain noun or verb A2UI would use, after the prefix

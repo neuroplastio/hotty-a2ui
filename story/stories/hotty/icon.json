@@ -50,7 +50,7 @@
           {
             "id": "i_account_tree",
             "component": "HottyIcon",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "name": "account_tree"
           },
           {
@@ -70,7 +70,7 @@
           {
             "id": "i_terminal",
             "component": "HottyIcon",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "name": "terminal"
           },
           {
@@ -90,7 +90,7 @@
           {
             "id": "i_code",
             "component": "HottyIcon",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "name": "code"
           },
           {
@@ -110,7 +110,7 @@
           {
             "id": "i_rocket_launch",
             "component": "HottyIcon",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "name": "rocket_launch"
           },
           {
@@ -130,7 +130,7 @@
           {
             "id": "i_palette",
             "component": "HottyIcon",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "name": "palette"
           },
           {
@@ -150,7 +150,7 @@
           {
             "id": "i_account_circle",
             "component": "HottyIcon",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "name": "account_circle"
           },
           {
@@ -170,7 +170,7 @@
           {
             "id": "i_ring",
             "component": "HottyIcon",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "name": {
               "svgPath": "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M8 12.5l2.5 2.5L16 9.5",
               "strokeWidth": 2
@@ -193,7 +193,7 @@
           {
             "id": "i_unknown",
             "component": "HottyIcon",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "name": "no_such_icon"
           },
           {

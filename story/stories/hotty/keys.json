@@ -54,7 +54,7 @@
           {
             "id": "form",
             "component": "HottyForm",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "child": "form_fields",
             "onSubmit": {
               "event": {
@@ -99,7 +99,7 @@
           {
             "id": "program_key",
             "component": "HottyShortcut",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "key": "Control+k",
             "label": "Control+k",
             "action": {

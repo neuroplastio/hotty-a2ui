@@ -93,7 +93,7 @@
           {
             "id": "things",
             "component": "HottyList",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "title": "My Fave Things",
             "items": {
               "@path": "/things"
@@ -117,7 +117,7 @@
           {
             "id": "help",
             "component": "HottyKeyHints",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
           }
         ]
       }

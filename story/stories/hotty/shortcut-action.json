@@ -76,7 +76,7 @@
           {
             "id": "refresh_key",
             "component": "HottyShortcut",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "key": "Control+r",
             "label": "Refresh",
             "action": {

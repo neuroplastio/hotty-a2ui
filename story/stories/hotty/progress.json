@@ -41,14 +41,14 @@
           {
             "id": "queued",
             "component": "HottyProgress",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Queued",
             "value": 0
           },
           {
             "id": "download",
             "component": "HottyProgress",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Download",
             "value": {
               "@path": "/download"
@@ -57,21 +57,21 @@
           {
             "id": "install",
             "component": "HottyProgress",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Install",
             "value": 0.6
           },
           {
             "id": "done",
             "component": "HottyProgress",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Done",
             "value": 1
           },
           {
             "id": "indexing",
             "component": "HottyProgress",
-            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Indexing"
           },
           {

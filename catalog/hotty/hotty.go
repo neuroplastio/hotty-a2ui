@@ -14,7 +14,7 @@ import (
 )
 
 // ID is the catalog's id.
-const ID = "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+const ID = "https://hotty.neuroplast.io/a2ui/v1/catalog"
 
 //go:embed catalog.json
 var doc []byte
