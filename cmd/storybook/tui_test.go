@@ -113,7 +113,7 @@ func TestOnHost(t *testing.T) {
 	})
 
 	// Another story, from nav: its surface replaces this one's.
-	if err := h.Click(navID, "story_0"); err != nil {
+	if err := h.Click(navID, "tree~q1"); err != nil { // Components' first story
 		t.Fatal(err)
 	}
 	eventually(t, "the first story", func() bool {

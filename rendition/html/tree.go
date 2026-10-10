@@ -24,8 +24,9 @@ const treeKeys = listKeys
 // fold, ▸ or ▾ before a branch and blank before a leaf, so that the
 // labels of a level line up; then its icon, as an Icon draws it (blank,
 // for the same reason, when another node has one and it has none), and
-// its label, the filter's matches underlined. Guides are cells' (profile
-// §3.4): a host has the space to indent instead.
+// its label, the filter's matches underlined, and a closed branch's
+// count, the nodes it holds, muted. Guides are cells' (profile §3.4): a
+// host has the space to indent instead.
 func (m *markup) tree(e *view.Element) *node {
 	class := "k-tree"
 	if m.keyboard == e.ID {
@@ -67,6 +68,9 @@ func (m *markup) tree(e *view.Element) *node {
 			row.add(el("span", "class", "k-icon k-icon-blank", "aria-hidden", "true"))
 		}
 		row.add(el("span", "class", "k-node-label").add(marked(n.Label, match)...))
+		if n.Branch() && !n.Open && !e.Filtering() {
+			row.add(el("span", "class", "k-node-count").add(txt(strconv.Itoa(n.Kids))))
+		}
 		box.add(row)
 	}
 	if len(e.Shown) == 0 {

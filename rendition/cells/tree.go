@@ -90,7 +90,8 @@ func treeHeight(e *view.Element) int {
 // paintTree paints a HottyTree at (x, y), w wide. The selected node's bar
 // and label are in the accent while the tree has the keyboard, the label
 // bold, as bubbles' tree has it, and its bar alone, in muted, otherwise. A label's characters that matched the
-// filter are underlined; a row cut short ends in "…".
+// filter are underlined; a row cut short ends in "…". The selected node's
+// row is what to keep in sight (Rendition.Sight), when it shows.
 func (l *layout) paintTree(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	focused := r.focused(e.ID)
@@ -122,6 +123,9 @@ func (l *layout) paintTree(cv *canvas, e *view.Element, x, y, w int) {
 		}
 		cv.write(in, row, iw, fit(concat(nodeParts(e, i, match, st)), iw))
 		r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: i})
+		if i == sel {
+			r.reveal[e.ID] = box{x, row, w, 1}
+		}
 	}
 	r.boxes[e.ID] = box{x, y, w, treeHeight(e)}
 }

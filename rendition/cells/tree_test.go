@@ -65,6 +65,10 @@ func TestTreeDraws(t *testing.T) {
 	if bar, label := f.Cells[7][0], f.Cells[7][4]; bar.Role != Muted || label.Role != Fg {
 		t.Errorf("unfocused: bar %v, label %v", bar.Role, label.Role)
 	}
+	// The selected node's row is what a pane keeps in sight.
+	if _, row, _, h, ok := r.Sight("root"); !ok || row != 7 || h != 1 {
+		t.Errorf("sight: row %d, %d high (%v), want the selected row", row, h, ok)
+	}
 	c.Focus("root")
 	f = r.Draw(30)
 	if bar, label := f.Cells[7][0], f.Cells[7][4]; bar.Role != Accent || label.Role != Accent || label.Attr&Bold == 0 {

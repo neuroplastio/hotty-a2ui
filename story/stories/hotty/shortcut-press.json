@@ -2,7 +2,7 @@
   "name": "Shortcut presses a button",
   "kind": "behaviour",
   "component": "HottyShortcut",
-  "icon": "smart_button",
+  "icon": "ads_click",
   "description": "Control+s presses Save, as a click would, and only when Save's checks pass. It works from the field too: the field commits first.",
   "messages": [
     {

@@ -165,13 +165,18 @@ func mapTabs(b *Builder, n *a2ui.Node) *Element {
 		sel = 0
 	}
 	e := &Element{Kind: Tabs, Selected: sel}
+	icons, _ := iconNames(n)
 	for i, t := range tabs {
 		m, _ := t.(map[string]any)
 		title := ""
 		if bd, ok := m["title"].(a2ui.Bound); ok {
 			title = a2ui.ToString(nilString(bd.Value))
 		}
-		e.Children = append(e.Children, &Element{ID: SubID(n.Key, "tab", i), Kind: Tab, Type: "Tabs.tab", Label: title, Active: i == sel})
+		tab := &Element{ID: SubID(n.Key, "tab", i), Kind: Tab, Type: "Tabs.tab", Label: title, Active: i == sel}
+		if i < len(icons) {
+			tab.Name = icons[i]
+		}
+		e.Children = append(e.Children, tab)
 	}
 	if sel < len(tabs) {
 		m, _ := tabs[sel].(map[string]any)
@@ -184,6 +189,7 @@ func mapChoice(b *Builder, n *a2ui.Node) *Element {
 	e := &Element{Kind: Choice, Label: b.String(n, "label"), Multiple: b.Enum(n, "variant", "mutuallyExclusive") == "multipleSelection",
 		Variant: b.Enum(n, "displayStyle", "checkbox"), Filter: b.Bool(n, "filterable"), Error: b.FieldError(n)}
 	opts, _ := n.Props["options"].([]any)
+	_, icons := iconNames(n)
 	for _, o := range opts {
 		m, _ := o.(map[string]any)
 		label := ""
@@ -191,7 +197,7 @@ func mapChoice(b *Builder, n *a2ui.Node) *Element {
 			label = a2ui.ToString(nilString(bd.Value))
 		}
 		value, _ := m["value"].(string)
-		e.Options = append(e.Options, ChoiceOption{Label: label, Value: value})
+		e.Options = append(e.Options, ChoiceOption{Label: label, Value: value, Icon: icons[value]})
 	}
 	var picked []string
 	switch v := b.Value(n, "value").(type) {
@@ -210,7 +216,7 @@ func mapChoice(b *Builder, n *a2ui.Node) *Element {
 	if e.Multiple || e.Variant == "chips" {
 		for i, o := range e.Options {
 			e.Children = append(e.Children, &Element{ID: SubID(n.Key, "option", i), Kind: Option, Type: "ChoicePicker.option",
-				Label: o.Label, Value: o.Value, Active: contains(picked, o.Value)})
+				Label: o.Label, Value: o.Value, Name: o.Icon, Active: contains(picked, o.Value)})
 		}
 	}
 	return e

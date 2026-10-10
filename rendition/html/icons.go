@@ -41,3 +41,13 @@ func shape(name, path string, stroke float64, id string) *node {
 	}
 	return n.add(el("svg", "viewBox", "0 0 "+box+" "+box, "width", "1em", "height", "1em", "aria-hidden", "true").add(p))
 }
+
+// beside is the icon a Tabs' title or a ChoicePicker's option has beside
+// its label (io_neuroplast_hotty.icons), by its name: hidden from a
+// screen reader, as the label says it; nil for none.
+func beside(name string) *node {
+	if name == "" {
+		return nil
+	}
+	return shape(name, "", 0, "").set("aria-hidden", "true")
+}

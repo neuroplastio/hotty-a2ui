@@ -75,6 +75,10 @@ func run(t *testing.T, h *hottytest.Host, o Options) {
 	})
 }
 
+// navNode is the DOM id of nav's node i, in pre-order: 0 is Components,
+// 1 its first story.
+func navNode(i int) string { return html.DOMID(treeID) + "~q" + strconv.Itoa(i) }
+
 func eventually(t *testing.T, what string, cond func() bool) {
 	t.Helper()
 	for end := time.Now().Add(5 * time.Second); time.Now().Before(end); time.Sleep(5 * time.Millisecond) {
@@ -106,7 +110,7 @@ func TestInAProgram(t *testing.T) {
 	if !strings.Contains(h.Screen(), "the program's own row") {
 		t.Errorf("the program's row is gone:\n%s", h.Screen())
 	}
-	if err := h.Click("sb-nav", "story_0"); err != nil {
+	if err := h.Click("sb-nav", navNode(1)); err != nil {
 		t.Fatal(err)
 	}
 	eventually(t, "the first story", func() bool { return h.Surface("sb-s2-0-h") != nil })
@@ -139,7 +143,7 @@ func TestNoSurfaceLeftBehind(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))
 	run(t, h, Options{First: "hotty/form", Prefix: "sb-"})
 	eventually(t, "the first story on the host", func() bool { return h.Surface("sb-s1-0-h") != nil })
-	if err := h.Click("sb-nav", "story_0"); err != nil {
+	if err := h.Click("sb-nav", navNode(1)); err != nil {
 		t.Fatal(err)
 	}
 	eventually(t, "the next story on the host", func() bool { return h.Surface("sb-s2-0-h") != nil })
@@ -531,5 +535,76 @@ func TestIconsRegistered(t *testing.T) {
 		if _, ok := icons.Named(name); !ok {
 			t.Errorf("%s has no shape: make icons", name)
 		}
+	}
+}
+
+// TestNav: nav is a HottyTree of the stories in their branches. Moving its
+// selection to a story shows it, and to a branch shows nothing new; Enter
+// gives the keyboard to the story; pick's filter filters it; panel heads
+// the story with its title, its A2UI names and its first sentence.
+func TestNav(t *testing.T) {
+	s := hottytea.New()
+	s.Mode = hottytea.Text
+	b := New(Options{First: "hotty/tree"})
+	view := func() { b.View(hottytea.Rect{W: 120, H: 40}, s) }
+	press := func(k string) { b.key(k, s); b.settle(); view() }
+	view()
+	panel := b.ch.surface(panelID).S.Data
+	if got := []any{panel.Value("/title"), panel.Value("/names"), panel.Value("/summary")}; !slices.Equal(got, []any{"**Tree**", "HottyTree", "This repository's files, 204 of them."}) {
+		t.Errorf("panel's header: %q", got)
+	}
+	nav := b.panes[navID]
+	if !b.give(nav, false) || nav.s.C.St.Focus != treeID {
+		t.Fatalf("the keyboard on %q, want nav's tree", nav.s.C.St.Focus)
+	}
+	press("j") // Behaviours: Tree is the last component
+	if b.cur != "hotty/tree" || b.ch.selected() != "behaviours" {
+		t.Errorf("on a branch: showing %s, selected %s", b.cur, b.ch.selected())
+	}
+	press("j")
+	if b.cur != "hotty/focus-blur" || b.focus != nav {
+		t.Errorf("down to a story: showing %s, the keyboard on %v", b.cur, b.focus)
+	}
+	press("Enter")
+	if f := b.focus; f == nil || f.chrome(b) || f.s.C.St.Focus == "" {
+		t.Errorf("Enter: the keyboard on %+v, want in the story", f)
+	}
+	if err := b.ch.surface(pickID).S.Data.Set("/q", "spinner"); err != nil {
+		t.Fatal(err)
+	}
+	b.settle()
+	tree := b.ch.surface(navID).C.V.Find(treeID)
+	var shown []string
+	for _, i := range tree.Shown {
+		shown = append(shown, tree.Nodes[i].Label)
+	}
+	if !slices.Equal(shown, []string{"Components", "Spinner"}) {
+		t.Errorf("filtered by spinner: %q", shown)
+	}
+}
+
+// TestEntries: nav lists the stream first, the components and the
+// behaviours by title, and A2UI's examples in sentence case, names kept.
+func TestEntries(t *testing.T) {
+	es := entries(true)
+	if es[0].name != streamName || es[1].name != "hotty/code" {
+		t.Errorf("first %v, then %v", es[0], es[1])
+	}
+	labels := map[string]string{}
+	for _, e := range es {
+		labels[e.name] = e.label
+	}
+	for name, want := range map[string]string{
+		"basic/09_login-form":          "Login form with validation",
+		"basic/34_child-list-template": "ChildList template expansion",
+		"basic/02_email-compose":       "Email compose",
+		"hotty/shortcut-press":         "Shortcut presses a button",
+	} {
+		if labels[name] != want {
+			t.Errorf("%s: %q, want %q", name, labels[name], want)
+		}
+	}
+	if got := firstSentence("A help line, as bubbles' help draws one: the keys (a, b. c) of it."); got != "A help line, as bubbles' help draws one." {
+		t.Errorf("first sentence: %q", got)
 	}
 }

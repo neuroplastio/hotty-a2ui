@@ -134,7 +134,7 @@ func (m *markup) listbox(e *view.Element, l *list) *node {
 			n.set("aria-activedescendant", partID(e.ID, partOption+strconv.Itoa(i)))
 		}
 		n.add(el("button", "id", partID(e.ID, partOption+strconv.Itoa(i)), "type", "button", "class", class, "tabindex", "-1",
-			"role", "option", "aria-selected", boolString(contains(picked, o.Value))).add(texts(o.Label)...))
+			"role", "option", "aria-selected", boolString(contains(picked, o.Value))).add(beside(o.Icon)).add(texts(o.Label)...))
 	}
 	return n
 }
@@ -334,8 +334,10 @@ func (m *markup) element(e *view.Element) *node {
 			// (Blitz not at all), and the list is the program's to place
 			// (SPEC §9).
 			value := el("span", "class", "k-value")
+			var ic *node
 			for _, o := range e.Options {
 				if contains(picked, o.Value) {
+					ic = beside(o.Icon)
 					value.add(texts(o.Label)...)
 					break
 				}
@@ -345,7 +347,7 @@ func (m *markup) element(e *view.Element) *node {
 			}
 			open := m.list != nil && m.list.id == e.ID
 			n = el("button", "id", id, "type", "button", "class", "k-input k-select", "aria-haspopup", "listbox",
-				"aria-expanded", boolString(open)).add(value, el("span", "class", "k-caret", "aria-hidden", "true").add(txt("▾")))
+				"aria-expanded", boolString(open)).add(ic, value, el("span", "class", "k-caret", "aria-hidden", "true").add(txt("▾")))
 			if open {
 				n.set("aria-controls", partID(e.ID, partList))
 			}
@@ -368,7 +370,7 @@ func (m *markup) element(e *view.Element) *node {
 		for _, c := range e.Children {
 			if c.Kind == view.Tab {
 				bar.add(el("button", "id", domID(c.ID), "type", "button", "class", "k-tab", "role", "tab",
-					"aria-selected", boolString(c.Active)).add(texts(c.Label)...))
+					"aria-selected", boolString(c.Active)).add(beside(c.Name)).add(texts(c.Label)...))
 				continue
 			}
 			panel.add(m.element(c))
@@ -431,9 +433,9 @@ func (m *markup) option(choice, o *view.Element) *node {
 	id := domID(o.ID)
 	if choice.Multiple && choice.Variant != "chips" {
 		in := el("input", "id", id, "type", "checkbox").flag("checked", o.Active)
-		return el("label", "id", partID(o.ID, partWrap), "class", "k-opt").add(in).add(texts(o.Label)...)
+		return el("label", "id", partID(o.ID, partWrap), "class", "k-opt").add(in, beside(o.Name)).add(texts(o.Label)...)
 	}
-	return el("button", "id", id, "type", "button", "class", "k-chip", "aria-pressed", boolString(o.Active)).add(texts(o.Label)...)
+	return el("button", "id", id, "type", "button", "class", "k-chip", "aria-pressed", boolString(o.Active)).add(beside(o.Name)).add(texts(o.Label)...)
 }
 
 // field wraps a control with what goes with it, and its error, which is

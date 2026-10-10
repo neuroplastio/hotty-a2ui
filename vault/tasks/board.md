@@ -11,7 +11,8 @@ at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 (journal 2026-10-09.11): the scroll view; at KIT-05c (journal
 2026-10-09.12): code and its colours; and at KIT-06c (journal
 2026-10-09.13): the diff; at the icons (journal 2026-10-10.1,
-story `basic/icons`); and at KIT-09c (journal 2026-10-10.2): the tree.
+story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; and at
+KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -64,6 +65,8 @@ As of 2026-10-09, from the hotty agent:
   - CSS paint inside inline SVG is incomplete, so use presentation
     attributes.
   - Thin rounded borders drop out at fractional scales.
+  - `currentColor` is black where `color` is a `color-mix()` (muted
+    text): a fork bug, with the hotty agent (journal 2026-10-10.4).
 
   Check SVG with `hotty render`, headless at 1.6x.
 
@@ -74,9 +77,15 @@ As of 2026-10-09, from the hotty agent:
   R-4; journal 2026-10-10.1). The whole pack (`icons/materialsymbols/`)
   comes later.
 - [x] **KIT-HICON** — `HottyIcon`: any Material Symbols name a program
-  registers (`make icons` from its `icons.txt`; the storybook's 8), the
+  registers (`make icons` from its `icons.txt`; the storybook's 37), the
   59 by Material's names, and an `svgPath` with a `strokeWidth` (journal
   2026-10-10.3). HottyTree's node icons take the same names.
+- [x] **KIT-BOOK** — The storybook's nav is a HottyTree of branches
+  (Components, Behaviours, A2UI examples, Fallbacks), opened by its
+  selection and filtered from pick; panel heads the tabs with the story;
+  tabs and options have icons on a host (`io_neuroplast_hotty.icons`,
+  profile §6.16; journal 2026-10-10.4). The site's e2e tests owe a change
+  at its next pin bump.
 - [ ] **KIT-SEL** — The select keeps its arrows by binding them to
   `program` on its button (`data-keys`, SPEC §10.2 "Keys for the program",
   hotty 3c9b169; hotty-go 1dc9bea), instead of handing over with `a=blur`

@@ -55,8 +55,9 @@ type pane struct {
 	frame *cells.Frame
 	top   int // the frame's first row shown
 	// sight is what scrollTo last kept in sight: the element with the
-	// keyboard and its cells (cells.Rendition.Sight).
-	sight sight
+	// keyboard and its cells (cells.Rendition.Sight), or else follow's.
+	sight  sight
+	follow string
 	// popRows is the rows the open list's surface needs (html.Popover),
 	// as the host's fit says; 0 until it does, and while none is open.
 	popRows int
@@ -129,8 +130,10 @@ type Book struct {
 
 	// pickRows is pick's height with its lists closed: the host's fit on a
 	// host, the frame's rows in cells; 0 until known. barRows is panel's
-	// on the preview, its tab bar alone, as the host's fit says.
+	// on the preview, its header and tab bar, as the host's fit says.
 	pickRows, barRows int
+	// entering: the keyboard goes into the story at the next View (enter).
+	entering bool
 
 	// noSidebar: the sidebar (pick and nav) is hidden (F1, or a click on
 	// toggle, the cell of the rule beside it that shows ◂ or ▸).
@@ -309,16 +312,17 @@ func (b *Book) ready(mode hottytea.Mode) {
 // open shows a story, on the preview: a new run of it, or the stream as
 // it is.
 func (b *Book) open(name string) {
-	head := ""
+	var a about
 	if name == streamName && b.stream != nil {
 		b.run = b.stream
-		head = "**The stream** · A2UI from " + b.o.Source
+		a = about{title: "The stream", icon: "stream", description: "A2UI from " + b.o.Source + "."}
 	} else {
 		st := story.Find(name)
 		if st == nil {
 			b.status = "✗ no story " + name
 			return
 		}
+		name = st.Name
 		run := story.NewRun()
 		run.Out = b.o.Out
 		for _, msg := range st.Messages {
@@ -328,7 +332,16 @@ func (b *Book) open(name string) {
 			}
 		}
 		b.run = run
-		head = "**" + st.Title + "** · " + st.Description
+		a = about{title: st.Title, icon: st.Icon, names: st.Component, description: st.Description}
+		for _, e := range b.list {
+			if e.name == name {
+				a.title = e.label
+				if a.names == "" {
+					a.names = map[string]string{"examples": "A2UI example", "fallbacks": "Fallback"}[e.branch]
+				}
+				a.icon = cmp.Or(a.icon, map[string]string{"examples": "dashboard", "fallbacks": "warning"}[e.branch])
+			}
+		}
 	}
 	if f := b.focus; f != nil && f.s != b.ch.surface(navID) && f.s != b.ch.surface(pickID) {
 		b.focus = nil
@@ -336,23 +349,28 @@ func (b *Book) open(name string) {
 	b.cur = name
 	b.gen++
 	b.seq = map[*a2ui.Surface]int{}
-	b.ch.showing(name, head)
+	b.ch.showing(name, a)
 	b.ch.setTab(0) // the story opened is what to see
 }
 
-// settle does what the last message left to do: the storybook's own
-// actions, the rendition picked, the panel.
+// settle does what the last message left to do: the story selected in
+// nav shown, the storybook's own actions, the filter, the rendition
+// picked, the panel.
 func (b *Book) settle() {
 	if b.ch == nil {
 		return
 	}
+	if sel := b.ch.selected(); sel != b.cur && slices.ContainsFunc(b.list, func(e entry) bool { return e.name == sel }) {
+		b.open(sel)
+	}
 	acts := b.ch.acts
 	b.ch.acts = nil
 	for _, a := range acts {
-		if name, _ := a.Context["name"].(string); a.Name == "open" && name != "" {
-			b.open(name)
+		if a.Name == "enter" && b.ch.selected() == b.cur {
+			b.enter()
 		}
 	}
+	b.ch.filter()
 	if t, ok := theme.ByName(b.ch.theme()); ok && t.Name != b.theme.Name {
 		b.theme = t
 		b.gen++
@@ -376,6 +394,14 @@ func (b *Book) settle() {
 	if b.run != nil {
 		b.ch.report(b.run)
 	}
+}
+
+// enter is Enter on the story shown in nav, or a click on it once shown:
+// the keyboard goes into the story, on the preview, at the first of its
+// panes that takes it, once the next View has laid them out.
+func (b *Book) enter() {
+	b.ch.setTab(0)
+	b.entering = true
 }
 
 func (p *pane) chrome(b *Book) bool {
@@ -766,8 +792,9 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		chromeKind = asSurface
 	}
 	// The sidebar, unless hidden, then a rule whose first cell hides it or
-	// shows it (toggle), then the right column: panel's tab bar, and
-	// under it the preview, or panel's other tabs over all of it.
+	// shows it (toggle), then the right column: panel's header and tab
+	// bar, and under them the preview, or panel's other tabs over all of
+	// it.
 	navW := 0
 	if !b.noSidebar {
 		navW = min(max(W/4, 22), 36, W/2)
@@ -802,6 +829,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		}
 		scr.hrule(0, top+pickH, navW)
 		nav := b.pane(b.o.Prefix+navID, b.ch.surface(navID), chromeKind, hottytea.Rect{X: 0, Y: top + pickH + 1, W: navW, H: bodyH - pickH - 1})
+		nav.follow = treeID // the story shown stays in sight
 		order = append(order, nav, pick)
 	}
 
@@ -809,7 +837,8 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	// A column in from the rule, so that its first title is clear of
 	// toggle.
 	panel := b.pane(b.o.Prefix+panelID, b.ch.surface(panelID), chromeKind, hottytea.Rect{X: rx + 1, Y: top, W: rw - 1, H: bodyH})
-	// The preview goes under the bar, which is all panel shows there; on
+	// The preview goes under the bar, which with the header is all panel
+	// shows there; on
 	// another tab panel has the whole column, and the story's panes keep
 	// the places they had, out of sight.
 	barH := min(b.barHeight(panel, preview), bodyH/2)
@@ -877,6 +906,14 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			b.last = nil
 		}
 	}
+	if b.entering {
+		b.entering = false
+		for _, p := range order {
+			if p.takesInput() && !p.chrome(b) && b.give(p, false) {
+				break
+			}
+		}
+	}
 
 	var want []hottytea.Surface
 	for _, p := range order {
@@ -931,7 +968,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	return scr.Themed(b.theme), want
 }
 
-// barHeight is panel's height on the preview, its tab bar alone: the
+// barHeight is panel's height on the preview, its header and tab bar: the
 // frame's rows in cells, the host's fit on a host; on another tab, what
 // it was last on the preview.
 func (b *Book) barHeight(p *pane, preview bool) int {
@@ -1012,16 +1049,21 @@ func (b *Book) LaidOut(h *hottytea.Session) {
 // scrollTo is the first row a cells pane shows: the one before (where the
 // wheel left it), moved as little as brings into sight what the element
 // with the keyboard shows (cells.Rendition.Sight: a HottyDiff's selected
-// hunk), and its start where that is taller than the pane. It moves only
-// when that changed, as focus scrolls a page, so that the wheel can move
-// on from there.
+// hunk), or the pane's follow while it has not the keyboard (nav's
+// selected story), and its start where that is taller than the pane. It
+// moves only when that changed, as focus scrolls a page, so that the wheel
+// can move on from there.
 func scrollTo(p *pane) int {
 	top := p.top
 	c := p.s.C
 	now := sight{keyboard: c.St.Keyboard}
-	if c.St.Keyboard && c.St.Focus != "" {
-		if _, row, _, h, ok := p.cells.Sight(c.St.Focus); ok {
-			now = sight{c.St.Focus, row, h, true}
+	id := p.follow
+	if c.St.Keyboard {
+		id = c.St.Focus
+	}
+	if id != "" {
+		if _, row, _, h, ok := p.cells.Sight(id); ok {
+			now = sight{id, row, h, c.St.Keyboard}
 			if now != p.sight {
 				if row+h > top+p.rect.H {
 					top = row + h - p.rect.H

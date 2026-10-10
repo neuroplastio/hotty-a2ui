@@ -329,6 +329,9 @@ textarea.k-input { min-height: 5.5rem; }
   cursor: pointer;
 }
 .k-tab[aria-selected=true] { color: var(--k-fg); border-bottom-color: var(--k-accent); font-weight: 600; }
+/* An icon beside a title or an option's label (io_neuroplast_hotty.icons);
+   a select, a list's option and a checkbox's have their gap already. */
+.k-tab > .k-icon, .k-chip > .k-icon { margin-inline-end: var(--k-2); vertical-align: -0.15em; }
 .k-tabpanel { padding-top: var(--k-3); }
 /* A tab whose content is an empty container shows nothing, and takes no
    room under the bar (the storybook's preview, which it draws itself). */
@@ -482,6 +485,7 @@ textarea.k-input { min-height: 5.5rem; }
 .k-node-fold { flex: none; width: 1ch; color: var(--k-muted); }
 .k-icon-blank { width: 1em; height: 1em; }
 .k-node-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.k-node-count { flex: none; color: var(--k-muted); font-size: 0.875em; font-variant-numeric: tabular-nums; }
 .k-node.k-sel { border-left-color: var(--k-border); background: var(--k-tonal); }
 .k-tree.k-on .k-node.k-sel { border-left-color: var(--k-focus); color: var(--k-focus); }
 .k-tree-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }

@@ -649,6 +649,41 @@ func TestHottyIcon(t *testing.T) {
 	x.check(x.rs["s"])
 }
 
+// TestIconsBeside: the kit's io_neuroplast_hotty.icons gives a Tabs'
+// titles their icons in order, and a ChoicePicker's options theirs by
+// value: before the label, hidden from a screen reader, in the closed
+// select and its chips; a tab or an option it names none of has none.
+func TestIconsBeside(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"r":["cells"]}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["tabs","rend","chips"]},
+ {"id":"tabs","component":"Tabs","tabs":[{"title":"One","child":"a"},{"title":"Two","child":"a"}],
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"icons":["star"]}}}},
+ {"id":"a","component":"Text","text":"A"},
+ {"id":"rend","component":"ChoicePicker","label":"Rendition","value":{"@path":"/r"},
+  "options":[{"label":"Cells","value":"cells"},{"label":"Text","value":"text"}],
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"icons":{"cells":"info","text":"search"}}}}},
+ {"id":"chips","component":"ChoicePicker","displayStyle":"chips","value":["text"],
+  "options":[{"label":"Cells","value":"cells"},{"label":"Text","value":"text"}],
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"icons":{"text":"search"}}}}}]}}]`), &msgs))
+	x.process(msgs...)
+	doc := x.h.Surface(x.rs["s"].name).HTML()
+	for _, want := range []string{
+		`aria-selected="true"><span class="k-icon" role="img" aria-label="star" aria-hidden="true"><svg`,
+		`aria-selected="false">Two</button>`,
+		`aria-expanded="false"><span class="k-icon" role="img" aria-label="info" aria-hidden="true"><svg`,
+		`aria-pressed="false">Cells</button>`,
+		`aria-pressed="true"><span class="k-icon" role="img" aria-label="search" aria-hidden="true"><svg`,
+	} {
+		if !strings.Contains(doc, want) {
+			t.Errorf("no %s in\n%s", want, doc)
+		}
+	}
+	x.check(x.rs["s"])
+}
+
 // TestSelect: a select is a button, and a click opens its list in the
 // layer with the picked option highlighted. While it is open the program
 // has the keyboard: a host would scroll with the arrows (SPEC §5.3). The
@@ -1116,6 +1151,9 @@ func TestTreeOnHost(t *testing.T) {
 	}
 	if !strings.Contains(s.HTML(), `<svg viewBox="0 0 24 24"`) {
 		t.Errorf("src has no folder icon:\n%s", s.HTML())
+	}
+	if !strings.Contains(s.HTML(), `<span class="k-node-count">1</span>`) {
+		t.Errorf("src, closed, does not say it holds a node:\n%s", s.HTML())
 	}
 	must(t, x.h.Click(r.name, node(0)))
 	x.pump()

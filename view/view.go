@@ -153,7 +153,8 @@ type Element struct {
 	// Image and Media: where it is, what it shows. Icon: Name, one of
 	// the basic catalog's or (HottyIcon) a Material Symbols name, or else
 	// Path, an svgPath's path data, stroked Stroke wide when that is more
-	// than 0.
+	// than 0. Tab and Option: Name, an icon by its title, if the Tabs or
+	// the ChoicePicker gives it one (io_neuroplast_hotty.icons).
 	URL    string  `json:"url,omitempty"`
 	Alt    string  `json:"alt,omitempty"`
 	Fit    string  `json:"fit,omitempty"`
@@ -261,6 +262,9 @@ type Element struct {
 type ChoiceOption struct {
 	Label string `json:"label"`
 	Value string `json:"value"`
+	// Icon is its icon's name, if the ChoicePicker gives it one
+	// (io_neuroplast_hotty.icons).
+	Icon string `json:"icon,omitempty"`
 }
 
 // Column is one of a Table's columns: the row field it shows (Key), its

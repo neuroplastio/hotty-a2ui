@@ -275,6 +275,28 @@ func keys(n *a2ui.Node) string {
 	return s
 }
 
+// iconNames reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.icons: a Tabs' icons, a name a tab in order
+// (byIndex), or a ChoicePicker's, a name an option's value; "" where it
+// gives none.
+func iconNames(n *a2ui.Node) (byIndex []string, byValue map[string]string) {
+	switch v := hottyExt(n)["icons"].(type) {
+	case []any:
+		for _, x := range v {
+			s, _ := x.(string)
+			byIndex = append(byIndex, s)
+		}
+	case map[string]any:
+		byValue = map[string]string{}
+		for k, x := range v {
+			if s, ok := x.(string); ok {
+				byValue[k] = s
+			}
+		}
+	}
+	return byIndex, byValue
+}
+
 // hottyExt is a node's metadata.extensions.io_neuroplast_hotty.
 func hottyExt(n *a2ui.Node) map[string]any {
 	md, _ := n.Props["metadata"].(map[string]any)
