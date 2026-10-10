@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "TextField, io_neuroplast_hotty.suggestions",
   "icon": "search",
-  "description": "Suggestions as you type, as bubbles' text input has them: the rest of the first that fits shows faint after the caret, and Tab or → at the end takes it; the others that start with what was typed show in a list under the field. ↓ and ↑ (Control+n, Control+p) move through it, Enter picks the one highlighted, Escape closes it; with nothing highlighted, Enter runs the form. Command has the keyboard with git c typed, five commands under it; delete the c to see a longer list scroll. Country is empty: type S. Its onInput tells the agent each change (suggest, with the query), so that one could rewrite /countries as the user types; here the list stays and the field narrows it. City holds Atlantis, which nothing matches, so its list stays shut. Tab with nothing to take moves on. On a host the field is plain: Blitz draws no list of its own yet (vault KIT-11h).",
+  "description": "Suggestions as you type, as bubbles' text input has them: the rest of the first that fits shows faint after the caret, and Tab or → at the end takes it; the others that start with what was typed show in a list over what is under the field, moving nothing. ↓ and ↑ (Control+n, Control+p) move through it, Enter picks the one highlighted, Escape closes it; with nothing highlighted, Enter runs the form. Command has the keyboard with git c typed, five commands under it; delete the c to see a longer list scroll. Country is empty: type S. It has no list (list false), only the ghost, as bubbles' text input has it, which ↓ and ↑ change. Its onInput tells the agent each change (suggest, with the query), so that one could rewrite /countries as the user types; here the list stays and the field narrows it. City holds Atlantis, which nothing matches, so its list stays shut. Tab with nothing to take moves on. On a host the field is plain: Blitz draws no list of its own yet (vault KIT-11h).",
   "messages": [
     {
       "version": "v1.0",
@@ -167,6 +167,7 @@
                     "options": {
                       "@path": "/countries"
                     },
+                    "list": false,
                     "onInput": {
                       "event": {
                         "name": "suggest",

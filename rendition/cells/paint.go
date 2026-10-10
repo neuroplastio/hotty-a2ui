@@ -302,6 +302,7 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 		sum += hs[i] + separator(kids, i)
 	}
 	gaps := l.spread(hs, weights, justify, h-sum)
+	l.labelRuns(kids)
 	yy := y
 	for i, k := range kids {
 		yy += gaps[i] + separator(kids, i)
@@ -368,13 +369,14 @@ func (l *layout) hasKeyboard(e *view.Element) bool {
 	return false
 }
 
-// paintBox paints "[•] label" or "[ ] label", the box in the accent when
-// id has the keyboard (the gutter's bar marks it); it returns the columns
-// painted.
+// paintBox paints "[•] label" or "[ ] label", the box reversed in the
+// accent when id has the keyboard, beside the gutter's bar: a box alone at
+// a row's start (A2UI's task card) is clear only when it is filled. It
+// returns the columns painted.
 func (l *layout) paintBox(cv *canvas, id string, on bool, label string, x, y, w int) int {
 	st := style{}
 	if l.r.focused(id) {
-		st = style{role: Accent}
+		st = style{role: Accent, attr: Reverse}
 	}
 	return cv.write(x, y, w, fit(boxFace(on, label, st), w))
 }
@@ -386,16 +388,26 @@ func (l *layout) paintError(cv *canvas, e *view.Element, x, y, w int) {
 }
 
 // paintChoice paints a Choice in its field's box (past the gutter): its
-// title, then a select's value row and, while open, its list, "> ● label"
-// on the highlighted row; or the options, chips in a flow or a row each.
+// label, then a select's value row, underlined as a one-line text field's,
+// and while open its list, "> ● label" on the highlighted row; or the
+// options, a row each.
 func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	row := y
+	focused := l.hasKeyboard(e)
+	ux, uw := x, w
 	if e.Label != "" {
-		cv.write(x, row, w, fit(line(e.Label, titleStyle(l.hasKeyboard(e))), w))
-		row++
+		if inlineRow(e) {
+			lw := min(l.labelWidth(e), max(w-4, 0))
+			cv.write(x, row, lw, fit(line(e.Label, titleStyle(focused)), lw))
+			ux, uw = x+lw+1, max(w-lw-1, 0)
+		} else {
+			cv.write(x, row, w, fit(line(e.Label, titleStyle(focused)), w))
+			row++
+		}
 	}
 	if isSelect(e) {
-		cv.write(x, row, w, selectValue(e, w))
+		cv.write(ux, row, uw, selectValue(e, uw))
+		underline(cv, ux, row, uw, focused)
 		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + 1, id: e.ID, opt: -1})
 		row++
 		if l.r.listOpen(e) {
@@ -413,20 +425,6 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 				l.r.hits = append(l.r.hits, hit{x: x - gutter, y: row, w: w + gutter, h: 1, id: e.ID, opt: i})
 				row++
 			}
-		}
-		l.paintError(cv, e, x, row, w)
-		return
-	}
-	if e.Variant == "chips" {
-		rows, xs := flow(optionWidths(e), optionGap, w)
-		for i, o := range e.Children {
-			face := optionFace(e, o, l.r.focused(o.ID))
-			n := cv.write(x+xs[i], row+rows[i], w-xs[i], fit(face, w-xs[i]))
-			l.r.boxes[o.ID] = box{x + xs[i], row + rows[i], n, 1}
-			l.r.hits = append(l.r.hits, hit{x: x + xs[i], y: row + rows[i], w: n, h: 1, id: o.ID, opt: -1})
-		}
-		if len(rows) > 0 {
-			row += rows[len(rows)-1] + 1
 		}
 		l.paintError(cv, e, x, row, w)
 		return

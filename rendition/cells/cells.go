@@ -31,9 +31,10 @@ type Rendition struct {
 	// row moves' place along the row (editKey).
 	fields map[string]*hottyedit.Field
 
-	hits  []hit
-	panel *hit           // the open Modal's panel, as last drawn
-	boxes map[string]box // the cells each element covers, as last drawn
+	hits    []hit
+	panel   *hit           // the open Modal's panel, as last drawn
+	suggest *suggestPlace  // where the focused field's suggestions go over the frame, in the Draw under way
+	boxes   map[string]box // the cells each element covers, as last drawn
 	// reveal is the part of an element a scroll view keeps in sight while
 	// it has the keyboard, where that is not all of it: a HottyDiff's
 	// selected hunk.
@@ -153,7 +154,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 	rows = max(rows, toastsHeight(stack))
 	f := newFrame(cols, rows)
 	cv := &canvas{f: f}
-	r.hits, r.panel, r.boxes, r.reveal, r.anim = nil, nil, map[string]box{}, map[string]box{}, 0
+	r.hits, r.panel, r.suggest, r.boxes, r.reveal, r.anim = nil, nil, nil, map[string]box{}, map[string]box{}, 0
 	r.animate(toasts)
 	r.scrolls, r.scrollOrder = map[string]scrolled{}, nil
 	if root != nil {
@@ -168,6 +169,9 @@ func (r *Rendition) Draw(cols int) *Frame {
 		cv.box(px, py, pw, ph)
 		r.panel = &hit{x: px, y: py, w: pw, h: ph}
 		l.paint(cv, v.Overlay, px+2, py+1, pw-4, ph-2)
+	}
+	if r.suggest != nil {
+		l.paintSuggestions(cv, r.suggest)
 	}
 	l.paintDrag(cv)
 	r.paintToasts(cv, stack, tw)

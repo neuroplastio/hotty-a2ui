@@ -13,6 +13,9 @@ type layout struct {
 	min  map[*view.Element]int
 	hgt  map[sized]int
 	text map[sized][]tline
+	// labelW is the width a field pads its label to on its value's row
+	// (InlineLabels): its run's widest (labelRuns).
+	labelW map[*view.Element]int
 }
 
 type sized struct {
@@ -21,7 +24,37 @@ type sized struct {
 }
 
 func newLayout(r *Rendition) *layout {
-	return &layout{r: r, nat: map[*view.Element]int{}, min: map[*view.Element]int{}, hgt: map[sized]int{}, text: map[sized][]tline{}}
+	return &layout{r: r, nat: map[*view.Element]int{}, min: map[*view.Element]int{}, hgt: map[sized]int{}, text: map[sized][]tline{},
+		labelW: map[*view.Element]int{}}
+}
+
+// labelRuns notes, for each run of a Column's children whose labels are
+// on their value's row (inlineRow), the widest label: each pads its own to
+// it, so that their values start in one column, as a GUI form's do.
+func (l *layout) labelRuns(kids []*view.Element) {
+	for i := 0; i < len(kids); {
+		if !inlineRow(kids[i]) {
+			i++
+			continue
+		}
+		j, lw := i, 0
+		for ; j < len(kids) && inlineRow(kids[j]); j++ {
+			lw = max(lw, Width(kids[j].Label))
+		}
+		for _, k := range kids[i:j] {
+			l.labelW[k] = lw
+		}
+		i = j
+	}
+}
+
+// labelWidth is the width a field's label takes on its value's row: its
+// run's widest, or its own.
+func (l *layout) labelWidth(e *view.Element) int {
+	if n, ok := l.labelW[e]; ok {
+		return n
+	}
+	return Width(e.Label)
 }
 
 // shown are the children that are drawn: not hidden.
@@ -274,15 +307,16 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 	return h
 }
 
-// separator is the blank rows a Column puts before its child i: one
-// between two controls when either has a title row, as huh puts between
-// its fields, or when one is a field and the other a Button, as bubbles
-// sets a form's button apart; before a HottyKeyHints, as bubbles' help
-// sits a row under what it is for; after a HottyScrollView, whose box
-// draws no edge but its scrollbar, a HottyCode, which draws none, or a
-// HottyChart, whose labels and legend end it, so that what follows does
-// not read as its content; else none, so that a stack of CheckBoxes or of
-// Buttons stays tight.
+// separator is the blank rows a Column puts before its child i: none
+// between two fields, which their labels and underlines part as a GUI
+// form's; one between a field and another control, as bubbles sets a
+// form's button apart, and between two other controls when either has a
+// title row; one before a control after a heading, a form's title; before
+// a HottyKeyHints, as bubbles' help sits a row under what it is for; after
+// a HottyScrollView, whose box draws no edge but its scrollbar, a
+// HottyCode, which draws none, or a HottyChart, whose labels and legend
+// end it, so that what follows does not read as its content; else none,
+// so that a stack of Buttons or of HottySpinners stays tight.
 func separator(kids []*view.Element, i int) int {
 	if i == 0 {
 		return 0
@@ -291,13 +325,30 @@ func separator(kids []*view.Element, i int) int {
 	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView || a.Kind == view.Chart {
 		return 1
 	}
-	if !isControlElement(a) || !isControlElement(b) {
+	if isControlElement(b) && endsInHeading(a) {
+		// A heading over a form or a stack of bars, as huh and bubbles
+		// set a form's title apart.
+		return 1
+	}
+	if !isControlElement(a) || !isControlElement(b) || isField(a) && isField(b) {
+		// Fields stack tight: a value's underline parts it from the next
+		// field's label.
 		return 0
 	}
 	if hasTitle(a) || hasTitle(b) || isField(a) != isField(b) {
 		return 1
 	}
 	return 0
+}
+
+// endsInHeading reports whether an element is a Text whose last block is
+// a heading.
+func endsInHeading(e *view.Element) bool {
+	if e == nil || e.Kind != view.Text {
+		return false
+	}
+	bs := view.Markdown(e.Markdown)
+	return len(bs) > 0 && bs[len(bs)-1].Kind == view.Heading
 }
 
 // edge is what a separator sees of a neighbour: through a Row, a Column or
@@ -508,6 +559,3 @@ func tabRows(bar []*view.Element, w int) int {
 	rows, _ := flow(ws, 2, w)
 	return rows[len(rows)-1] + 2
 }
-
-// optionGap is the columns between a Choice's options.
-const optionGap = 2

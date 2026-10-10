@@ -106,36 +106,40 @@ func indexAt(line []string, col int, obscured bool) int {
 }
 
 // paintField paints a TextField or a DateTime (profile §3.5) in its box
-// past the gutter: a bold title, then the value. A one-line field's value
-// follows a "> " prompt, as bubbles' text input has it; a longText's rows
-// carry the textarea's "┃" in the gutter. It scrolls to keep the cursor in
-// it while it has the keyboard.
+// past the gutter: its label, on a row above the value or (InlineLabels)
+// before it, then the value. A one-line field's value row is underlined
+// to the field's edge, its text a column in, as a GUI form's input; a
+// longText's rows carry the textarea's "┃" in the gutter. It scrolls to
+// keep the cursor in it while it has the keyboard.
 func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	focused := r.focused(e.ID)
+	long := isLongText(e)
 	row := y
+	// ux, uw are the value row's underline; vx, vw the value's text.
+	ux, uw := x, w
 	if e.Label != "" {
-		cv.write(x, row, w, fit(line(e.Label, titleStyle(focused)), w))
-		row++
+		if inlineRow(e) {
+			lw := min(l.labelWidth(e), max(w-4, 0))
+			cv.write(x, row, lw, fit(line(e.Label, titleStyle(focused)), lw))
+			ux, uw = x+lw+1, max(w-lw-1, 0)
+		} else {
+			cv.write(x, row, w, fit(line(e.Label, titleStyle(focused)), w))
+			row++
+		}
 	}
 	v, _ := e.Value.(string)
 	cl := clusters(v)
 	obscured := e.Variant == "obscured"
-	long := isLongText(e)
 	lines := [][]string{cl}
 	if long {
 		lines = splitClusters(cl)
 	}
 	rows := fieldRows(e)
 	r.rows[e.ID] = rows
-	vx, vw := x, w
-	if !long && w > prompt {
-		p := style{role: Muted}
-		if focused {
-			p.role = Accent
-		}
-		cv.write(x, row, w, glyphs("> ", p))
-		vx, vw = x+prompt, w-prompt
+	vx, vw := ux, uw
+	if !long && uw > 2*inset+1 {
+		vx, vw = ux+inset, uw-2*inset
 	}
 	area := &fieldArea{x: vx, y: row, rows: rows}
 	li, ci, curCol := 0, 0, 0
@@ -203,6 +207,9 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 		// A suggestion's rest after the value, for Tab or → (profile §6.22).
 		paintGhost(cv, e, area, vw, colOf(lines[0], len(lines[0]), obscured))
 	}
+	if !long {
+		underline(cv, ux, row, uw, focused)
+	}
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff
 		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows && r.caretOn(e.ID) {
@@ -212,6 +219,9 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 		}
 	}
 	r.hits = append(r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + rows, id: e.ID, opt: -1, field: area})
-	n := l.paintSuggestions(cv, e, x, row+rows, w)
-	l.paintError(cv, e, x, row+rows+n, w)
+	if focused && r.suggestRows(e) > 0 {
+		// Its list goes over the frame once the rest is painted (Draw).
+		r.suggest = &suggestPlace{e: e, x: vx, y: row + rows}
+	}
+	l.paintError(cv, e, x, row+rows, w)
 }

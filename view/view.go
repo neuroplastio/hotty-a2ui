@@ -260,8 +260,10 @@ type Element struct {
 	// §6.22), the agent's options, non-nil when it has the extension. Its
 	// Shown are those its value leaves, by index, while its list is open;
 	// Selected, Height and Top the highlighted one, and the rows the list
-	// shows at most from Top (Builder.suggestions).
+	// shows at most from Top (Builder.suggestions). GhostOnly: the
+	// extension's list is false, so only the ghost after the value shows.
 	Suggestions []string `json:"suggestions,omitempty"`
+	GhostOnly   bool     `json:"ghostOnly,omitempty"`
 
 	// ScrollView: its lines, when it has no child; whether they wrap; the
 	// first column shown, when they do not; and whether it follows the

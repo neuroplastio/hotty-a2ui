@@ -19,8 +19,24 @@ const trackWidth = 10
 // while it has the keyboard, as huh draws its fields.
 const gutter = 2
 
-// prompt is the columns of a one-line text field's prompt, "> ".
-const prompt = 2
+// inset is the column of padding either side of a one-line field's value,
+// inside its underline, as a GUI's input insets its text.
+const inset = 1
+
+// InlineLabels puts a one-line field's label on its value's row, the
+// labels of a run of such fields in a Column padded to the widest, where
+// by default it is on a title row above. It is the maintainer's pick to
+// make (vault journal 2026-10-10.12): one of the two goes once they have.
+var InlineLabels bool
+
+// inlineRow reports whether a field's label is on its value's row: a
+// one-line text field's, a DateTime's or a select's, under InlineLabels.
+func inlineRow(e *view.Element) bool {
+	if !InlineLabels || e == nil || e.Label == "" {
+		return false
+	}
+	return isTextControl(e) && !isLongText(e) || isSelect(e)
+}
 
 // isField reports whether an element is a field: a control with a gutter
 // and, when it has a label of its own, a title row (profile §3.4).
@@ -107,28 +123,17 @@ func controlWidth(e *view.Element) int {
 	case view.Button:
 		return width(buttonFace(e, style{}))
 	case view.TextField, view.DateTime:
-		n := prompt + fieldWidth
 		if isLongText(e) {
-			n = fieldWidth
+			return gutter + max(Width(e.Label), fieldWidth)
 		}
-		return gutter + max(Width(e.Label), n)
+		return gutter + labelled(e, fieldWidth+2*inset)
 	case view.CheckBox:
 		return gutter + width(boxFace(false, e.Label, style{}))
 	case view.Switch:
 		return gutter + width(switchFace(e, false))
 	case view.Choice:
 		if isSelect(e) {
-			return gutter + max(Width(e.Label), width(selectValue(e, noWrap)))
-		}
-		if e.Variant == "chips" {
-			n := 0
-			for i, ow := range optionWidths(e) {
-				if i > 0 {
-					n += optionGap
-				}
-				n += ow
-			}
-			return gutter + max(Width(e.Label), n)
+			return gutter + labelled(e, width(selectValue(e, noWrap)))
 		}
 		n := 0
 		for _, ow := range optionWidths(e) {
@@ -184,8 +189,8 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 	h := 1
 	switch e.Kind {
 	case view.TextField, view.DateTime:
-		h = fieldRows(e) + l.r.suggestRows(e)
-		if e.Label != "" {
+		h = fieldRows(e)
+		if e.Label != "" && !inlineRow(e) {
 			h++
 		}
 	case view.Progress:
@@ -205,20 +210,14 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 	case view.KeyHints:
 		h = len(l.r.keyHints(e, w))
 	case view.Choice:
-		switch {
-		case isSelect(e):
+		if isSelect(e) {
 			if l.r.listOpen(e) {
 				h += len(e.Options)
 			}
-		case e.Variant == "chips":
-			h = 0
-			if rows, _ := flow(optionWidths(e), optionGap, w); len(rows) > 0 {
-				h = rows[len(rows)-1] + 1
-			}
-		default:
+		} else {
 			h = len(e.Children)
 		}
-		if e.Label != "" {
+		if e.Label != "" && !inlineRow(e) {
 			h++
 		}
 	}
@@ -241,6 +240,16 @@ func fieldRows(e *view.Element) int {
 	}
 	v, _ := e.Value.(string)
 	return min(max(len(splitClusters(clusters(v))), 3), 8)
+}
+
+// labelled is a field's width past its gutter for a value n wide: its
+// label and a space before the value on one row (InlineLabels), or the
+// wider of the two on their own rows.
+func labelled(e *view.Element, n int) int {
+	if inlineRow(e) {
+		return Width(e.Label) + 1 + n
+	}
+	return max(Width(e.Label), n)
 }
 
 // buttonFace is a Button as drawn: "[ label ]", the label alone when
@@ -333,25 +342,28 @@ func switchFace(e *view.Element, focused bool) []glyph {
 	return gs
 }
 
-// optionFace is one of a Choice's options as drawn: a chip, "( label )"
-// or "(● label)", reversed in the accent when it has the keyboard; or a
-// row, "> [•] label", whose "> " marks the one with the keyboard.
+// optionFace is one of a Choice's options as drawn, a row each, as huh's
+// multiselect has them: "> [•] label", whose "> " marks the one with the
+// keyboard. Chips that pick one are radio buttons, "> (•) label": pills
+// wrapped across the field read as neither a form nor a list.
 func optionFace(choice, o *view.Element, focused bool) []glyph {
-	if choice.Variant != "chips" {
-		mark, box := glyphs("  ", style{}), style{}
-		if focused {
-			mark, box = glyphs("> ", style{role: Accent}), style{role: Accent}
-		}
-		return concat(mark, boxFace(o.Active, o.Label, box))
-	}
-	st := style{}
+	mark, box := glyphs("  ", style{}), style{}
 	if focused {
-		st = style{role: Accent, attr: Reverse}
+		mark, box = glyphs("> ", style{role: Accent}), style{role: Accent}
 	}
-	if o.Active {
-		return line("(● "+o.Label+")", st)
+	if choice.Variant == "chips" && !choice.Multiple {
+		return concat(mark, radioFace(o.Active, o.Label, box))
 	}
-	return line("( "+o.Label+" )", st)
+	return concat(mark, boxFace(o.Active, o.Label, box))
+}
+
+// radioFace is "(•) label" or "( ) label": one of options that pick one.
+func radioFace(on bool, label string, st style) []glyph {
+	dot := "( )"
+	if on {
+		dot = "(•)"
+	}
+	return concat(glyphs(dot, st), line(" "+label, style{}))
 }
 
 func optionWidths(e *view.Element) []int {
@@ -362,9 +374,10 @@ func optionWidths(e *view.Element) []int {
 	return ws
 }
 
-// selectValue is a select's value row: the picked option's label, or "…"
-// in muted, then " ▾" in muted, the label cut to fit w. At noWrap it is as
-// wide as the widest option makes it.
+// selectValue is a select's value row, w wide, as a one-line text field's
+// is: a column of padding, the picked option's label, or "…" in muted, cut
+// to fit, and "▾" in muted at the row's end, a space after the label at
+// least. At noWrap it is as wide as the widest option makes it.
 func selectValue(e *view.Element, w int) []glyph {
 	value := line(pickedLabel(e), style{})
 	if len(value) == 0 {
@@ -376,21 +389,36 @@ func selectValue(e *view.Element, w int) []glyph {
 				value = line(o.Label, style{})
 			}
 		}
+		w = inset + width(value) + 2
 	}
-	arrow := glyphs(" ▾", style{role: Muted})
-	if room := w - width(arrow); room >= 1 {
-		return concat(fit(value, room), arrow)
+	arrow := glyphs("▾", style{role: Muted})
+	room := w - inset - 2
+	if room < 1 {
+		return fit(concat(value, arrow), w)
 	}
-	return fit(concat(value, arrow), w)
+	value = fit(value, room)
+	return concat(glyphs(" ", style{}), value, repeat(" ", w-inset-width(value)-1, style{}), arrow)
 }
 
-// titleStyle is a field's title: bold, in the accent while the field has
-// the keyboard.
+// titleStyle is a field's label: muted, in the accent while the field has
+// the keyboard, as a GUI form's label over its input.
 func titleStyle(focused bool) style {
 	if focused {
-		return style{role: Accent, attr: Bold}
+		return style{role: Accent}
 	}
-	return style{attr: Bold}
+	return style{role: Muted}
+}
+
+// underline rules a one-line field's value row, x to x+w, as a GUI form's
+// input is: the line in border, in the accent while the field has the
+// keyboard (SGR 58; a terminal without it draws the line in the text's
+// colour).
+func underline(cv *canvas, x, y, w int, focused bool) {
+	rule := Border
+	if focused {
+		rule = Accent
+	}
+	cv.restyle(x, y, w, 1, func(c *Cell) { c.Attr, c.Line, c.LineSet = c.Attr|Underline, rule, true })
 }
 
 // picked is the index of a select's value among its options, or -1.

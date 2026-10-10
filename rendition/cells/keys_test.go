@@ -73,11 +73,11 @@ func TestTyping(t *testing.T) {
 		t.Fatalf("after editing: %q", got)
 	}
 	f := r.Draw(40)
-	// The gutter's bar and the prompt come first: "┃ > Lda!".
-	if col, row, ok := f.Cursor(); !ok || col != 8 || row != 1 {
+	// The gutter's bar and the value's inset come first: "┃  Lda!".
+	if col, row, ok := f.Cursor(); !ok || col != 7 || row != 1 {
 		t.Errorf("cursor %d,%d %v", col, row, ok)
 	}
-	if !strings.HasPrefix(strings.Split(f.Plain(), "\n")[1], "┃ > Lda!") {
+	if !strings.HasPrefix(strings.Split(f.Plain(), "\n")[1], "┃  Lda!") {
 		t.Errorf("field shows\n%s", f.Plain())
 	}
 }
@@ -95,10 +95,10 @@ func TestFieldSelection(t *testing.T) {
 	shows := func(when string, sel []bool, block int) {
 		t.Helper()
 		f := r.Draw(40)
-		// "┃ > abc": the value from column 4, on the title's next row.
+		// "┃  abc": the value from column 3, on the title's next row.
 		row := f.Cells[1]
 		for i, want := range sel {
-			cell := row[4+i]
+			cell := row[3+i]
 			if got := cell.Back == Selection && cell.BackMix == 255 && cell.BackAttr == Reverse; got != want {
 				t.Errorf("%s: %q selected %v", when, cell.Text, got)
 			}
@@ -112,8 +112,8 @@ func TestFieldSelection(t *testing.T) {
 	}
 	keys(t, r, "a", "b", "c", "Shift+ArrowLeft", "Shift+ArrowLeft")
 	shows("Shift+ArrowLeft twice", []bool{false, true, true, false}, -1)
-	if col, _, ok := r.Draw(40).Cursor(); !ok || col != 5 {
-		t.Errorf("the cursor at %d %v, want 5", col, ok)
+	if col, _, ok := r.Draw(40).Cursor(); !ok || col != 4 {
+		t.Errorf("the cursor at %d %v, want 4", col, ok)
 	}
 	keys(t, r, "End")
 	shows("End", []bool{false, false, false, false}, -1)
@@ -136,32 +136,32 @@ func TestFieldMouseSelection(t *testing.T) {
 	c.Focus("name")
 	r.Draw(40)
 	keys(t, r, "a", "b", "c", "d")
-	// "┃ > abcd" on row 1: b is at column 5.
+	// "┃  abcd" on row 1: b is at column 4.
 	must := func(err error) {
 		t.Helper()
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
-	must(r.Click(5, 1))
+	must(r.Click(4, 1))
 	f := r.Draw(40)
-	if col, _, _ := f.Cursor(); col != 5 {
+	if col, _, _ := f.Cursor(); col != 4 {
 		t.Errorf("a press at b: the cursor at %d", col)
 	}
-	must(r.Drag(6, 1))
+	must(r.Drag(5, 1))
 	must(r.Drag(30, 1))
 	r.Release()
 	f = r.Draw(40)
 	for i, want := range []bool{false, true, true, true} {
-		if got := f.Cells[1][4+i].Back == Selection; got != want {
-			t.Errorf("dragged past the end: %q selected %v", f.Cells[1][4+i].Text, got)
+		if got := f.Cells[1][3+i].Back == Selection; got != want {
+			t.Errorf("dragged past the end: %q selected %v", f.Cells[1][3+i].Text, got)
 		}
 	}
 	keys(t, r, "x")
 	if got := data()["name"]; got != "ax" {
 		t.Errorf("typing over the selection: %q", got)
 	}
-	must(r.Click(6, 1))
+	must(r.Click(5, 1))
 	must(r.Drag(0, 1))
 	r.Release()
 	keys(t, r, "Delete")
@@ -209,8 +209,8 @@ func TestFieldShiftClick(t *testing.T) {
 	c.Focus("name")
 	r.Draw(40)
 	keys(t, r, "a", "b", "c", "d", "Home")
-	// "┃ > abcd" on row 1: d is at column 7.
-	if err := r.ShiftClick(7, 1); err != nil {
+	// "┃  abcd" on row 1: d is at column 6.
+	if err := r.ShiftClick(6, 1); err != nil {
 		t.Fatal(err)
 	}
 	r.Release()
@@ -219,7 +219,7 @@ func TestFieldShiftClick(t *testing.T) {
 		t.Fatalf("Shift with a press from the caret, then x: %q", got)
 	}
 	keys(t, r, "End")
-	for _, col := range []int{4, 5} {
+	for _, col := range []int{3, 4} {
 		if err := r.ShiftClick(col, 1); err != nil {
 			t.Fatal(err)
 		}
@@ -366,7 +366,8 @@ func TestSelect(t *testing.T) {
 	}
 	keys(t, r, "Enter", "ArrowDown")
 	f := r.Draw(40).Plain()
-	if !strings.Contains(f, "┃ Size\n┃ Small ▾") || !strings.Contains(f, "┃   ● Small\n┃ > ○ Medium") {
+	// The value row is a text field's: inset, the chevron at its end.
+	if !strings.Contains(f, "┃ Size\n┃  Small"+strings.Repeat(" ", 31)+"▾\n") || !strings.Contains(f, "┃   ● Small\n┃ > ○ Medium") {
 		t.Fatalf("open list:\n%s", f)
 	}
 	keys(t, r, " ")
@@ -404,7 +405,7 @@ func TestClick(t *testing.T) {
 	}
 	_ = c.SetValue("name", "Ada")
 	f = r.Draw(40)
-	if err := r.Click(gutter+prompt+1, row("  Name")+1); err != nil || !c.St.Keyboard || c.St.Focus != "name" {
+	if err := r.Click(gutter+inset+1, row("  Name")+1); err != nil || !c.St.Keyboard || c.St.Focus != "name" {
 		t.Fatal("a click on the field did not focus it")
 	}
 	keys(t, r, "x")

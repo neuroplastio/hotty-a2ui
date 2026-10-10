@@ -49,6 +49,10 @@ func (b *Builder) suggestions(n *a2ui.Node, e *Element) {
 		return
 	}
 	e.Selected = -1
+	if l, ok := spec["list"]; ok {
+		on, _ := b.S.Context(n.Scope).Resolve(l)
+		e.GhostOnly = on == false
+	}
 	opts, _ := b.S.Context(n.Scope).Resolve(spec["options"])
 	e.Suggestions = []string{}
 	if l, ok := opts.([]any); ok {

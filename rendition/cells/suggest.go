@@ -9,25 +9,34 @@ import (
 // A text field's suggestions in cells (profile §3.4, §6.22): the rest of
 // the suggestion Tab takes, faint after the value, as bubbles' text input
 // shows it, and while the field has the keyboard, the suggestions its
-// value leaves, a row each under it, as a select's open list is.
+// value leaves, a row each in a box over what is under the field, as a
+// menu drops down over a GUI's form. With `list` false, the ghost alone.
 
 // ghostStyle is a suggestion's rest after the value: faint and muted, as
 // a placeholder is, and as bubbles draws it (colour 240).
 var ghostStyle = style{role: Muted, attr: Faint}
 
-// suggestRows is how many rows a text field's list of suggestions takes
-// now: none unless it has the keyboard and its value leaves some; else a
-// row each, at most its Height, and one more saying which show when more
-// than that do.
+// suggestRows is how many rows a text field's list of suggestions shows
+// now: none unless it has the keyboard, shows a list, and its value
+// leaves some; else a row each, at most its Height, and one more saying
+// which show when more than that do.
 func (r *Rendition) suggestRows(e *view.Element) int {
 	n := len(e.Shown)
-	if n == 0 || !r.focused(e.ID) || isLongText(e) {
+	if n == 0 || !r.focused(e.ID) || isLongText(e) || e.GhostOnly {
 		return 0
 	}
 	if n > e.Height {
 		return e.Height + 1
 	}
 	return n
+}
+
+// suggestPlace is where the focused text field's list of suggestions goes
+// over the frame: from row y, under the value row, its text in the value
+// text's column x.
+type suggestPlace struct {
+	e    *view.Element
+	x, y int
 }
 
 // paintGhost paints the rest of a text field's suggestion after its
@@ -41,40 +50,64 @@ func paintGhost(cv *canvas, e *view.Element, a *fieldArea, vw int, end int) {
 	cv.write(gx, a.y, a.x+vw-gx, line(ghost, ghostStyle))
 }
 
-// paintSuggestions paints a text field's list of suggestions from row y,
-// past its gutter, as wide as its value's prompt and value: a row each,
-// its text under the value's, what the value typed of it plain and its
-// rest in muted, as the ghost is. The highlighted one is reversed in the
-// accent, a column of padding either side, as a menu's item: a "> " as
-// the select's open list has would read as a second prompt under the
-// field's. Past its Height, the rows that show from Top, then "  1–5 of
-// 12" in muted. Each row takes a click, which picks it. It returns the
-// rows it painted.
-func (l *layout) paintSuggestions(cv *canvas, e *view.Element, x, y, w int) int {
-	rows := l.r.suggestRows(e)
-	if rows == 0 {
-		return 0
+// paintSuggestions paints the focused text field's list of suggestions
+// over the frame, as an open Modal's panel and a toast are: it moves no
+// row, hides what it covers and takes its clicks. It is a rounded box in
+// border right under the value row, a column of padding inside it, so
+// that its text stands under the value's: a row each, what the value
+// typed of it plain and its rest in muted, as the ghost is. The
+// highlighted one is reversed in the accent across the box, as a menu's
+// item: a "> " as the select's open list has would read as a second
+// prompt under the field's. Past its Height, the rows that show from Top,
+// then "1–5 of 12" in muted. It is as wide as its widest row needs, at
+// most the frame, moved left to fit, and the frame grows to hold it. Each
+// row takes a click, which picks it.
+func (l *layout) paintSuggestions(cv *canvas, p *suggestPlace) {
+	e := p.e
+	if l.r.suggestRows(e) == 0 {
+		return
 	}
 	n := len(e.Shown)
 	end := min(e.Top+e.Height, n)
-	row := y
+	var faces [][]glyph
 	for i := e.Top; i < end; i++ {
 		typed, rest := e.SuggestionParts(i)
-		gs := concat(glyphs("  ", style{}), line(typed, style{}), line(rest, style{role: Muted}))
+		faces = append(faces, concat(line(typed, style{}), line(rest, style{role: Muted})))
+	}
+	var count []glyph
+	if n > e.Height {
+		count = line(strconv.Itoa(e.Top+1)+"–"+strconv.Itoa(end)+" of "+strconv.Itoa(n), style{role: Muted})
+	}
+	tw := width(count)
+	for _, gs := range faces {
+		tw = max(tw, width(gs))
+	}
+	f := cv.f
+	bw := min(tw+4, f.Cols)
+	tw = bw - 4
+	bh := len(faces) + 2
+	if count != nil {
+		bh++
+	}
+	bx := max(min(p.x-2, f.Cols-bw), 0)
+	by := p.y
+	f.grow(by + bh)
+	cv.fill(bx, by, bw, bh)
+	cv.box(bx, by, bw, bh)
+	l.r.hits = append(l.r.hits, hit{x: bx, y: by, w: bw, h: bh, id: e.ID, opt: -1})
+	for k, gs := range faces {
+		i, y := e.Top+k, by+1+k
 		if i == e.Selected {
 			hi := style{role: Accent, attr: Reverse}
-			gs = concat(glyphs(" ", style{}), line(" "+typed+rest+" ", hi))
+			cv.write(bx+1, y, bw-2, concat(glyphs(" ", hi), fit(line(e.Suggestions[e.Shown[i]], hi), tw), repeat(" ", bw-3, hi)))
+		} else {
+			cv.write(bx+2, y, tw, fit(gs, tw))
 		}
-		cv.write(x, row, w, fit(gs, w))
-		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: row, w: w + gutter, h: 1, id: e.ID, opt: i})
-		row++
+		l.r.hits = append(l.r.hits, hit{x: bx + 1, y: y, w: bw - 2, h: 1, id: e.ID, opt: i})
 	}
-	if n > e.Height {
-		count := "  " + strconv.Itoa(e.Top+1) + "–" + strconv.Itoa(end) + " of " + strconv.Itoa(n)
-		cv.write(x, row, w, fit(line(count, style{role: Muted}), w))
-		row++
+	if count != nil {
+		cv.write(bx+2, by+1+len(faces), tw, fit(count, tw))
 	}
-	return row - y
 }
 
 // suggestKey gives a key to the focused text field's suggestions first

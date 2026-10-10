@@ -192,6 +192,19 @@ func newFrame(cols, rows int) *Frame {
 	return f
 }
 
+// grow makes the frame at least rows tall, with blank rows: for what is
+// drawn over it past its end (a field's suggestions).
+func (f *Frame) grow(rows int) {
+	for f.Rows < rows {
+		row := make([]Cell, f.Cols)
+		for x := range row {
+			row[x] = blank
+		}
+		f.Cells = append(f.Cells, row)
+		f.Rows++
+	}
+}
+
 // Cursor is where the terminal's cursor goes: in the text control that
 // has the keyboard; ok is false when none does.
 func (f *Frame) Cursor() (col, row int, ok bool) {

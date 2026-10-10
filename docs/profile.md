@@ -232,11 +232,11 @@ Natural widths:
 | --- | --- |
 | Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0 |
 | Button | the label + 4 (`[ ` and ` ]`); borderless, the label; a List's, the label + 2 |
-| TextField, DateTime | 2 for the gutter, plus the label's width or 22 (the prompt and an HTML input's size of 20), whichever is wider; a longText, the label's or 20 |
+| TextField, DateTime | 2 for the gutter, plus the label's width or 22 (an HTML input's size of 20 and its inset either side, §3.5), whichever is wider; with the labels inline (§3.5), the label, a space and 22; a longText, the label's or 20 |
 | CheckBox | 2 for the gutter, 3 for the box, plus 1 and the label when it has one |
 | HottySwitch | 2 for the gutter, 3 for the switch, plus 1 and the label when it has one |
-| a select | 2 for the gutter, plus the label's width or the widest option's label and ` ▾`, whichever is wider |
-| a Choice's options | 2 for the gutter, plus the label's width or the widest option row (`> [ ] label`), whichever is wider; chips, all the options in one row two columns apart |
+| a select | 2 for the gutter, plus the label's width or its value row's, whichever is wider: the inset, the widest option's label, a space and `▾`; with the labels inline, the label, a space and that row |
+| a Choice's options | 2 for the gutter, plus the label's width or the widest option row (`> [ ] label`, or `> ( ) label` for chips that pick one), whichever is wider |
 | Slider | 2 for the gutter, the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
 | HottyRangeSlider | a Slider's, its value's width that of the widest range: twice a Slider's value's width, and 1 for the `–` |
 | HottyProgress | its label's width or 25 (a bar of 20 and ` 100%`), whichever is wider |
@@ -292,11 +292,16 @@ How the containers lay their children out:
   - Its children are stacked with no rows between them, except for one
     blank row between two controls (fields, Buttons that are not a
     List's rows, HottyProgress, HottySpinner, HottyTable, HottyList and
-    HottyScrollView)
-    when either has a title row (§3.4; a HottyProgress's label is one, a
-    HottyTable's header, and a HottyList's status line), or when one is a field and the other is not: huh's space between its fields, and bubbles'
-    before a form's button. A stack of CheckBoxes, of Buttons, or of
-    HottySpinners stays tight. A HottyKeyHints has a blank row before it,
+    HottyScrollView) when one is a field and the other is not, as bubbles
+    sets a form's button apart, or when neither is a field and either has
+    a title row (§3.4; a HottyProgress's label is one, a HottyTable's
+    header, and a HottyList's status line). Fields follow one another with
+    no blank row, as a GUI form's do: a label and an underline (§3.5) part
+    one from the next. A stack of Buttons or of HottySpinners stays tight
+    too. A control after a Text whose last block is a heading has a blank
+    row before it, as huh sets a form's title apart from its fields; a
+    control after other Text has none, so that a card's fields stay with
+    its text. A HottyKeyHints has a blank row before it,
     whatever comes before, as bubbles' help sits a row under its list.
     A HottyScrollView has one after it, whatever comes after: its box
     draws no edge but the scrollbar, so what follows would read as its
@@ -356,11 +361,11 @@ How the containers lay their children out:
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
 | Divider, Card, Tabs | §3.3 |
 | Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. A vertical List's Button is its row: ` label `, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
-| TextField, DateTime | in the field's box past the gutter: a title row, then the value (§3.5), then a text field's suggestions while it shows them (§3.5), then the error |
-| CheckBox | past the gutter, `[•] label` or `[ ] label`, then the error |
+| TextField, DateTime | in the field's box past the gutter: a title row, then the value row (§3.5), or with the labels inline the label and the value on one row; then the error. A text field's suggestions go over what is under it (§3.5) |
+| CheckBox | past the gutter, `[•] label` or `[ ] label`, its box reversed in `accent` while it has the keyboard; then the error |
 | HottySwitch | past the gutter, its track with the knob at one end, then a space and its label, on one row: `▬▬■` in `accent` while it is on, a bar into a filled knob, and `□⎯⎯` in `muted` while it is off, a hollow knob on a thin line (`⎯`, not `─`: a terminal draws `─` itself at the cell's middle, where the font's square need not sit, and a font draws `⎯`, often a symbol font by fallback, since few coding fonts have it; a Slider's thin track is the same), so that without colour the knob's end, its fill and the track's weight still say which; then the error. Its label is in `accent` while it has the keyboard. A disabled one is `muted` and faint throughout, its knob still at its end. The switch and its label take a click |
-| a select (one value, `checkbox` display) | past the gutter, a title row, then the picked option's label, or `…` in `muted` when none is picked, and ` ▾` in `muted`. While its list is open (§3.7), the options follow one a row: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
-| a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options: one a row, `[•] label` or `[ ] label` after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect); chips two columns apart, wrapping, `( label )` and `(● label)` when picked. Then the error. |
+| a select (one value, `checkbox` display) | past the gutter, a title row, then a value row drawn as a one-line text field's (§3.5), underlined, its text inset a column: the picked option's label, or `…` in `muted` when none is picked, and `▾` in `muted` at the row's end, a space after the label at least; with the labels inline, the label and the value row on one row. While its list is open (§3.7), the options follow one a row: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
+| a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options one a row, each after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect): `[•] label` or `[ ] label` where several may be picked, and `(•) label` or `( ) label` for chips that pick one, as a GUI's radio buttons; pills wrapped across the field read as neither a form nor a list. Then the error. |
 | Slider | past the gutter, `label ━━━━■⎯⎯⎯⎯ 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `■` at round((value − min) / (max − min) × (track − 1)), and after it the track is `⎯` in `border`. With `fill` `"end"` (§6.16) the two sides swap, `⎯⎯⎯⎯■━━━━ 50`: `⎯` in `border` up to the knob and `━` after it, the glyphs the same. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
 | HottyRangeSlider | a Slider's row with two knobs, `label ⎯⎯■━━━━■⎯⎯ 20–70`: the start's and the end's, each `■` where a Slider's would stand at its value, `━` between them and `⎯` in `border` either side, then the range, `start–end`. Where both would take one column, the end's goes a column right (the start's a column left, at the track's end), so that both show, `■■`. A disabled one is `muted` and faint throughout. Then the error. |
 | HottyProgress | its label on a row, when it has one, then the bar and the percentage on the next: ` 42%`, five columns (`%3.0f%%` after a space, half to even). The bar takes the columns before them, filled in eighths of a cell: `█` for each full cell, then one of `▏▎▍▌▋▊▉` for a cell part filled, blending across the bar (§3.6): where the theme leaves `accent` to the terminal and the terminal has said its accent (OSC 4;12) and its bright magenta (4;13, else 4;5), from the one into the other, blue into pink in most palettes, as bubbles' default gradient goes (magenta is no role, and nothing else uses it); otherwise from `info` into `accent`. Full, it is `success` alone. The rest is `░` in `border`. Without a value, a segment of a quarter of the bar (at least one cell) is `█` in `info`, moving with the clock (below), and the percentage's columns are blank. When the bar would be shorter than 3, the percentage is dropped. |
@@ -415,8 +420,10 @@ draws them.
   field has the keyboard (for a Choice's options, one of them), the
   gutter is `┃ ` in `accent` down the field's rows; otherwise it is blank.
 - **The title.** A text field, a DateTime or a Choice with a label has a
-  title row: the label, bold, in `accent` while the field has the
-  keyboard. A CheckBox's, a HottySwitch's, a Slider's and a
+  title row: the label, in `muted`, in `accent` while the field has the
+  keyboard, as a GUI form's label over its input. With the labels inline
+  (§3.5), a one-line field's and a select's label is on its value row
+  instead. A CheckBox's, a HottySwitch's, a Slider's and a
   HottyRangeSlider's labels are on their one row. A HottyRangeSlider has
   the keyboard while either knob does.
 
@@ -424,18 +431,19 @@ draws them.
 `accent`, with a glyph or an attribute so that the focus still shows
 without colour:
 - A field shows its gutter's bar, and its title is in `accent`.
-- A Button, a chip, a Tabs' title, a Media link and a Modal trigger that
-  is not a control are reversed whole.
-- A CheckBox's box is in `accent`; a box option's row starts with `> `.
+- A Button, a Tabs' title, a Media link and a Modal trigger that is not
+  a control are reversed whole.
+- A CheckBox's box is reversed in `accent`; an option's row starts with
+  `> ` in `accent`, its box or circle in `accent`.
 - A HottySwitch's label is in `accent`.
 - A Slider's track is in `accent` up to the knob, and so is the knob
   (from the knob, with `fill` `"end"`).
 - A HottyRangeSlider's range is in `accent`, and so is the knob with the
   keyboard, whose number in the value is in `accent` and bold, so that
   without colour the value still says which knob the keys move.
-- A text field's prompt is in `accent`. What Shift, Control+a or a drag
-  selected (§5) is on the `selection` colour, or reversed where the theme
-  can't tint, as a terminal shows its own.
+- A one-line text field's and a select's underline is in `accent`. What
+  Shift, Control+a or a drag selected (§5) is on the `selection` colour,
+  or reversed where the theme can't tint, as a terminal shows its own.
 
 **A drag** (§6.21) is painted over the frame, so that no row moves:
 - What it lifted is faint: a list's item, a tree's node and the nodes
@@ -457,12 +465,44 @@ without colour:
 
 ### 3.5 Text fields
 
-- **The value row.** A one-line field's value follows a prompt, `> `, in
-  `muted` (`accent` while it has the keyboard), as bubbles' text input
-  has it. A longText has no prompt: its rows carry `┃` in the gutter, in
+- **The value row.** A one-line field's value row is underlined (SGR 4)
+  across the field, as a GUI form's input is, and its text is inset a
+  column from either end. The underline's colour is `border`, `accent`
+  while the field has the keyboard (SGR 58, as a drag's line in §3.4; a
+  terminal without it draws the line in the text's colour), so the value
+  keeps its own. There is no prompt: the underline says where to
+  type. A longText is not underlined: its rows carry `┃` in the gutter, in
   `border`, as bubbles' textarea does. The placeholder shows while the
   value is empty, in `muted` and faint. A DateTime's placeholder is the
   form its value takes: `YYYY-MM-DD`, `HH:MM` or `YYYY-MM-DDTHH:MM`.
+- **The label** goes on a title row above the value (§3.4), by default.
+  With the labels inline (`cells.InlineLabels`, `storybook -labels
+  inline`), a one-line field's, a DateTime's and a select's label goes on
+  the value row before the underline, a space after it; in a run of such
+  fields next to each other in a Column, the labels are padded to the
+  widest, so that their values line up. A label too wide for the field
+  is cut to leave a space and 3 columns of value row. A click on an
+  inline label puts the cursor
+  at the value's start. The two are on trial: the maintainer picks one,
+  and the other goes (vault journal 2026-10-10.12). At 30 columns, Name
+  with the keyboard, Ada typed, and an empty Email after it, the labels
+  above:
+
+  ```
+  ┃ Name
+  ┃  Ada
+    Email
+  ```
+
+  then Email's value row, blank; and inline:
+
+  ```
+  ┃ Name   Ada
+    Email
+  ```
+
+  where each value row is underlined to the field's edge, Name's in
+  `accent`.
 - **obscured** shows `•` for each cluster.
 - **longText** shows its hard lines, at least 3 rows and at most 8, with no
   soft wrap.
@@ -497,28 +537,39 @@ without colour:
     after the value, in `muted` and faint, as bubbles' text input draws
     it, cut at the field's edge. The cursor stays where it is: at the
     value's end it is on the ghost's first cell.
-  - Under the value, a row a suggestion, its text under the value's: what
-    the value typed of it plain, its rest in `muted`. The highlighted one
-    is reversed in `accent`, a column of padding either side, as a menu's
-    item (a `> ` as the select's list has would read as a second prompt
-    under the field's). At most 5 show: past that, the 5 from the first,
+  - Unless its `list` is false (§6.22), a list drops down over what is
+    under the field, as a GUI's menu does: it moves no row, hides what it
+    covers and takes its clicks, as an open Modal's panel and a toast do
+    (§3.7), and the frame grows to hold it. It is a box with rounded
+    corners in `border`, from the row under the value, a column of
+    padding inside it, so that its text stands under the value's; as wide
+    as its widest row needs, at most the frame, moved left to fit. In it,
+    a row a suggestion: what the value typed of it plain, its rest in
+    `muted`. The highlighted one is reversed in `accent` across the box,
+    as a menu's item. At most 5 show: past that, the 5 from the first,
     moved as little as keeps the highlight in view, then a row
-    `  1–5 of 12` in `muted`. A row too wide is cut with `…`, and the
-    gutter's bar runs down them. At 30 columns, `git c` typed:
+    `1–5 of 12` in `muted`, inside the box. A row too wide is cut with
+    `…`. The gutter's bar stops at the value row. At 30 columns, `git c`
+    typed:
 
     ```
     ┃ Command
-    ┃ > git commit
-    ┃   git commit
-    ┃   git checkout
-    ┃   git cherry-pick
-    ┃   git clone
-    ┃   git config
+    ┃  git commit
+     ╭─────────────────╮
+     │ git commit      │
+     │ git checkout    │
+     │ git cherry-pick │
+     │ git clone       │
+     │ git config      │
+     ╰─────────────────╯
     ```
 
     where the first `ommit` is the ghost and the others' rests are `muted`.
     With nothing typed, nothing the value leaves, or the list shut, the
     field is as without them: its placeholder, or its value alone.
+  - With `list` false, the ghost alone shows, as bubbles' text input has
+    it; ArrowDown and ArrowUp still move through the suggestions, and the
+    ghost follows the highlighted one.
 
 ### 3.6 Colour and attributes
 
@@ -743,7 +794,8 @@ In the output:
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
   - a click on a row of a text field's suggestions takes that one, the
-    cursor after it;
+    cursor after it; a click on the list's border lands on the list, not
+    on what it covers, and leaves the field as it is;
   - a click on a HottyTable's row selects it, and a click on its selected
     row acts on it (§6.8); a click on its header only focuses it; so too
     a HottyList's items (§6.9), and its title and status line, and a
@@ -1524,8 +1576,9 @@ from a mouse.
 
 Values a one-line TextField offers as the user types, as a shell
 completes a command or a form a place: the rest of one faint after the
-cursor, for Tab to take, and a list of them under the field, as bubbles'
-text input and fish have them (vault KIT-11c). It is an extension on the
+cursor, for Tab to take, and a list of them dropped down over what is
+under the field, as bubbles' text input and fish have them (vault
+KIT-11c). It is an extension on the
 basic TextField, not a component of its own, so the field keeps its
 `label`, `value`, `placeholder`, `checks`, its keymap (§6.5) and its
 place in a HottyForm, and other renderers ignore it and show the field:
@@ -1547,6 +1600,14 @@ place in a HottyForm, and other renderers ignore it and show the field:
   field's bound `value`. On a surface with `sendDataModel`, each one
   carries the whole data model (L5), so keep the options and the model
   short there.
+- `list` (a DynamicBoolean, optional, default true) shows the list of
+  suggestions over what is under the field (§3.5). False shows the ghost
+  alone, as bubbles' text input and fish have it: for a field whose
+  suggestions one types through rather than picks from, or where a list
+  would cover what the user needs to see. The keys are the same; the
+  arrows move through the suggestions the ghost shows. A host's
+  `datalist` ignores it until the kit draws a list of its own there
+  (vault KIT-11h).
 - The field shows the options that start with its value, case aside, but
   for the value itself, in their order: the renderer narrows them at each
   key, so that the list is right while the agent's rewrite is on its
