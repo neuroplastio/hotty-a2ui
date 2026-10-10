@@ -90,9 +90,11 @@ func treeHeight(e *view.Element) int {
 
 // paintTree paints a HottyTree at (x, y), w wide. The selected node's bar
 // and label are in the accent while the tree has the keyboard, the label
-// bold, as bubbles' tree has it, and its bar alone, in muted, otherwise. A label's characters that matched the
-// filter are underlined; a row cut short ends in "…". The selected node's
-// row is what to keep in sight (Rendition.Sight), when it shows.
+// bold, as bubbles' tree has it; otherwise its bar is in muted and its
+// label bold, so that the node it is on (a docs nav's page) still shows
+// beside the guides. A label's characters that matched the filter are
+// underlined; a row cut short ends in "…". The selected node's row is
+// what to keep in sight (Rendition.Sight), when it shows.
 func (l *layout) paintTree(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	focused := r.focused(e.ID)
@@ -112,7 +114,7 @@ func (l *layout) paintTree(cv *canvas, e *view.Element, x, y, w int) {
 		row := y + k - e.Top
 		st, bar := style{}, style{}
 		if i == sel {
-			bar.role = Muted
+			st, bar = style{attr: Bold}, style{role: Muted}
 			if focused {
 				st, bar = style{role: Accent, attr: Bold}, style{role: Accent}
 			}

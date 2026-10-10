@@ -62,8 +62,10 @@ func TestTreeDraws(t *testing.T) {
 	if guide, fold, count := f.Cells[1][2], f.Cells[0][2], f.Cells[6][9]; guide.Role != Border || fold.Role != Muted || count.Role != Muted {
 		t.Errorf("guide %v, fold %v, count %v", guide.Role, fold.Role, count.Role)
 	}
-	if bar, label := f.Cells[7][0], f.Cells[7][4]; bar.Role != Muted || label.Role != Fg {
-		t.Errorf("unfocused: bar %v, label %v", bar.Role, label.Role)
+	// Without the keyboard the selected node still shows beside the
+	// guides: its bar in muted, its label bold (a docs nav's page).
+	if bar, label := f.Cells[7][0], f.Cells[7][4]; bar.Role != Muted || label.Role != Fg || label.Attr&Bold == 0 {
+		t.Errorf("unfocused: bar %v, label %v %v", bar.Role, label.Role, label.Attr)
 	}
 	// The selected node's row is what a pane keeps in sight.
 	if _, row, _, h, ok := r.Sight("root"); !ok || row != 7 || h != 1 {

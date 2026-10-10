@@ -189,6 +189,16 @@ built on it).
   bar). Today Text's links open in the terminal (`target=_blank`, SPEC
   §9). HottyTree's leaves can be such links. Check that SPEC's events
   cover the host's side before asking hotty for anything.
+- [ ] **KIT-27** — Size for a program that is its own agent (journal
+  2026-10-10.21). The kit takes the docs viewer's js/wasm from 8.9 MB
+  (2.4 MB gzipped) to 16 MB (3.9 MB). Schema validation is 1.7 MB (0.42 MB
+  gzipped) of it, and only `a2ui`'s core reaches it: move it to its own
+  package (`a2ui/schema`, jsonschema and x/text with it) behind a
+  validator the processor takes, so that a program leaves it out by not
+  importing it, and the conformance suites and any outside agent's input
+  keep it. The renditions link every component (one switch); splitting
+  them by component, a registry, waits for the maintainer to say the
+  size matters past that.
 
 ## Later
 
