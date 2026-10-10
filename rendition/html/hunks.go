@@ -1,6 +1,7 @@
 package html
 
 import (
+	"slices"
 	"strconv"
 
 	change "github.com/neuroplastio/hotty-a2ui/diff" // diff is the deltas (diff.go)
@@ -249,12 +250,20 @@ func splitLines(e *view.Element, h change.Hunk) []*node {
 }
 
 // focusOn is what has the host's keyboard for the element that has the
-// controller's: the element, or a HottyDiff's selected hunk (a DOM id),
-// which the host then scrolls into view (diffView).
+// controller's: the element, or a HottyDiff's selected hunk or a
+// HottyTree's selected node that shows (a DOM id), which the host then
+// scrolls into view (diffView, tree).
 func (r *Rendition) focusOn(id string) string {
-	if e := r.C.V.Find(id); e != nil && e.Kind == view.DiffView {
+	e := r.C.V.Find(id)
+	switch {
+	case e == nil:
+	case e.Kind == view.DiffView:
 		if i := e.SelectedRow(); i >= 0 {
 			return partID(id, partHunk+strconv.Itoa(i))
+		}
+	case e.Kind == view.Tree:
+		if i := e.SelectedRow(); i >= 0 && slices.Contains(e.Shown, i) {
+			return partID(id, partNode+strconv.Itoa(i))
 		}
 	}
 	return id

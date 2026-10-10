@@ -93,9 +93,9 @@ func viewID(dom string) (id, part string, ok bool) {
 // host's events and a test's clicks name.
 func DOMID(id string) string { return domID(id) }
 
-// ViewID is the element of the view a DOM id names, if it names one
-// itself rather than one of its parts.
+// ViewID is the element of the view a DOM id names, itself or one of its
+// parts: a HottyTree's node, which has the host's focus for it.
 func ViewID(dom string) (id string, ok bool) {
-	id, part, ok := viewID(dom)
-	return id, ok && part == ""
+	id, _, ok = viewID(dom)
+	return id, ok
 }

@@ -1,6 +1,6 @@
 {
   "name": "HottyTree",
-  "description": "A repository's files. The arrows, j and k move the selection, which is written to /selected; the right arrow and l open a folder, then go into it, the left arrow and h close it, then go up; what is open is written to /expanded. A click selects a node and opens or closes a folder. Typing in Filter shows the files whose names hold its characters, in order, with the folders they're in, every folder open. Enter, or a second click on the selected file, sends openFile with it; Enter on a folder opens or closes it. Twelve rows show at a time.",
+  "description": "A repository's files. The arrows, j and k move the selection, which is written to /selected; the right arrow and l open a folder, then go into it, the left arrow and h close it, then go up; what is open is written to /expanded. A click selects a node and opens or closes a folder. Typing in Filter shows the files whose names hold its characters, in order, with the folders they're in, every folder open. Enter, or a second click on the selected file, sends openFile with it; Enter on a folder opens or closes it.",
   "messages": [
     {
       "version": "v1.0",
@@ -232,7 +232,6 @@
             "filter": {
               "@path": "/filter"
             },
-            "height": 12,
             "emptyText": "No files match.",
             "onActivate": {
               "event": {

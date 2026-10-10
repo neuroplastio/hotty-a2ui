@@ -469,20 +469,21 @@ textarea.k-input { min-height: 5.5rem; }
 .k-dot.k-on { color: var(--k-fg); }
 
 /* HottyTree: a baseline (phase 1), the rows cells shows, as a host's tree
-   lays them out: a row a node, indented a step a level (--k-level), its
-   fold (▸ closed, ▾ open, blank on a leaf, so that a level's labels line
-   up), its icon and its label. The selected node is a HottyList's
-   selected item: a bar at its start, muted, and the focus colour while
-   the tree has the keyboard. A tree with a height keeps it: hidden rows
-   (k-tree-gap) stand in for the nodes it lacks. */
-.k-tree { display: flex; flex-direction: column; align-self: stretch; outline: none; }
-.k-node { display: flex; align-items: center; column-gap: var(--k-2); padding: var(--k-1) var(--k-3) var(--k-1) calc(var(--k-3) + var(--k-level, 0) * var(--k-5)); border-left: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+   lays them out: a row a node, --k-node-h tall, indented a step a level
+   (--k-level), its fold (▸ closed, ▾ open, blank on a leaf, so that a
+   level's labels line up), its icon and its label. The selected node is
+   a HottyList's selected item: a bar at its start, muted, and the focus
+   colour while the tree has the keyboard (k-on, as the selected node, not
+   the box, has the host's focus then). A tree with a height is that many
+   rows tall, and scrolls with the host's thin scrollbar. */
+.k-tree { --k-node-h: 2rem; display: flex; flex-direction: column; align-self: stretch; outline: none; }
+.k-tree.k-scrolls { height: calc(var(--k-rows) * var(--k-node-h)); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }
+.k-node { flex: none; box-sizing: border-box; height: var(--k-node-h); display: flex; align-items: center; column-gap: var(--k-2); padding: 0 var(--k-3) 0 calc(var(--k-3) + var(--k-level, 0) * var(--k-5)); border-left: 3px solid transparent; cursor: pointer; white-space: nowrap; outline: none; }
 .k-node-fold { flex: none; width: 1ch; color: var(--k-muted); }
 .k-icon-blank { width: 1em; height: 1em; }
 .k-node-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .k-node.k-sel { border-left-color: var(--k-border); background: var(--k-tonal); }
-.k-tree:focus .k-node.k-sel { border-left-color: var(--k-focus); color: var(--k-focus); }
-.k-tree-gap { visibility: hidden; }
+.k-tree.k-on .k-node.k-sel { border-left-color: var(--k-focus); color: var(--k-focus); }
 .k-tree-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
 
 /* HottyKeyHints: a baseline (phase 1), as cells draws it, bubbles' help:

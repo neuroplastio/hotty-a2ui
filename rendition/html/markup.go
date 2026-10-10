@@ -228,7 +228,7 @@ func (m *markup) element(e *view.Element) *node {
 	case view.RichList:
 		n = richList(e)
 	case view.Tree:
-		n = tree(e)
+		n = m.tree(e)
 	case view.KeyHints:
 		n = m.keyHints(e)
 	case view.ScrollView:

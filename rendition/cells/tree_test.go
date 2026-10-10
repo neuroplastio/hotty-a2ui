@@ -145,3 +145,33 @@ func TestTreeHeightAndFilter(t *testing.T) {
 		t.Errorf("nothing left: %q", got)
 	}
 }
+
+// The wheel over a tree with a height moves its rows, three a notch, and
+// leaves the selection; a key that moves the selection brings it back
+// into view.
+func TestTreeWheel(t *testing.T) {
+	r, c, _ := repo(t, `,"height":3`)
+	r.Draw(30)
+	for _, step := range []struct {
+		dy    int
+		moved bool
+		want  string
+	}{
+		{-1, true, "  ├── ▼ view\n  │   ├── tree.go\n  │   └── list.go"},
+		{-1, true, "  ▼ src\n  ├── main.go\n  ├── ▼ view"},
+		{-1, false, "  ▼ src\n  ├── main.go\n  ├── ▼ view"},
+		{1, true, "  │   ├── tree.go\n  │   └── list.go\n  └── util.go"},
+	} {
+		if moved := r.Wheel(4, 1, 0, step.dy); moved != step.moved {
+			t.Errorf("the wheel %d: moved %v", step.dy, moved)
+		}
+		if got := r.Draw(30).Plain(); got != step.want || c.S.Data.Value("/sel") != "README.md" {
+			t.Errorf("after the wheel %d, selected %v:\n%s\nwant\n%s", step.dy, c.S.Data.Value("/sel"), got, step.want)
+		}
+	}
+	c.Focus("root")
+	keys(t, r, "k")
+	if got, want := r.Draw(30).Plain(), "  │   └── list.go\n  └── util.go\n│ ▶ docs 1"; got != want {
+		t.Errorf("k: got\n%s\nwant\n%s", got, want)
+	}
+}

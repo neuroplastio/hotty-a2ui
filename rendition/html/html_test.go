@@ -1154,6 +1154,48 @@ func TestTreeOnHost(t *testing.T) {
 	}
 }
 
+// A HottyTree with a height on a host is a box the host scrolls, holding
+// every node that shows; while it has the keyboard, the selected node has
+// the host's focus, so that the host scrolls it into view.
+func TestTreeScrollsOnHost(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"sel":"e"}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyTree","catalogId":"`+hottycat.ID+`","selected":{"@path":"/sel"},"height":2,
+  "items":[{"label":"a","value":"a"},{"label":"b","value":"b"},{"label":"c","value":"c"},{"label":"d","value":"d"},{"label":"e","value":"e"}]}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	if class, _ := s.Attr("root", "class"); class != "k-tree k-scrolls" {
+		t.Errorf("the box's class is %q", class)
+	}
+	if style, _ := s.Attr("root", "style"); style != "--k-rows: 2" {
+		t.Errorf("the box's style is %q", style)
+	}
+	for i := range 5 {
+		if _, ok := s.Element(partID("root", partNode+strconv.Itoa(i))); !ok {
+			t.Errorf("node %d is not in the box", i)
+		}
+	}
+	r.C.Focus("root")
+	x.update(r)
+	if got := s.Focused(); got != partID("root", partNode+"4") {
+		t.Errorf("the host's focus is on %q, want e's node", got)
+	}
+	if _, ok, err := r.Key("Home"); !ok || err != nil {
+		t.Fatalf("Home: %v %v", ok, err)
+	}
+	x.update(r)
+	if got := s.Focused(); got != partID("root", partNode+"0") || r.C.S.Data.Value("/sel") != "a" {
+		t.Errorf("after Home the host's focus is on %q, selected %v", got, r.C.S.Data.Value("/sel"))
+	}
+	if class, _ := s.Attr("root", "class"); class != "k-tree k-on k-scrolls" {
+		t.Errorf("with the keyboard, the box's class is %q", class)
+	}
+	x.check(r)
+}
+
 // A HottyKeyHints on a host is the line cells draws, a kbd for each key;
 // it follows the element the program knows has the keyboard, and ?, which
 // reaches the program from a box, shows the full view's groups as columns.
