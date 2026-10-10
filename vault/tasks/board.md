@@ -16,7 +16,8 @@ KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; at
 KIT-22c (journal 2026-10-10.5): the switch; at KIT-10c (journal
 2026-10-10.6): the charts; at KIT-SLIDE (journal 2026-10-10.7): the
 sliders, and its four open points; at KIT-23c (journal 2026-10-10.8):
-drag and drop in cells, and its three proposals.
+drag and drop in cells, and its three proposals; at KIT-11c (journal
+2026-10-10.9): suggestions in cells, and its seven proposals.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -31,7 +32,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-11c** — Suggestions: ghost text and a list under the field.
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
 - [ ] **KIT-13c** — Toast and tooltip (tooltip from
   `accessibility.description`).
@@ -124,7 +124,12 @@ As of 2026-10-09, from the hotty agent:
   already an SVG with presentation attributes (journal 2026-10-10.6): its
   box at the plot's real size, not a 480-wide guess that thickens a steep
   stroke on a wide plot; the value under the pointer.
-- [ ] **KIT-11h** — Suggestions in a surface at a higher z.
+- [ ] **KIT-11h** — Suggestions in a surface at a higher z, with the
+  ghost text. The baseline is a `datalist` (journal 2026-10-10.9), which
+  Blitz doesn't draw; check the addon's. Taking one by Tab and picking by
+  Enter need the blur and focus handover or a SPEC change: a host keeps
+  Tab (§10.2) and leaves a focused field's value alone (§6.2). Decide
+  with KIT-SEL.
 - [ ] **KIT-12h** — Selection and copy: the host's own. Blocked: the
   clipboard is parked by the maintainer.
 - [ ] **KIT-13h** — Toast and tooltip, each as a surface at a higher z.
@@ -162,6 +167,21 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-11c** — Suggestions in cells, as bubbles' text input has them
+  (journal 2026-10-10.9, awaiting the maintainer's look). Story
+  `hotty/suggest`.
+  - `io_neuroplast_hotty.suggestions` on a one-line TextField: `options`
+    (a DynamicStringList, best bound, which the agent rewrites) and
+    `onInput` (an Action at every change), instruction 22, profile §6.22.
+  - The renderer narrows to the options that start with the value, case
+    aside; the rest of one faint after the caret, a list of up to 5 under
+    the field, the highlighted one reversed in the accent.
+  - Tab and → take, ↓ ↑ Control+n Control+p move round, Enter picks the
+    highlighted one, Escape shuts; nothing highlighted, Enter submits and
+    Tab moves on. A taken one is the value as written.
+  - A host has a `datalist` (Blitz draws none); text the field alone.
+    Vectors in both renditions for the editing, cells only for the keys
+    (`renditions:`).
 - [x] **KIT-23c** — Drag and drop in cells, model C with P2
   ([drag-and-drop](../knowledge/drag-and-drop.md), "Built"; journal
   2026-10-10.8, awaiting the maintainer's look). Stories under Behaviours

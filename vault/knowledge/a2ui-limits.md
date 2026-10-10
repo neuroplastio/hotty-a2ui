@@ -150,7 +150,7 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 | KIT-08 Key hints | nothing beyond the surface's Shortcuts and keymaps | Fits |
 | KIT-09 Tree | `items` with `children`, or a recursive template; bound `selected` and `expanded` | Fits. L2, L3 |
 | KIT-10 Chart | `series` as data, `kind`, axes | Fits. L4 |
-| KIT-11 Suggestions | `suggestions`, a DynamicStringList or an agent function. A2UI evaluates the function again as the field changes, and shows it pending meanwhile | Fits. L2, L6 |
+| KIT-11 Suggestions | Settled (KIT-11c, profile §6.22): `io_neuroplast_hotty.suggestions` on a TextField, `options` (a DynamicStringList, best bound, which the agent rewrites) and `onInput` (an Action at every change, whose context reads the field's value), since basic's TextField has no action and A2UI no notice of a data change | Fits. L2, L5 |
 | KIT-12 Selection and copy | nothing: renderer behaviour; a `copy` renderer function if the agent should copy | Fits. L8 |
 | KIT-13 Toast and tooltip | toast: `message`, `tone`, `duration`, bound `open`; tooltip: `accessibility.description` | Fits. L6 |
 | KIT-14 Timer and stopwatch | `start` or `duration`, bound `running`, `onTimeout` | Fits. L6 |
