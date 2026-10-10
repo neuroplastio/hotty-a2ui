@@ -13,8 +13,9 @@ at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 2026-10-09.13): the diff; at the icons (journal 2026-10-10.1,
 story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; at
 KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; at
-KIT-22c (journal 2026-10-10.5): the switch; and at KIT-10c (journal
-2026-10-10.6): the charts.
+KIT-22c (journal 2026-10-10.5): the switch; at KIT-10c (journal
+2026-10-10.6): the charts; and for KIT-23, drag and drop, a pick of model
+([drag-and-drop](../knowledge/drag-and-drop.md)).
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).

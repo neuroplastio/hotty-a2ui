@@ -72,6 +72,7 @@ they're built.
 | KIT-20 | **QR code** | OpenTUI QR | Low | Half blocks (`▀▄█`) | SVG, checked with `hotty render` at 1.6x |
 | KIT-21 | **3D and audio** | OpenTUI three.js and audio | Parked | Not for a terminal UI kit. AudioPlayer is already a labelled link. Media is gov R-2's research | — |
 | KIT-22 | **Toggle** (`HottySwitch`) | iOS's switch, Material's Switch; the maintainer asked for it (2026-10-10) | Medium | A boolean as CheckBox's (label, bound value, checks), drawn as a track with a knob at its end: `accent` when on, `muted` when off. Space, Enter or a click flips it | A pill with a knob, `role=switch` and `aria-checked`. The knob slides by deltas, since Blitz runs no CSS transitions (host-motion) |
+| KIT-23 | **Drag and drop**: reorder and move as first-class behaviour of a list, a table, a tree and a templated List | iOS and SortableJS (live), Finder and VS Code (a line); the maintainer asked for it (2026-10-10) | High | The terminal's mouse reports with the button held, plus keys: Alt+arrows, Ctrl+X then Ctrl+V | SPEC §9.1 drags, with gaps G1 (where in the target) and G2 (a drop-only target); the design is [drag-and-drop](drag-and-drop.md) |
 
 ## What "parity" means here
 
