@@ -2,12 +2,15 @@
 // on each, on a HOTTY host: an A2UI surface that the kit renders, with the
 // pictures sent to the host in band (SPEC §7.1) and shown by cid: URLs.
 // The feedback is kept in a Markdown file, a section for each picture,
-// where whoever asked for it reads it.
+// where whoever asked for it reads it. Whoever asks says what to look for
+// in each the same way, in brief.md beside the pictures: a section headed
+// `## <name>`, shown under the picture's name.
 //
 //	review                  the pictures in this directory
 //	review .shots           in another
 //	review a.png b.png      these
 //	review -out notes.md    the feedback in notes.md (feedback.md beside the pictures without it)
+//	review -brief ask.md    what to look for, from ask.md (brief.md beside the pictures without it)
 //
 // The list picks the picture; Enter on it goes to the feedback box.
 // Control+s saves, and so does moving to another picture or quitting.
@@ -33,6 +36,7 @@ import (
 
 func main() {
 	out := flag.String("out", "", "keep the feedback in `file` (default: feedback.md beside the pictures)")
+	brief := flag.String("brief", "", "what to look for in each picture, from `file` (default: brief.md beside the pictures)")
 	themeName := flag.String("theme", "", "paint in this `theme`; the host's own colours without it")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: review [flags] [directory | picture...]")
@@ -47,13 +51,13 @@ func main() {
 		}
 		args = append(args, flag.Arg(0))
 	}
-	if err := run(args, *out, *themeName); err != nil {
+	if err := run(args, *out, *brief, *themeName); err != nil {
 		fmt.Fprintln(os.Stderr, "review:", err)
 		os.Exit(1)
 	}
 }
 
-func run(args []string, out, themeName string) error {
+func run(args []string, out, brief, themeName string) error {
 	var th theme.Theme
 	if themeName != "" {
 		t, ok := theme.ByName(themeName)
@@ -69,11 +73,14 @@ func run(args []string, out, themeName string) error {
 	if out == "" {
 		out = filepath.Join(dir, "feedback.md")
 	}
+	if brief == "" {
+		brief = filepath.Join(dir, "brief.md")
+	}
 	n, err := loadNotes(out)
 	if err != nil {
 		return err
 	}
-	a, err := newApp(shots, n, th)
+	a, err := newApp(shots, n, brief, th)
 	if err != nil {
 		return err
 	}

@@ -43,6 +43,10 @@ type app struct {
 	r     *html.Rendition
 	shots []shot
 	notes *notes
+	// brief is the file that says what to look for in each picture, read
+	// again whenever one shows, so that it can be written as the review
+	// goes.
+	brief string
 	// cur is the picture shown.
 	cur int
 	// sent is the pictures the host has.
@@ -52,8 +56,8 @@ type app struct {
 	frame string
 }
 
-func newApp(shots []shot, n *notes, th theme.Theme) (*app, error) {
-	a := &app{s: hottytea.New(), run: story.NewRun(), shots: shots, notes: n, sent: map[string]bool{}}
+func newApp(shots []shot, n *notes, brief string, th theme.Theme) (*app, error) {
+	a := &app{s: hottytea.New(), run: story.NewRun(), shots: shots, notes: n, brief: brief, sent: map[string]bool{}}
 	a.run.Out = func(o a2ui.Outbound) {
 		if o.Action != nil {
 			a.acts = append(a.acts, o.Action)
@@ -69,14 +73,14 @@ func newApp(shots []shot, n *notes, th theme.Theme) (*app, error) {
 	return a, nil
 }
 
-// surface is the messages that make the surface: the picture's name, the
-// list of pictures, the feedback box and Save down the side; the picture
-// beside them.
+// surface is the messages that make the surface: the picture's name, what
+// to look for in it, the list of pictures, the feedback box and Save down
+// the side; the picture beside them.
 func (a *app) surface() []map[string]any {
 	sh := a.shots[0]
 	data := map[string]any{
 		"files": a.files(), "cur": sh.name, "img": "cid:" + sh.id,
-		"title": a.title(0), "note": a.notes.text[sh.name], "status": "",
+		"title": a.title(0), "brief": a.lookFor(sh.name), "note": a.notes.text[sh.name], "status": "",
 	}
 	bind := func(path string) map[string]any { return map[string]any{"@path": path} }
 	cat := hottycat.ID
@@ -84,7 +88,7 @@ func (a *app) surface() []map[string]any {
 		msg("createSurface", obj("surfaceId", surfaceID, "catalogId", basicCatalog, "dataModel", data)),
 		msg("updateComponents", obj("surfaceId", surfaceID, "components", []any{
 			obj("id", "root", "component", "Row", "children", []any{"side", "shot"}),
-			obj("id", "side", "component", "Column", "children", []any{"title", "files", "note", "act", "help", "save_key"}, "weight", 1),
+			obj("id", "side", "component", "Column", "children", []any{"title", "brief", "files", "note", "act", "help", "save_key"}, "weight", 1),
 			obj("id", "files", "component", "HottyList", "catalogId", cat, "title", "Pictures",
 				"items", bind("/files"), "selected", bind("/cur"), "filterable", true, "height", 8,
 				"onActivate", obj("functionCall", obj("@call", "hottyFocus", "catalogId", cat, "args", obj("id", "note")))),
@@ -97,6 +101,7 @@ func (a *app) surface() []map[string]any {
 			obj("id", "help", "component", "HottyKeyHints", "catalogId", cat),
 			obj("id", "save_key", "component", "HottyShortcut", "catalogId", cat, "key", "Control+s", "press", "save", "label", "Save"),
 			obj("id", "title", "component", "Text", "text", bind("/title")),
+			obj("id", "brief", "component", "Text", "text", bind("/brief")),
 			// Weighted in a Row: as wide as its share, as tall as the picture
 			// is at that width, no taller than the surface (profile §2).
 			obj("id", "shot", "component", "Image", "url", bind("/img"), "description", bind("/cur"), "fit", "contain", "weight", 3),
@@ -116,6 +121,16 @@ func (a *app) files() []any {
 		items = append(items, item)
 	}
 	return items
+}
+
+// lookFor is what to look for in a picture, from the brief: its section,
+// under a heading; nothing when it has none.
+func (a *app) lookFor(name string) string {
+	b, err := loadNotes(a.brief)
+	if err != nil || b.text[name] == "" {
+		return ""
+	}
+	return "**What to look for**\n\n" + b.text[name]
 }
 
 // title heads the picture: its name, and where it is in the list.
@@ -214,6 +229,7 @@ func (a *app) show(i int) {
 	a.fail(a.feed(
 		data("/img", "cid:"+sh.id),
 		data("/title", a.title(i)),
+		data("/brief", a.lookFor(sh.name)),
 		data("/note", a.notes.text[sh.name]),
 	))
 }

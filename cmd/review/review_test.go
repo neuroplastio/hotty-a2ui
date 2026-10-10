@@ -46,7 +46,7 @@ func runReview(t *testing.T, h *hottytest.Host, args ...string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	a, err := newApp(shots, n, theme.Theme{})
+	a, err := newApp(shots, n, filepath.Join(dir, "brief.md"), theme.Theme{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,17 +77,25 @@ func eventually(t *testing.T, what string, cond func() bool) {
 	t.Fatalf("never: %s", what)
 }
 
-// TestReview: the first picture shows, sent in band; Save writes its note
-// to feedback.md; another picked in the list shows with an empty box, and
-// going back keeps what was typed about it, without Save.
+// TestReview: the first picture shows, sent in band, with what to look for
+// in it; Save writes its note to feedback.md; another picked in the list
+// shows with its own brief and an empty box, and going back keeps what was
+// typed about it, without Save.
 func TestReview(t *testing.T) {
 	dir := pictures(t, "a.png", "b.png")
+	brief := "# Brief\n\n## a.png\n\nThe red dot, top left.\n\n## b.png\n\nNothing *red*.\n"
+	if err := os.WriteFile(filepath.Join(dir, "brief.md"), []byte(brief), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	h := hottytest.New(t, hottytest.Size(120, 40))
 	runReview(t, h, dir)
 	eventually(t, "the surface", func() bool { return h.Surface(surfaceID) != nil })
 	s := h.Surface(surfaceID)
 	if src, _ := s.Attr("shot", "src"); src != "cid:shot-0" {
 		t.Fatalf("the picture is %q", src)
+	}
+	if got := s.TextOf("brief"); !strings.Contains(got, "What to look for") || !strings.Contains(got, "The red dot, top left.") {
+		t.Fatalf("a.png's brief: %q", got)
 	}
 	want, _ := os.ReadFile(filepath.Join(dir, "a.png"))
 	if mime, got, ok := h.Resource("shot-0"); !ok || mime != "image/png" || !bytes.Equal(got, want) {
@@ -118,6 +126,9 @@ func TestReview(t *testing.T) {
 	})
 	if v, _ := s.Value("note"); v != "" {
 		t.Fatalf("b.png's box has %q", v)
+	}
+	if got := s.TextOf("brief"); !strings.Contains(got, "Nothing red.") {
+		t.Fatalf("b.png's brief: %q", got)
 	}
 	if err := h.Fill(surfaceID, "note", "Fine.\nThe gap is wide."); err != nil {
 		t.Fatal(err)

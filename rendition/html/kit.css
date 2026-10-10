@@ -160,8 +160,9 @@
 .k-v-header { width: 100%; height: 8rem; }
 /* A weighted picture in a Row takes its share of the row (Layout), whatever
    its variant, and is as tall as the picture is at that width, no taller than
-   the surface, inside which its fit places it. */
-.k-row > .k-img.k-weighted { height: auto; max-height: calc(100vh - 2 * var(--k-3)); }
+   the surface, inside which its fit places it. The row doesn't stretch it to
+   a taller neighbour's height, which would only add a mat around it. */
+.k-row > .k-img.k-weighted { height: auto; max-height: calc(100vh - 2 * var(--k-3)); align-self: flex-start; }
 .k-media { color: var(--k-link); white-space: nowrap; }
 
 /* Controls */
