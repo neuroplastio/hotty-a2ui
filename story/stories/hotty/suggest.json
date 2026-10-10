@@ -1,0 +1,213 @@
+{
+  "name": "Suggestions",
+  "kind": "component",
+  "component": "TextField, io_neuroplast_hotty.suggestions",
+  "icon": "search",
+  "description": "Suggestions as you type, as bubbles' text input has them: the rest of the first that fits shows faint after the caret, and Tab or → at the end takes it; the others that start with what was typed show in a list under the field. ↓ and ↑ (Control+n, Control+p) move through it, Enter picks the one highlighted, Escape closes it; with nothing highlighted, Enter runs the form. Command has the keyboard with git c typed, five commands under it; delete the c to see a longer list scroll. Country is empty: type S. Its onInput tells the agent each change (suggest, with the query), so that one could rewrite /countries as the user types; here the list stays and the field narrows it. City holds Atlantis, which nothing matches, so its list stays shut. Tab with nothing to take moves on. On a host the field is plain: Blitz draws no list of its own yet (vault KIT-11h).",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "suggest",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true,
+        "dataModel": {
+          "command": "git c",
+          "country": "",
+          "city": "Atlantis",
+          "commands": [
+            "git status",
+            "git add",
+            "git commit",
+            "git checkout",
+            "git cherry-pick",
+            "git clone",
+            "git config",
+            "git diff",
+            "git fetch",
+            "git log",
+            "git merge",
+            "git pull",
+            "git push",
+            "git rebase",
+            "git reset",
+            "git restore",
+            "git stash",
+            "git switch",
+            "git tag"
+          ],
+          "countries": [
+            "Austria",
+            "Belgium",
+            "Croatia",
+            "Czechia",
+            "Denmark",
+            "Estonia",
+            "Finland",
+            "France",
+            "Germany",
+            "Greece",
+            "Hungary",
+            "Iceland",
+            "Ireland",
+            "Italy",
+            "Latvia",
+            "Lithuania",
+            "Netherlands",
+            "Norway",
+            "Poland",
+            "Portugal",
+            "Romania",
+            "Slovakia",
+            "Slovenia",
+            "Spain",
+            "Sweden",
+            "Switzerland",
+            "United Kingdom"
+          ],
+          "cities": [
+            "Amsterdam",
+            "Athens",
+            "Berlin",
+            "Bern",
+            "Lisbon",
+            "Madrid",
+            "Oslo",
+            "Paris",
+            "Prague",
+            "Rome",
+            "Vienna"
+          ]
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "suggest",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "form",
+              "hints"
+            ]
+          },
+          {
+            "id": "form",
+            "component": "HottyForm",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "child": "fields",
+            "onSubmit": {
+              "event": {
+                "name": "go",
+                "context": {
+                  "command": {
+                    "@path": "/command"
+                  },
+                  "country": {
+                    "@path": "/country"
+                  },
+                  "city": {
+                    "@path": "/city"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "fields",
+            "component": "Column",
+            "children": [
+              "heading",
+              "command",
+              "country",
+              "city"
+            ]
+          },
+          {
+            "id": "heading",
+            "component": "Text",
+            "text": "## Run a command"
+          },
+          {
+            "id": "command",
+            "component": "TextField",
+            "label": "Command",
+            "placeholder": "git …",
+            "value": {
+              "@path": "/command"
+            },
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "autofocus": true,
+                  "suggestions": {
+                    "options": {
+                      "@path": "/commands"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "country",
+            "component": "TextField",
+            "label": "Country",
+            "placeholder": "Start typing a country",
+            "value": {
+              "@path": "/country"
+            },
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "suggestions": {
+                    "options": {
+                      "@path": "/countries"
+                    },
+                    "onInput": {
+                      "event": {
+                        "name": "suggest",
+                        "context": {
+                          "query": {
+                            "@path": "/country"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "city",
+            "component": "TextField",
+            "label": "City",
+            "value": {
+              "@path": "/city"
+            },
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "suggestions": {
+                    "options": {
+                      "@path": "/cities"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "hints",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          }
+        ]
+      }
+    }
+  ]
+}

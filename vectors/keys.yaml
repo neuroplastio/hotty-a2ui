@@ -21,6 +21,8 @@
 #     actions: the names of every action the agent has had, in order
 #     context: the last action's context (the keys given)
 #     data: data model values, by path
+# A vector with renditions (cells, host) plays on those alone: what the
+# other's baseline does not do yet, which the vector's name says.
 - name: Tab goes in tree order through every kind of control, and out past the last
   messages: &controls
     - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {name: "", agree: false, size: [], level: 3}}}
@@ -651,3 +653,67 @@
     - expect: {focused: "card[/board/todo/1]", actions: [moved], data: {/board/todo/0/id: c2, /board/todo/1/id: c1}, context: {move: {item: {id: c1, title: Draft the release notes}, from: {index: 0, path: /board/todo}, to: {index: 1, path: /board/todo}}}}
     - key: Enter
     - expect: {focused: "card[/board/todo/1]", actions: [moved, open], context: {card: c1}}
+
+# Suggestions (profile §6.22): io_neuroplast_hotty.suggestions on a
+# TextField. A host's baseline is the field and a datalist, which hottytest
+# draws nothing of, and a host keeps Tab, so the suggestions' own keys play
+# on cells alone; what the field still does with them plays on both.
+- name: A field with suggestions edits as ever, tells the agent each change by onInput, submits on Enter with nothing highlighted, and Tab with nothing to take moves on
+  story: hotty/suggest
+  steps:
+    - focus: country
+    - type: Sw
+    - expect: {focused: country, actions: [suggest, suggest], context: {query: Sw}, data: {/country: Sw}}
+    - key: Backspace
+    - type: x
+    - expect: {actions: [suggest, suggest, suggest, suggest], context: {query: Sx}, data: {/country: Sx}}
+    - key: Tab
+    - expect: {focused: city}
+    - key: Enter
+    - expect: {actions: [suggest, suggest, suggest, suggest, go], context: {command: git c, country: Sx, city: Atlantis}}
+
+- name: Tab takes the suggestion after the caret, and so does ArrowRight at the value's end; once taken, Tab moves on (cells; a host keeps Tab, vault KIT-11h)
+  story: hotty/suggest
+  renditions: [cells]
+  steps:
+    - expect: {focused: command}
+    - key: Tab
+    - expect: {focused: command, data: {/command: git commit}}
+    - key: Tab
+    - expect: {focused: country}
+    - type: sw
+    - key: ArrowLeft
+    - key: ArrowRight
+    - expect: {data: {/country: sw}}
+    - key: ArrowRight
+    - expect: {focused: country, actions: [suggest, suggest, suggest], context: {query: Sweden}, data: {/country: Sweden}}
+    - key: Tab
+    - expect: {focused: city}
+    - key: Tab
+    - expect: {focused: null}
+
+- name: ArrowDown and ArrowUp (Control+n, Control+p) move through the suggestions, round from either end; Enter picks the highlighted one; Escape closes the list, and Enter then submits (cells; vault KIT-11h)
+  story: hotty/suggest
+  renditions: [cells]
+  steps:
+    - key: ArrowDown
+    - key: ArrowDown
+    - key: Control+n
+    - key: ArrowUp
+    - key: Enter
+    - expect: {focused: command, actions: [], data: {/command: git checkout}}
+    - key: Backspace
+    - key: ArrowUp
+    - key: Control+p
+    - key: Enter
+    - expect: {actions: [], data: {/command: git checkout}}
+    - key: Backspace
+    - key: Backspace
+    - key: Backspace
+    - expect: {data: {/command: git check}}
+    - key: Escape
+    - key: Enter
+    - expect: {actions: [go], context: {command: git check}}
+    - key: ArrowDown
+    - key: Enter
+    - expect: {actions: [go], data: {/command: git checkout}}

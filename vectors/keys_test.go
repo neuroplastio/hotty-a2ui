@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -27,6 +28,9 @@ type vector struct {
 	// Keys is the surface's keymap, when given (SetKeys).
 	Keys  *string          `yaml:"keys"`
 	Steps []map[string]any `yaml:"steps"`
+	// Renditions, when given, are those it plays on (cells, host): what
+	// the other's baseline does not do yet.
+	Renditions []string `yaml:"renditions"`
 }
 
 // player is one rendition as a vector plays it: the user's keys and
@@ -70,6 +74,9 @@ func TestKeys(t *testing.T) {
 	}
 	for _, v := range vs {
 		for _, rendition := range []string{"cells", "host"} {
+			if len(v.Renditions) > 0 && !slices.Contains(v.Renditions, rendition) {
+				continue
+			}
 			t.Run(rendition+"/"+v.Name, func(t *testing.T) { play(t, v, rendition) })
 		}
 	}
