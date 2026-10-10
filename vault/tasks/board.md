@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-10
+Last updated: 2026-10-11
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from the review rounds: round 5
@@ -11,6 +11,9 @@ the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
 (2026-10-10.7): the sliders, and its four open points; KIT-23c
 (2026-10-10.8): drag and drop in cells, and its three proposals; and the
 proposals of KIT-11c (2026-10-10.9) and KIT-13c (2026-10-10.10).
+KIT-24's four questions (2026-10-10.29): a heading level for tab titles,
+the page's origin for its own absolute links, live-looking controls that
+take no input, and GitHub's colours as the default palette.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -151,18 +154,10 @@ and want Terminal to play an asciicast: screencasts, and one-frame HOTTY
 snapshots through hotty-go's `hottyvt` (web's `shared/screencast` player is
 built on it).
 
-- [ ] **KIT-24** — A page mode: a surface rendered into an ordinary web
-  page, not a terminal.
-  - The kit's stylesheet goes in once per page; the host palette
-    (`--hotty-*`, SPEC §8) comes from the page's theme.
-  - The HTML works with no program behind it, for crawlers and readers
-    without JavaScript: links are real `<a href>`, a tree's branches are
-    open or closed as given, and Tabs show every panel as a section under
-    its title, as GitHub shows the same Markdown.
-  - Optional, later: a page host, the addon's surface code (DOM, events,
-    deltas) without the terminal, so that a wasm program running the kit
-    makes the same HTML live. Progressive enhancement, never needed to
-    read.
+- [ ] **KIT-24p** — A page host, split from KIT-24: the addon's surface
+  code (DOM, events, deltas) without the terminal, so that a wasm program
+  running the kit makes page mode's HTML live. Progressive enhancement,
+  never needed to read.
 - [ ] **KIT-25c**, **KIT-25h** — Long-form Markdown in every rendition;
   A2UI's Text promises "simple Markdown".
   - Headings carry GitHub's IDs, built from the heading's text (goldmark
@@ -208,6 +203,16 @@ built on it).
 
 ## Done
 
+- [x] **KIT-24** — Page mode (journal 2026-10-10.29, profile §2.1):
+  `html.PageCSS()` once in a page's head, `Rendition.Page()` a surface's
+  fragment for its body (ids prefixed by the surface's name), and
+  `storybook -page`. The page sets SPEC §8's `--hotty-*` (bg, fg, accent,
+  ansi-8, and -9/-3/-2/-6 for the signals); what it leaves out is GitHub's
+  light or dark. No program behind it: Tabs are sections, a HottyTree's
+  branches are `<details>` open or closed as given, one `pageLink` decides
+  every link (relative same tab, absolute new tab, other schemes
+  dropped), and controls show their state and take no input. A tree
+  node's `href` waits for KIT-26 (`pageTree` in page.go).
 - [x] **KIT-15c** — `HottyPaginator` (journal 2026-10-10.25, profile §6.26,
   instruction 26): with a `child` (a List, Column or Row) it pages the
   child's items itself, `perPage` a page, so a turn needs no round trip;
