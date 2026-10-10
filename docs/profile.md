@@ -85,7 +85,7 @@ so that an error comes and goes as a text delta.
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
 | Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing |
-| TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
+| TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input`. With suggestions (§6.22), the `input` names (`list`) a `datalist` (`~x`) of the agent's options, which follows them by deltas: a host that draws a datalist, as a browser's DOM does, shows its own list, whose pick comes back as `input`. Blitz draws none (checked with `hotty render`), so on hottyterm the field is plain. The kit's list under the field, its ghost text and its keys are cells' until a list of the kit's own, a surface at a higher z (vault KIT-11h): a host keeps Tab (SPEC.md §10.2 ignores a binding of it) and leaves the value of the field it has focused alone (SPEC.md §6.2) |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a chevron in `--k-muted` (Material's `keyboard_arrow_down`, `keyboard_arrow_up` while the list is open, 1.25em), whose list opens in a surface of its own (below); else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9). An option's icon (§6.16) goes before its label: in the list, on a chip or a checkbox, and on the select while the option is picked |
 | Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output` as wide as the widest value (§3.3's), in `ch`. The track is cut into notches, one a value (at most 41; twenty steps without a `step`), each centred on where the knob stands at its value and half one at either end, so that a tap, a click, sets the value tapped. On a host with `steps` (SPEC.md §4, §9.1) the track is the drag target, `data-on="drag"` and `data-steps` its notches' count less one, and the notches take `click` alone: a drag sets the value of the step under the pointer wherever the pointer goes, off the track and out of the surface too, until it is let go, and the click it ends with changes nothing more. Without `steps` each notch has `data-on="drag click"`: a drag sets the value of the notch under the pointer, and stops where there is none. The track's `touch-action: pan-y` lets a finger drag it: one that moves along the track drags, and one that moves up or down scrolls. Its fill runs from the rail's start to the knob, or, with `fill` `"end"` (§6.16), from the knob to the rail's end. Hosts draw `input type=range` unevenly (Blitz not at all) |
@@ -121,7 +121,7 @@ renderer's own state: a tab shown, a Modal opened.
 
 | event | does |
 | --- | --- |
-| `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
+| `input`, `change` | writes the control's value: to its bound path, else as the renderer's; a text field's new value then runs its suggestions' `onInput` (§6.22) |
 | `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a tap on a HottyRangeSlider's track moves its nearer knob there, and a click on a knob gives it the keyboard; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
 | `submit` | the HottyForm submits (§6.2) |
 | `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it. A HottyRangeSlider's dragstart picks the knob that moves (§6.20), and each drag moves it, stopped where it meets the other. The click a drag ends with, which comes right after its dragend and only when it was let go on the slider, changes nothing more |
@@ -352,7 +352,7 @@ How the containers lay their children out:
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
 | Divider, Card, Tabs | §3.3 |
 | Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. A vertical List's Button is its row: ` label `, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
-| TextField, DateTime | in the field's box past the gutter: a title row, then the value (§3.5), then the error |
+| TextField, DateTime | in the field's box past the gutter: a title row, then the value (§3.5), then a text field's suggestions while it shows them (§3.5), then the error |
 | CheckBox | past the gutter, `[•] label` or `[ ] label`, then the error |
 | HottySwitch | past the gutter, its track with the knob at one end, then a space and its label, on one row: `▬▬■` in `accent` while it is on, a bar into a filled knob, and `□⎯⎯` in `muted` while it is off, a hollow knob on a thin line (`⎯`, not `─`: a terminal draws `─` itself at the cell's middle, where the font's square need not sit, and a font draws `⎯`, often a symbol font by fallback, since few coding fonts have it; a Slider's thin track is the same), so that without colour the knob's end, its fill and the track's weight still say which; then the error. Its label is in `accent` while it has the keyboard. A disabled one is `muted` and faint throughout, its knob still at its end. The switch and its label take a click |
 | a select (one value, `checkbox` display) | past the gutter, a title row, then the picked option's label, or `…` in `muted` when none is picked, and ` ▾` in `muted`. While its list is open (§3.7), the options follow one a row: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
@@ -484,6 +484,34 @@ without colour:
   - The field scrolls as little as keeps the cursor in it: across, by
     columns (it shows from the start whenever the cursor's line fits),
     and for a longText, down by lines.
+- **Suggestions** (§6.22), while a one-line field has the keyboard and
+  its value leaves some:
+  - The rest of its suggestion (the highlighted one, else the first) shows
+    after the value, in `muted` and faint, as bubbles' text input draws
+    it, cut at the field's edge. The cursor stays where it is: at the
+    value's end it is on the ghost's first cell.
+  - Under the value, a row a suggestion, its text under the value's: what
+    the value typed of it plain, its rest in `muted`. The highlighted one
+    is reversed in `accent`, a column of padding either side, as a menu's
+    item (a `> ` as the select's list has would read as a second prompt
+    under the field's). At most 5 show: past that, the 5 from the first,
+    moved as little as keeps the highlight in view, then a row
+    `  1–5 of 12` in `muted`. A row too wide is cut with `…`, and the
+    gutter's bar runs down them. At 30 columns, `git c` typed:
+
+    ```
+    ┃ Command
+    ┃ > git commit
+    ┃   git commit
+    ┃   git checkout
+    ┃   git cherry-pick
+    ┃   git clone
+    ┃   git config
+    ```
+
+    where the first `ommit` is the ghost and the others' rests are `muted`.
+    With nothing typed, nothing the value leaves, or the list shut, the
+    field is as without them: its placeholder, or its value alone.
 
 ### 3.6 Colour and attributes
 
@@ -563,6 +591,19 @@ In the output:
   - `submit` (Enter, in a single-line field) submits the field's
     HottyForm, if it is in one. In a longText, Enter types a line break.
   - Every edit writes the value at once.
+- **A text field's suggestions** (§6.22) take keys before its keymap
+  (`view.Controller.SuggestKey`), as bubbles' text input binds them:
+  - Tab takes the suggestion; with none to take it moves focus as ever.
+    ArrowRight at the value's end, with nothing selected, takes it too.
+  - ArrowDown and Control+n highlight the next suggestion, ArrowUp and
+    Control+p the one before, round from either end; from none, ArrowDown
+    highlights the first and ArrowUp the last. ArrowDown and Control+n
+    open a list Escape shut. The highlighted one is Tab's.
+  - Enter picks the highlighted one; with none highlighted, it submits as
+    ever. Escape shuts the list until the value changes; with no list it
+    goes on as ever.
+  - A taken suggestion is the value as written (`ger` takes `Germany`),
+    the cursor at its end, and the list stays shut until the next edit.
 - **A select** works in two states:
   - Closed, ArrowUp and ArrowDown pick the previous and next option.
     Home and PageUp pick the first, End and PageDown the last. A printable
@@ -665,6 +706,8 @@ In the output:
     program asks (XTSHIFTESCAPE), which the storybook does;
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
+  - a click on a row of a text field's suggestions takes that one, the
+    cursor after it;
   - a click on a HottyTable's row selects it, and a click on its selected
     row acts on it (§6.8); a click on its header only focuses it; so too
     a HottyList's items (§6.9), and its title and status line, and a
@@ -724,7 +767,9 @@ under the pointer; a program without mouse reports has no wheel.
 
 The cursor, the scroll offsets, which select's list is open and a press
 that may start a drag belong to the rendition, by element id; a drag
-under way is the controller's (`view.Drag`). Everything else is the surface's state (§1).
+under way is the controller's (`view.Drag`), and so is a text field's
+highlighted suggestion and whether its list is shut (`view.Suggest`).
+Everything else is the surface's state (§1).
 
 ### 3.9 Vectors
 
@@ -748,7 +793,9 @@ reference is `rendition/text`.
 - Text is its Markdown as plain text: paragraphs and list items a line
   each, markers kept.
 - A field is `Label: value`; an obscured one shows `•` for each
-  character, and an empty one its placeholder in parentheses.
+  character, and an empty one its placeholder in parentheses. Its
+  suggestions (§6.22) say nothing: they show while it has the keyboard,
+  which a pipe never gives it.
 - A CheckBox is `[x] Label` or `[ ] Label`; a ChoicePicker `Label: ` and
   the labels picked; a Slider `Label: value (min–max)`; a
   HottyRangeSlider `Label: start–end`, followed by `(disabled)` while it
@@ -1401,6 +1448,58 @@ mouse in a terminal. On a host KIT-23h puts a grip, `⠿`, on every row
 that moves, a touch's handle that leaves the rest of the row to scroll
 (`touch-action: pan-y`); always, since a document can't tell a finger
 from a mouse.
+
+### 6.22 suggestions
+
+Values a one-line TextField offers as the user types, as a shell
+completes a command or a form a place: the rest of one faint after the
+cursor, for Tab to take, and a list of them under the field, as bubbles'
+text input and fish have them (vault KIT-11c). It is an extension on the
+basic TextField, not a component of its own, so the field keeps its
+`label`, `value`, `placeholder`, `checks`, its keymap (§6.5) and its
+place in a HottyForm, and other renderers ignore it and show the field:
+
+```json
+"metadata": {"extensions": {"io_neuroplast_hotty": {"suggestions": {
+  "options": {"@path": "/cities"},
+  "onInput": {"event": {"name": "suggest", "context": {"query": {"@path": "/city"}}}}
+}}}}
+```
+
+- `options` (a DynamicStringList, required) are the suggestions, in the
+  order they show. Bind it to a list the agent rewrites as it hears what
+  was typed, or give a literal list for a closed set. An empty string and
+  a second of the same are left out.
+- `onInput` (an Action, optional) runs after every change the user makes
+  to the value: an edit, a taken suggestion, a host's `input`. An action
+  carries no payload (vault a2ui-limits L2), so its context reads the
+  field's bound `value`. On a surface with `sendDataModel`, each one
+  carries the whole data model (L5), so keep the options and the model
+  short there.
+- The field shows the options that start with its value, case aside, but
+  for the value itself, in their order: the renderer narrows them at each
+  key, so that the list is right while the agent's rewrite is on its
+  way. With nothing typed none show. An agent that matches otherwise (a
+  word inside, a fuzzy match) still sees its options narrowed to those
+  that start with the value.
+- Only a one-line field that shows what it holds takes it: not a
+  `longText`, where the arrows move between lines, nor an `obscured` one.
+  It is ignored on a DateTimeInput.
+
+Tab, ArrowRight at the value's end, the arrows, Control+n and Control+p,
+Enter and Escape work them (§3.7): nothing is highlighted while the user
+types, so that Enter submits what was typed; the arrows highlight one,
+which Tab and the ghost then follow and Enter picks. A taken suggestion
+is the value as written in `options` (`ger` takes `Germany`), and the list
+shuts until the next edit. The highlight is kept by its text, so it
+stays while the agent rewrites the list around it.
+
+**Where.** Cells draws the ghost and the list (§3.5) and takes the keys. A
+host draws the field with a `datalist` of the options (§2), and edits it
+as any field; the ghost, the list as a surface of its own and the keys
+wait for vault KIT-11h, since a host keeps Tab (SPEC §10.2) and doesn't
+set a focused field's value from a program's delta (§6.2). Text shows the
+field alone (§4).
 
 ## 7. Fallbacks
 
