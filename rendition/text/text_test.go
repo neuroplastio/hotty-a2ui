@@ -145,6 +145,28 @@ func TestTimer(t *testing.T) {
 	}
 }
 
+// TestBigText: a HottyBigText reads as its text as it is, its lines a line
+// each, lowercase and accents kept: what it says, not its blocks; one with
+// no text, as nothing.
+func TestBigText(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	h := `"catalogId":"` + hotty.ID + `"`
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["title","none","wrap"]},
+	 {"id":"title","component":"HottyBigText",` + h + `,"text":"Hello\nworld","size":"large"},
+	 {"id":"none","component":"HottyBigText",` + h + `,"text":""},
+	 {"id":"wrap","component":"HottyBigText",` + h + `,"text":"Déploiement terminé à 12:30","align":"center"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	want := "Hello\nworld\nDéploiement terminé à 12:30\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
 // TestRangeSlider: a range reads as a field does, "Label: start–end",
 // "(disabled)" after a disabled one, its error on the next line; a Slider
 // that fills from its end reads as any Slider.

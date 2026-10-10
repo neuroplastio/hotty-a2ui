@@ -158,7 +158,7 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 | KIT-16 Confirm | Settled (KIT-16c, profile §6.24): nothing; a pattern of two Buttons, each with its own action, and HottyShortcuts for y, n and the arrows. Its keys are the surface's (NEIO-11 question 4), and a kept yes or no is a HottySwitch's or a CheckBox's value | Fits |
 | KIT-17 File picker | `root` (a grant's name), bound `path`, `filter` | Fits. **L10** |
 | KIT-18 Terminal | `command` (a registered id), `lines` or a stream | Fits. L4, **L10** |
-| KIT-19 Big text | `text`, `font` | Fits |
+| KIT-19 Big text | Settled (KIT-19c, profile §6.28): `HottyBigText`, `text` (a DynamicString, as it is), `size` (small, medium or large: letters 3, 4 or 5 rows tall in cells) and `align`; a size rather than a font, since the three are what an agent picks between | Fits |
 | KIT-20 QR code | `value` | Fits |
 | KIT-22 Toggle | `label`, a bound `value` (DynamicBoolean), `checks`, `disabled` | Fits. L1 |
 

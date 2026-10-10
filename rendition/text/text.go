@@ -194,6 +194,13 @@ func element(e *view.Element) []string {
 		// "Tea: 2m57s". A pipe has no time to tick in.
 		t, _ := e.Value.(string)
 		return []string{field(e.Label, t)}
+	case view.BigText:
+		// The text as it is, a line a line: what it says, not its letters'
+		// blocks.
+		if e.Label == "" {
+			return nil
+		}
+		return strings.Split(e.Label, "\n")
 	case view.Tabs:
 		var titles []string
 		var rest []string

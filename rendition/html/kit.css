@@ -543,6 +543,18 @@ textarea.k-input { min-height: 5.5rem; }
 .k-timer-time { font-variant-numeric: tabular-nums; }
 .k-timer-time.k-still { color: var(--k-muted); }
 
+/* HottyBigText: a baseline (phase 1), large display type as many
+   terminal rows high as cells' letters take (small 3, medium 4, large 5),
+   a line one more, as cells' lines are a row apart, which leaves room
+   for descenders. Figures of one width, as cells' digits are, so that a
+   number that changes stays put. KIT-19h is the host's own. */
+.k-big { font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+  font-size: calc(4 * var(--hotty-cell-h, 1.25rem)); line-height: calc(5 * var(--hotty-cell-h, 1.25rem)); }
+.k-big-small { font-size: calc(3 * var(--hotty-cell-h, 1.25rem)); line-height: calc(4 * var(--hotty-cell-h, 1.25rem)); }
+.k-big-large { font-size: calc(5 * var(--hotty-cell-h, 1.25rem)); line-height: calc(6 * var(--hotty-cell-h, 1.25rem)); }
+.k-big-center { text-align: center; }
+.k-big-end { text-align: end; }
+
 /* HottyTable: a baseline (phase 1). The body holds the rows the view
    shows, as cells does; a host's own scrolling, a sticky header and
    hover are KIT-01h. Separate borders draw the header's rule on Blitz,

@@ -111,6 +111,7 @@ so that an error comes and goes as a text delta.
 | HottyPaginator | `div tabindex=0 role=group` (`k-pager`), named by its `accessibility.label`, else `Pages`: its child, which holds the page the view shows (the same page as cells, §3.4), then its pages: a dot for each (`span.k-dot`), each a `data-on=click` whose id is the paginator's and `~d` and the page's index from 0, the page shown's in `--k-fg` and the others in `--k-border`, in a row (`~d`, `role=status`) that says `Page 3 of 10`; with `displayStyle` `numbers`, that row holds `3/10` in tabular figures. Its content starts past a 3px bar at its start, where a HottyList's items do, in `--k-focus` while it has the host's focus, the page shown too. Its `data-keys` give the program the arrows left and right, Page Up, Page Down, Home and End, on a host that would scroll with them; h and l reach the program anyway, a focused box using no keys. A page is as tall as its items, a host laying it out, where cells keeps every page as tall as the tallest. Without a child it is the row alone (`k-bare`). The host's own look is vault KIT-15h |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 | HottyTimer, HottyStopwatch | `span role=timer`, which a screen reader does not read out at each tick: its label, then its time as cells writes it (§6.25), in a span whose id is the timer's and `~f`, so that a tick is one text's delta, in tabular figures (`font-variant-numeric`), so that it does not jitter as it ticks, and in `--k-muted` while it stands still (`k-still`, one attribute's delta). The program's draws move it on the clock (§3.4), as a Spinner's frames: a host runs nothing of its own here. The time in display type is vault KIT-14h |
+| HottyBigText | `div` (`k-big`) holding its text as it is, its lines apart at a `br`, in display type: weight 800, tabular figures, as many terminal rows high (`--hotty-cell-h`) as cells' letters, 3, 4 or 5 by its size (`k-big-small`, `k-big-medium`, `k-big-large`), a line one row more, which leaves room for descenders; `k-big-center` or `k-big-end` aligns its lines. A line too long wraps as text does. A screen reader reads the text. The host's own look is vault KIT-19h |
 
 **Updates are deltas.** The document goes once. After it, the renderer
 diffs the elements it sent against the elements the view makes now, and
@@ -331,6 +332,7 @@ Natural widths:
 | HottyChart | its widest tick label, 2 for the axis and a space, and its plot or its legend, whichever is wider: a line's plot is 40; bars', a group a point, as wide as its widest label or 2 a series, one column between groups (at least 8, and `No data`) |
 | HottySparkline | its `window`, else its values' count |
 | HottyPaginator | 2 for the gutter, plus its widest page's natural width (its child as it stands for each page) or its dots, a column a page, whichever is wider; with `numbers`, its last page's of its pages (`10/10`), so that it stays put as the pages turn |
+| HottyBigText | its widest line unwrapped, in its letters (§3.4) |
 | Image, Icon, HottyIcon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -365,6 +367,8 @@ Minimums:
 - A HottySparkline's is 1: it shows the newest values that fit (§3.4).
 - A HottyPaginator's is the gutter, and its pages' widest minimum or its
   numbers (`10/10`), which its dots become where they do not fit.
+- A HottyBigText's is its widest word; narrower, a word breaks between
+  its letters (§3.4).
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -395,6 +399,8 @@ How the containers lay their children out:
     and a HottyChart, whose legend or labels would read as a title of what
     follows, and a HottyPaginator, whose dots end its pages. Before it, the rule for controls applies, so a title above
     it stays on the row before its box.
+    A HottyBigText that has text has one after it too, as its own lines
+    are a row apart, so that its letters do not meet what follows.
     Through a Row, a Column or a HottyForm, the rule sees its first child
     (or, before it, its last).
   - Across: with `align` stretch, a child gets the full width. With start,
@@ -468,6 +474,7 @@ How the containers lay their children out:
 | HottyPaginator | as bubbles' paginator under what it pages: its child past the gutter, holding the page the view shows, the rows of the tallest page, so that the dots stay put as the pages turn (bubbles' rise on a shorter last page); then a blank row and its pages: a dot for each (`•`, the page shown's in `fg`, the others in `border` and faint, as bubbles' list's very subdued dots, so that without colour the page shown is the one dot not faint), each a click target; with `displayStyle` `numbers`, or where the dots do not fit, the page shown of how many, `3/10`, in `fg`. Without a child it is that row alone. While it has the keyboard, the gutter's bar runs down its rows, its child's and its dots', and the page shown, its dot or its numbers, is in `accent`. A click anywhere on it gives it the keyboard. |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | HottyTimer, HottyStopwatch | on one row, as bubbles' timer and stopwatch examples draw theirs (`Exiting in 4s`, `Elapsed: 1.5s`): its label and a space, then its time as its `format` writes it (§6.25), `4m59s` or `4:59`, in `fg` while it counts and in `muted` while it stands still, stopped or run out, so that a time that does not move does not look stuck. Without a label, the time alone. Its width is its time's, which changes as it ticks (`9s` after `10s`), as bubbles' does: put it at the end of its row. |
+| HottyBigText | as OpenTUI's ASCIIFont, block letters in `fg`, of the kit's own pixel fonts (§6.28): its size's glyphs, a column apart, a word a space's glyph and a column each side; at small (3 rows) and medium (4) a pixel is a column and half a row, two pixels a cell (`▀ ▄ █`), at large (5) two columns and a row (`██`). Each line at its `align` across its box; a line too long wraps at its last space that fits, and a word too long for a line of its own between letters, so that nothing is cut; its lines a blank row apart. Lowercase is drawn in capitals, a Latin letter's mark is left off (`É` is `E`), and a character the fonts lack is `?` |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2. A one-line field's starts in its input's column, under the value it is about (the maintainer, round 3), unless that leaves it fewer than 16 columns |
 
@@ -1034,6 +1041,8 @@ reference is `rendition/text`.
 - A HottyTimer or a HottyStopwatch is `Label: 4m59s`, the time it showed
   when the view was made (the last draw counted it), in its format; the
   time alone without a label. A pipe has no time to tick in.
+- A HottyBigText is its text as it is, a line each of its lines, its case
+  and its accents kept: what it says, not its letters' blocks.
 - A HottyTable is its header and every row, whatever its `height`: the
   columns two spaces apart, each as wide as its widest cell and aligned as
   it says, after `> ` for the selected row and two spaces for the others.
@@ -1989,6 +1998,41 @@ keyboard (§3.7).
 
 `perPage` is a literal whole number, as a HottyList's `height` is: how a
 list is paged is the layout's, not the data's.
+
+### 6.28 HottyBigText
+
+Text in large letters, as OpenTUI's ASCIIFont draws it: a banner, a title
+screen, a score or a time read from across the room. Bubble Tea has
+none.
+
+| prop | |
+| --- | --- |
+| `text` | required, a DynamicString: the text as it is. `\n` starts a line; a line too long for its room wraps between words. Bound, it follows the data model (a score, a countdown's time written by the agent) |
+| `size` | `small`, `medium` (the default) or `large`: in cells, letters 3, 4 and 5 rows tall; on a host, display type as many rows high |
+| `align` | `start` (the default), `center` or `end`: where each line goes across the room it has |
+
+**The fonts are the kit's own**, drawn for it pixel by pixel
+(`rendition/cells/bigfont.go`), not taken from figlet's or cfonts'
+(ASCIIFont's are cfonts', under the GPL): capitals, the digits, as wide
+as each other so that a number that changes stays put, and `!"#$%&'()*+,-./:;<=>?@[\]_`.
+Medium is 5 by 7 pixels, a dot-matrix display's; small and large share
+one of 3 by 5 (the round letters, N, M and W wider). Block elements
+draw them, which terminals draw themselves, so that the pixels meet:
+two pixels a cell in half blocks, about square, or at large a pixel two
+columns of `█`. They are not figlet's ASCII art, which a terminal's
+font draws with gaps and which reads as letters made of letters.
+
+A size, not a font: the three are what an agent picks between (how
+large), and on a host they are one face at three sizes. A style of
+letters (outlined, shaded) would be a prop of its own.
+
+It takes no focus and no keys.
+
+| rendition | a HottyBigText |
+| --- | --- |
+| cells | block letters in `fg`, its lines a blank row apart, then a blank row (§3.3, §3.4); lowercase in capitals, a Latin letter's mark left off, `?` for a character the fonts lack |
+| host | its text as it is in display type, as many rows high as cells' letters (§2); the host's own look is vault KIT-19h |
+| text | its text as it is, a line each of its lines (§4) |
 
 ## 7. Fallbacks
 

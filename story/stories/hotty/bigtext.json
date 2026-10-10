@@ -1,0 +1,121 @@
+{
+  "name": "Big text",
+  "kind": "component",
+  "component": "HottyBigText",
+  "icon": "format_size",
+  "description": "Text in large letters, as OpenTUI's ASCIIFont draws it, in block letters of the kit's own pixel fonts: a title screen, HOTTY large and centred over a caption; a score bound to the data model; the three sizes, 3, 4 and 5 rows tall, of one line, lowercase in capitals; and a French line too long for one, wrapped between words and centred, its accents left off.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "bigtext",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "score": "3 : 1"
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "bigtext",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "splash",
+              "scoreTitle",
+              "score",
+              "sizesTitle",
+              "small",
+              "medium",
+              "large",
+              "wrapTitle",
+              "wrap"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Big text"
+          },
+          {
+            "id": "splash",
+            "component": "Column",
+            "align": "center",
+            "children": [
+              "splashBig",
+              "splashSub"
+            ]
+          },
+          {
+            "id": "splashBig",
+            "component": "HottyBigText",
+            "text": "HOTTY",
+            "size": "large",
+            "align": "center",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "splashSub",
+            "component": "Text",
+            "text": "_Web pages in a terminal_",
+            "variant": "caption"
+          },
+          {
+            "id": "scoreTitle",
+            "component": "Text",
+            "text": "**Score**, bound to the data model"
+          },
+          {
+            "id": "score",
+            "component": "HottyBigText",
+            "text": {
+              "@path": "/score"
+            },
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "sizesTitle",
+            "component": "Text",
+            "text": "**Sizes**: small, medium (the default) and large"
+          },
+          {
+            "id": "small",
+            "component": "HottyBigText",
+            "text": "Ready? Go!",
+            "size": "small",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "medium",
+            "component": "HottyBigText",
+            "text": "Ready? Go!",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "large",
+            "component": "HottyBigText",
+            "text": "Ready? Go!",
+            "size": "large",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "wrapTitle",
+            "component": "Text",
+            "text": "**Wrapping** between words, each line centred, with accents left off"
+          },
+          {
+            "id": "wrap",
+            "component": "HottyBigText",
+            "text": "Déploiement terminé à 12:30",
+            "align": "center",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          }
+        ]
+      }
+    }
+  ]
+}

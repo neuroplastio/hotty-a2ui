@@ -240,6 +240,8 @@ func (m *markup) element(e *view.Element) *node {
 		}
 	case view.Timer:
 		n = timer(e)
+	case view.BigText:
+		n = bigText(e)
 	case view.Table:
 		n = table(e)
 	case view.RichList:

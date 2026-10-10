@@ -68,7 +68,7 @@ they're built.
 | KIT-16 | **Confirm**: a pattern of two Buttons and HottyShortcuts, not a component (profile §6.24, journal 2026-10-10.26) | huh confirm | Low | Yes and No inline, with the y and n keys | The same |
 | KIT-17 | **File picker** | bubbles filepicker, huh filepicker | Low | A directory listing walked with ↑ ↓ ← →. It shows only the roots the program grants (a2ui-limits L10) | The same, with icons |
 | KIT-18 | **Terminal** | OpenTUI EmbeddedTerminal | Low, large | A VT pane that runs only commands the program has registered, never a command line from the agent (L10) | To be decided |
-| KIT-19 | **Big text** | OpenTUI ASCIIFont | Low | figlet-style block letters | Large display type |
+| KIT-19 | **Big text** (`HottyBigText`) | OpenTUI ASCIIFont | Low | Block letters of the kit's own pixel fonts in block elements (`▀▄█`), 3, 4 or 5 rows tall, wrapped between words | Large display type |
 | KIT-20 | **QR code** | OpenTUI QR | Low | Half blocks (`▀▄█`) | SVG, checked with `hotty render` at 1.6x |
 | KIT-21 | **3D and audio** | OpenTUI three.js and audio | Parked | Not for a terminal UI kit. AudioPlayer is already a labelled link. Media is gov R-2's research | — |
 | KIT-22 | **Toggle** (`HottySwitch`) | iOS's switch, Material's Switch; the maintainer asked for it (2026-10-10) | Medium | A boolean as CheckBox's (label, bound value, checks), drawn as a track with a knob at its end: `accent` when on, `muted` when off. Space, Enter or a click flips it | A pill with a knob, `role=switch` and `aria-checked`. The knob slides by deltas, since Blitz runs no CSS transitions (host-motion) |

@@ -39,6 +39,8 @@ func init() {
 		"drag_pan": "m12 22l-4.25-4.25l1.425-1.425L11 18.15V13H5.875L7.7 14.8l-1.45 1.45L2 12l4.225-4.225L7.65 9.2L5.85 11H11V5.85L9.175 7.675L7.75 6.25L12 2l4.25 4.25l-1.425 1.425L13 5.85V11h5.125L16.3 9.2l1.45-1.45L22 12l-4.25 4.25l-1.425-1.425L18.15 13H13v5.125l1.8-1.825l1.45 1.45z",
 		// dynamic-form-sharp
 		"dynamic_form": "M2 11V4h11v7zm0 9v-7h13v7zm15 0v-9h-2V4h7l-2 5h2zM4.75 17.25h1.5v-1.5h-1.5zm0-9h1.5v-1.5h-1.5z",
+		// format-size-sharp
+		"format_size": "M14 20V7H9V4h13v3h-5v13zm-9 0v-8H2V9h9v3H8v8z",
 		// forum-sharp
 		"forum": "M6 18v-3h13V6h3v16l-4-4zm-4-1V2h15v11H6z",
 		// gavel-sharp

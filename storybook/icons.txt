@@ -15,6 +15,7 @@ description
 difference
 drag_pan
 dynamic_form
+format_size
 forum
 gavel
 help_center

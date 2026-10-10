@@ -157,6 +157,9 @@ func (l *layout) minimum(e *view.Element) int {
 	case view.Sparkline:
 		// It shows the last values that fit.
 		n = min(sparkWidth(e), 1)
+	case view.BigText:
+		// Narrower, a word breaks between letters.
+		n = bigMinimum(e)
 	case view.KeyHints:
 		// It cuts what does not fit (shortHints).
 		n = 1
@@ -343,15 +346,16 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 // a HottyScrollView, whose box draws no edge but its scrollbar, a
 // HottyCode, which draws none, a HottyChart, whose labels and legend end
 // it, or a HottyPaginator, whose dots end its pages, so that what follows
-// does not read as its content; else none, so that a stack of Buttons or
-// of HottySpinners stays tight.
+// does not read as its content; after a HottyBigText, as its own lines
+// are a row apart, so that its letters do not meet what follows; else
+// none, so that a stack of Buttons or of HottySpinners stays tight.
 func separator(kids []*view.Element, i int) int {
 	if i == 0 {
 		return 0
 	}
 	a, b := edge(kids[i-1], false), edge(kids[i], true)
 	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView || a.Kind == view.Chart ||
-		a.Kind == view.Paginator {
+		a.Kind == view.Paginator || a.Kind == view.BigText && a.Label != "" {
 		return 1
 	}
 	if isControlElement(b) && endsInHeading(a) {

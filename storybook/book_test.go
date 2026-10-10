@@ -591,7 +591,7 @@ func TestNav(t *testing.T) {
 // behaviours by title, and A2UI's examples in sentence case, names kept.
 func TestEntries(t *testing.T) {
 	es := entries(true)
-	if es[0].name != streamName || es[1].name != "hotty/chart" {
+	if es[0].name != streamName || es[1].name != "hotty/bigtext" {
 		t.Errorf("first %v, then %v", es[0], es[1])
 	}
 	labels := map[string]string{}

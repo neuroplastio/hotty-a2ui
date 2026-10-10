@@ -147,6 +147,11 @@ const (
 	// Value, the time it shows as text (FormatTimer); Active while it
 	// counts.
 	Timer Kind = "timer"
+	// BigText is text in large letters, a banner's (HottyBigText): Label,
+	// the text, its lines apart at "\n"; Variant, its size (BigSmall,
+	// BigMedium, BigLarge); Align, where each line goes across its box
+	// (start, center, end).
+	BigText Kind = "bigtext"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -180,7 +185,8 @@ type Element struct {
 	// Stack and Divider: the direction. Stack: how the children are
 	// placed along it (Justify: start, center, end, spaceBetween,
 	// spaceAround, spaceEvenly, stretch) and across it (Align: start,
-	// center, end, stretch); a List scrolls.
+	// center, end, stretch); a List scrolls. BigText: Align is where its
+	// lines go across it (start, center, end).
 	Dir     Axis   `json:"dir,omitempty"`
 	Justify string `json:"justify,omitempty"`
 	Align   string `json:"align,omitempty"`

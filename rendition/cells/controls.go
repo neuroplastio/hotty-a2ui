@@ -194,6 +194,8 @@ func controlWidth(e *view.Element) int {
 		return chartWidth(e)
 	case view.Sparkline:
 		return sparkWidth(e)
+	case view.BigText:
+		return bigWidth(e)
 	case view.Image:
 		return Width(imageText(e))
 	case view.Icon:
@@ -235,6 +237,8 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 		h = chartHeight(e)
 	case view.Sparkline:
 		h = max(e.Height, 1)
+	case view.BigText:
+		h = bigHeight(e, w)
 	case view.KeyHints:
 		h = len(l.r.keyHints(e, w))
 	case view.Choice:

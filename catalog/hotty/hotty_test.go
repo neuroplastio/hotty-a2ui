@@ -80,6 +80,11 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyResetTimer","args":{"id":"tea"}}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyResetTimer","args":{}}}}`, false},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyStartTimer","args":{"id":"tea","at":0}}}}`, false},
+		{`{"id":"b","component":"HottyBigText","text":"HOTTY","size":"large","align":"center"}`, true},
+		{`{"id":"b","component":"HottyBigText","text":{"@path":"/score"}}`, true},
+		{`{"id":"b","component":"HottyBigText","size":"small"}`, false},
+		{`{"id":"b","component":"HottyBigText","text":"HOTTY","size":"huge"}`, false},
+		{`{"id":"b","component":"HottyBigText","text":"HOTTY","align":"middle"}`, false},
 	} {
 		var d map[string]any
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {
