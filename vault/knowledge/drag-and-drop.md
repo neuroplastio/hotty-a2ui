@@ -2,7 +2,8 @@
 
 As of 2026-10-10. The maintainer asked for drag and drop to be first-class
 behaviour of lists, tables, trees and the like (KIT-23). This note lays out
-the design they picked from.
+the design they picked from, and what the cells leg settled (below,
+"Built").
 
 **Picked (the maintainer, 2026-10-10):** C, both (the kit moves an item
 within and between its own lists, and a drop onto anything else is the
@@ -77,7 +78,9 @@ What the user sees during the drag:
   know where in the row the pointer is (G1). In cells a row is one cell
   high: where the terminal reports the pointer in pixels (SGR-Pixels,
   mode 1016) the kit knows the half or the third of the row; elsewhere
-  the line goes on the side the item comes from.
+  the item takes the place of the row it is over (see "Built": "the side
+  the item comes from" read literally can't move an item one place
+  down).
 
 **Keys (S6).**
 - Alt+↑ and Alt+↓ move the selected item one place, as in VS Code and
@@ -115,6 +118,60 @@ do it and which §9.1 doesn't have (G3).
 - **G4, another surface** (later). The pointer stays the dragging
   surface's, and `t` is empty over another surface, so two A2UI surfaces
   can't drop into each other.
+
+## Built (KIT-23c, 2026-10-10, journal 2026-10-10.8)
+
+The cells leg and the keys on a host. The API is profile §6.21's:
+- **Props** on HottyList, HottyTable and HottyTree: `reorderable`
+  (boolean), `dragType` (string), `moved` (bound: where the move is
+  written), `onMove` (an Action). The items must be bound to be written;
+  literal ones move in the renderer's state.
+- **Extensions** under `io_neuroplast_hotty`: `reorder` on a templated
+  List (`type`, `moved`, `onMove`), `drag` on any component (`type`,
+  `value`), `drop` on any component (`accepts`, `value`, `action`).
+  Their schema is in the catalog's `$defs`, instruction 21 tells an
+  agent.
+- **The move** written to `moved`: `{"item", "from": {"index", "path"},
+  "to": {"index", "path"}}`, a tree's places with `parent` too. `item`
+  is the item's id as `selected` names it in a kit list, the item's data
+  in a List. `to`'s index is after the item left.
+- **A drop** writes what is dropped to `drop.value`'s path (a source's
+  value, a list item's data) and runs `drop.action`; the item stays.
+
+**Settled while building:**
+- **The line without pixels.** "The side the item comes from" read
+  literally (from above, the line above the row) means an item over the
+  next row lands where it was, so a drag can't move it one place down.
+  Instead the item takes the place of the row it is over: after it when
+  it comes from above, before it from below, and into a node that takes
+  children; from another list, before it. With pixels, halves and
+  thirds.
+- **The line's look.** An underline in the accent (SGR 4 with SGR 58)
+  along the row above the place, which leaves rows where they are and
+  text in its colour; on a blank row between items it is a clean rule.
+  An overline (SGR 53) only at the frame's top, as it can't take the
+  accent (SGR 58 colours underlines), so that row's text goes accent.
+  Into a node, and onto a drop target, the accent reversed. Checked in
+  vhs (xterm.js), kitty and hottyterm.
+- **Pixels.** The storybook asks for mode 1016 (DECRQM) and the cell's
+  size (XTWINOPS 16) and sets the mode once both answer; kitty and
+  hottyterm (the AUR package, 26.10.10.r72) answer, and a real drag
+  there goes by halves.
+- **Grips.** None in cells. On a host, always (KIT-23h): a document
+  can't tell a finger from a mouse.
+- **An empty folder** is `children: []`; cells draws it `▶ name 0`.
+- **The press.** What a click does past selecting waits for the
+  release on what can be dragged, so a drag never runs a card's Button.
+- **Innermost wins**, for the press and the drop.
+
+**Not built** (later, or KIT-23h):
+- A closed folder opening while held over it (S2's spring-loading).
+- Scrolling at an edge while held: a HottyList's page, a tree with a
+  `height`, a scroll view.
+- Choosing a tree's level by the pointer's column after a branch's last
+  child (it lands at the child's level).
+- S7 copy and S8 several, as planned.
+- On a host: drags, the line, the grip (G1, G2).
 
 ## Cost
 

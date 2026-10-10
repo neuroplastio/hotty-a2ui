@@ -77,7 +77,7 @@ so that an error comes and goes as a text delta.
 
 | component | element |
 | --- | --- |
-| Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures); a Row of columns or cards shrinks them instead. A weighted child of a Row takes its share of it, whatever it holds (`flex: weight`, as A2UI's Lit renderer has it), so Rows weighted alike line up as a grid's; in a Column, a weight is a share of the rows to spare |
+| Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures); a Row of columns or cards shrinks them instead. A weighted child of a Row takes its share of it, whatever it holds (`flex: weight`, as A2UI's Lit renderer has it), so Rows weighted alike line up as a grid's; in a Column, a weight is a share of the rows to spare. A List whose items move (`reorder`, §6.21) gives the program Alt+ArrowUp and Alt+ArrowDown (`data-keys`), so that they move the item the keyboard is in, as in cells; its drags are cells' alone until KIT-23h |
 | Card | `div`, a raised fill and a rounded border |
 | Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9). A word breaks only when it fills a line alone. A Text that is one number (`$850,000,000.00`, a grid's cell) may also break after its group separators, a zero-width space after each, so a narrow column breaks it between groups, not between any two digits. An ordered list item's number is written out, a `span.k-n` the sheet sets in the indent with a gap, ending at the same place for `9.` and `10.`, because Blitz draws a list's own numbers flush against the text and has no counters to draw them otherwise |
 | Image | `img`, sized by its variant in `rem` |
@@ -94,13 +94,13 @@ so that an error comes and goes as a text delta.
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
 | HottyForm | `form` with a hidden submit button out of the Tab order, so Enter submits |
 | HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track sweeps across it with the clock (§3.4): the element's `--k-at` is where it starts, so that a tick is one attribute's delta |
-| HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h |
-| HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`. Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type and the item under the pointer are vault KIT-04h |
+| HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h. A `reorderable` one's `data-keys` also give the program Alt+ArrowUp and Alt+ArrowDown, which move the selected row (§6.21); a drag is vault KIT-23h |
+| HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`. Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type and the item under the pointer are vault KIT-04h. A `reorderable` one's `data-keys` give Alt+ArrowUp and Alt+ArrowDown too (§6.21) |
 | HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a HottyDiff's, a HottyTree's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h |
 | HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there. Its `data-keys` binds the keys bubbles' viewport scrolls with to the host's scroll actions (SPEC.md §10.2, *Scrolling keys*), so that they scroll it as in cells (§3.7): j and k, f, b, Space and Shift+Space, u and d (Control+u, Control+d), g and G, and h and l while its lines are cut. A Button in it keeps Space and a field in it types the letters, since a key an element uses stays its own and a field leaves scroll actions out. Following the tail on a host is vault KIT-07h |
 | HottyCode | `div` in the mono face, filled with `--k-tonal` as a Text's code block is, a flex row (`k-cl`) for each line: its number, right-aligned as wide as the widest (`--k-ln`), in `--k-muted` and `aria-hidden`; its mark's sign, when the code has marks; then its code (`k-src`), a span for each token that is not plain, of class `k-t-` and its kind, which the sheet colours with the roles cells uses (§3.4). A marked row has `k-m-` and its kind: a highlighted one is filled with `--k-selection`, the others with a sixth of their role's colour (`color-mix`). Lines wrap, `pre-wrap`; with `wrap` false they do not, and the box scrolls sideways, which the host does itself (SPEC.md §5.3), every row as wide as the widest so that a tint reaches the end. A Text's fenced code block is goldmark's `pre` and `code`, its tokens in the same spans |
 | HottyDiff | `div` in the mono face, filled with `--k-tonal` as a HottyCode's; with hunks, `tabindex=0 role=listbox`, whose `data-keys` gives the program ArrowUp, ArrowDown, Home, End, k, j, g and G (a HottyScrollView around it binds the letters to scroll actions, SPEC.md §10.2). For each file with a name (or of several), a row (`k-diff-file`): its name, bold, then what the change adds and removes, `+N` in `--k-success` and `-M` in `--k-error`, or new, deleted or binary. A run of unchanged lines left out is a muted row, `⋯ N unchanged lines` (`k-fold`). Each hunk is a `div tabindex=-1 role=option data-on=click` (`k-hunk`), whose id is the diff's, `~b` and the hunk's index: its header in info and its section muted (`k-hh`), then its lines. Unified, a line is a flex row (`k-dl`): its old number and its new (`--k-lo` and `--k-ln` wide, `aria-hidden`), its sign, then its code, its tokens in a HottyCode's spans. Split, the hunk is a grid of two equal columns, the old side and the new (`k-ds`), paired as cells pairs them, a rule between them and the header across both. A removed line (`k-d-del`) is filled with a sixth of `--k-error`, an added one (`k-d-add`) with a sixth of `--k-success`, and its changed words (`k-w`) more. The selected hunk (`k-sel`, `aria-selected`) has a rail on its left and its header reversed, muted, and in `--k-focus` while the diff has the keyboard (`k-on`). It then has the host's focus itself, so that the host scrolls it into view (SPEC.md §5.3) as cells keeps it in sight. A split diff stays split at any width, its sides wrapping: the markup does not know the width, and a host has no container queries |
-| HottyTree | `div tabindex=0 role=tree`, as a HottyList's box, holding the nodes the view shows (the same rows as cells, §3.4), each a `div role=treeitem data-on=click` whose id is the tree's and `~q` and the node's index, with `aria-level`, `aria-expanded` on a branch and `aria-selected`. A row is a flex row indented `--k-5` a level (`--k-level`): its fold (`k-node-fold`, a column wide), `▸` or `▾` in `--k-muted` before a branch and blank before a leaf, so that a level's labels line up; its icon, as an Icon draws it, or a blank one as wide where another node has an icon; then its label, the filter's matches in `span.k-match`, and a closed branch's count (`k-node-count`, as cells', §3.4) in `--k-muted`. The selected node is marked as a HottyList's selected item: filled with `--k-tonal`, a 3px bar at its start in `--k-border`, and in `--k-focus` with its text while the tree has the keyboard (`k-on`). Its `data-keys` are a HottyList's; its letters and Enter reach the program anyway, a focused box using no keys. Each row is `--k-node-h` (2rem) tall. With a `height`, the box is that many rows tall and holds every node that shows, and the host scrolls it (SPEC.md §5.3), with the wheel and a thin scrollbar; the selected node is `tabindex=-1` and has the host's focus while the tree has the keyboard, so that the host scrolls it into view as the selection moves, as a HottyDiff's selected hunk does. Guides are cells' (§3.4): a host has the room to indent instead. Its empty text shows when no node does |
+| HottyTree | `div tabindex=0 role=tree`, as a HottyList's box, holding the nodes the view shows (the same rows as cells, §3.4), each a `div role=treeitem data-on=click` whose id is the tree's and `~q` and the node's index, with `aria-level`, `aria-expanded` on a branch and `aria-selected`. A row is a flex row indented `--k-5` a level (`--k-level`): its fold (`k-node-fold`, a column wide), `▸` or `▾` in `--k-muted` before a branch and blank before a leaf, so that a level's labels line up; its icon, as an Icon draws it, or a blank one as wide where another node has an icon; then its label, the filter's matches in `span.k-match`, and a closed branch's count (`k-node-count`, as cells', §3.4) in `--k-muted`. The selected node is marked as a HottyList's selected item: filled with `--k-tonal`, a 3px bar at its start in `--k-border`, and in `--k-focus` with its text while the tree has the keyboard (`k-on`). Its `data-keys` are a HottyList's; its letters and Enter reach the program anyway, a focused box using no keys. Each row is `--k-node-h` (2rem) tall. With a `height`, the box is that many rows tall and holds every node that shows, and the host scrolls it (SPEC.md §5.3), with the wheel and a thin scrollbar; the selected node is `tabindex=-1` and has the host's focus while the tree has the keyboard, so that the host scrolls it into view as the selection moves, as a HottyDiff's selected hunk does. Guides are cells' (§3.4): a host has the room to indent instead. Its empty text shows when no node does. A `reorderable` one's `data-keys` give the program Alt with each of the four arrows too (§6.21) |
 | HottySwitch | `button type=button role=switch` with `aria-checked`, `disabled` while it is, holding its pill (`k-switch-track`, `aria-hidden`) and its label (`~l`), so that a click on either flips it, as do Space and Enter, which a host clicks a button with (SPEC.md §10.2); then its error. On or off is that one attribute, so a flip is one delta. Off, the pill is filled with `--k-tonal` and ringed in `--k-muted`, its knob `--k-muted` at its start; on, it is `--k-accent`, its knob `--k-on-accent` at its end, so that the two differ by more than a shade where the accent is the foreground (no theme), as Material's switch does. The ring, and a focus ring of `--k-focus` around the pill while it has the host's focus, are shadows, which draw where a thin rounded border may not. The knob does not slide: Blitz runs no transitions, and a slide by deltas is vault KIT-22h |
 | HottyRangeSlider | a Slider's field (§6.20): its label (`~l`), then a row (`~r`) of the track and an `output` as wide as the widest range, in `ch`, naming both knobs (`for`); no `−` or `+`. The track is `div role=group`, named by the label (`aria-labelledby`), holding the rail, the fill from the start's knob to the end's, a Slider's notches, and the two knobs, each `button type=button role=slider` (`k-thumb`, the knob's view id, `price/knob/0` and `price/knob/1`) named `Price, start` and `Price, end` (`aria-label`; `Start` and `End` without a label), with `aria-valuenow` and its own range up to the other knob in `aria-valuemin` and `aria-valuemax`, as a multi-thumb slider has it. Each knob is a Tab stop, a button, whose arrows, Home and End the host leaves to the program (SPEC.md §10.2). On a host with `steps` the track is the drag target, as a Slider's, the notches take `click` alone, and the knobs nothing: a press anywhere on the track, a knob too, moves the nearer knob to the step under the pointer and gives it the keyboard, and the drag moves it on. The press's blur, which the host sends as the track takes no focus (SPEC.md §10.1), leaves the keyboard on the knob, and the next update gives the host it back (`a=focus`). Without `steps` each knob and each notch has `data-on="drag"` (the notches `drag click`): a drag from a knob moves it to the notch under the pointer. A tap on a notch moves the nearer knob there. A knob is a disc, `--k-accent`, ringed by a 2px outline of `--k-focus` while it has the host's focus (an outline, which Blitz draws round, where it draws a spread shadow's corners square). A disabled one's knobs are `disabled`, its notches take nothing, and the field is faint (`k-off`), its label and value too |
 | HottyChart | `div role=img`, named by its `accessibility.label`, else `Line chart` or `Bar chart` and its series' labels; a grid of its ticks' labels and its plot. The labels (`k-chart-y`, `aria-hidden`, in `--k-muted`) are each placed at its value's height, all of them, in a column as wide as the widest, in `ch`. The plot (`~a`) is `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), its left and bottom borders the axes, 2px in `--k-border`, since a 1px straight edge drops out at a fractional scale. The axis is the view's, cells' (§6.18), so a value sits at the same height in both. A line is an inline `svg` a series (`~g0`, `~g1`, …), stretched over the plot (`preserveAspectRatio=none`), holding one `path` (`~c0`, …) that hotty-go's `chart.Line` makes: a break where a value is missing, a lone value a dot, round joins, stroked 1.5 wide in `currentColor` with presentation attributes only, which every host's SVG takes. A new point is so an attribute's delta a line. Bars are boxes, a group a point and a bar a series in it, each from the axis's 0 to its value, placed by percentages, so that one below 0 hangs from it. The series' colours are cells' (§3.4), set by the series' class: `--k-info`, `--k-warning`, `--k-success`, `--k-error`, and round again. Under the plot: a line's points' labels, three evenly spread (the first and the last among them), or a bar chart's each under its bars; then the legend, when it has several series or a labelled one, a key a series (a stroke for a line, a square for bars) and its label in `--k-muted`. With no values, the plot says `No data`. The `svg`'s box is 480 by 20 a row, a guess at the plot's width that the markup cannot know: on a plot much wider or narrower the stroke thickens where the line is steep (vault KIT-10h) |
@@ -366,7 +366,7 @@ How the containers lay their children out:
 | HottyScrollView | a box `height` rows tall, as bubbles' viewport: its content, 2 columns narrower than the box, then a blank column and the scrollbar down the last. Its lines are a row each, cut at the box and scrolled sideways six columns at a time, or with `wrap` broken between characters into the rows they take; a child is laid out at the content's width, and shows through the box at the rows scrolled to: what it hides takes no click, and the element with the keyboard inside it is scrolled into sight. It starts at its top, or with `follow` at its end, where it stays as lines arrive until the user scrolls up, and follows again once back at the end. The scrollbar, while the content is taller than the box, is a track of `│` in `border` faint and on it a thumb of `┃` as long as the share that shows (at least a row), where it shows, in `muted`, and in `accent` while the box has the keyboard. bubbles' viewport draws no scrollbar: without one, a box with no edge gives no sign that it scrolls |
 | HottyCode | a row for each line, or with `wrap` (the default) as many as the line takes, broken by cluster under the code: first its number, right-aligned as wide as the widest, in `muted`, and a space, when `lineNumbers` is on; then, when the code has marks, the line's sign and a space (`▎` in `info` for highlight, `+` in `success` for added, `-` and `✗` in `error` for removed and error, `!` in `warning`); then the code. Continuation rows leave the gutter blank. Without `wrap` a long line is cut with `…`. Each token is coloured by its kind (package `highlight`): keywords `info` and bold, types and builtins `info`, functions' names bold, strings `success`, numbers and constants `warning`, as are preprocessor lines, decorators and attributes, comments `muted` and italic, a diff's added and removed lines `success` and `error`, its hunk headers `info` and bold, and the rest `fg`. Not `accent`, which marks only focus (§3.6). A marked line's rows are tinted across the width (§3.6): toward `selection` itself for highlight, a sixth of the way toward `success`, `error` or `warning` for the others. As OpenTUI's Code and LineNumbers; glamour, the reference shot's, draws code blocks with neither numbers nor marks |
 | HottyDiff | a column for the rail, then rows. For each file: a blank row before all but the first; its name when it has one (or the diff has several files), bold, then `+N` in `success` and `-M` in `error`, or `new`, `deleted` or `binary`. For each hunk: `⋯ N unchanged lines` in `muted` when it leaves lines out before it (and after the last, where the diff knows, from two texts); its header in `info` and its section in `muted`; then its lines. Unified, a line is its old number and its new (blank on the side that does not have it), right-aligned as wide as the widest, in `muted`, each and a space, when `lineNumbers` is on (the default); its sign (`-` in `error`, `+` in `success`) and a space; then its code, its tokens coloured as a HottyCode's, wrapped under the code or, without `wrap`, cut with `…`. Split, where each side has room for 16 columns of code (unified where not): the old side, ` │ ` in `border`, then the new, each a number, a sign and code; a context line on both, and in a run of removed lines followed by added ones, each removed line beside the added line that replaces it; a row is as tall as its taller side, and a side with no line is blank. A removed line's rows are tinted a sixth of the way toward `error`, an added one's toward `success`, its changed words a third (§3.6). The selected hunk's rows have `▎` in the rail and its header is reversed, both in `muted`, in `accent` while the diff has the keyboard; a scroll view around it keeps that hunk in sight. With no hunks and no name, `No changes` in `muted`. As OpenTUI's Diff, which has no names, folds, word marks or selection |
-| HottyTree | as lipgloss's tree draws one, a row a node, every row 2 columns in: for each level below the roots, its guides in `border`, `│   ` down past an ancestor a sibling follows (else four blanks), then `├── ` before a node a sibling follows and `└── ` before the last; a branch's fold, `▶ ` closed or `▼ ` open, in `muted`, as bubbles' tree has it, or a root leaf's two blank columns, so that the roots line up; its label, the filter's matches underlined, cut with `…` when it does not fit; and a closed branch's count, ` 3`, in `muted`. A node's siblings are those that show, so that while a filter applies a line ends at its last match. The selected node's first two columns are `│ `: in `accent` with its label, bold, while the tree has the keyboard, and in `muted` otherwise. With a `height`, that many rows show: moved as little as brings the selected node into view when the selection moves, and three rows a notch by the wheel, which leaves the selection where it is (§3.7). A node's icon is a host's: few have a glyph a column wide, and the guides and folds say what a tree is. With no node shown, its empty text in `muted`. |
+| HottyTree | as lipgloss's tree draws one, a row a node, every row 2 columns in: for each level below the roots, its guides in `border`, `│   ` down past an ancestor a sibling follows (else four blanks), then `├── ` before a node a sibling follows and `└── ` before the last; a branch's fold, `▶ ` closed or `▼ ` open, in `muted`, as bubbles' tree has it, or a root leaf's two blank columns, so that the roots line up; its label, the filter's matches underlined, cut with `…` when it does not fit; and a closed branch's count, ` 3`, in `muted`; a branch with nothing in it yet (`children: []`, §6.21) is drawn as a closed one, ` 0`. A node's siblings are those that show, so that while a filter applies a line ends at its last match. The selected node's first two columns are `│ `: in `accent` with its label, bold, while the tree has the keyboard, and in `muted` otherwise. With a `height`, that many rows show: moved as little as brings the selected node into view when the selection moves, and three rows a notch by the wheel, which leaves the selection where it is (§3.7). A node's icon is a host's: few have a glyph a column wide, and the guides and folds say what a tree is. With no node shown, its empty text in `muted`. |
 | HottyChart | as ntcharts draws one: its ticks' labels in `muted`, right-aligned as wide as the widest, each on the row its value is drawn in (`view.TickRow`), `┤` there on the axis and `│` on the other rows, and `└` then `─` across under the plot, in `border`. The axis (§6.18) has its ticks a free row apart where the plot is tall enough; where it is not, 0's label, the top tick's and the bottom one's come first, then each other one with a free row either side, as plothot labels its axis. A line is braille dots (hotty-go's `braille`), two across and four down a cell, in its series' colour, joining its points: a point's dot row runs from the middle of the bottom row, the axis's low end, to the middle of the top row, so that a tick's label is level with its value; its dot column is its slot's (§6.18). A missing value breaks the line, and a lone value is a dot. A cell takes the colour of the last series to put a dot in it. Under the plot, three of its points' labels (five where the plot is 60 columns or wider), evenly spread over its slots: the first starting at its slot, the last ending at its own, the others centred, and one that would touch the one before it left out. Bars are a group a point, the plot's columns shared out between them a column apart, each series' bar an equal part of its group, in its colour, from the axis's 0, which may fall inside a row, to its value: a cell its bar covers from the cell's bottom is that many eighths (`▁` to `█`, at least `▁` in the cell 0 is in); one it covers from the top, below 0 or above a 0 inside the row, is `▀` from a quarter, `█` from three quarters, and `▔` for less, since a cell has no other blocks that hang. Where the groups do not fit at a column a bar, the last points that fit show. Each label is centred under its group, cut with `…`. Then the legend, when it has several series or a labelled one: a key in the series' colour, `━` for a line and `■` for bars, and its label in `muted`, three columns between series. The series' colours are `info`, `warning`, `success` and `error`, then round again; not `accent`, which marks only focus (§3.6). With no values, `No data` in `muted` in the plot's middle row. |
 | HottySparkline | as ntcharts' sparkline: a column a value, in `info`, rising from its bottom in eighths of a row (hotty-go's `blocks`), `height` rows tall, from its `min` at the bottom to its `max` at the top: the newest value in its last column and those before it to the left, as many as fit, so that a sparkline with a `window` keeps its width as values arrive. A value at `min` or below is `▁`, so that only a missing value is blank. |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
@@ -429,6 +429,24 @@ without colour:
 - A text field's prompt is in `accent`. What Shift, Control+a or a drag
   selected (§5) is on the `selection` colour, or reversed where the theme
   can't tint, as a terminal shows its own.
+
+**A drag** (§6.21) is painted over the frame, so that no row moves:
+- What it lifted is faint: a list's item, a tree's node and the nodes
+  under it that show, a List's item, a drag source.
+- Where the item would land is a line in `accent`, an underline (SGR 4)
+  along the row above the place, across the item's columns, a tree's from
+  the item's level: the item above, the blank row between two items, a
+  HottyList's blank row under its status line, a HottyTable's rule, a
+  List's heading. After an item that another follows is before that one,
+  so the line takes the blank row between them where there is one. The
+  underline's colour is the accent's (SGR 58: the theme's, or the
+  256-colour index of the ANSI one), so the row's text keeps its own; a
+  terminal without SGR 58 draws it in the text's colour. At the frame's
+  top, with no row above, it is an overline (SGR 53) along the row under
+  the place, that row's text in `accent`, since an overline takes the
+  text's colour.
+- Into a tree's node, the node's row from its level is reversed in
+  `accent`; so is a drop target, whole.
 
 ### 3.5 Text fields
 
@@ -603,6 +621,13 @@ In the output:
   same letters, bound to the host's scroll actions. A host older than
   those (SPEC.md §10.2, *Scrolling keys*) gives the letters to the program,
   which cannot scroll the box, so they do nothing there.
+- **Alt with the arrows** moves an item (§6.21): Alt+ArrowUp and
+  Alt+ArrowDown the selected item of a `reorderable` HottyList,
+  HottyTable or HottyTree, or a List's item (`reorder`) the keyboard is
+  in, a place; in a HottyTree also Alt+ArrowLeft out of its branch and
+  Alt+ArrowRight into the node above (`view.Controller.MoveKey`, in both
+  renditions). A text field takes them first where its keymap binds them.
+- **Escape** during a drag drops it where it started.
 - **Space and Enter** activate a Button, a Tabs' title, a chip, a Media
   link, or a Modal trigger that is not a control, and flip a HottySwitch:
   it is a button on a host, which Enter clicks, so in a HottyForm too
@@ -646,6 +671,30 @@ In the output:
     moves neither, and the first column the pointer moves to picks the
     knob it goes towards (§6.20);
   - anything else is activated.
+- **A press on what can be dragged** (§6.21: a `reorderable` list's
+  item, a List's item with `reorder`, a drag source) may start a drag. It
+  selects a list's item at once; what else the click does (the second
+  click's action, a branch opening, a Button in a card running) waits for
+  the release, and a drag does not do it. Once the pointer leaves the item
+  with the button down, the item is lifted and the line follows the
+  pointer (§3.4); the release drops it where the line shows. A release
+  where no line shows, over what does not take the item or outside the
+  surface, leaves it where it was, and so does Escape. The innermost one
+  under the pointer is dragged: a drag source in a List's item drags
+  itself. A press in a text field, or on a Slider or a HottyRangeSlider,
+  is theirs, in a card too.
+- **Where in a row.** A row is a cell high. Where the terminal reports
+  the pointer in pixels (SGR-Pixels, mode 1016), an item's top half is
+  before it and its bottom half after it, and a tree's node that takes
+  children has thirds, its middle one into it. The storybook asks the
+  terminal whether it has the mode (DECRQM) and how big its cells are
+  (XTWINOPS 16), sets the mode once both answer, turns reports back into
+  cells, and resets the mode on its way out
+  (`cells.Rendition.DragAt`'s `sub`). Elsewhere an item of one row has no
+  halves: it takes the place of the item it is over (after it, coming
+  from above; before it, from below), or goes into a node that takes
+  children; coming from another list, before it. An item of several rows
+  (a HottyList's with descriptions, a card) has halves by its rows.
 - **A disabled Button** does not take the keyboard, but the click still
   activates it, as in rendition/html; the controller decides what that
   does. Nor does a disabled HottySwitch, which the click leaves as it is.
@@ -661,8 +710,9 @@ under the pointer; a program without mouse reports has no wheel.
 
 ### 3.8 What cells keep
 
-The cursor, the scroll offsets and which select's list is open belong to
-the rendition, by element id. Everything else is the surface's state (§1).
+The cursor, the scroll offsets, which select's list is open and a press
+that may start a drag belong to the rendition, by element id; a drag
+under way is the controller's (`view.Drag`). Everything else is the surface's state (§1).
 
 ### 3.9 Vectors
 
@@ -778,7 +828,7 @@ the host had focused, wherever Tab took it. A renderer whose fields report
 
 **Vectors.** `vectors/keys.yaml` checks all of this against both
 renditions: a story played by keys, focus, blur, clicks, and taps and
-drags on a slider's track, with who has the keyboard, the actions the
+drags on a slider's track, Alt with the arrows moving items (§6.21), with who has the keyboard, the actions the
 agent got and the data model expected after each step. The host side
 runs on hottytest's host, whose `Key` takes keys as SPEC.md §10.2 has a
 host take them, and which reports a drag's steps (SPEC.md §9.1).
@@ -906,6 +956,8 @@ runs `onActivate`, whose context reads the selection from where
 `selected` is bound. With no row selected it does nothing. `height`
 fixes the body's rows; the rest scroll under the header.
 
+With `reorderable` and `rows` bound, the user moves its rows (§6.21).
+
 ### 6.9 HottyList
 
 Items to pick from, a label and a line of description each, one selected
@@ -931,6 +983,8 @@ filter is the renderer's state, not the data model's: the agent sees the
 selection, not the query. `emptyText` shows when there are no items
 (`No items.` by default). The help line bubbles draws under its list is a
 HottyKeyHints (§6.10).
+
+With `reorderable` and `items` bound, the user moves its items (§6.21).
 
 ### 6.10 HottyKeyHints
 
@@ -1096,6 +1150,10 @@ empty list, and the renderer's folding where it is not. Closing them all
 selects the root the selection is in, as closing the branch it is in
 would.
 
+With `reorderable` and `items` bound, the user moves its nodes, among
+their siblings, into a branch and out of one (§6.21). A node whose
+`children` is a list, an empty one too, is a branch: it takes children.
+
 ### 6.15 HottyIcon
 
 An icon the basic Icon's 59 names lack, by its Material Symbols name,
@@ -1255,6 +1313,78 @@ give `accessibility.label`, which names the knobs. `disabled` (a
 DynamicBoolean) keeps both knobs from moving and from the keyboard. Its
 `disabled` and its checks' conditions are literals or paths, as a
 HottySwitch's are (§6.17).
+
+### 6.21 Drag and drop
+
+The user moves a list's items, with the pointer or Alt and the arrows,
+and drops things onto components (vault drag-and-drop, the maintainer's
+model C with a line, P2). A2UI's actions carry nothing from the renderer
+(vault a2ui-limits L2), so the renderer writes, then acts: the items
+where they are bound, the move to a path, then the action, whose context
+reads it.
+
+**Lists whose items move.** A HottyList, a HottyTable or a HottyTree with
+`reorderable` true, its `items` (a HottyTable's `rows`) bound:
+- A drag moves an item to where the line shows (§3.4, §3.7). Alt+ArrowUp
+  and Alt+ArrowDown move the selected item a place, and at an end it
+  stays. In a HottyTree they move a node among its siblings; Alt+ArrowLeft
+  moves it out of its branch, after the branch, and Alt+ArrowRight into
+  the node above it among its siblings, as its last child, where that
+  takes children. A node never goes into itself or a node under it.
+- A HottyTree's node takes children when its `children` is a list, an
+  empty one too: a folder with nothing in it yet.
+- The items are written where they are bound, the moved one at its new
+  place, still selected. Then `moved`, bound, is written:
+  `{"item": …, "from": {"index": 2, "path": "/todos"}, "to": {"index": 0,
+  "path": "/todos"}}`, the item as `selected` names it (its `value`, a
+  row's `rowKey` field), an index among its siblings (`to`'s once it
+  left), and the path its list is bound to, which tells two lists apart;
+  a HottyTree's places also have `parent`, the value of the node it is
+  in, `null` at the top. Then `onMove` runs; give its context
+  `{"@path": "<moved's path>"}`.
+- Literal items move in the renderer's state, as a literal value does
+  when the user edits it; `moved` and `onMove` still go.
+- `dragType` names what the items are. Two of a kind on one surface with
+  the same `dragType` take each other's items: the item goes to the one
+  it is dropped in, whose `onMove` runs (else the one it left's). A drop
+  target that accepts the type takes one, as data (below). With a
+  `dragType` and not `reorderable`, its items drag onto drop targets
+  only, and stay where they are.
+- Nothing moves while a filter applies.
+
+**A List's items.** A basic List whose children are a template moves its
+items with the extension's `reorder`:
+`"metadata": {"extensions": {"io_neuroplast_hotty": {"reorder": {"type":
+"card", "moved": {"@path": "/moved"}, "onMove": …}}}}`. The template's
+list is written, then `moved` (`item` the item's data), then `onMove`,
+as above; Lists with the same `type` take each other's items, a kanban's
+columns. Alt+ArrowUp and Alt+ArrowDown move the item the keyboard is in,
+a card's Button, and the keyboard goes with it.
+
+**Drag sources and drop targets.** Any component:
+- `io_neuroplast_hotty.drag`, `{"type": "ticket", "value": {"@path":
+  "id"}}`, makes it a drag source carrying `value`, resolved in its scope.
+- `io_neuroplast_hotty.drop`, `{"accepts": "ticket", "value": {"@path":
+  "/dropped"}, "action": …}` (`accepts` a type or a list of them), makes
+  it a drop target. What is dropped on it is written to `value`'s path (a
+  drag source's value, or a list's item's data: a HottyTable's row, a
+  HottyList's item, a HottyTree's node, a List's item), then `action`
+  runs in its scope. The item stays where it was: what a drop means is
+  the agent's.
+- The innermost wins, under the press and under the drop.
+
+**Where.** Cells drags (§3.7) and takes the keys. A host takes the keys,
+which the elements give the program (§2); its drags wait for HOTTY to say
+where in a target the pointer is and to name a target that is not
+draggable (vault KIT-23h, G1 and G2). Until then a host ignores the
+extensions and draws the lists as without them, and a press there selects
+as before. Text draws nothing of it.
+
+**Grips.** None in cells: the whole row is the handle, as it is for a
+mouse in a terminal. On a host KIT-23h puts a grip, `⠿`, on every row
+that moves, a touch's handle that leaves the rest of the row to scroll
+(`touch-action: pan-y`); always, since a document can't tell a finger
+from a mouse.
 
 ## 7. Fallbacks
 

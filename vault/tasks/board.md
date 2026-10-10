@@ -15,7 +15,8 @@ story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; at
 KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; at
 KIT-22c (journal 2026-10-10.5): the switch; at KIT-10c (journal
 2026-10-10.6): the charts; at KIT-SLIDE (journal 2026-10-10.7): the
-sliders, and its four open points.
+sliders, and its four open points; at KIT-23c (journal 2026-10-10.8):
+drag and drop in cells, and its three proposals.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -30,12 +31,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-23c** — Drag and drop: a list, a table, a tree and a
-  templated List reorder and move by a mouse, with a line where the item
-  will land, and by Alt with the arrows; any component can be a drag
-  source or a drop target for the agent
-  ([drag-and-drop](../knowledge/drag-and-drop.md), model C with P2,
-  picked 2026-10-10).
 - [ ] **KIT-11c** — Suggestions: ghost text and a list under the field.
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
 - [ ] **KIT-13c** — Toast and tooltip (tooltip from
@@ -167,6 +162,19 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-23c** — Drag and drop in cells, model C with P2
+  ([drag-and-drop](../knowledge/drag-and-drop.md), "Built"; journal
+  2026-10-10.8, awaiting the maintainer's look). Stories under Behaviours
+  › Drag and drop: a to-do list, a backlog, a file tree, a kanban board.
+  - `reorderable`, `dragType`, `moved`, `onMove` on HottyList,
+    HottyTable and HottyTree; `reorder` on a templated List, `drag` and
+    `drop` on any component (`io_neuroplast_hotty`, instruction 21).
+  - A press lifts once the pointer leaves the item; the line is an
+    underline in the accent along the row above the place, into a node
+    or onto a target the accent reversed; halves and thirds by
+    SGR-Pixels where the terminal has them (kitty, hottyterm).
+  - Alt with the arrows in both renditions, vectors in both. The host's
+    drags are KIT-23h.
 - [x] **KIT-SLIDE** — Sliders: a Slider that fills from its end and
   `HottyRangeSlider`, story `hotty/slider` (journal 2026-10-10.7,
   awaiting the maintainer's look).
