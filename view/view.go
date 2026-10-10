@@ -135,6 +135,11 @@ const (
 	// ToastAction is a toast's action, a Tab stop: Label, what it does;
 	// Name, the toast's id.
 	ToastAction Kind = "toastaction"
+	// Timer is a time that counts, down (HottyTimer) or up
+	// (HottyStopwatch): Variant, TimerCountdown or TimerStopwatch; Label;
+	// Value, the time it shows as text (FormatTimer); Active while it
+	// counts.
+	Timer Kind = "timer"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -197,7 +202,8 @@ type Element struct {
 	Label       string `json:"label,omitempty"`
 	Placeholder string `json:"placeholder,omitempty"`
 	// Value is a TextField's or a DateTime's string, a CheckBox's or a
-	// Switch's bool, a Choice's []string, a Slider's float64.
+	// Switch's bool, a Choice's []string, a Slider's float64, a Timer's
+	// time as text.
 	Value any `json:"value,omitempty"`
 	// Error is the message of the first check that fails, once the user
 	// has touched the control or tried to submit.
@@ -224,7 +230,7 @@ type Element struct {
 
 	// Tabs: which tab is shown. Tab and Option: whether it is the one
 	// shown, or picked. Modal: whether its content is shown. Spinner:
-	// whether it spins. A TextField with suggestions: Selected is the
+	// whether it spins. Timer: whether it counts. A TextField with suggestions: Selected is the
 	// highlighted one's place in Shown, -1 for none.
 	Selected int  `json:"selected,omitempty"`
 	Active   bool `json:"active,omitempty"`

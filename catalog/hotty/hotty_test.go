@@ -59,6 +59,20 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToast","args":{"message":"Saved","timeout":-1}}}}`, false},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyDismissToast","args":{"id":"save"}}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyDismissToast"}}}`, false},
+		{`{"id":"t","component":"HottyTimer","label":"Tea","duration":180000,"running":{"@path":"/tea"},"interval":100,"format":"clock",
+			"onTimeout":{"functionCall":{"@call":"hottyToast","args":{"message":"Tea is ready"}}}}`, true},
+		{`{"id":"t","component":"HottyTimer","duration":{"@path":"/ms"},"onTimeout":{"event":{"name":"done"}}}`, true},
+		{`{"id":"t","component":"HottyTimer","label":"Tea"}`, false},
+		{`{"id":"t","component":"HottyTimer","duration":1000,"format":"digital"}`, false},
+		{`{"id":"t","component":"HottyTimer","duration":1000,"interval":0}`, false},
+		{`{"id":"w","component":"HottyStopwatch","label":"Lap","running":false,"interval":10}`, true},
+		{`{"id":"w","component":"HottyStopwatch","onTimeout":{"event":{"name":"done"}}}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyStartTimer","args":{"id":"tea"}}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyStopTimer","args":{"id":"tea"}}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToggleTimer","args":{"id":"tea"}}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyResetTimer","args":{"id":"tea"}}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyResetTimer","args":{}}}}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyStartTimer","args":{"id":"tea","at":0}}}}`, false},
 	} {
 		var d map[string]any
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {

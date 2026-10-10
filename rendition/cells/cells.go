@@ -71,7 +71,8 @@ func New(c *view.Controller) *Rendition {
 
 // Animating is how soon the last Draw's frame changes by itself: the
 // shortest interval of the Spinners that spin and the indeterminate
-// Progress bars it painted; 0 when nothing moves. A program that shows the
+// Progress bars it painted, and of the toasts and the timers that count
+// (view.ToastStep, view.TimerStep); 0 when nothing moves. A program that shows the
 // frame draws it again after that long (profile §3.4, the clock).
 func (r *Rendition) Animating() time.Duration { return r.anim }
 
@@ -122,9 +123,11 @@ func (r *Rendition) ListOpen() bool { return r.list != "" && r.focused(r.list) }
 // paints it (profile §3). The open Modal's content is a rounded panel over
 // it, centered; the toasts stack over both at the top right corner, after
 // their time is counted on the rendition's clock (view.Controller
-// .TickToasts). The frame grows when the panel or the stack is taller.
+// .TickToasts), as the timers' is first (TickTimers), whose onTimeout may
+// show one. The frame grows when the panel or the stack is taller.
 func (r *Rendition) Draw(cols int) *Frame {
 	cols = max(cols, 1)
+	timers := r.c.TickTimers(r.Clock())
 	toasts := r.c.TickToasts(r.Clock(), r.heldToast)
 	if !r.focused(r.list) {
 		r.list = ""
@@ -156,6 +159,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 	cv := &canvas{f: f}
 	r.hits, r.panel, r.suggest, r.boxes, r.reveal, r.anim = nil, nil, nil, map[string]box{}, map[string]box{}, 0
 	r.animate(toasts)
+	r.animate(timers)
 	r.scrolls, r.scrollOrder = map[string]scrolled{}, nil
 	if root != nil {
 		l.paint(cv, root, 0, 0, cols, rootH)

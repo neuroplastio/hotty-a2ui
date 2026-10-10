@@ -535,6 +535,14 @@ textarea.k-input { min-height: 5.5rem; }
 .k-spinner { display: inline-flex; column-gap: 0.5ch; }
 .k-spinner-frame { color: var(--k-info, var(--k-link)); font-family: var(--k-mono); }
 
+/* HottyTimer and HottyStopwatch: a baseline (phase 1), as cells draws
+   them: the label, then the time in figures of one width, so that it does
+   not jitter as it ticks, muted while it stands still. The program's
+   draws tick it; display type is KIT-14h. */
+.k-timer { display: inline-flex; column-gap: 0.5ch; align-items: baseline; }
+.k-timer-time { font-variant-numeric: tabular-nums; }
+.k-timer-time.k-still { color: var(--k-muted); }
+
 /* HottyTable: a baseline (phase 1). The body holds the rows the view
    shows, as cells does; a host's own scrolling, a sticky header and
    hover are KIT-01h. Separate borders draw the header's rule on Blitz,

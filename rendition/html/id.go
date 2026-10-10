@@ -28,7 +28,7 @@ const (
 	partList   = "x" // a select's open list; a text field's suggestions' datalist
 	partOption = "o" // a select's options in its list, "o0" to "oN"
 	partRow    = "y" // a Table's rows, "y0" to "yN", by their index
-	partFrame  = "f" // a Spinner's frame
+	partFrame  = "f" // a Spinner's frame; a timer's time: what a tick changes
 	partTitle  = "h" // a HottyList's title, or its filter while typed
 	partStatus = "u" // a HottyList's status line
 	partItem   = "i" // a HottyList's items, "i0" to "iN", by their index

@@ -187,6 +187,11 @@ func element(e *view.Element) []string {
 			return []string{field(e.Label, "…")}
 		}
 		return []string{e.Label}
+	case view.Timer:
+		// The time it showed when the view was made, as a field's value:
+		// "Tea: 2m57s". A pipe has no time to tick in.
+		t, _ := e.Value.(string)
+		return []string{field(e.Label, t)}
 	case view.Tabs:
 		var titles []string
 		var rest []string

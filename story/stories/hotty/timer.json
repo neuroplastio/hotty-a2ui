@@ -1,0 +1,214 @@
+{
+  "name": "Timer and stopwatch",
+  "kind": "component",
+  "component": "HottyTimer, HottyStopwatch, hottyStartTimer, hottyStopTimer, hottyToggleTimer, hottyResetTimer",
+  "icon": "timer",
+  "description": "Two timers and a stopwatch, as Bubble Tea's timer and stopwatch show them, counting from when the story opens. The tea runs out after 10 seconds: it stops, writing false where its running is bound, and its onTimeout shows a toast. Its Buttons call hottyStartTimer, hottyStopTimer and hottyResetTimer, and their checks read the same path, so that Start is off while it runs and Stop while it does not; Start once it has run out brews another. The stopwatch counts in tenths, s starting and stopping it (hottyToggleTimer) and r resetting it, two HottyShortcuts. Focus counts 25 minutes down as a clock, and its onTimeout sends the agent an event.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "timer",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "tea": true,
+          "lap": true
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "timer",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "lap",
+              "focus",
+              "tea",
+              "tea_keys",
+              "hints",
+              "lap_toggle",
+              "lap_reset"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Timer and stopwatch"
+          },
+          {
+            "id": "tea",
+            "component": "HottyTimer",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "label": "Tea",
+            "duration": 10000,
+            "running": {
+              "@path": "/tea"
+            },
+            "onTimeout": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Tea is ready",
+                  "kind": "success"
+                }
+              }
+            }
+          },
+          {
+            "id": "tea_keys",
+            "component": "Row",
+            "children": [
+              "start",
+              "stop",
+              "reset"
+            ]
+          },
+          {
+            "id": "start",
+            "component": "Button",
+            "child": "start_t",
+            "checks": [
+              {
+                "condition": {
+                  "@call": "not",
+                  "args": {
+                    "value": {
+                      "@path": "/tea"
+                    }
+                  }
+                },
+                "message": "The tea timer runs"
+              }
+            ],
+            "action": {
+              "functionCall": {
+                "@call": "hottyStartTimer",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "tea"
+                }
+              }
+            }
+          },
+          {
+            "id": "start_t",
+            "component": "Text",
+            "text": "Start"
+          },
+          {
+            "id": "stop",
+            "component": "Button",
+            "child": "stop_t",
+            "checks": [
+              {
+                "condition": {
+                  "@path": "/tea"
+                },
+                "message": "The tea timer is stopped"
+              }
+            ],
+            "action": {
+              "functionCall": {
+                "@call": "hottyStopTimer",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "tea"
+                }
+              }
+            }
+          },
+          {
+            "id": "stop_t",
+            "component": "Text",
+            "text": "Stop"
+          },
+          {
+            "id": "reset",
+            "component": "Button",
+            "child": "reset_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyResetTimer",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "tea"
+                }
+              }
+            }
+          },
+          {
+            "id": "reset_t",
+            "component": "Text",
+            "text": "Reset"
+          },
+          {
+            "id": "lap",
+            "component": "HottyStopwatch",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "label": "Lap",
+            "interval": 100,
+            "running": {
+              "@path": "/lap"
+            }
+          },
+          {
+            "id": "focus",
+            "component": "HottyTimer",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "label": "Focus",
+            "duration": 1500000,
+            "format": "clock",
+            "onTimeout": {
+              "event": {
+                "name": "focusDone"
+              }
+            }
+          },
+          {
+            "id": "hints",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "lap_toggle",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "s",
+            "label": "start/stop lap",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToggleTimer",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "lap"
+                }
+              }
+            }
+          },
+          {
+            "id": "lap_reset",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "r",
+            "label": "reset lap",
+            "action": {
+              "functionCall": {
+                "@call": "hottyResetTimer",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "lap"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

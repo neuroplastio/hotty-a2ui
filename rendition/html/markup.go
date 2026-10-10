@@ -227,6 +227,8 @@ func (m *markup) element(e *view.Element) *node {
 		if e.Label != "" {
 			n.add(el("span", "class", "k-spinner-label").add(texts(e.Label)...))
 		}
+	case view.Timer:
+		n = timer(e)
 	case view.Table:
 		n = table(e)
 	case view.RichList:

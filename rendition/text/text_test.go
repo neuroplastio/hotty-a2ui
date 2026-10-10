@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
@@ -113,6 +114,32 @@ func TestSwitch(t *testing.T) {
 	c.Rebuild()
 	got := text.Render(c.V)
 	want := "Wi-Fi: on\nLocked: off (disabled)\non\nTwo-factor: off\n✗ Required\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
+// TestTimer: a timer reads as a field does, "Label: time", the time it
+// showed when the view was made (counted at the last draw), in its
+// format; the time alone without a label.
+func TestTimer(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	h := `"catalogId":"` + hotty.ID + `"`
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["tea","focus","lap"]},
+	 {"id":"tea","component":"HottyTimer",` + h + `,"label":"Tea","duration":180000},
+	 {"id":"focus","component":"HottyTimer",` + h + `,"label":"Focus","duration":1500000,"format":"clock"},
+	 {"id":"lap","component":"HottyStopwatch",` + h + `,"interval":100}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	t0 := time.Unix(0, 0)
+	c.TickTimers(t0)
+	c.TickTimers(t0.Add(61500 * time.Millisecond))
+	got := text.Render(c.V)
+	want := "Tea: 1m59s\nFocus: 23:59\n1m1.5s\n"
 	if got != want {
 		t.Errorf("got\n%s\nwant\n%s", got, want)
 	}

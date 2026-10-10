@@ -77,7 +77,7 @@ func isField(e *view.Element) bool {
 
 // isControlElement reports whether an element is a control a Column may
 // set a blank row apart from (separator): a field, a Button that is not a
-// List's row, a Progress, a Spinner, a Table, a HottyList, a
+// List's row, a Progress, a Spinner, a timer, a Table, a HottyList, a
 // HottyScrollView or a HottyTree.
 func isControlElement(e *view.Element) bool {
 	if isField(e) {
@@ -89,7 +89,7 @@ func isControlElement(e *view.Element) bool {
 	case e.Kind == view.Button:
 		return !e.Item
 	}
-	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.ScrollView ||
+	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Timer || e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.ScrollView ||
 		e.Kind == view.Tree
 }
 
@@ -181,6 +181,8 @@ func controlWidth(e *view.Element) int {
 			n += 1 + Width(e.Label)
 		}
 		return n
+	case view.Timer:
+		return width(timerFace(e))
 	case view.Table:
 		return tableNatural(e)
 	case view.RichList:

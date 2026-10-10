@@ -153,7 +153,7 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 | KIT-11 Suggestions | Settled (KIT-11c, profile §6.22): `io_neuroplast_hotty.suggestions` on a TextField, `options` (a DynamicStringList, best bound, which the agent rewrites) and `onInput` (an Action at every change, whose context reads the field's value), since basic's TextField has no action and A2UI no notice of a data change | Fits. L2, L5 |
 | KIT-12 Selection and copy | nothing: renderer behaviour; a `copy` renderer function if the agent should copy | Fits. L8 |
 | KIT-13 Toast and tooltip | toast: `message`, `tone`, `duration`, bound `open`; tooltip: `accessibility.description` | Fits. L6 |
-| KIT-14 Timer and stopwatch | `start` or `duration`, bound `running`, `onTimeout` | Fits. L6 |
+| KIT-14 Timer and stopwatch | Settled (KIT-14c, profile §6.25): `HottyTimer` (`duration`, `onTimeout`) and `HottyStopwatch`, each with `running` (a DynamicBoolean the renderer writes false when a timer runs out), `interval`, `format`; the time counted is the renderer's state, and Buttons work it through `hottyStartTimer`, `hottyStopTimer`, `hottyToggleTimer` and `hottyResetTimer`, since basic's Button can't write the data model | Fits. L1, L6, L8 |
 | KIT-15 Paginator | bound `page`, `pages` | Fits |
 | KIT-16 Confirm | Settled (KIT-16c, profile §6.24): nothing; a pattern of two Buttons, each with its own action, and HottyShortcuts for y, n and the arrows. Its keys are the surface's (NEIO-11 question 4), and a kept yes or no is a HottySwitch's or a CheckBox's value | Fits |
 | KIT-17 File picker | `root` (a grant's name), bound `path`, `filter` | Fits. **L10** |

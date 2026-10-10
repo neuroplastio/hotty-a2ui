@@ -108,6 +108,7 @@ so that an error comes and goes as a text delta.
 | HottyChart | `div role=img`, named by its `accessibility.label`, else `Line chart` or `Bar chart` and its series' labels; a grid of its ticks' labels and its plot. The labels (`k-chart-y`, `aria-hidden`, in `--k-muted`) are each placed at its value's height, all of them, in a column as wide as the widest, in `ch`. The plot (`~a`) is `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), its left and bottom borders the axes, 2px in `--k-border`, since a 1px straight edge drops out at a fractional scale. The axis is the view's, cells' (§6.18), so a value sits at the same height in both. A line is an inline `svg` a series (`~g0`, `~g1`, …), stretched over the plot (`preserveAspectRatio=none`), holding one `path` (`~c0`, …) that hotty-go's `chart.Line` makes: a break where a value is missing, a lone value a dot, round joins, stroked 1.5 wide in `currentColor` with presentation attributes only, which every host's SVG takes. A new point is so an attribute's delta a line. Bars are boxes, a group a point and a bar a series in it, each from the axis's 0 to its value, placed by percentages, so that one below 0 hangs from it. The series' colours are cells' (§3.4), set by the series' class: `--k-info`, `--k-warning`, `--k-success`, `--k-error`, and round again. Under the plot: a line's points' labels, three evenly spread (the first and the last among them), or a bar chart's each under its bars; then the legend, when it has several series or a labelled one, a key a series (a stroke for a line, a square for bars) and its label in `--k-muted`. With no values, the plot says `No data`. The `svg`'s box is 480 by 20 a row, a guess at the plot's width that the markup cannot know: on a plot much wider or narrower the stroke thickens where the line is steep (vault KIT-10h) |
 | HottySparkline | `span role=img`, named by its `accessibility.label`, else `Sparkline`: a box `--k-n` columns wide (its `window`, else its values' count, at most the room), `--k-rows` terminal rows tall, in `--k-info`, holding a bar a value, a terminal column wide (`1ch` of the mono face), from its bottom, as tall as its value is between its `min` and `max`, at least an eighth of a row; a missing value has no height. The bars come newest first in a row that runs right to left (`row-reverse`), so that the newest is at the box's right edge and a box too narrow loses the oldest, as in cells |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
+| HottyTimer, HottyStopwatch | `span role=timer`, which a screen reader does not read out at each tick: its label, then its time as cells writes it (§6.25), in a span whose id is the timer's and `~f`, so that a tick is one text's delta, in tabular figures (`font-variant-numeric`), so that it does not jitter as it ticks, and in `--k-muted` while it stands still (`k-still`, one attribute's delta). The program's draws move it on the clock (§3.4), as a Spinner's frames: a host runs nothing of its own here. The time in display type is vault KIT-14h |
 
 **Updates are deltas.** The document goes once. After it, the renderer
 diffs the elements it sent against the elements the view makes now, and
@@ -382,6 +383,7 @@ How the containers lay their children out:
 | HottyChart | as ntcharts draws one: its ticks' labels in `muted`, right-aligned as wide as the widest, each on the row its value is drawn in (`view.TickRow`), `┤` there on the axis and `│` on the other rows, and `└` then `─` across under the plot, in `border`. The axis (§6.18) has its ticks a free row apart where the plot is tall enough; where it is not, 0's label, the top tick's and the bottom one's come first, then each other one with a free row either side, as plothot labels its axis. A line is braille dots (hotty-go's `braille`), two across and four down a cell, in its series' colour, joining its points: a point's dot row runs from the middle of the bottom row, the axis's low end, to the middle of the top row, so that a tick's label is level with its value; its dot column is its slot's (§6.18). A missing value breaks the line, and a lone value is a dot. A cell takes the colour of the last series to put a dot in it. Under the plot, three of its points' labels (five where the plot is 60 columns or wider), evenly spread over its slots: the first starting at its slot, the last ending at its own, the others centred, and one that would touch the one before it left out. Bars are a group a point, the plot's columns shared out between them a column apart, each series' bar an equal part of its group, in its colour, from the axis's 0, which may fall inside a row, to its value: a cell its bar covers from the cell's bottom is that many eighths (`▁` to `█`, at least `▁` in the cell 0 is in); one it covers from the top, below 0 or above a 0 inside the row, is `▀` from a quarter, `█` from three quarters, and `▔` for less, since a cell has no other blocks that hang. Where the groups do not fit at a column a bar, the last points that fit show. Each label is centred under its group, cut with `…`. Then the legend, when it has several series or a labelled one: a key in the series' colour, `━` for a line and `■` for bars, and its label in `muted`, three columns between series. The series' colours are `info`, `warning`, `success` and `error`, then round again; not `accent`, which marks only focus (§3.6). With no values, `No data` in `muted` in the plot's middle row. |
 | HottySparkline | as ntcharts' sparkline: a column a value, in `info`, rising from its bottom in eighths of a row (hotty-go's `blocks`), `height` rows tall, from its `min` at the bottom to its `max` at the top: the newest value in its last column and those before it to the left, as many as fit, so that a sparkline with a `window` keeps its width as values arrive. A value at `min` or below is `▁`, so that only a missing value is blank. |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
+| HottyTimer, HottyStopwatch | on one row, as bubbles' timer and stopwatch examples draw theirs (`Exiting in 4s`, `Elapsed: 1.5s`): its label and a space, then its time as its `format` writes it (§6.25), `4m59s` or `4:59`, in `fg` while it counts and in `muted` while it stands still, stopped or run out, so that a time that does not move does not look stuck. Without a label, the time alone. Its width is its time's, which changes as it ticks (`9s` after `10s`), as bubbles' does: put it at the end of its row. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2. A one-line field's starts in its input's column, under the value it is about (the maintainer, round 3), unless that leaves it fewer than 16 columns |
 
@@ -410,7 +412,11 @@ what it last made changes by itself (`Rendition.Animating`: the shortest
 interval it showed, 0 while nothing moves): a draw in cells, a Doc or an
 Update on a host. A toast counts its time down on the same clock, by the
 draws that show it, and asks for one every quarter second while it does
-(`view.ToastStep`, §6.23). The program draws or updates again then: the
+(`view.ToastStep`, §6.23). A HottyTimer or a HottyStopwatch counts by the
+draws too, whether they show it or not (§6.25), and asks for one every
+tenth of a second while it counts, or every `interval` where that is
+shorter, down to a thirtieth (`view.TimerStep`): its time shows within a
+step of when it changes, and a timer runs out within a step of its end. The program draws or updates again then: the
 storybook's `Book.Tick` and `storybook -bare` do, on Bubble Tea's
 `tea.Every`. So two renditions of one surface made at once show the same
 frame, and a test sets the clock (`Rendition.Clock`, in both).
@@ -928,6 +934,9 @@ reference is `rendition/text`.
 - A Button is `[ label ]`, followed by `(disabled)` while its checks fail.
 - A HottyProgress is `Label: 42%`, or `Label: …` without a value; a
   HottySpinner is `Label: …` while it spins, else its label alone.
+- A HottyTimer or a HottyStopwatch is `Label: 4m59s`, the time it showed
+  when the view was made (the last draw counted it), in its format; the
+  time alone without a label. A pipe has no time to tick in.
 - A HottyTable is its header and every row, whatever its `height`: the
   columns two spaces apart, each as wide as its widest cell and aligned as
   it says, after `> ` for the selected row and two spaces for the others.
@@ -1767,6 +1776,71 @@ Where it is not huh's Confirm:
   form's event.
 - huh's h and l, and its Y and N, would be four more HottyShortcuts; the
   stories leave them out.
+
+### 6.25 HottyTimer and HottyStopwatch
+
+A time that counts, as bubbles' `timer` and `stopwatch`: a HottyTimer
+counts down from its `duration` and does something when it gets to 0; a
+HottyStopwatch counts up from 0. Two components, as bubbles has two
+packages and a phone's clock two tabs, so that an agent finds the one it
+means by its name; one view kind draws both (`view.Timer`).
+
+| prop | |
+| --- | --- |
+| `label` | what it times, before the time: `Tea`, `Retrying in`, `Elapsed` |
+| `duration` | a HottyTimer's, required: how long it counts down, in milliseconds (a DynamicNumber, as `hottyToast`'s `timeout` is milliseconds). A new one changes the time left, not the time counted. Bound to a path that holds nothing, the timer does not count, nor run out |
+| `running` | a DynamicBoolean, true by default: whether it counts. Bound, it is the agent's handle on it, and the renderer writes it (below); unbound, the renderer keeps what the functions make it |
+| `interval` | the step its time shows in, in milliseconds: 1000 by default (whole seconds, as bubbles' default), 100 for tenths. A stopwatch's time is rounded down to it, a timer's time left up, so that a timer shows 0 just as it runs out, as bubbles' does (its first second shows its whole duration) |
+| `format` | `duration` (the default) writes the time as Go and so bubbles do, `4m30s`, `9.5s`, `300ms`, `0s`; `clock` as a clock, `4:30`, `0:09.5`, `1:02:03`, minutes and seconds, the hours from an hour, and as many digits after the point as the interval has, to milliseconds (`view.FormatTimer`) |
+| `onTimeout` | a HottyTimer's Action, which runs once when it gets to 0 (an event, or a function such as `hottyToast`) |
+
+**The time is the renderer's.** A2UI has no time (vault a2ui-limits L6),
+so the time a timer has counted is the surface's state, as a toast's is,
+not the data model's (`view.TimerState`, by its node's key), and it is
+counted on the rendition's clock (§3.4) as the rendition draws
+(`view.Controller.TickTimers`, before the toasts' time): since the draw
+before, one that counted then has counted that much longer, and one that
+runs from now counts from now. A timer so starts counting at the first
+draw that has it, and a stop or a start takes effect at the draw after it,
+which a program makes at once, after each key, click or message. Every
+timer of the surface counts, whether the view shows it or not: one in a
+tab not shown runs out on time. A timer that goes from the surface loses
+its time; one that comes back starts again.
+
+**When a HottyTimer runs out**, at the first draw at or after its end, it
+shows 0 and stops: its `running` is set false, written to the data model
+where it is bound, so that the agent and a Button's checks that read the
+path see it stopped. Then its `onTimeout` runs, once, as the timer's
+action (`sourceComponentId` the timer), without the user's activation,
+so that it cannot call a function that needs it, such as `openUrl`. A
+timer set running again once it has run out, by the functions or by the
+agent writing `running`, starts over from its duration.
+
+**The functions**, renderer functions a Button, a HottyShortcut or the
+agent call (`rendererOrAgent`), each with `{id}`, the timer's component
+id (a template's, the instance in the caller's scope; found whether the
+view shows it or not), as bubbles' models have Start, Stop, Toggle and
+Reset:
+- `hottyStartTimer`: running true; it counts on from where it stopped.
+- `hottyStopTimer`: running false; it stays where it is.
+- `hottyToggleTimer`: the one of the two it is not doing, for one key or
+  one Button that does both (bubbles' stopwatch example's `s`).
+- `hottyResetTimer`: back to 0 counted, a HottyTimer to its whole
+  duration; one that runs counts on from there, one that is stopped stays
+  stopped.
+
+Basic's Button can't write the data model, so a Start, Stop or Reset
+Button calls these; its checks may read the path `running` is bound to
+(basic's `not` is a Button's to call), so that Start is off while the
+timer runs. `duration` and `running` themselves take a literal or a
+path, not a function call (vault a2ui-limits L1). A timer takes no focus
+and no keys.
+
+| rendition | a timer |
+| --- | --- |
+| cells | `Tea 4m59s`, the time in `fg` while it counts and `muted` while it stands still (§3.4) |
+| host | `span role=timer`, the time a text delta a tick, muted while still (§2); display type is vault KIT-14h |
+| text | `Tea: 4m59s` (§4) |
 
 ## 7. Fallbacks
 

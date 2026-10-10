@@ -38,6 +38,7 @@ swap_vert
 sync_problem
 table
 terminal
+timer
 toggle_on
 touch_app
 tune

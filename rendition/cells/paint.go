@@ -193,6 +193,8 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		l.paintProgress(cv, e, x, y, w)
 	case view.Spinner:
 		l.paintSpinner(cv, e, x, y, w)
+	case view.Timer:
+		cv.write(x, y, w, fit(timerFace(e), w))
 	case view.Table:
 		l.paintTable(cv, e, x, y, w)
 	case view.RichList:

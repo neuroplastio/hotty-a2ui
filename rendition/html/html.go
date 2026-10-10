@@ -104,7 +104,8 @@ func New(c *view.Controller, name string) *Rendition {
 
 // Animating is how soon the document the last Doc or Update made changes
 // by itself: the interval of its fastest Spinner or indeterminate
-// Progress, or 0 when nothing in it moves. The program calls Update again
+// Progress, or the step of its toasts' or timers' counting
+// (view.ToastStep, view.TimerStep), or 0 when nothing in it moves. The program calls Update again
 // then; the cells rendition keeps the same clock, so the two show the
 // same frame.
 func (r *Rendition) Animating() time.Duration { return r.anim }
@@ -115,15 +116,18 @@ func (r *Rendition) markup() *markup {
 	if r.Clock != nil {
 		now = r.Clock
 	}
-	// The toasts' time first: one that is gone leaves the view (TickToasts
-	// rebuilds it). The keyboard on its action holds one, and the pointer
-	// on it, where the host says where that is (hovered).
+	// The timers' time first, whose onTimeout may show a toast, then the
+	// toasts': one that is gone leaves the view (TickToasts rebuilds it).
+	// The keyboard on its action holds one, and the pointer on it, where
+	// the host says where that is (hovered).
 	at := now()
+	timers := r.C.TickTimers(at)
 	toasts := r.C.TickToasts(at, r.heldToast)
 	short, full := r.C.KeyHints(r.keys, true)
 	m := &markup{list: r.openList(), now: at, short: short, full: full, steps: r.steps,
 		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover)}
 	m.animate(toasts)
+	m.animate(timers)
 	if r.C.St.Keyboard && !r.Away {
 		m.keyboard = r.C.St.Focus
 	}

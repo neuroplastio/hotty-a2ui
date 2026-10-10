@@ -2,10 +2,11 @@
 // adds to the basic catalog. HottyShortcut binds a key, HottyForm submits
 // its fields, hottyFocus and hottyBlur move the keyboard, hottyScrollTo
 // scrolls a HottyScrollView, hottyExpandAll and hottyCollapseAll fold a
-// HottyTree, and hottyToast and hottyDismissToast show and take away a
-// toast, for the renderer and the agent alike. Its names start with
-// Hotty (components) and hotty (functions), so that none can be one A2UI
-// adds later.
+// HottyTree, hottyToast and hottyDismissToast show and take away a toast,
+// and hottyStartTimer, hottyStopTimer, hottyToggleTimer and hottyResetTimer
+// work a HottyTimer or a HottyStopwatch, for the renderer and the agent
+// alike. Its names start with Hotty (components) and hotty (functions), so
+// that none can be one A2UI adds later.
 package hotty
 
 import (
@@ -38,9 +39,11 @@ func Catalog() *a2ui.Catalog {
 // a HottyScrollView ("start" or "end"), FoldAll opens every branch of a
 // HottyTree (open) or closes them all, Toast shows a toast (hottyToast's
 // args, resolved when a component called it, as the agent sent them when
-// it did), and DismissToast takes one away. s is the surface of the call,
-// nil when the agent called it (callRendererFunction names no surface);
-// scope is the caller's, which picks a template's instance.
+// it did), DismissToast takes one away, and Timer works a HottyTimer or a
+// HottyStopwatch (do is "start", "stop", "toggle" or "reset"). s is the
+// surface of the call, nil when the agent called it (callRendererFunction
+// names no surface); scope is the caller's, which picks a template's
+// instance.
 type Renderer struct {
 	Focus        func(s *a2ui.Surface, scope a2ui.Scope, id string) error
 	Blur         func(s *a2ui.Surface) error
@@ -48,6 +51,7 @@ type Renderer struct {
 	FoldAll      func(s *a2ui.Surface, scope a2ui.Scope, id string, open bool) error
 	Toast        func(s *a2ui.Surface, args map[string]any) error
 	DismissToast func(s *a2ui.Surface, id string) error
+	Timer        func(s *a2ui.Surface, scope a2ui.Scope, id, do string) error
 }
 
 // Implement gives a catalog's functions their implementation: the
@@ -83,6 +87,14 @@ func Implement(c *a2ui.Catalog, r Renderer) {
 	if f := c.Functions["hottyDismissToast"]; f != nil && r.DismissToast != nil {
 		f.Impl = func(ctx *a2ui.Context, args map[string]any) (any, error) {
 			return nil, r.DismissToast(ctx.Surface, a2ui.ToString(args["id"]))
+		}
+	}
+	for name, do := range map[string]string{"hottyStartTimer": "start", "hottyStopTimer": "stop", "hottyToggleTimer": "toggle", "hottyResetTimer": "reset"} {
+		if f := c.Functions[name]; f != nil && r.Timer != nil {
+			f.Impl = func(ctx *a2ui.Context, args map[string]any) (any, error) {
+				id, _ := args["id"].(string)
+				return nil, r.Timer(ctx.Surface, ctx.Scope, id, do)
+			}
 		}
 	}
 }

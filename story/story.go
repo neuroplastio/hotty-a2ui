@@ -151,13 +151,14 @@ type Run struct {
 // NewRun is a run with nothing fed yet. Its processor has the catalogs
 // the kit renders, basic and hotty, and hotty's hottyFocus and hottyBlur
 // move the keyboard in the run's views, hottyScrollTo scrolls them,
-// hottyExpandAll and hottyCollapseAll fold their trees, and hottyToast and
-// hottyDismissToast show and take away their toasts.
+// hottyExpandAll and hottyCollapseAll fold their trees, hottyToast and
+// hottyDismissToast show and take away their toasts, and hottyStartTimer,
+// hottyStopTimer, hottyToggleTimer and hottyResetTimer work their timers.
 func NewRun() *Run {
 	r := &Run{}
 	h := hotty.Catalog()
 	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo, FoldAll: r.foldAll,
-		Toast: r.toast, DismissToast: r.dismissToast})
+		Toast: r.toast, DismissToast: r.dismissToast, Timer: r.timer})
 	// The stories and -stream are A2UI another program wrote: checked.
 	r.P = schema.NewProcessor(basic.Catalog(), h)
 	r.P.Send = func(o a2ui.Outbound) {
@@ -298,6 +299,21 @@ func (r *Run) foldAll(s *a2ui.Surface, scope a2ui.Scope, id string, open bool) e
 		}
 	}
 	return fmt.Errorf("no component '%s' to fold", id)
+}
+
+// timer starts, stops, toggles or resets a HottyTimer or a HottyStopwatch
+// of the caller's surface, or for the agent's call, of any surface: the
+// instance in the caller's scope, shown or not (view.Controller.TimerDo).
+func (r *Run) timer(s *a2ui.Surface, scope a2ui.Scope, id, do string) error {
+	for _, x := range r.surfaces {
+		if s != nil && x.S != s {
+			continue
+		}
+		if key := x.C.FindTimer(id, scope); key != "" {
+			return x.C.TimerDo(key, do)
+		}
+	}
+	return fmt.Errorf("no timer '%s'", id)
 }
 
 // toast shows a toast (hottyToast): on the surface its surfaceId names,
