@@ -1275,6 +1275,10 @@ func TestTreeScrollsOnHost(t *testing.T) {
 	if class, _ := s.Attr("root", "class"); class != "k-tree k-scrolls" {
 		t.Errorf("the box's class is %q", class)
 	}
+	// A tree with no branches has no fold column (a docs nav's pages).
+	if strings.Contains(s.HTML(), `class="k-node-fold"`) {
+		t.Errorf("a flat tree has folds:\n%s", s.HTML())
+	}
 	if style, _ := s.Attr("root", "style"); style != "--k-rows: 2" {
 		t.Errorf("the box's style is %q", style)
 	}

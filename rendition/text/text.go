@@ -373,8 +373,8 @@ func richList(e *view.Element) []string {
 
 // tree is a HottyTree as text: every node it shows, whatever its height,
 // drawn as cells draws it (guides, a fold before a branch, a closed one's
-// count), "> " marking the selected one; its empty text when it shows
-// none.
+// count, no fold column in a tree with no branches), "> " marking the
+// selected one; its empty text when it shows none.
 func tree(e *view.Element) []string {
 	var out []string
 	sel := e.SelectedRow()
@@ -396,7 +396,7 @@ func tree(e *view.Element) []string {
 			s += "▼ " + n.Label
 		case n.Branch():
 			s += "▶ " + n.Label + " " + strconv.Itoa(n.Kids)
-		case n.Level == 0:
+		case n.Level == 0 && !e.Flat():
 			s += "  " + n.Label
 		default:
 			s += n.Label

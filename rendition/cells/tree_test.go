@@ -42,6 +42,17 @@ func repo(t *testing.T, extra string) (*Rendition, *view.Controller, *[]string) 
 	return New(c), c, actions
 }
 
+// A HottyTree with no branches, a docs nav's pages, has no fold column:
+// its labels start two columns in, after the selection's bar.
+func TestTreeFlat(t *testing.T) {
+	r, _, _ := motion(t, `{"sel":"b"}`, `
+	 {"id":"root","component":"HottyTree","catalogId":"HOTTY","selected":{"@path":"/sel"},
+	  "items":[{"label":"Install","value":"a"},{"label":"Usage","value":"b"}]}`)
+	if got, want := r.Draw(20).Plain(), "  Install\n│ Usage"; got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
 // A HottyTree is a row a node, with lipgloss's guides: a branch's fold
 // before its label, and its count while closed; the roots lined up, every
 // row two columns in, the selected node's columns a "│" bar.

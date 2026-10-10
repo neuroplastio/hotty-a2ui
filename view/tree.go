@@ -173,6 +173,13 @@ func (e *Element) visible(i int, n TreeNode) bool {
 
 // Filtering reports whether a HottyTree's filter applies: then every
 // branch that shows is drawn open, whatever its Open.
+// Flat reports whether a HottyTree has no branches, not even one with
+// nothing in it yet: a list of pages, as a docs site's nav groups are,
+// which a rendition draws with no fold column.
+func (e *Element) Flat() bool {
+	return !slices.ContainsFunc(e.Nodes, func(n TreeNode) bool { return n.Branch() || n.Takes })
+}
+
 func (e *Element) Filtering() bool { return e.Kind == Tree && e.Query.Text != "" }
 
 // Guides are what a HottyTree's guides draw left of node i, a level at a

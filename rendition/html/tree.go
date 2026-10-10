@@ -22,7 +22,8 @@ const treeKeys = listKeys
 // it into view as the selection moves; a node is focusable for that alone
 // (tabindex -1), and the tree's keys reach it from the box. A row is indented a step a level (--k-level) and starts with its
 // fold, ▸ or ▾ before a branch and blank before a leaf, so that the
-// labels of a level line up; then its icon, as an Icon draws it (blank,
+// labels of a level line up (none in a tree with no branches, view's
+// Flat); then its icon, as an Icon draws it (blank,
 // for the same reason, when another node has one and it has none), and
 // its label, the filter's matches underlined, and a closed branch's
 // count, the nodes it holds, muted. Guides are cells' (profile §3.4): a
@@ -38,6 +39,7 @@ func (m *markup) tree(e *view.Element) *node {
 	}
 	sel := e.SelectedRow()
 	icons := slices.ContainsFunc(e.Nodes, func(n view.TreeNode) bool { return n.Icon != "" })
+	flat := e.Flat()
 	for k := range e.Shown {
 		i := e.Shown[k]
 		n := e.Nodes[i]
@@ -60,7 +62,9 @@ func (m *markup) tree(e *view.Element) *node {
 				fold = "▾"
 			}
 		}
-		row.add(el("span", "class", "k-node-fold", "aria-hidden", "true").add(txt(fold)))
+		if !flat {
+			row.add(el("span", "class", "k-node-fold", "aria-hidden", "true").add(txt(fold)))
+		}
 		switch {
 		case n.Icon != "":
 			row.add(shape(n.Icon, "", 0, ""))

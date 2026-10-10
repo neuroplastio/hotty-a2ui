@@ -11,7 +11,8 @@ import (
 // sibling follows, "└── " before the last, "│   " down past a level whose
 // line goes on. A branch has "▶ " closed or "▼ " open before its label, as bubbles' tree has,
 // and closed, how many nodes it holds after it, in muted; a root leaf has
-// two blank columns there, so that the roots line up. A node's icon is a
+// two blank columns there, so that the roots line up, unless the tree has
+// no branches (Flat), whose labels start at its indent. A node's icon is a
 // host's: the guides and the markers say what a tree is in cells, and few
 // icons have a glyph of one column. Every row starts two columns in; the
 // selected node's two columns are a "│" bar, as a HottyList's.
@@ -54,7 +55,7 @@ func nodeParts(e *view.Element, i int, matched []int, st style) (guides, marker,
 		// A branch with nothing in it yet shows as one, closed, with 0.
 		marker = line("▶ ", style{role: Muted})
 		count = line(" "+strconv.Itoa(n.Kids), style{role: Muted})
-	case n.Level == 0:
+	case n.Level == 0 && !e.Flat():
 		marker = line("  ", style{})
 	}
 	return guides, marker, marked(n.Label, matched, st), count
