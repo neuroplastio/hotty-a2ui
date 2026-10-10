@@ -39,14 +39,14 @@ func switches(t *testing.T) (*Rendition, *view.Controller, *[]string) {
 }
 
 // A HottySwitch is a field's gutter, then its track with the knob at its
-// end, "▬▬■" in the accent when on and "□──" in muted when off, then its
+// end, "▬▬■" in the accent when on and "□⎯⎯" in muted when off, then its
 // label; a disabled one is muted and faint, and a focused one has the
 // gutter's bar and its label in the accent. A stack of them stays tight,
 // as CheckBoxes do.
 func TestSwitchDraws(t *testing.T) {
 	r, c, _ := switches(t)
 	want := "  ▬▬■ Wi-Fi\n" +
-		"  □── Bluetooth\n" +
+		"  □⎯⎯ Bluetooth\n" +
 		"  ▬▬■ Locked\n" +
 		"\n" +
 		"  Name\n" +

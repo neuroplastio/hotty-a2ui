@@ -302,7 +302,7 @@ func boxFace(on bool, label string, st style) []glyph {
 
 // switchFace is a HottySwitch as drawn past its gutter: a track with its
 // knob at the end, "▬▬■" in the accent when it is on, a bar into a filled
-// knob, and "□──" in muted when it is off, a hollow knob on a thin line,
+// knob, and "□⎯⎯" in muted when it is off, a hollow knob on a thin line,
 // so that the knob's end, its fill and the track's weight say which
 // without colour; then a space and its label, in the accent while it has
 // the keyboard. A disabled one is muted and faint throughout.
@@ -315,7 +315,10 @@ func switchFace(e *view.Element, focused bool) []glyph {
 	case focused:
 		label = style{role: Accent}
 	}
-	face := "□──"
+	// The thin line is the font's ⎯, as the knob is the font's: a
+	// terminal draws ─ itself, in the middle of the cell, where the
+	// font's square need not be.
+	face := "□⎯⎯"
 	if e.On() {
 		face = "▬▬■"
 		if !e.Disabled {

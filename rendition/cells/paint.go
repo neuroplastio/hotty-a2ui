@@ -435,10 +435,11 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	l.paintError(cv, e, x, row, w)
 }
 
-// paintSlider paints "label ━━━━■──── 50": the track fills the room the
+// paintSlider paints "label ━━━━■⎯⎯⎯⎯ 50": the track fills the room the
 // label and the value leave, the knob where the value is, a square, as a
 // HottySwitch's: it sits on the line's middle, where a circle sits low in
-// some fonts.
+// some fonts. The rest of the track is the font's ⎯, as a HottySwitch's
+// thin line is, so that it meets the knob at the font's height.
 func (l *layout) paintSlider(cv *canvas, e *view.Element, x, y, w int) {
 	v, _ := e.Value.(float64)
 	vw := sliderValueWidth(e)
@@ -462,7 +463,7 @@ func (l *layout) paintSlider(cv *canvas, e *view.Element, x, y, w int) {
 		if focused {
 			done, knob = style{role: Accent}, style{role: Accent}
 		}
-		track := concat(repeat("━", k, done), glyphs("■", knob), repeat("─", n-1-k, rest))
+		track := concat(repeat("━", k, done), glyphs("■", knob), repeat("⎯", n-1-k, rest))
 		cv.write(col, y, n, track)
 		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: 1, id: e.ID, opt: -1, track: &trackArea{x: col, n: n}})
 		col += n + 1
