@@ -38,6 +38,10 @@ type Rendition struct {
 	// sent is what the host has: the surface's two top elements as last
 	// sent; nil before the document is.
 	sent []*node
+	// edited are the text fields the user typed in since the host was last
+	// sent their values (holdEdit): what the host shows in them is what
+	// was typed, which nothing in sent says.
+	edited map[string]bool
 	// pending is the Shortcut key waiting for the host to commit the
 	// focused field (Key).
 	pending string
@@ -163,7 +167,7 @@ func (r *Rendition) Doc() string {
 	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, m)
 	ts := toasts(r.C.V, themeCSS(r.theme))
 	r.sent, r.anim = []*node{main, layer, ts}, m.anim
-	r.host = keyboard{}
+	r.host, r.edited = keyboard{}, nil
 	return head + main.html() + layer.html() + ts.html()
 }
 
@@ -178,6 +182,7 @@ func (r *Rendition) Update() []string {
 	ts := toasts(r.C.V, themeCSS(r.theme))
 	r.anim = m.anim
 	r.holdEdit(main)
+	r.resend()
 	out := diff(r.name, r.sent[0], main, nil)
 	out = diff(r.name, r.sent[1], layer, out)
 	out = diff(r.name, r.sent[2], ts, out)
@@ -390,6 +395,12 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			if !r.Away {
 				c.St.Focus = id
 			}
+		}
+		if e.Kind == view.TextField {
+			if r.edited == nil {
+				r.edited = map[string]bool{}
+			}
+			r.edited[domID(id)] = true
 		}
 		switch e.Kind {
 		case view.CheckBox:
@@ -817,12 +828,34 @@ func (r *Rendition) holdEdit(main *node) {
 	if old == nil || cur == nil || old.tag != cur.tag {
 		return
 	}
-	switch cur.tag {
-	case "textarea":
+	if v, ok := old.attr("value"); ok {
+		cur.set("value", v)
+	}
+	if cur.tag == "textarea" {
 		cur.kids = old.kids
-	case "input":
-		if v, ok := old.attr("value"); ok {
-			cur.set("value", v)
+	}
+}
+
+// resend makes Update send the value of each text field the user typed in
+// and has left, even when it is the value the host was last sent: the
+// host shows what was typed, and the program's value only replaces it
+// when its attribute changes (SPEC §6.2). Without this, a field the user
+// typed in, left, and the program then set back to the value it had,
+// kept the typing; the review app's box kept the last picture's note.
+func (r *Rendition) resend() {
+	held := ""
+	if r.host.on {
+		held = domID(r.host.focus)
+	}
+	for id := range r.edited {
+		if id == held {
+			continue
 		}
+		for _, d := range r.sent {
+			if n := d.find(id); n != nil {
+				n.unset("value")
+			}
+		}
+		delete(r.edited, id)
 	}
 }

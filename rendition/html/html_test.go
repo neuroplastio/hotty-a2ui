@@ -477,6 +477,54 @@ func TestNoEcho(t *testing.T) {
 	x.check(r)
 }
 
+// TestResend: a field the user typed in and left takes the agent's value
+// even when it is the one the host was last sent, as a review's box is
+// emptied for the next picture: the value attribute goes out again, which
+// is what sets a field's state (SPEC §6.2), a textarea's included.
+func TestResend(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"text":"","notes":""}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["f","notes"]},
+ {"id":"f","component":"TextField","label":"Type","value":{"@path":"/text"}},
+ {"id":"notes","component":"TextField","label":"Notes","variant":"longText","value":{"@path":"/notes"}}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	for _, c := range []struct{ id, v string }{{"f", "typed"}, {"notes", "a note"}} {
+		must(t, x.h.Fill(r.name, c.id, c.v))
+		x.pump()
+	}
+	// The user leaves the fields, and the agent empties them before the
+	// rendition draws again.
+	x.send(hotty.Blur(r.name))
+	for _, ev := range x.h.Events()[x.seen:] {
+		x.seen++
+		must(t, r.Event(ev))
+	}
+	var set []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/text","value":""}},
+{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/notes","value":""}}]`), &set))
+	must(t, x.p.Process(set))
+	r.C.Rebuild()
+	cmds := r.Update()
+	for _, id := range []string{"f", "notes"} {
+		if !slices.Contains(cmds, hotty.SetAttr(r.name, id, "value", "")) {
+			t.Errorf("no value for %s in %q", id, cmds)
+		}
+	}
+	x.send(cmds...)
+	for _, id := range []string{"f", "notes"} {
+		if v, _ := s.Value(id); v != "" {
+			t.Errorf("%s still says %q", id, v)
+		}
+	}
+	x.check(r)
+}
+
 // TestSliderSteps: on a host with steps (SPEC §9.1) a Slider's track is
 // the drag target, its notches' count less one as data-steps, and the
 // notches, each centred on its value, take taps alone. A drag sets the

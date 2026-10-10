@@ -264,7 +264,10 @@ func (m *markup) element(e *view.Element) *node {
 		v, _ := e.Value.(string)
 		switch e.Variant {
 		case "longText":
-			n = el("textarea", "id", id, "class", "k-input", "data-on", "input")
+			// The text is the value a host builds the field with, and the
+			// attribute the one it takes later (SPEC §6.2): hotty-blitz
+			// reads a textarea's text only when it builds it.
+			n = el("textarea", "id", id, "class", "k-input", "value", v, "data-on", "input")
 			if v != "" {
 				n.add(txt(v))
 			}

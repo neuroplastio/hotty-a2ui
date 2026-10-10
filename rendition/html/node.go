@@ -46,6 +46,11 @@ func (n *node) set(k, v string) *node {
 	return n
 }
 
+// unset removes an attribute.
+func (n *node) unset(k string) {
+	n.attrs = slices.DeleteFunc(n.attrs, func(a attr) bool { return a.k == k })
+}
+
 // flag sets a boolean attribute when on.
 func (n *node) flag(k string, on bool) *node {
 	if on {
