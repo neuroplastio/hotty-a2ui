@@ -45,6 +45,7 @@ type Rendition struct {
 	drag        string        // the Slider or HottyRangeSlider a click on its track started dragging, or the text control a press in its value did
 	knob        int           // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
 	anchor      int           // where in the text control the press was, which a drag selects from
+	press       *press        // a press that may start a drag and drop (drag.go)
 	anim        time.Duration // how soon the last Draw changes again (Animating)
 
 	// Clock is the time a Draw paints at: a Spinner's frame, an
@@ -156,6 +157,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 		r.panel = &hit{x: px, y: py, w: pw, h: ph}
 		l.paint(cv, v.Overlay, px+2, py+1, pw-4, ph-2)
 	}
+	l.paintDrag(cv)
 	return f
 }
 
@@ -184,7 +186,53 @@ func (r *Rendition) Sight(id string) (col, row, w, h int, ok bool) {
 // (a Button runs, a CheckBox toggles, a select opens, a field puts its
 // cursor there); a click on nothing that takes focus gives the keyboard
 // back. Outside the open Modal's panel, a click closes the Modal.
+//
+// A press on what can be dragged (profile §6.21) may be a drag's start: it
+// selects a list's item there now, and what else the click does (a second
+// click's action, a branch opening, a Button in a card running) waits for
+// the Release, which a drag does not do.
 func (r *Rendition) Click(col, row int) error {
+	r.press = nil
+	h := r.hitAt(col, row)
+	if (r.panel == nil || r.panel.contains(col, row)) && !r.holds(h) {
+		if id, item, at, ok := r.grab(col, row, h); ok {
+			p := &press{id: id, item: item, at: at}
+			r.press = p
+			if e := r.c.V.Find(id); item >= 0 && e.Kind != view.Stack && item != e.SelectedRow() && !(e.Kind == view.Tree && e.Nodes[item].Branch()) {
+				return r.click(col, row)
+			}
+			if h != nil && !h.disabled {
+				r.c.Focus(h.id)
+			}
+			p.click = func() error { return r.click(col, row) }
+			return nil
+		}
+	}
+	return r.click(col, row)
+}
+
+// hitAt is the topmost hit at a cell of the last frame, or nil.
+func (r *Rendition) hitAt(col, row int) *hit {
+	for i := len(r.hits) - 1; i >= 0; i-- {
+		if r.hits[i].contains(col, row) {
+			return &r.hits[i]
+		}
+	}
+	return nil
+}
+
+// holds reports whether a press on a hit is the pointer's own and starts
+// no drag: in a text control, which a drag selects in, or on a Slider or
+// a HottyRangeSlider, which a drag moves.
+func (r *Rendition) holds(h *hit) bool {
+	if h == nil {
+		return false
+	}
+	e := r.c.V.Find(h.id)
+	return e != nil && (isTextControl(e) || e.Kind == view.Slider || e.Kind == view.RangeSlider || e.Kind == view.Knob)
+}
+
+func (r *Rendition) click(col, row int) error {
 	c := r.c
 	if r.panel != nil && !r.panel.contains(col, row) {
 		r.list = ""
@@ -192,13 +240,7 @@ func (r *Rendition) Click(col, row int) error {
 		c.Focus("")
 		return nil
 	}
-	var h *hit
-	for i := len(r.hits) - 1; i >= 0; i-- {
-		if r.hits[i].contains(col, row) {
-			h = &r.hits[i]
-			break
-		}
-	}
+	h := r.hitAt(col, row)
 	e := (*view.Element)(nil)
 	if h != nil {
 		e = c.V.Find(h.id)
@@ -277,12 +319,14 @@ func (r *Rendition) Click(col, row int) error {
 // so does the knob of a HottyRangeSlider the click picked (stopped where
 // it meets the other), clamped to the track's ends, as last drawn; a text
 // control the click landed in selects from there to the pointer, a row
-// above or below its lines selecting to its first or last. After any
-// other click it does nothing.
-func (r *Rendition) Drag(col, row int) error {
-	if r.drag == "" {
-		return nil
-	}
+// above or below its lines selecting to its first or last; after a press
+// on what can be dragged, once the pointer leaves it, it is lifted and a
+// line shows where it would land (drag.go). After any other click it does
+// nothing.
+func (r *Rendition) Drag(col, row int) error { return r.DragAt(col, row, -1) }
+
+// slide is Drag for a Slider, a HottyRangeSlider or a text control.
+func (r *Rendition) slide(col, row int) error {
 	e := r.c.V.Find(r.drag)
 	if e == nil || e.Kind != view.Slider && e.Kind != view.RangeSlider && !isTextControl(e) {
 		r.drag = ""
@@ -324,8 +368,12 @@ func posAt(e *view.Element, a *fieldArea, col, row int) int {
 	return offset(lines, li, indexAt(lines[li], col-a.x+a.hoff, e.Variant == "obscured"))
 }
 
-// Release is the primary button let go: a drag ends.
-func (r *Rendition) Release() { r.drag = "" }
+// Release is the primary button let go: a drag ends; a drag and drop
+// drops, and a press that did not drag does what its click waited for.
+func (r *Rendition) Release() error {
+	r.drag = ""
+	return r.release()
+}
 
 // slideTo sets a Slider to the value at a column of its track (trackValue).
 func (r *Rendition) slideTo(e *view.Element, t *trackArea, col int) error {

@@ -28,6 +28,7 @@ import (
 // keyboard back. Control+C quits.
 type bareModel struct {
 	run   *story.Run
+	px    pixels
 	th    theme.Theme
 	plain bool
 	panes []*barePane
@@ -71,6 +72,10 @@ func runBare(st *story.Story, th theme.Theme) error {
 func (m *bareModel) Init() tea.Cmd { return nil }
 
 func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	msg, px := m.px.update(msg)
+	if msg == nil {
+		return m, px
+	}
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
@@ -82,7 +87,7 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		if k == "Control+c" || k == "q" && m.keyboard() == nil {
-			return m, tea.Quit
+			return m, tea.Sequence(m.px.off(), tea.Quit)
 		}
 		m.key(k)
 	case tea.MouseClickMsg:
@@ -97,19 +102,30 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.r.Wheel(msg.X, row, dx, dy)
 		}
 	case tea.MouseMotionMsg:
-		if p := m.keyboard(); p != nil && p.press && msg.Button == tea.MouseLeft {
-			m.fail(p.r.Drag(msg.X, msg.Y-p.top))
+		for _, p := range m.panes {
+			if p.press && msg.Button == tea.MouseLeft {
+				m.fail(p.r.Drag(msg.X, msg.Y-p.top))
+			}
+		}
+	case storybook.DragMsg:
+		for _, p := range m.panes {
+			if p.press {
+				m.fail(p.r.DragAt(msg.X, msg.Y-p.top, msg.Sub))
+			}
 		}
 	case tea.MouseReleaseMsg:
 		for _, p := range m.panes {
 			if p.press {
-				p.r.Release()
 				p.press = false
+				m.fail(p.r.Release())
+				if p.s.C.St.Keyboard {
+					m.give(p)
+				}
 			}
 		}
 	}
 	m.draw()
-	return m, m.tick()
+	return m, tea.Batch(px, m.tick())
 }
 
 // tick asks for the next frame while something in this one moves (a

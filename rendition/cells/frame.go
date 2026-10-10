@@ -45,6 +45,10 @@ var ansi16 = [...]string{
 	Success: "32", Warning: "33", Error: "31", Info: "36",
 }
 
+// ansi256 is an ANSI-16 foreground's colour as an index of the 256, for
+// an underline's colour (SGR 58), which has no 16-colour form.
+var ansi256 = map[string]string{"90": "8", "94": "12", "32": "2", "33": "3", "31": "1", "36": "6"}
+
 // Attr is a cell's attributes, a set of flags: what NO_COLOR keeps.
 type Attr uint8
 
@@ -56,10 +60,14 @@ const (
 	Underline
 	Reverse
 	Strike
+	// Overline is a line at the cell's top (SGR 53): a drag's line at the
+	// frame's top, where there is no row above to underline (profile
+	// §3.4).
+	Overline
 )
 
 // sgr are the attributes' SGR parameters, in Attr's order.
-var sgr = [...]string{"1", "2", "3", "4", "7", "9"}
+var sgr = [...]string{"1", "2", "3", "4", "7", "9", "53"}
 
 // Cell is one cell of a frame.
 type Cell struct {
@@ -89,6 +97,11 @@ type Cell struct {
 	// reversed).
 	BackFg   bool
 	BackAttr Attr
+	// Line colours the cell's underline in a role's colour (SGR 58) when
+	// LineSet, so that a drag's line is in the accent under text in its
+	// own colour.
+	Line    Role
+	LineSet bool
 }
 
 var blank = Cell{Text: " ", Width: 1}
@@ -228,6 +241,13 @@ func (c Cell) style(th *theme.Theme) string {
 		p = append(p, truecolour("38", hex))
 	} else if int(c.Role) < len(ansi16) && ansi16[c.Role] != "" {
 		p = append(p, ansi16[c.Role])
+	}
+	if c.LineSet && attr&Underline != 0 {
+		if line := th.Colour(roleNames[c.Line]); line != "" {
+			p = append(p, truecolour("58", line))
+		} else if n, ok := ansi256[ansi16[c.Line]]; ok {
+			p = append(p, "58;5;"+n)
+		}
 	}
 	if th.Bg != "" {
 		bg := th.Bg

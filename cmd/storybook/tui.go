@@ -39,6 +39,7 @@ func endOnSignal(p *tea.Program) {
 // model is the interactive storybook: the Book on the whole screen.
 type model struct {
 	s     *hottytea.Session
+	px    pixels
 	b     *storybook.Book
 	w, h  int
 	frame string
@@ -53,7 +54,12 @@ func newModel(o storybook.Options) *model {
 func (m *model) Init() tea.Cmd { return m.s.Detect() }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	msg, px := m.px.update(msg)
+	if msg == nil {
+		return m, px
+	}
 	msg, cmd := m.s.Update(msg)
+	cmd = tea.Batch(px, cmd)
 	switch msg := msg.(type) {
 	case nil:
 	case tea.WindowSizeMsg:
@@ -63,10 +69,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case streamEnd:
 		m.b.End(msg.err)
 	case endSignal:
-		return m, tea.Sequence(m.s.Close(), tea.Quit)
+		return m, tea.Sequence(m.s.Close(), m.px.off(), tea.Quit)
 	default:
 		if m.b.Update(msg, m.s) {
-			return m, tea.Sequence(m.s.Close(), tea.Quit)
+			return m, tea.Sequence(m.s.Close(), m.px.off(), tea.Quit)
 		}
 	}
 	return m, tea.Batch(cmd, m.draw(), m.b.Tick())

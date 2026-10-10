@@ -34,8 +34,12 @@ const (
 )
 
 // entry is a story in nav: its handle, its title, the branch it is
-// listed in ("" for the stream, a root of its own), and its icon.
-type entry struct{ name, label, branch, icon string }
+// listed in ("" for the stream, a root of its own), its icon, and the
+// topic it is under in the branch, if any (story.Story.Topic).
+type entry struct{ name, label, branch, icon, topic string }
+
+// topicIcons are the topics' icons in nav.
+var topicIcons = map[string]string{"Drag and drop": "drag_pan"}
 
 // branch is one of nav's: its id, which is its node's value, its title
 // and its icon.
@@ -43,7 +47,7 @@ type branch struct{ id, title, icon string }
 
 // branches are nav's, in order: the kit's stories by what they show, A2UI's
 // examples, and what the kit falls back to. All but the examples, which
-// are many, start open.
+// are many, start open, and so do the topics in them.
 var branches = []branch{
 	{"components", "Components", "widgets"},
 	{"behaviours", "Behaviours", "touch_app"},
@@ -165,6 +169,11 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 			open = append(open, br.id)
 		}
 	}
+	for _, e := range entries {
+		if t := e.branch + "/" + e.topic; e.topic != "" && e.branch != "examples" && !slices.Contains(open, any(t)) {
+			open = append(open, t)
+		}
+	}
 	ch.feed(
 		create(pickID, map[string]any{"rendition": []any{rend}, "theme": []any{th}, "keys": []any{keys}, "q": ""}),
 		components(pickID, pick...),
@@ -239,7 +248,9 @@ func storyIcon(name string) map[string]any {
 // navItems are nav's nodes: the stream, then a node a branch with its
 // stories in it, a value each: its handle, or the branch's id. The
 // components and the behaviours go by their titles; A2UI's examples and
-// the fallbacks as they are numbered.
+// the fallbacks as they are numbered. A topic's stories are a node in
+// their branch, where the topic's name goes, its value the branch's id
+// and the topic's.
 func navItems(entries []entry) []any {
 	var items []any
 	in := map[string][]entry{}
@@ -252,8 +263,19 @@ func navItems(entries []entry) []any {
 	}
 	for _, br := range branches {
 		var kids []any
+		topics := map[string]map[string]any{}
 		for _, e := range in[br.id] {
-			kids = append(kids, node(e))
+			if e.topic == "" {
+				kids = append(kids, node(e))
+				continue
+			}
+			t, ok := topics[e.topic]
+			if !ok {
+				t = obj("label", e.topic, "value", br.id+"/"+e.topic, "icon", cmp.Or(topicIcons[e.topic], br.icon), "children", []any{})
+				topics[e.topic] = t
+				kids = append(kids, t)
+			}
+			t["children"] = append(t["children"].([]any), node(e))
 		}
 		if len(kids) > 0 {
 			items = append(items, obj("label", br.title, "value", br.id, "icon", br.icon, "children", kids))
@@ -480,16 +502,16 @@ func orNone(s string, n int, none string) string {
 
 // entries are the storybook's stories as nav lists them: the stream first
 // when there is one, then each branch's, the components and the behaviours
-// by their titles. A2UI's examples' titles are in title case, and go in
+// by their titles, a topic's stories together where its name goes. A2UI's examples' titles are in title case, and go in
 // sentence case, as the kit's are.
 func entries(stream bool) []entry {
 	var out []entry
 	if stream {
-		out = append(out, entry{streamName, "The stream", "", "stream"})
+		out = append(out, entry{streamName, "The stream", "", "stream", ""})
 	}
 	in := map[string][]entry{}
 	for _, st := range story.All() {
-		e := entry{st.Name, st.Title, branchOf(st), st.Icon}
+		e := entry{st.Name, st.Title, branchOf(st), st.Icon, st.Topic}
 		if e.branch == "examples" {
 			e.label = sentenceCase(e.label)
 		}
@@ -498,7 +520,9 @@ func entries(stream bool) []entry {
 	for _, br := range branches {
 		es := in[br.id]
 		if br.id == "components" || br.id == "behaviours" {
-			slices.SortStableFunc(es, func(a, b entry) int { return cmp.Compare(a.label, b.label) })
+			slices.SortStableFunc(es, func(a, b entry) int {
+				return cmp.Or(cmp.Compare(cmp.Or(a.topic, a.label), cmp.Or(b.topic, b.label)), cmp.Compare(a.label, b.label))
+			})
 		}
 		out = append(out, es...)
 	}

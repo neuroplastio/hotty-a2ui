@@ -1,0 +1,87 @@
+{
+  "name": "A kanban board",
+  "kind": "behaviour",
+  "topic": "Drag and drop",
+  "component": "List, io_neuroplast_hotty.reorder, io_neuroplast_hotty.drop",
+  "icon": "view_kanban",
+  "description": "Three Lists of cards, each a template's, with the extension's reorder of one type: drag a card within its column or to another one, or press Alt+ArrowUp or Alt+ArrowDown on it to move it a place in its column. Each move writes the columns' lists and the move to /moved, then sends moved. Drop a card on a person below to assign it: the person is a drop target that accepts cards, so the card is written to /assigning and assign is sent with its id, and the card stays where it was. A click on a card sends open.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "board",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "board": {
+            "todo": [
+              {"id": "c1", "title": "Draft the release notes"},
+              {"id": "c2", "title": "Fix the flaky login test"},
+              {"id": "c3", "title": "Pick a font"}
+            ],
+            "doing": [
+              {"id": "c4", "title": "Move the CI to yaga"}
+            ],
+            "done": [
+              {"id": "c5", "title": "Order the stickers"}
+            ]
+          },
+          "moved": null,
+          "assigning": null
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "board",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["columns", "people_h", "people", "help"]},
+          {"id": "columns", "component": "Row", "children": ["todo_c", "doing_c", "done_c"]},
+          {"id": "todo_c", "component": "Column", "children": ["todo_h", "todo"], "weight": 1},
+          {"id": "todo_h", "component": "Text", "text": "**To do**"},
+          {
+            "id": "todo",
+            "component": "List",
+            "children": {"componentId": "card", "path": "/board/todo"},
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"reorder": {"type": "card", "moved": {"@path": "/moved"}, "onMove": {"event": {"name": "moved", "context": {"move": {"@path": "/moved"}}}}}}}}
+          },
+          {"id": "doing_c", "component": "Column", "children": ["doing_h", "doing"], "weight": 1},
+          {"id": "doing_h", "component": "Text", "text": "**Doing**"},
+          {
+            "id": "doing",
+            "component": "List",
+            "children": {"componentId": "card", "path": "/board/doing"},
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"reorder": {"type": "card", "moved": {"@path": "/moved"}, "onMove": {"event": {"name": "moved", "context": {"move": {"@path": "/moved"}}}}}}}}
+          },
+          {"id": "done_c", "component": "Column", "children": ["done_h", "done"], "weight": 1},
+          {"id": "done_h", "component": "Text", "text": "**Done**"},
+          {
+            "id": "done",
+            "component": "List",
+            "children": {"componentId": "card", "path": "/board/done"},
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"reorder": {"type": "card", "moved": {"@path": "/moved"}, "onMove": {"event": {"name": "moved", "context": {"move": {"@path": "/moved"}}}}}}}}
+          },
+          {"id": "card", "component": "Button", "child": "card_t", "action": {"event": {"name": "open", "context": {"card": {"@path": "id"}}}}},
+          {"id": "card_t", "component": "Text", "text": {"@path": "title"}},
+          {"id": "people_h", "component": "Text", "text": "**Assign to**"},
+          {"id": "people", "component": "Row", "children": ["ada", "grace"]},
+          {
+            "id": "ada",
+            "component": "Card",
+            "child": "ada_t",
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"drop": {"accepts": "card", "value": {"@path": "/assigning"}, "action": {"event": {"name": "assign", "context": {"card": {"@path": "/assigning/id"}, "to": "ada"}}}}}}}
+          },
+          {"id": "ada_t", "component": "Text", "text": "Ada"},
+          {
+            "id": "grace",
+            "component": "Card",
+            "child": "grace_t",
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"drop": {"accepts": "card", "value": {"@path": "/assigning"}, "action": {"event": {"name": "assign", "context": {"card": {"@path": "/assigning/id"}, "to": "grace"}}}}}}}
+          },
+          {"id": "grace_t", "component": "Text", "text": "Grace"},
+          {"id": "help", "component": "HottyKeyHints", "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"}
+        ]
+      }
+    }
+  ]
+}

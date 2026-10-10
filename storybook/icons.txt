@@ -5,6 +5,7 @@ ads_click
 article
 bolt
 center_focus_strong
+checklist
 code
 contrast
 dark_mode
@@ -12,6 +13,7 @@ dashboard
 data_object
 description
 difference
+drag_pan
 dynamic_form
 forum
 gavel
@@ -23,6 +25,7 @@ interests
 keyboard
 light_mode
 list
+low_priority
 movie
 notes
 palette
@@ -39,5 +42,6 @@ toggle_on
 touch_app
 tune
 vertical_split
+view_kanban
 web
 widgets

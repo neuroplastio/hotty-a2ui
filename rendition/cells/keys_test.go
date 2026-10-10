@@ -401,7 +401,7 @@ func TestSliderDrag(t *testing.T) {
 	if err := r.Drag(-5, b.y+3); err != nil || v() != 0.0 {
 		t.Fatalf("dragged past the start: %v %v", err, v())
 	}
-	r.Release()
+	must(t, r.Release())
 	if err := r.Drag(tr.x+tr.n-1, b.y); err != nil || v() != 0.0 {
 		t.Fatalf("a move after the release: %v %v", err, v())
 	}

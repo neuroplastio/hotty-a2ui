@@ -1,0 +1,51 @@
+{
+  "name": "A to-do list",
+  "kind": "behaviour",
+  "topic": "Drag and drop",
+  "component": "HottyList: reorderable, moved, onMove",
+  "icon": "checklist",
+  "description": "A reorderable HottyList. Drag an item: it shows faint, and a line in the accent shows where it would land; let go there, or press Escape, or let go away from the list, to leave it where it was. Alt+ArrowUp and Alt+ArrowDown move the selected item a place. Each move writes the items to /todos and the move to /moved, then sends moved with it.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "todo",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "todos": [
+            {"label": "Buy oat milk", "value": "milk"},
+            {"label": "Call the plumber", "value": "plumber"},
+            {"label": "Water the ferns", "value": "ferns"},
+            {"label": "Renew the passport", "value": "passport"},
+            {"label": "Back up the laptop", "value": "backup"},
+            {"label": "Book the dentist", "value": "dentist"}
+          ],
+          "selected": "milk",
+          "moved": null
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "todo",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["list", "help"]},
+          {
+            "id": "list",
+            "component": "HottyList",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "title": "To do",
+            "items": {"@path": "/todos"},
+            "selected": {"@path": "/selected"},
+            "height": 6,
+            "reorderable": true,
+            "moved": {"@path": "/moved"},
+            "onMove": {"event": {"name": "moved", "context": {"move": {"@path": "/moved"}}}}
+          },
+          {"id": "help", "component": "HottyKeyHints", "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"}
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "A file tree",
+  "kind": "behaviour",
+  "topic": "Drag and drop",
+  "component": "HottyTree: reorderable, moved, onMove",
+  "icon": "folder",
+  "description": "A reorderable HottyTree. Drag a file or a folder: over a folder's middle it goes into the folder, which the folder's row in the accent shows, and elsewhere a line shows where it would land; a folder never goes into itself or anything in it. A folder with nothing in it yet has children: []. Alt+ArrowUp and Alt+ArrowDown move the selected node among its siblings, Alt+ArrowLeft out of its folder, and Alt+ArrowRight into the folder above it. Each move writes the tree to /files and the move to /moved, then sends moved with it.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "files",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "files": [
+            {
+              "label": "docs",
+              "icon": "folder",
+              "value": "docs",
+              "children": [
+                {"label": "guide.md", "icon": "description", "value": "guide.md"},
+                {"label": "faq.md", "icon": "description", "value": "faq.md"}
+              ]
+            },
+            {
+              "label": "src",
+              "icon": "folder",
+              "value": "src",
+              "children": [
+                {"label": "main.go", "icon": "code", "value": "main.go"},
+                {"label": "util", "icon": "folder", "value": "util", "children": [{"label": "strings.go", "icon": "code", "value": "strings.go"}]}
+              ]
+            },
+            {"label": "archive", "icon": "folder", "value": "archive", "children": []},
+            {"label": "README.md", "icon": "description", "value": "README.md"}
+          ],
+          "selected": "main.go",
+          "expanded": ["docs", "src"],
+          "moved": null
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "files",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["tree", "help"]},
+          {
+            "id": "tree",
+            "component": "HottyTree",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "items": {"@path": "/files"},
+            "selected": {"@path": "/selected"},
+            "expanded": {"@path": "/expanded"},
+            "reorderable": true,
+            "moved": {"@path": "/moved"},
+            "onMove": {"event": {"name": "moved", "context": {"move": {"@path": "/moved"}}}}
+          },
+          {"id": "help", "component": "HottyKeyHints", "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"}
+        ]
+      }
+    }
+  ]
+}

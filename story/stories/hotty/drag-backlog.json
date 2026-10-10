@@ -1,0 +1,54 @@
+{
+  "name": "A backlog",
+  "kind": "behaviour",
+  "topic": "Drag and drop",
+  "component": "HottyTable: reorderable, moved, onMove",
+  "icon": "low_priority",
+  "description": "A reorderable HottyTable: a backlog in the order to work on it. Drag a row to where the line shows, or select one and press Alt+ArrowUp or Alt+ArrowDown. Each move writes the rows to /backlog and the move to /moved, then sends reprioritized with it.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "backlog",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "backlog": [
+            {"key": "KIT-31", "title": "Sign in with a passkey", "points": 5},
+            {"key": "KIT-27", "title": "Export the report as CSV", "points": 3},
+            {"key": "KIT-35", "title": "Dark mode for the settings", "points": 2},
+            {"key": "KIT-22", "title": "Retry a failed upload", "points": 3},
+            {"key": "KIT-40", "title": "Show who is typing", "points": 8}
+          ],
+          "selected": "KIT-31",
+          "moved": null
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "backlog",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["table", "help"]},
+          {
+            "id": "table",
+            "component": "HottyTable",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "columns": [
+              {"key": "key", "header": "Key", "width": 6},
+              {"key": "title", "header": "Title", "width": 26},
+              {"key": "points", "header": "Points", "width": 6, "align": "end"}
+            ],
+            "rows": {"@path": "/backlog"},
+            "rowKey": "key",
+            "selected": {"@path": "/selected"},
+            "reorderable": true,
+            "moved": {"@path": "/moved"},
+            "onMove": {"event": {"name": "reprioritized", "context": {"move": {"@path": "/moved"}}}}
+          },
+          {"id": "help", "component": "HottyKeyHints", "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"}
+        ]
+      }
+    }
+  ]
+}

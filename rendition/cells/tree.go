@@ -50,7 +50,8 @@ func nodeParts(e *view.Element, i int, matched []int, st style) (guides, marker,
 	switch {
 	case n.Branch() && open:
 		marker = line("▼ ", style{role: Muted})
-	case n.Branch():
+	case n.Branch() || n.Takes:
+		// A branch with nothing in it yet shows as one, closed, with 0.
 		marker = line("▶ ", style{role: Muted})
 		count = line(" "+strconv.Itoa(n.Kids), style{role: Muted})
 	case n.Level == 0:
@@ -66,8 +67,8 @@ func treeWidth(e *view.Element) int {
 	for i := range e.Nodes {
 		g, m, l, _ := nodeParts(e, i, nil, style{})
 		w := width(g) + width(m) + width(l)
-		if e.Nodes[i].Branch() {
-			w += 1 + len(strconv.Itoa(e.Nodes[i].Kids))
+		if n := e.Nodes[i]; n.Branch() || n.Takes {
+			w += 1 + len(strconv.Itoa(n.Kids))
 		}
 		n = max(n, w)
 	}

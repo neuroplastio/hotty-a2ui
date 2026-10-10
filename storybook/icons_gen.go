@@ -19,6 +19,8 @@ func init() {
 		"bolt": "m8 22l1-7H4l9-13h2l-1 8h6L10 22z",
 		// center-focus-strong-sharp
 		"center_focus_strong": "M8.463 15.538Q7 14.075 7 12t1.463-3.537T12 7t3.538 1.463T17 12t-1.463 3.538T12 17t-3.537-1.463M3 21v-6h2v4h4v2zm12 0v-2h4v-4h2v6zM3 9V3h6v2H5v4zm16 0V5h-4V3h6v6z",
+		// checklist-sharp
+		"checklist": "M5.55 19L2 15.45l1.4-1.4l2.125 2.125l4.25-4.25l1.4 1.425zm0-8L2 7.45l1.4-1.4l2.125 2.125l4.25-4.25l1.4 1.425zM13 17v-2h9v2zm0-8V7h9v2z",
 		// code-sharp
 		"code": "m8 18l-6-6l6-6l1.425 1.425l-4.6 4.6L9.4 16.6zm8 0l-1.425-1.425l4.6-4.6L14.6 7.4L16 6l6 6z",
 		// contrast-sharp
@@ -33,6 +35,8 @@ func init() {
 		"description": "M8 18h8v-2H8zm0-4h8v-2H8zm-4 8V2h10l6 6v14zm9-13h5l-5-5z",
 		// difference-sharp
 		"difference": "M12.5 11h2V9h2V7h-2V5h-2v2h-2v2h2zm-2 4h6v-2h-6zM6 19V1h9l6 6v12zm-4 4V7h2v14h11v2z",
+		// drag-pan-sharp
+		"drag_pan": "m12 22l-4.25-4.25l1.425-1.425L11 18.15V13H5.875L7.7 14.8l-1.45 1.45L2 12l4.225-4.225L7.65 9.2L5.85 11H11V5.85L9.175 7.675L7.75 6.25L12 2l4.25 4.25l-1.425 1.425L13 5.85V11h5.125L16.3 9.2l1.45-1.45L22 12l-4.25 4.25l-1.425-1.425L18.15 13H13v5.125l1.8-1.825l1.45 1.45z",
 		// dynamic-form-sharp
 		"dynamic_form": "M2 11V4h11v7zm0 9v-7h13v7zm15 0v-9h-2V4h7l-2 5h2zM4.75 17.25h1.5v-1.5h-1.5zm0-9h1.5v-1.5h-1.5z",
 		// forum-sharp
@@ -55,6 +59,8 @@ func init() {
 		"light_mode": "M8.463 15.538Q7 14.075 7 12t1.463-3.537T12 7t3.538 1.463T17 12t-1.463 3.538T12 17t-3.537-1.463M5 13H1v-2h4zm18 0h-4v-2h4zM11 5V1h2v4zm0 18v-4h2v4zM6.4 7.75L3.875 5.325L5.3 3.85l2.4 2.5zm12.3 12.4l-2.425-2.525L17.6 16.25l2.525 2.425zM16.25 6.4l2.425-2.525L20.15 5.3l-2.5 2.4zM3.85 18.7l2.525-2.425L7.75 17.6l-2.425 2.525z",
 		// list-sharp
 		"list": "M7 9V7h14v2zm0 4v-2h14v2zm0 4v-2h14v2zM4 9q-.425 0-.712-.288T3 8t.288-.712T4 7t.713.288T5 8t-.288.713T4 9m0 4q-.425 0-.712-.288T3 12t.288-.712T4 11t.713.288T5 12t-.288.713T4 13m0 4q-.425 0-.712-.288T3 16t.288-.712T4 15t.713.288T5 16t-.288.713T4 17",
+		// low-priority-sharp
+		"low_priority": "M4 11.475q0 1.775 1.188 3.05T8.15 15.95L6.6 14.4L8 13l4 4l-4 4l-1.4-1.4L8.2 18q-2.625-.15-4.413-2.025T2 11.5q0-2.725 1.888-4.612T8.5 5H12v2H8.5Q6.625 7 5.313 8.3T4 11.475M14 18v-2h8v2zm0-5.5v-2h8v2zM14 7V5h8v2z",
 		// movie-sharp
 		"movie": "M2 20V4h2l2 4h3L7 4h2l2 4h3l-2-4h2l2 4h3l-2-4h5v16z",
 		// notes-sharp
@@ -87,6 +93,8 @@ func init() {
 		"tune": "M11 21v-6h2v2h8v2h-8v2zm-8-2v-2h6v2zm4-4v-2H3v-2h4V9h2v6zm4-2v-2h10v2zm4-4V3h2v2h4v2h-4v2zM3 7V5h10v2z",
 		// vertical-split-sharp
 		"vertical_split": "M3 15v-2h8v2zm0 4v-2h8v2zm0-8V9h8v2zm0-4V5h8v2zm10 12V5h8v14z",
+		// view-kanban-sharp
+		"view_kanban": "M7 17h2V7H7zm4-5h2V7h-2zm4 3h2V7h-2zM3 21V3h18v18z",
 		// web-sharp
 		"web": "M2 20V4h20v16zm2-2h10.5v-3.5H4zm12.5 0H20V9h-3.5zM4 12.5h10.5V9H4z",
 		// widgets-sharp

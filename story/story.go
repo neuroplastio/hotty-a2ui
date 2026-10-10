@@ -50,6 +50,9 @@ type Story struct {
 	Kind      string `json:"kind,omitempty"`
 	Component string `json:"component,omitempty"`
 	Icon      string `json:"icon,omitempty"`
+	// Topic gathers stories of a kind under a node of their own in the
+	// storybook's list ("Drag and drop"); "" for none.
+	Topic string `json:"topic,omitempty"`
 }
 
 // The kinds of the kit's own stories (Story.Kind).

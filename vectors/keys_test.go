@@ -250,6 +250,9 @@ func (p *cellsPlayer) click(id string) {
 	if err := p.r.Click(col, row); err != nil {
 		p.t.Fatal(err)
 	}
+	if err := p.r.Release(); err != nil {
+		p.t.Fatal(err)
+	}
 	p.r.Draw(80)
 }
 

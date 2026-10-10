@@ -127,6 +127,9 @@ type Book struct {
 	last   *pane   // the pane that had it last: Tab goes on from there
 	cursor *tea.Cursor
 	status string
+	// pressed is the cells pane the primary button went down on, which
+	// the pointer's moves and the release go to until it is let go.
+	pressed *pane
 
 	// pickRows is pick's height with its lists closed: the host's fit on a
 	// host, the frame's rows in cells; 0 until known. barRows is panel's
@@ -203,16 +206,33 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	case tea.MouseWheelMsg:
 		b.wheel(msg.X-b.at.X, msg.Y-b.at.Y, msg)
 	case tea.MouseMotionMsg:
-		if p := b.focus; msg.Button == tea.MouseLeft && p != nil && p.kind == asCells {
+		if p := b.pressed; msg.Button == tea.MouseLeft && p != nil {
 			b.fail(p.cells.Drag(msg.X-b.at.X-p.rect.X, msg.Y-b.at.Y-p.rect.Y+p.top))
 		}
+	case DragMsg:
+		if p := b.pressed; p != nil {
+			b.fail(p.cells.DragAt(msg.X-b.at.X-p.rect.X, msg.Y-b.at.Y-p.rect.Y+p.top, msg.Sub))
+		}
 	case tea.MouseReleaseMsg:
-		if p := b.focus; p != nil && p.kind == asCells {
-			p.cells.Release()
+		if p := b.pressed; p != nil {
+			b.pressed = nil
+			b.fail(p.cells.Release())
+			b.took(p)
 		}
 	}
 	b.settle()
 	return quit
+}
+
+// DragMsg is the pointer moved with the primary button down, where the
+// terminal reports it in pixels (SGR-Pixels, mode 1016): the cell it is
+// in, on the screen as a tea.MouseMotionMsg has it, and Sub, how far down
+// that cell, from 0 to 1. A program that has the terminal report pixels
+// hands the Book this in place of the motion, so that a drag's line goes
+// by halves and thirds of a row (profile §6.21).
+type DragMsg struct {
+	X, Y int
+	Sub  float64
 }
 
 // mine reports whether a surface is one the Book placed, as far as its
@@ -620,15 +640,22 @@ func (b *Book) click(x, y int) {
 			f.s.C.St.Keyboard = false
 		}
 		b.fail(p.cells.Click(x-p.rect.X, y-p.rect.Y+p.top))
-		if p.s.C.St.Keyboard {
-			b.focus = p
-		} else if b.focus == p {
-			b.focus = nil
-		}
+		b.pressed = p
+		b.took(p)
 		return
 	}
 	if f := b.focus; f != nil && f.kind == asCells {
 		f.s.C.St.Keyboard = false
+		b.focus = nil
+	}
+}
+
+// took is a cells pane after a click or a release in it: it has the
+// keyboard when its surface does.
+func (b *Book) took(p *pane) {
+	if p.s.C.St.Keyboard {
+		b.focus = p
+	} else if b.focus == p {
 		b.focus = nil
 	}
 }

@@ -26,6 +26,9 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	mods, name := splitKey(key)
 	c := r.c
 	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
+	if key == "Escape" && r.cancelDrag() {
+		return true, nil
+	}
 	if c.St.Keyboard {
 		switch e := c.V.Find(c.St.Focus); {
 		case isTextControl(e):
@@ -40,6 +43,10 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 			if ok, err := r.elementKey(e, name); ok {
 				return true, err
 			}
+		}
+		// Alt with the arrows moves the item the keyboard is on (§6.21).
+		if ok, err := c.MoveKey(c.St.Focus, key); ok {
+			return true, err
 		}
 		if name == "Tab" && shiftOnly {
 			r.list = ""
