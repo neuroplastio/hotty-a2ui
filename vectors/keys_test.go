@@ -181,6 +181,18 @@ func play(t *testing.T, v vector, rendition string) {
 					}
 				}
 			}
+			if l, ok := ex["toasts"].([]any); ok {
+				var got, want []string
+				for _, e := range s.C.V.Toasts {
+					got = append(got, e.Name)
+				}
+				for _, id := range l {
+					want = append(want, fmt.Sprint(id))
+				}
+				if strings.Join(got, ",") != strings.Join(want, ",") {
+					t.Errorf("%s: toasts %v, want %v", where, got, want)
+				}
+			}
 			if d, ok := ex["data"].(map[string]any); ok {
 				for path, want := range d {
 					if got := s.S.Data.Value(path); !same(got, want) {

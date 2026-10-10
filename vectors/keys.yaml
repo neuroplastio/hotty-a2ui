@@ -21,6 +21,8 @@
 #     actions: the names of every action the agent has had, in order
 #     context: the last action's context (the keys given)
 #     data: data model values, by path
+#     toasts: the ids of the toasts the surface shows, the newest first
+#       (hottyToast, profile §6.23)
 # A vector with renditions (cells, host) plays on those alone: what the
 # other's baseline does not do yet, which the vector's name says.
 - name: Tab goes in tree order through every kind of control, and out past the last
@@ -717,3 +719,51 @@
     - key: ArrowDown
     - key: Enter
     - expect: {actions: [go], data: {/command: git checkout}}
+
+- name: Escape dismisses the newest toast, from a text field too, which keeps the keyboard; a click on a toast dismisses it, and takes the keyboard, as a click on a box does on a host
+  story: hotty/toast
+  steps:
+    - expect: {toasts: [toast-3, toast-2, toast-1, offline]}
+    - key: Escape
+    - expect: {focused: null, toasts: [toast-2, toast-1, offline]}
+    - focus: email
+    - key: Escape
+    - expect: {focused: email, toasts: [toast-1, offline]}
+    - click: "hottyToast:toast-1"
+    - expect: {focused: null, toasts: [offline], actions: []}
+
+- name: A toast's action is the last Tab stop, after the surface's; Enter sends its event and dismisses the toast, and the keyboard goes with it
+  story: hotty/toast
+  steps:
+    - focus: notify
+    - key: Tab
+    - expect: {focused: "hottyToast:offline/action/0"}
+    - key: Enter
+    - expect: {focused: null, actions: [retry], toasts: [toast-3, toast-2, toast-1]}
+
+- name: Escape on a toast's action dismisses that toast, not the newest
+  story: hotty/toast
+  steps:
+    - focus: "hottyToast:offline/action/0"
+    - key: Escape
+    - expect: {focused: null, actions: [], toasts: [toast-3, toast-2, toast-1]}
+
+- name: A click on a toast's action sends its event, with the context read as the toast showed
+  story: hotty/toast
+  steps:
+    - click: delete
+    - expect: {actions: [], toasts: [toast-4, toast-3, toast-2, toast-1, offline]}
+    - click: "hottyToast:toast-4/action/0"
+    - expect: {actions: [undoDelete], context: {draft: d-17}, toasts: [toast-3, toast-2, toast-1, offline]}
+
+- name: A toast shown with the id of one there takes its place, and hottyDismissToast takes one away by its id
+  story: hotty/toast
+  steps:
+    - click: upload
+    - expect: {toasts: [upload, toast-3, toast-2, toast-1, offline]}
+    - click: uploaded
+    - expect: {toasts: [upload, toast-3, toast-2, toast-1, offline]}
+    - click: stay
+    - expect: {toasts: [pinned, upload, toast-3, toast-2, toast-1]}
+    - click: unstay
+    - expect: {actions: [], toasts: [upload, toast-3, toast-2, toast-1]}
