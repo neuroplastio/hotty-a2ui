@@ -19,7 +19,7 @@ const srcTree = `[
    {"label":"list.go","value":"src/view/list.go"}]},
   {"label":"util.go","value":"src/util.go"}]},
  {"label":"docs","icon":"folder","value":"docs","children":[
-  {"label":"profile.md","value":"docs/profile.md"}]},
+  {"label":"profile.md","value":"docs/profile.md","href":"docs/profile.md#627-hottymarkdown"}]},
  {"label":"README.md","value":"README.md"}]`
 
 // files is a surface with srcTree, selected and expanded bound, src
@@ -73,6 +73,10 @@ func TestTreeBuilds(t *testing.T) {
 	}
 	if n := e.Nodes[5]; n.Label != "util.go" || !n.Last || n.Branch() {
 		t.Errorf("util.go: %+v", n)
+	}
+	// A node may lead somewhere, a docs site's nav (profile §6.14).
+	if e.Nodes[7].Href != "docs/profile.md#627-hottymarkdown" || e.Nodes[8].Href != "" {
+		t.Errorf("hrefs %q, %q", e.Nodes[7].Href, e.Nodes[8].Href)
 	}
 	if got, want := shownLabels(e), []string{"src", "main.go", "view", "util.go", "docs", "README.md"}; !slices.Equal(got, want) {
 		t.Errorf("shown %v, want %v", got, want)

@@ -12,7 +12,9 @@ import (
 // The parts an element draws besides itself (its label, its error) add
 // "~" and a lower-case letter, which no escape has, and a number for one
 // of several (a Slider's notches, "~k3"); the rendition's own elements
-// are "~" and a letter alone, which no element's id is.
+// are "~" and a letter alone, which no element's id is. A HottyMarkdown's
+// heading is its document's id, "~#" and its GitHub ID, encoded so too
+// ("guide~#install"; headingID), which no other id has (profile §6.27).
 const (
 	partWrap   = "w" // the box around a control, its label and its error
 	partLabel  = "l"
@@ -64,6 +66,10 @@ func domID(id string) string {
 
 func partID(id, part string) string { return domID(id) + "~" + part }
 
+// headingID is the DOM id of a HottyMarkdown's heading: its document's id,
+// "~#", and the heading's ID (view.Element.Anchors).
+func headingID(id, anchor string) string { return partID(id, "#"+domID(anchor)) }
+
 // viewID reads a DOM id: the element's view id, and the part, if the id
 // is one of its parts'. ok is false for an id the rendition did not make.
 func viewID(dom string) (id, part string, ok bool) {
@@ -73,6 +79,13 @@ func viewID(dom string) (id, part string, ok bool) {
 		if c != '~' {
 			b.WriteByte(c)
 			continue
+		}
+		if i+1 < len(dom) && dom[i+1] == '#' {
+			// A HottyMarkdown's heading: the part is "#" and its ID.
+			if b.Len() == 0 {
+				return "", "", false
+			}
+			return b.String(), dom[i+1:], true
 		}
 		if i+1 < len(dom) && 'a' <= dom[i+1] && dom[i+1] <= 'z' {
 			part := dom[i+1:]

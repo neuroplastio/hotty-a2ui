@@ -73,7 +73,9 @@ digits and `-_./` stay; every other byte is `~` and two upper-case hex
 digits, so an id is always a valid control value (SPEC.md §3.2). The
 parts a component draws besides itself add `~` and a lower-case letter:
 its wrapper `~w`, label `~l`, error `~e`, a Slider's notches `~k0`,
-`~k1`, …. A control comes wrapped with its
+`~k1`, …; a HottyMarkdown's headings add `~#` and their IDs, encoded the
+same way (`page~#install`, §6.27), which no other id holds, since a node
+key's `#` is always `~23`. A control comes wrapped with its
 label and its error, which is always there (empty while there is none),
 so that an error comes and goes as a text delta.
 
@@ -109,6 +111,7 @@ so that an error comes and goes as a text delta.
 | HottyChart | `div role=img`, named by its `accessibility.label`, else `Line chart` or `Bar chart` and its series' labels; a grid of its ticks' labels and its plot. The labels (`k-chart-y`, `aria-hidden`, in `--k-muted`) are each placed at its value's height, all of them, in a column as wide as the widest, in `ch`. The plot (`~a`) is `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), its left and bottom borders the axes, 2px in `--k-border`, since a 1px straight edge drops out at a fractional scale. The axis is the view's, cells' (§6.18), so a value sits at the same height in both. A line is an inline `svg` a series (`~g0`, `~g1`, …), stretched over the plot (`preserveAspectRatio=none`), holding one `path` (`~c0`, …) that hotty-go's `chart.Line` makes: a break where a value is missing, a lone value a dot, round joins, stroked 1.5 wide in `currentColor` with presentation attributes only, which every host's SVG takes. A new point is so an attribute's delta a line. Bars are boxes, a group a point and a bar a series in it, each from the axis's 0 to its value, placed by percentages, so that one below 0 hangs from it. The series' colours are cells' (§3.4), set by the series' class: `--k-info`, `--k-warning`, `--k-success`, `--k-error`, and round again. Under the plot: a line's points' labels, three evenly spread (the first and the last among them), or a bar chart's each under its bars; then the legend, when it has several series or a labelled one, a key a series (a stroke for a line, a square for bars) and its label in `--k-muted`. With no values, the plot says `No data`. The `svg`'s box is 480 by 20 a row, a guess at the plot's width that the markup cannot know: on a plot much wider or narrower the stroke thickens where the line is steep (vault KIT-10h) |
 | HottySparkline | `span role=img`, named by its `accessibility.label`, else `Sparkline`: a box `--k-n` columns wide (its `window`, else its values' count, at most the room), `--k-rows` terminal rows tall, in `--k-info`, holding a bar a value, a terminal column wide (`1ch` of the mono face), from its bottom, as tall as its value is between its `min` and `max`, at least an eighth of a row; a missing value has no height. The bars come newest first in a row that runs right to left (`row-reverse`), so that the newest is at the box's right edge and a box too narrow loses the oldest, as in cells |
 | HottyPaginator | `div tabindex=0 role=group` (`k-pager`), named by its `accessibility.label`, else `Pages`: its child, which holds the page the view shows (the same page as cells, §3.4), then its pages: a dot for each (`span.k-dot`), each a `data-on=click` whose id is the paginator's and `~d` and the page's index from 0, the page shown's in `--k-fg` and the others in `--k-border`, in a row (`~d`, `role=status`) that says `Page 3 of 10`; with `displayStyle` `numbers`, that row holds `3/10` in tabular figures. Its content starts past a 3px bar at its start, where a HottyList's items do, in `--k-focus` while it has the host's focus, the page shown too. Its `data-keys` give the program the arrows left and right, Page Up, Page Down, Home and End, on a host that would scroll with them; h and l reach the program anyway, a focused box using no keys. A page is as tall as its items, a host laying it out, where cells keeps every page as tall as the tallest. Without a child it is the row alone (`k-bare`). The host's own look is vault KIT-15h |
+| HottyMarkdown | `div` (`k-text k-doc`) with the Markdown as a Text's HTML, read as GitHub reads it (§6.27), its blocks spaced (`--k-3`, more before a heading). Each heading has the `id` above, its document's, `~#` and its ID, and `tabindex=-1`, so that the program's `a=focus` gives it the host's focus, which a host scrolls into view where the surface scrolls (SPEC.md §5.3, §10.1), with no ring. A link in place is `span role=link tabindex=0 data-on=click` (`k-link`, in `--k-link` and underlined; filled with `--k-focus` while it has the host's focus), whose id is the document's, `/link/` and its index from 0: a Tab stop whose click reports it (SPEC.md §9), and whose `data-keys` give Enter to the program, which follows it as in cells; Space stays the host's, which scrolls. A link with a scheme is a Text's (`target=_blank`). An alert is a `div role=note` (`k-alert k-alert-tip`, …) past a 3px bar at its start in its tone, its first row (`k-alert-title`) its icon as an Icon draws it (`info`, `lightbulb`, `feedback`, `warning`, `report`) and its title, bold in its tone: `--k-info`, `--k-success`, `--k-focus` for IMPORTANT, `--k-warning`, `--k-error`. An image is an `img` with its `src` and `alt`, fetched as the document's policy allows (above). HTML and comments are left out |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 | HottyTimer, HottyStopwatch | `span role=timer`, which a screen reader does not read out at each tick: its label, then its time as cells writes it (§6.25), in a span whose id is the timer's and `~f`, so that a tick is one text's delta, in tabular figures (`font-variant-numeric`), so that it does not jitter as it ticks, and in `--k-muted` while it stands still (`k-still`, one attribute's delta). The program's draws move it on the clock (§3.4), as a Spinner's frames: a host runs nothing of its own here. The time in display type is vault KIT-14h |
 | HottyBigText | `div` (`k-big`) holding its text as it is, its lines apart at a `br`, in display type: weight 800, tabular figures, as many terminal rows high (`--hotty-cell-h`) as cells' letters, 3, 4 or 5 by its size (`k-big-small`, `k-big-medium`, `k-big-large`), a line one row more, which leaves room for descenders; `k-big-center` or `k-big-end` aligns its lines. A line too long wraps as text does. A screen reader reads the text. The host's own look is vault KIT-19h |
@@ -129,7 +132,7 @@ renderer's own state: a tab shown, a Modal opened.
 | event | does |
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's; a text field's new value then runs its suggestions' `onInput` (§6.22) |
-| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a tap on a HottyRangeSlider's track moves its nearer knob there, and a click on a knob gives it the keyboard; a click on a HottyPaginator's dot shows its page, and one anywhere on it gives it the keyboard; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it; a click on a toast dismisses it, and one on its action sends its event and dismisses it (§6.23) |
+| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a HottyMarkdown's link in place is followed (§6.27); a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a tap on a HottyRangeSlider's track moves its nearer knob there, and a click on a knob gives it the keyboard; a click on a HottyPaginator's dot shows its page, and one anywhere on it gives it the keyboard; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it; a click on a toast dismisses it, and one on its action sends its event and dismisses it (§6.23) |
 | `submit` | the HottyForm submits (§6.2) |
 | `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it. A HottyRangeSlider's dragstart picks the knob that moves (§6.20), and each drag moves it, stopped where it meets the other. The click a drag ends with, which comes right after its dragend and only when it was let go on the slider, changes nothing more |
 | `focus`, `blur` | the surface has the keyboard, or not |
@@ -163,10 +166,11 @@ that first.
 
 **The keyboard.** The renderer gives the host the keyboard it has in mind
 when they differ: `a=focus` at the element `autofocus` (§6.4) or `hottyFocus`
-(§6.3) names, `a=blur` for `hottyBlur`. When the user moves focus within
+(§6.3) names, or at the heading a HottyMarkdown's `#fragment` went to
+(§6.27), `a=blur` for `hottyBlur`. When the user moves focus within
 the surface, by Tab or a click, the host sends `focus` naming the element
 (SPEC.md §10.1, `t` the nearest id from it outward), and the renderer
-takes that element as focused. Typing (`input`) and a control's `change`,
+takes that element as focused; a heading's id reads as its document. Typing (`input`) and a control's `change`,
 which comes at once, say so too. A text field's `change` is its commit as
 the host's focus leaves it, often for where the renderer just moved the
 keyboard, so it says nothing about where the keyboard is.
@@ -313,6 +317,7 @@ Natural widths:
 | element | natural width |
 | --- | --- |
 | Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0 |
+| HottyMarkdown | as a Text's, its lines as §3.4 draws them: each with its frames (markers and bars), a code block's two columns in, a table's as wide as its columns' widest cells and their padding; a rule counts its frames |
 | Button | the label + 2, a column of padding each side, a List's too; borderless, the label |
 | TextField, DateTime | 2 for the gutter, the label and a space when it has one (padded to its run's widest label, §3.5), the inset (1) and its input: a text field's 32, as wide as an email address takes, whatever is typed; a DateTime's, its value's form (`YYYY-MM-DDTHH:MM`, `YYYY-MM-DD` or `HH:MM`) or its value, whichever is wider, and a column for the caret. A longText, the label's or 20 (an HTML textarea's size) |
 | CheckBox | 2 for the gutter, 3 for the box, plus 1 and the label when it has one |
@@ -345,7 +350,9 @@ Natural widths:
 Minimums:
 
 - A Text's minimum is its longest word. A list item's indent and marker
-  count with its first word.
+  count with its first word. A HottyMarkdown's is its longest word too,
+  a table's cell's with its padding; its frames give way where they
+  leave no room (§3.4).
 - A one-line text field's and a DateTime's is the gutter, its label and a
   space when it has one, the inset and 3 columns of input, which scrolls;
   a longText's, the gutter and its label's longest word, and at least 3.
@@ -452,6 +459,7 @@ How the containers lay their children out:
 | element | cells |
 | --- | --- |
 | Text | the Markdown's blocks (`view.Markdown`), one after another with no blank lines; see below |
+| HottyMarkdown | the Markdown's blocks (`view.ReadDoc`), a blank row between two; see below |
 | Image | `[image: alt]`, or `[image]` with no description, in `muted` |
 | Icon, HottyIcon | its glyph (`icons.Glyph`, width 1, by the basic name or Material's for one of the 59; `◇` for any other name and for an `svgPath`) |
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
@@ -497,6 +505,35 @@ How the containers lay their children out:
 - Inline: bold, italic and strikethrough are attributes, and code is
   `muted`. A link is underlined and its cells carry the URL (OSC 8).
 - A caption is `muted` throughout.
+
+**A HottyMarkdown's blocks** (§6.27) are a Text's, drawn as a page:
+- A blank row comes between two blocks, as glamour leaves one, but
+  between a tight list's items and after an alert's title. In a quote or
+  an alert it shows the bar.
+- A list item's marker and a quote's bar are frames before each of its
+  lines: the marker (`• `, `1. `, `☐ `, `✓ `) before its first line and
+  as many spaces before the others, `▎ ` in `border` for each quote it is
+  in. Where a line's frames would leave it no room, they drop.
+- An alert is a quote whose bar is in its tone, `info`, `success`,
+  `accent` (IMPORTANT, which GitHub has purple, a colour no role is),
+  `warning` or `error`; its first row is its mark and its title, bold in
+  that tone: `ⓘ Note`, `✓ Tip`, `★ Important`, `! Warning`, `✗ Caution`.
+- A table is drawn as a HottyTable's header and rows: each cell padded a
+  column a side, the header bold, a rule of `─` in `border` under it as
+  wide as the columns, each column aligned as its delimiter row says. Its
+  columns are fitted as a HottyTable's are (§3.4), and a cell wider than
+  its column wraps in it rather than being cut.
+- An image is `[image: alt]` in italics, as a Text's.
+- HTML and comments draw nothing and take no row: a block after one
+  shows as it would without it.
+- A link in place (§6.27) is underlined with no OSC 8, since it has no
+  URL; its cells take a click, its first row is its box (`Box`), and it
+  is reversed in `accent` while it has the keyboard. A link with a scheme
+  is a Text's.
+- A heading a `#fragment` went to is its document's sight (`Sight`) while
+  the document has the keyboard: a HottyScrollView around it scrolls it to
+  the top, as far as the content goes, once for that jump, and the user
+  scrolls on from there.
 
 **The clock.** What moves, in cells and on a host, moves with the wall
 clock, not with the draws. For t the Unix time, a HottySpinner shows
@@ -546,6 +583,9 @@ without colour:
 - A HottySwitch's label is in `accent`.
 - A HottyPaginator's page shown, its dot or its numbers, is in `accent`,
   its gutter's bar down its rows.
+- A HottyMarkdown's link in place is reversed in `accent`. The document
+  itself, which has the keyboard after a `#fragment`, shows nothing: its
+  heading is at the top.
 - A Slider's track is in `accent` up to the knob, and so is the knob
   (from the knob, with `fill` `"end"`).
 - A HottyRangeSlider's range is in `accent`, and so is the knob with the
@@ -903,6 +943,15 @@ In the output:
   link, or a Modal trigger that is not a control, and flip a HottySwitch:
   it is a button on a host, which Enter clicks, so in a HottyForm too
   Enter flips it and does not submit.
+- **A HottyMarkdown's link in place** is followed by Enter
+  (`view.Controller.FollowLink`, in both renditions, §6.27). Space is not
+  its: a browser's link leaves Space to the page, which scrolls. A
+  `#fragment` gives its heading's document the keyboard, and Tab and
+  Shift+Tab go on from the heading, to the document's next link in place
+  (else what follows the document) or the one before it, as a browser
+  goes on from where a fragment took it. A link takes no other key: the
+  surface's HottyShortcuts get them, and a HottyScrollView around it does
+  not, as it takes no key from its child's controls.
 - **A CheckBox, and an option shown as a box,** is a checkbox on a host,
   and takes keys as one (SPEC §10.2): Space toggles it, and Enter submits
   its HottyForm, or does nothing outside one, as huh's Enter moves on.
@@ -954,6 +1003,8 @@ In the output:
   - a click on a HottyPaginator's dot shows its page (§6.26); a click
     elsewhere on it, its page's text included, only focuses it, and what
     in its page takes a click takes its own;
+  - a click on a HottyMarkdown's link in place follows it (§6.27); the
+    rest of the document is text, which takes no click of its own;
   - anything else is activated.
 - **A press on what can be dragged** (§6.21: a `reorderable` list's
   item, a List's item with `reorder`, a drag source) may start a drag. It
@@ -1042,6 +1093,13 @@ reference is `rendition/text`.
 - A Row's parts share one line, two spaces apart, when each is one line.
 - Text is its Markdown as plain text: paragraphs and list items a line
   each, markers kept.
+- A HottyMarkdown is its blocks as plain text, a blank line between two
+  (but a tight list's items), each line after its frames as cells draws
+  them (§3.4: markers, `▎ ` for a quote or an alert); an alert's first
+  line its mark and its title (`▎ ✓ Tip`); a table's columns two spaces
+  apart, each as wide as its widest cell and aligned as it says; a code
+  block's lines as they are; a rule `───`; an image `[image: alt]`; HTML
+  and comments nothing. A link is its text, as a Text's.
 - A field is `Label: value`; an obscured one shows `•` for each
   character, and an empty one its placeholder in parentheses. Its
   suggestions (§6.22) say nothing: they show while it has the keyboard,
@@ -1462,7 +1520,12 @@ on a host (§2). `items` are objects with a `label`, an optional `icon`
 (a name as a HottyIcon takes, §6.15, which a host draws), a `value` and
 `children`, more such
 objects; literal, or best bound to the data model, so that the agent
-changes them with `updateDataModel`. A node is identified by its `value`,
+changes them with `updateDataModel`. A node may also have an `href`,
+where it leads in a docs site's navigation: a page's path or a
+`#fragment`, as a HottyMarkdown's links in place have them (§6.27). The
+view keeps it (`TreeNode.Href`) for a program to follow; the tree draws
+nothing for it, in any rendition, and selecting or acting on the node
+does what it does without one. A node is identified by its `value`,
 as text, or by its place without one (`0.2.1`, its index at each level
 from the roots down). `selected` (a DynamicString) is the selected
 node's, as a HottyList's is (§6.9).
@@ -2029,6 +2092,99 @@ keyboard (§3.7).
 
 `perPage` is a literal whole number, as a HottyList's `height` is: how a
 list is paged is the layout's, not the data's.
+
+### 6.27 HottyMarkdown
+
+Long-form Markdown, a docs page, read as GitHub reads it (GFM, goldmark),
+where a Text is a line or a paragraph (gov NEIO-14). `text` (a
+DynamicString) is the Markdown. A page may come as several HottyMarkdowns
+with other components between them; the surface is the page.
+
+- **Headings** get GitHub's IDs (github-slugger), in tree order across
+  the surface's HottyMarkdowns, so that a page split into several numbers
+  as one: the heading's text (its code's and its links' text too, an
+  image's alt text not) in lower case; every character that is not a
+  letter, a mark, a number, a connector (`_`), a space or `-` dropped;
+  each space `-`. An ID the page already has gets `-1`, then `-2`, after
+  it (`Usage`, `Usage` and `Usage-1` are `usage`, `usage-1` and
+  `usage-1-1`, as GitHub's are). goldmark's own IDs are not used. On a
+  host a heading's element id is its document's, `~#` and its ID, encoded
+  as every id is (`page~#usage`, §2): unique on the surface, read back as
+  its document, and clear of the ids the kit makes otherwise, whose `~`
+  is followed by a letter or a hex digit.
+- **Alerts.** A quote at the top level whose first line is `[!NOTE]`,
+  `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]` or `[!CAUTION]` (case aside,
+  alone on it) is a callout, as GitHub draws one, in every rendition: a
+  bar in its tone before its lines, and a title row of its mark (its icon
+  on a host) and its title, in the tone: `info`, `success`, `accent`,
+  `warning`, `error` (§3.4, §2, §4). A quote in a list or another quote
+  stays one, as on GitHub.
+- **Comments and HTML** show nothing, a docs module's marker
+  (`<!-- docs:figure key=value -->`) too: the block after one shows as it
+  would without it. Raw HTML inline is dropped; an HTML block takes no
+  room.
+- **Images** are their alt text in cells and text (`[image: alt]`), and
+  an `img` on a host.
+- **Code and tables** are drawn as a Text's code blocks (highlighted by
+  their fence's language) and as a HottyTable's header and rows (§3.4).
+
+**Links.** A link with a scheme (`https:`, `mailto:`; RFC 3986's, before
+any `/`, `?` or `#`; `//host` too) opens as a Text's does: an OSC 8
+hyperlink in cells, `target=_blank` on a host, the terminal's to open
+(SPEC.md §9). A link with none goes in place (`view.InPlace`): it is a
+link in place, a Tab stop that Enter or a click follows
+(`view.Controller.FollowLink`):
+
+- A `#fragment` that names a heading on the surface (percent-decoded, and
+  tried again in lower case) is the renderer's to go to: the heading's
+  document takes the keyboard and the jump, and nothing is sent. A
+  fragment no heading has is the agent's, as below.
+- Any other href (`install.md`, `api.md#errors`, `../README.md`) is the
+  agent's: it is written, as the Markdown has it, to where `link` (a
+  DynamicString) is bound, then `onLink` runs, whose context reads that
+  path, as a HottyPaginator's `onChange` does (§6.26, an action carries no
+  payload). An unbound `link` is the renderer's state, which `onLink`'s
+  context cannot read; the agent answers with the page it leads to.
+
+| rendition | a link in place | a `#fragment` |
+| --- | --- | --- |
+| cells | underlined, no OSC 8; its cells take a click, and it is reversed in `accent` while it has the keyboard; Enter follows it (§3.4, §3.7) | the heading is its document's sight: a HottyScrollView around it scrolls it to the top once, and the user scrolls on; Tab goes on from the heading |
+| host | `span role=link tabindex=0 data-on=click`, whose click is reported with its id (SPEC.md §9) and whose `data-keys` give Enter to the program (SPEC.md §10.2); Space stays the host's (§2) | `a=focus` at the heading, `tabindex=-1` (SPEC.md §10.1), which a host scrolls into view where the document scrolls (SPEC.md §5.3; the gap below) |
+| text | its text, as a Text's link (§4) | nothing: a pipe has no place to go to |
+
+The host's gap: SPEC.md §5.3 gives the program no way to set where a host
+has scrolled. Focus scrolls an element into view in a document that
+scrolls (`scroll`, §5.1), and the boxes around it with it, a
+HottyScrollView's among them: into view, where cells puts the heading at
+the top. A surface that does not scroll keeps every offset at zero, and
+the program, which scrolls such a surface by moving it, hears nothing
+that says where the heading is. So a `#fragment` reaches its heading on
+a host as far as the surface scrolls, and no further; the kit asks for
+no SPEC change (an `area` with `focus`, or a scroll the program asks
+for, would close it).
+
+Its keys and its hints: a link in place's hint is `enter open` (§6.10).
+`link` and `onLink` are optional: without `onLink`, a link to another page
+is only written. The tree's nodes may carry an `href` for a docs site's
+navigation (§6.14); a page mode that follows them is vault KIT-24.
+
+| rendition | a HottyMarkdown |
+| --- | --- |
+| cells | its blocks a blank row apart, as a page (§3.4): headings bold (an h1 underlined), lists and quotes framed, alerts a bar and a title row in their tone, code two columns in, tables a HottyTable's header and rows, images their alt text |
+| host | a `div` (`k-text k-doc`) of the Markdown's HTML: headings with ids, links in place as spans that take clicks and the keyboard, alerts as notes with their icon (§2) |
+| text | its blocks as plain text, a blank line apart, framed as in cells (§4) |
+
+Open: the colour of IMPORTANT, GitHub's purple, which no role is (the
+accent for now); whether IDs number across the surface or each
+HottyMarkdown alone (across, as one page, for now; a heading in a Tabs'
+hidden tab is not numbered, as it is not built); Space on a link in
+place, which SPEC.md §10.2 leaves to the scrolling or the program (an
+element that only reports clicks uses no keys) and hottytest's host
+clicks it with; Tab from the heading a `#fragment` focused, which goes on
+from there in a browser and in cells but starts over in hottytest's host,
+so its vector is cells' alone; and keys a focused link does not take,
+which in cells do not reach a HottyScrollView around it as a host's
+inherited `data-keys` do.
 
 ### 6.28 HottyBigText
 

@@ -120,7 +120,7 @@ func (l *layout) minimum(e *view.Element) int {
 		for _, k := range kids {
 			n = max(n, l.minimum(k))
 		}
-	case view.Text:
+	case view.Text, view.Document:
 		for _, t := range l.lines(e, noWrap) {
 			n = max(n, longestWord(t.gs))
 		}
@@ -234,7 +234,7 @@ func (l *layout) measure(e *view.Element) int {
 			n += Width(t.Label)
 		}
 		return max(n, l.widest(content))
-	case view.Text:
+	case view.Text, view.Document:
 		n := 0
 		for _, t := range l.lines(e, noWrap) {
 			n = max(n, width(t.gs))
@@ -295,7 +295,7 @@ func (l *layout) measureHeight(e *view.Element, w int) int {
 	case view.Tabs:
 		bar, content := tabParts(e)
 		return tabRows(bar, w) + l.columnHeight(content, "stretch", w)
-	case view.Text:
+	case view.Text, view.Document:
 		return len(l.lines(e, w))
 	case view.ScrollView:
 		return e.Height
@@ -309,13 +309,18 @@ func (l *layout) measureHeight(e *view.Element, w int) int {
 	return l.controlHeight(e, w)
 }
 
-// lines are a Text's lines at width w.
+// lines are a Text's lines at width w, or a HottyMarkdown's.
 func (l *layout) lines(e *view.Element, w int) []tline {
 	k := sized{e, w}
 	if t, ok := l.text[k]; ok {
 		return t
 	}
-	t := markdown(e, w)
+	var t []tline
+	if e.Kind == view.Document {
+		t = l.r.document(e, w)
+	} else {
+		t = markdown(e, w)
+	}
 	l.text[k] = t
 	return t
 }

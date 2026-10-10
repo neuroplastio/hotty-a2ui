@@ -852,3 +852,50 @@
     - expect: {data: {/fruitPage: 3}}
     - tap: {on: fruit, at: 6}
     - expect: {focused: fruit, data: {/fruitPage: 6}, actions: []}
+
+# A HottyMarkdown's links in place (profile §6.27): Tab stops in the
+# text's order, which Enter or a click follows. A relative one is written
+# where link is bound and sends onLink; a #fragment takes the keyboard to
+# its heading (on a host the heading's own focus, which reads as its
+# document) and sends nothing.
+- name: Tab goes through a HottyMarkdown's links in place; Enter follows a relative one, written to link before onLink runs
+  story: hotty/markdown
+  steps:
+    - focus: box
+    - key: Tab
+    - expect: {focused: page/link/0}
+    - key: Enter
+    - expect: {focused: page/link/0, actions: [open], context: {href: guide.md}, data: {/page/link: guide.md}}
+    - key: Tab
+    - expect: {focused: page/link/1}
+    - key: Shift+Tab
+    - expect: {focused: page/link/0}
+
+- name: "Enter on a #fragment link in place takes the keyboard to its heading's document and sends nothing"
+  story: hotty/markdown
+  steps:
+    - focus: page/link/1
+    - key: Enter
+    - expect: {focused: page, actions: [], data: {/page/link: nothing yet}}
+
+- name: A click on a link in place follows it
+  story: hotty/markdown
+  steps:
+    - click: page/link/0
+    - expect: {focused: page/link/0, actions: [open], context: {href: guide.md}}
+    - click: page/link/2
+    - expect: {focused: page, actions: [open]}
+
+- name: "Tab from a heading a #fragment went to goes on from there, as a browser does (cells; hottytest starts over from the first)"
+  story: hotty/markdown
+  renditions: [cells]
+  steps:
+    - focus: page/link/1
+    - key: Enter
+    - expect: {focused: page}
+    - key: Tab
+    - expect: {focused: page/link/3}
+    - focus: page/link/1
+    - key: Enter
+    - key: Shift+Tab
+    - expect: {focused: page/link/2}

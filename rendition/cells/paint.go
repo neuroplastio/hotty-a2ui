@@ -92,6 +92,8 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 			}
 			cv.write(x, y+i, w, t.gs)
 		}
+	case view.Document:
+		l.paintDocument(cv, e, x, y, w, h)
 	case view.Divider:
 		b := style{role: Border}
 		if e.Dir == view.Vertical {

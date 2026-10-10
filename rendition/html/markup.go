@@ -181,6 +181,9 @@ func (m *markup) element(e *view.Element) *node {
 		n = el("div", "id", id, "class", "k-text k-v-"+e.Variant)
 		n.text, n.raw = emojiHTML(view.MarkdownHTML(e.Markdown)), true
 		n.text = groupBreaks(strings.TrimSpace(view.PlainText(view.Markdown(e.Markdown))), n.text)
+	case view.Document:
+		n = el("div", "id", id, "class", "k-text k-doc")
+		n.text, n.raw = emojiHTML(document(e)), true
 	case view.Image:
 		n = el("img", "id", id, "class", "k-img k-v-"+e.Variant+" k-fit-"+e.Fit, "src", e.URL, "alt", e.Alt)
 	case view.Icon:

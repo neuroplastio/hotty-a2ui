@@ -80,6 +80,16 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyResetTimer","args":{"id":"tea"}}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyResetTimer","args":{}}}}`, false},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyStartTimer","args":{"id":"tea","at":0}}}}`, false},
+		// A HottyMarkdown (instruction 27): its text, and where a link in place
+		// goes before onLink runs.
+		{`{"id":"d","component":"HottyMarkdown","text":"# Install\n\nSee [usage](#usage)."}`, true},
+		{`{"id":"d","component":"HottyMarkdown","text":{"@path":"/page/body"},"link":{"@path":"/page/link"},
+			"onLink":{"event":{"name":"open","context":{"href":{"@path":"/page/link"}}}},"weight":1}`, true},
+		{`{"id":"d","component":"HottyMarkdown","link":{"@path":"/page/link"}}`, false},
+		{`{"id":"d","component":"HottyMarkdown","text":"x","onLink":"open"}`, false},
+		// A HottyTree's nodes may lead somewhere (href), a docs site's nav.
+		{`{"id":"n","component":"HottyTree","items":[{"label":"Guide","href":"guide.md","children":[{"label":"Install","href":"guide.md#install"}]}]}`, true},
+		{`{"id":"n","component":"HottyTree","items":[{"label":"Guide","href":3}]}`, false},
 		{`{"id":"b","component":"HottyBigText","text":"HOTTY","size":"large","align":"center"}`, true},
 		{`{"id":"b","component":"HottyBigText","text":{"@path":"/score"}}`, true},
 		{`{"id":"b","component":"HottyBigText","size":"small"}`, false},

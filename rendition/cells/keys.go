@@ -160,6 +160,13 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 		if e.URL == "" {
 			return false, nil
 		}
+	case view.Link:
+		// A HottyMarkdown's link in place, as a host's link takes it: Enter
+		// follows it (profile §6.27).
+		if name == "Enter" {
+			return true, r.c.Activate(e.ID)
+		}
+		return false, nil
 	case view.Modal:
 		if !e.Clickable {
 			return false, nil

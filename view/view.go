@@ -198,7 +198,7 @@ type Element struct {
 	Align   string `json:"align,omitempty"`
 	Scroll  bool   `json:"scroll,omitempty"`
 
-	// Text: the Markdown. Variant: a Text's (body, caption), a Button's
+	// Text and Document: the Markdown. Variant: a Text's (body, caption), a Button's
 	// (default, primary, borderless), an Image's size (icon, avatar,
 	// smallFeature, mediumFeature, largeFeature, header), a TextField's,
 	// a Choice's display (checkbox, chips).
@@ -324,6 +324,13 @@ type Element struct {
 	Labels []string `json:"labels,omitempty"`
 	Window int      `json:"window,omitempty"`
 
+	// Document: its Markdown read (shared: not to be changed), and its
+	// headings' IDs, GitHub's, numbered across the surface (profile
+	// §6.27). Its Value is the ID of the heading a link in place last went
+	// to in it (FollowLink); its children are its links in place.
+	Doc     *Doc     `json:"doc,omitempty"`
+	Anchors []string `json:"anchors,omitempty"`
+
 	// Paginator: how many pages it has; with a child, the child's items
 	// cut into pages, the one shown being the child's own Children (shared:
 	// for a rendition to measure, so that the paginator keeps the size of
@@ -388,13 +395,13 @@ type A11y struct {
 
 // Focusable reports whether the element takes the keyboard (SPEC §10.1):
 // a control, a Tabs' title, a Choice's option, a link, a Modal whose
-// trigger is not a control, a RangeSlider's knob. A disabled Button,
-// Switch or knob does not.
+// trigger is not a control, a RangeSlider's knob, a HottyMarkdown's link
+// in place. A disabled Button, Switch or knob does not.
 func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button, Switch, Knob:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree, ToastAction, Paginator:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree, ToastAction, Paginator, Link:
 		return true
 	case DiffView:
 		return len(e.RowIDs) > 0

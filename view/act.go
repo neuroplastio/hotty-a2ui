@@ -90,9 +90,10 @@ func (c *Controller) FormOf(id string) *Element {
 
 // Activate is a click on an element, or Enter or Space on it (SPEC
 // §10.2): a Button runs its action, a CheckBox, a Switch or an Option
-// toggles (a disabled Switch does nothing), a Tab is shown, a link opens;
-// a toast goes, and its action sends its event before it goes (PickToast).
-// Inside a Modal's trigger it then opens the Modal.
+// toggles (a disabled Switch does nothing), a Tab is shown, a link opens,
+// a HottyMarkdown's link in place is followed (FollowLink); a toast goes,
+// and its action sends its event before it goes (PickToast). Inside a
+// Modal's trigger it then opens the Modal.
 func (c *Controller) Activate(id string) error {
 	e := c.V.Find(id)
 	if e == nil {
@@ -136,6 +137,8 @@ func (c *Controller) Activate(id string) error {
 		}
 	case Tree:
 		err = c.activateTree(e)
+	case Link:
+		err = c.FollowLink(id)
 	case Toast:
 		c.DismissToast(e.Name)
 		return nil
@@ -448,8 +451,10 @@ func (c *Controller) FindComponent(componentID string, scope a2ui.Scope) string 
 
 // FocusNext moves the keyboard to the next focusable element (or the
 // previous one, back), as Tab and Shift+Tab do: past the last, or before
-// the first, the surface loses it (SPEC §10.2). It reports whether the
-// surface still has the keyboard.
+// the first, the surface loses it (SPEC §10.2). From a heading a link in
+// place went to (FollowLink), it goes on from there, as a browser does
+// from where a fragment took it. It reports whether the surface still has
+// the keyboard.
 func (c *Controller) FocusNext(back bool) bool {
 	ids := c.V.Focusables()
 	if len(ids) == 0 {
@@ -457,7 +462,15 @@ func (c *Controller) FocusNext(back bool) bool {
 		return false
 	}
 	i := slices.Index(ids, c.St.Focus)
+	at, jumped := c.afterJump(ids)
 	switch {
+	case i < 0 && jumped:
+		// Tab goes to the first after the heading, Shift+Tab to the last
+		// before it.
+		i = at
+		if back {
+			i--
+		}
 	case !c.St.Keyboard || i < 0:
 		if back {
 			i = len(ids) - 1

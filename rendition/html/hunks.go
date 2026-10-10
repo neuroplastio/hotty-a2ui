@@ -252,11 +252,17 @@ func splitLines(e *view.Element, h change.Hunk) []*node {
 // focusOn is what has the host's keyboard for the element that has the
 // controller's: the element, or a HottyDiff's selected hunk or a
 // HottyTree's selected node that shows (a DOM id), which the host then
-// scrolls into view (diffView, tree).
+// scrolls into view (diffView, tree); or the heading a HottyMarkdown's
+// link in place went to (profile §6.27), which a host scrolls into view
+// where the surface scrolls.
 func (r *Rendition) focusOn(id string) string {
 	e := r.C.V.Find(id)
 	switch {
 	case e == nil:
+	case e.Kind == view.Document:
+		if i := e.Target(); i >= 0 {
+			return headingID(id, e.Anchors[i])
+		}
 	case e.Kind == view.DiffView:
 		if i := e.SelectedRow(); i >= 0 {
 			return partID(id, partHunk+strconv.Itoa(i))

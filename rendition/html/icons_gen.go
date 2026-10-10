@@ -13,6 +13,12 @@ func init() {
 		"keyboard_arrow_down": "m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4z",
 		// keyboard-arrow-up-sharp
 		"keyboard_arrow_up": "m12 10.8l-4.6 4.6L6 14l6-6l6 6l-1.4 1.4z",
+		// lightbulb-sharp
+		"lightbulb": "M10.588 21.413Q10 20.825 10 20h4q0 .825-.587 1.413T12 22t-1.412-.587M8 19v-2h8v2zm.25-3q-1.725-1.025-2.738-2.75T4.5 9.5q0-3.125 2.188-5.312T12 2t5.313 2.188T19.5 9.5q0 2.025-1.012 3.75T15.75 16z",
+		// feedback-sharp
+		"feedback": "M2 22V2h20v16H6zm10-7q.425 0 .713-.288T13 14t-.288-.712T12 13t-.712.288T11 14t.288.713T12 15m-1-4h2V5h-2z",
+		// report-sharp
+		"report": "M12 17q.425 0 .713-.288T13 16t-.288-.712T12 15t-.712.288T11 16t.288.713T12 17m-1-4h2V7h-2zm-2.75 8L3 15.75v-7.5L8.25 3h7.5L21 8.25v7.5L15.75 21z",
 	} {
 		icons.Register(name, icons.Icon{Box: 24, Path: d})
 	}

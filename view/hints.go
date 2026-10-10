@@ -256,7 +256,7 @@ func (c *Controller) ownHints(e *Element, keys string) (short []Hint, groups [][
 		return short, [][]Hint{short}
 	case Tab:
 		short = []Hint{{"enter", "show"}}
-	case Media, Modal:
+	case Media, Modal, Link:
 		short = []Hint{{"enter", "open"}}
 	}
 	// A box, as a host's checkbox, leaves Enter to its HottyForm; a chip

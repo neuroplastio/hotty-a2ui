@@ -63,6 +63,9 @@ type State struct {
 	// Timers are the time each HottyTimer and HottyStopwatch has counted,
 	// by its node's key (TickTimers).
 	Timers map[string]*TimerState
+	// Jump is the heading a HottyMarkdown's link in place last went to
+	// (FollowLink).
+	Jump Jump
 }
 
 // NewState is a surface's state before the user does anything.
@@ -120,6 +123,7 @@ func build(s *a2ui.Surface, st *State, page bool) *Surface {
 		b.out.Shortcuts[i].Press = b.pressTarget(sc.Press)
 	}
 	b.out.Toasts = mapToasts(st)
+	anchor(b.out)
 	return b.out
 }
 

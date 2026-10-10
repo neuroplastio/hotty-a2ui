@@ -72,13 +72,16 @@ func tableMinimum(e *view.Element) int {
 	return tableWidth(ws) + tableBar(e)
 }
 
-// fitColumns are a Table's columns' widths in w columns: their natural
-// widths, less a column at a time off the widest that is wider than
-// minColumn (the first of equals) while the table is too wide, and once
-// none is, off the widest. A column may end with no width; it is not
-// drawn.
-func fitColumns(e *view.Element, w int) []int {
-	ws := columnWidths(e)
+// fitColumns are a Table's columns' widths in w columns (fitWidths).
+func fitColumns(e *view.Element, w int) []int { return fitWidths(columnWidths(e), w) }
+
+// fitWidths are columns' widths in w columns, from their natural widths
+// ws: less a column at a time off the widest that is wider than minColumn
+// (the first of equals) while the table is too wide, and once none is,
+// off the widest. A column may end with no width; it is not drawn. A
+// HottyMarkdown's tables are fitted so too (docTable).
+func fitWidths(ws []int, w int) []int {
+	ws = append([]int(nil), ws...)
 	for tableWidth(ws) > w {
 		j := -1
 		for i := range ws {

@@ -83,6 +83,8 @@ func element(e *view.Element) []string {
 			return nil
 		}
 		return strings.Split(view.PlainText(view.Markdown(e.Markdown)), "\n")
+	case view.Document:
+		return document(e)
 	case view.Image:
 		return []string{"[image: " + fallback(e.Alt, e.URL) + "]"}
 	case view.Icon:

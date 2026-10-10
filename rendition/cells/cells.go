@@ -50,6 +50,7 @@ type Rendition struct {
 	blinkFrom   time.Time     // when its caret last showed anew: it took the keyboard, a key, a press
 	press       *press        // a press that may start a drag and drop (drag.go)
 	anim        time.Duration // how soon the last Draw changes again (Animating)
+	jumped      int           // the jump to a heading the last Draw showed (view.Jump.Seq)
 	// hover is the element whose description the pointer shows (Hover),
 	// quiet the one a key or a click hid it on, until the pointer leaves
 	// it; held is the toast the pointer is on, whose time waits.
@@ -179,6 +180,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 	}
 	l.paintDrag(cv)
 	r.paintToasts(cv, stack, tw)
+	r.jumped = r.c.St.Jump.Seq
 	return f
 }
 

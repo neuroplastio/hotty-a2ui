@@ -8,10 +8,13 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
-// A tline is one line of a Text: glyphs, or a rule across the width.
+// A tline is one line of a Text: glyphs, or a rule across the width. In
+// a HottyMarkdown, a rule's glyphs are its frames, before it (document);
+// head is the heading the line is part of, from 1.
 type tline struct {
 	gs   []glyph
 	rule bool
+	head int
 }
 
 // codeIndent is the columns a Text's code block sits in from its prose.

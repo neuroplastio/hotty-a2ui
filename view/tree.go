@@ -19,10 +19,12 @@ import (
 // a moved node (it has a list of them, empty or not: a folder); whether it
 // is the last of its siblings that show, for the guides; and whether it is
 // open: unfolded by the user or the agent (expanded), or because the
-// selection is inside it.
+// selection is inside it. Href is where it leads, a page's path or a
+// #fragment (profile §6.14): the agent's to follow, a docs site's nav.
 type TreeNode struct {
 	Label  string `json:"label"`
 	Icon   string `json:"icon,omitempty"`
+	Href   string `json:"href,omitempty"`
 	Level  int    `json:"level,omitempty"`
 	Parent int    `json:"parent"`
 	Kids   int    `json:"kids,omitempty"`
@@ -108,7 +110,7 @@ func (e *Element) addNodes(items []any, parent int, place string) {
 		}
 		kids, takes := m["children"].([]any)
 		i := len(e.Nodes)
-		e.Nodes = append(e.Nodes, TreeNode{Label: a2ui.ToString(m["label"]), Icon: a2ui.ToString(m["icon"]),
+		e.Nodes = append(e.Nodes, TreeNode{Label: a2ui.ToString(m["label"]), Icon: a2ui.ToString(m["icon"]), Href: a2ui.ToString(m["href"]),
 			Level: level, Parent: parent, Kids: len(kids), Takes: takes})
 		e.RowIDs = append(e.RowIDs, id)
 		e.addNodes(kids, i, at)

@@ -179,12 +179,14 @@ const (
 	Rule      BlockKind = "hr"
 )
 
-// A Run is text in one style. A link's Href is set. Text may hold "\n",
-// a hard line break.
+// A Run is text in one style. A link's Href is set; in a HottyMarkdown,
+// a link in place's Link too, its number in Doc.Links from 1 (profile
+// §6.27). Text may hold "\n", a hard line break.
 type Run struct {
 	Text  string `json:"text"`
 	Style Style  `json:"style,omitempty"`
 	Href  string `json:"href,omitempty"`
+	Link  int    `json:"link,omitempty"`
 }
 
 // Style is a run's inline style, a set of flags.
@@ -380,7 +382,7 @@ func appendRun(runs []Run, r Run) []Run {
 	if r.Text == "" {
 		return runs
 	}
-	if n := len(runs); n > 0 && runs[n-1].Style == r.Style && runs[n-1].Href == r.Href {
+	if n := len(runs); n > 0 && runs[n-1].Style == r.Style && runs[n-1].Href == r.Href && runs[n-1].Link == r.Link {
 		runs[n-1].Text += r.Text
 		return runs
 	}

@@ -150,7 +150,10 @@ func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w int) {
 // revealFocus is the top that keeps the element with the keyboard in
 // sight, when it is in the scroll view's child: the top as it was, moved
 // as little as shows it, its start where it is taller than the page. The
-// child is laid out once more, off the frame, to find it.
+// child is laid out once more, off the frame, to find it. A HottyMarkdown
+// with the keyboard is a heading a link in place went to (profile §6.27):
+// it goes to the top, once a jump, as a browser scrolls to a fragment, and
+// stays where the user scrolls it after that.
 func (l *layout) revealFocus(e, k *view.Element, cw, total, top, page int) int {
 	r := l.r
 	c := r.c
@@ -161,6 +164,12 @@ func (l *layout) revealFocus(e, k *view.Element, cw, total, top, page int) int {
 	l.paint(&canvas{f: newFrame(cw, total)}, k, 0, 0, cw, total)
 	r.hits = r.hits[:hits]
 	b, ok := r.reveal[c.St.Focus]
+	if f := c.V.Find(c.St.Focus); f != nil && f.Kind == view.Document {
+		if !ok || c.St.Jump.Seq == r.jumped {
+			return top
+		}
+		return min(max(b.y, 0), max(total-page, 0))
+	}
 	if !ok {
 		b, ok = r.boxes[c.St.Focus]
 	}

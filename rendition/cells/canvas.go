@@ -4,11 +4,14 @@ import (
 	"strings"
 )
 
-// A glyph is one grapheme cluster with its style, to be painted.
+// A glyph is one grapheme cluster with its style, to be painted; hit is
+// the element a click on it lands on, a HottyMarkdown's link in place
+// (paintDocument), "" for none.
 type glyph struct {
 	text  string
 	width int
 	style
+	hit string
 }
 
 // style is how a glyph is painted.

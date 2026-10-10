@@ -1,0 +1,80 @@
+{
+  "name": "Markdown",
+  "kind": "component",
+  "component": "HottyMarkdown",
+  "icon": "article",
+  "description": "A docs page, as GitHub shows its Markdown: headings with GitHub's IDs, a tip and a warning as callouts, highlighted code, a table, a list, and an image (its alt text in cells; a docs: comment before it shows nothing). It is in a HottyScrollView. Tab goes through its links in place, and Enter or a click follows one. \"configuration\", \"FAQ\" and \"the top\" are #fragments: the box scrolls to their heading, in cells to its top; on a HOTTY host the heading takes the focus, which scrolls it into view. \"guide\", \"reference\" and \"the roadmap\" are relative: each is written to /page/link, which the line under the box shows, and sends open with it, which an agent would answer with that page. \"Ada Lovelace\" has a scheme, so it is a hyperlink, as a Text's links are: the terminal opens it. The help line is a HottyKeyHints.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "markdown",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "page": {
+            "link": "nothing yet"
+          }
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "markdown",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "box",
+              "followed",
+              "help"
+            ]
+          },
+          {
+            "id": "box",
+            "component": "HottyScrollView",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "child": "page",
+            "height": 16
+          },
+          {
+            "id": "page",
+            "component": "HottyMarkdown",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "text": "# Lovelace\n\nLovelace keeps notes in your terminal. Read the [guide](guide.md) first, or skip to [configuration](#configuration) and the [FAQ](#faq).\n\n> [!TIP]\n> Run `lovelace --help` to list every command.\n\n<!-- docs:figure caption=\"Ada Lovelace\" -->\n![Ada Lovelace, after whom Lovelace is named](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Ada_Lovelace_portrait.jpg/120px-Ada_Lovelace_portrait.jpg)\n\n## Install\n\n```sh\ngo install example.com/lovelace@latest\nlovelace init ~/notes\n```\n\n| Platform | Package | Size |\n| :-- | :-- | --: |\n| macOS | Homebrew | 9 MB |\n| Linux | AUR, deb, rpm | 8 MB |\n| Windows | Scoop | 10 MB |\n\n## Configuration\n\nSettings live in `~/.config/lovelace/config.toml`; the [reference](reference/config.md) lists them all.\n\n> [!WARNING]\n> A setting that does not parse stops Lovelace at start.\n\n1. Open the file.\n2. Set `editor` to your editor.\n3. Save it, and run `lovelace check`.\n\n## FAQ\n\n### Where are my notes?\n\nIn `~/notes`, one Markdown file a note.\n\n### Why the name?\n\nAfter [Ada Lovelace](https://en.wikipedia.org/wiki/Ada_Lovelace), who wrote the first program.\n\n### Does it sync?\n\nNot yet: see [the roadmap](roadmap.md). Back to [the top](#lovelace).",
+            "link": {
+              "@path": "/page/link"
+            },
+            "onLink": {
+              "event": {
+                "name": "open",
+                "context": {
+                  "href": {
+                    "@path": "/page/link"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "followed",
+            "component": "Text",
+            "variant": "caption",
+            "text": {
+              "@call": "formatString",
+              "args": {
+                "value": "Link followed: ${/page/link}"
+              }
+            }
+          },
+          {
+            "id": "help",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          }
+        ]
+      }
+    }
+  ]
+}

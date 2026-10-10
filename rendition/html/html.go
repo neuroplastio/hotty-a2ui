@@ -542,6 +542,12 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	if e := c.V.Find(c.St.Focus); key == "Escape" && c.St.Keyboard && e != nil && e.Kind == view.ToastAction {
 		return nil, c.DismissNewest(), nil
 	}
+	// Enter on a HottyMarkdown's link in place, which its keymap gives the
+	// program, follows it (profile §6.27), before any Shortcut, as the cells
+	// rendition gives the focused element its keys first.
+	if e := c.V.Find(c.St.Focus); key == "Enter" && c.St.Keyboard && e != nil && e.Kind == view.Link {
+		return nil, true, c.Activate(e.ID)
+	}
 	if slices.ContainsFunc(c.V.Shortcuts, func(sc view.Shortcut) bool { return view.SameKey(sc.Key, key) }) {
 		if c.St.Keyboard {
 			r.pending = key
