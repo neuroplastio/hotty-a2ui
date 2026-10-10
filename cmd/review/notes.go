@@ -9,18 +9,26 @@ import (
 	"strings"
 )
 
-// notes is the feedback, a note for each picture, kept in a Markdown file:
-// a section for each, headed by the picture's name, in the order they
-// were first written.
+// notes is the feedback kept in a Markdown file: a section for each
+// picture, headed by its name, in the order they were first written. With
+// one box a section is its note; with several (a blind pair's A and B) it
+// holds a part for each box that has one, headed by the box's label:
+//
+//	## form.png
+//
+//	### A
+//
+//	The caret is too thin.
 type notes struct {
 	path  string
 	order []string
-	text  map[string]string
+	// text is each picture's notes, by box: "" when there is one box.
+	text map[string]map[string]string
 }
 
-// loadNotes reads the feedback a file has, if it is there.
+// loadNotes reads the notes a file has, if it is there.
 func loadNotes(path string) (*notes, error) {
-	n := &notes{path: path, text: map[string]string{}}
+	n := &notes{path: path, text: map[string]map[string]string{}}
 	b, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return n, nil
@@ -28,11 +36,11 @@ func loadNotes(path string) (*notes, error) {
 	if err != nil {
 		return nil, err
 	}
-	name := ""
+	name, box := "", ""
 	var body []string
 	end := func() {
 		if name != "" {
-			n.set(name, strings.Join(body, "\n"))
+			n.set(name, box, strings.Join(body, "\n"))
 		}
 		body = nil
 	}
@@ -40,7 +48,12 @@ func loadNotes(path string) (*notes, error) {
 		l = strings.TrimRight(l, "\r\n")
 		if h, ok := strings.CutPrefix(l, "## "); ok {
 			end()
-			name = strings.TrimSpace(h)
+			name, box = strings.TrimSpace(h), ""
+			continue
+		}
+		if h, ok := strings.CutPrefix(l, "### "); ok && name != "" {
+			end()
+			box = strings.TrimSpace(h)
 			continue
 		}
 		if name != "" {
@@ -51,20 +64,54 @@ func loadNotes(path string) (*notes, error) {
 	return n, nil
 }
 
-// set is a picture's note: none when it is blank.
-func (n *notes) set(name, text string) {
+// get is a picture's note in a box.
+func (n *notes) get(name, box string) string { return n.text[name][box] }
+
+// set is a picture's note in a box: none when it is blank.
+func (n *notes) set(name, box, text string) {
 	text = strings.TrimSpace(text)
-	_, had := n.text[name]
-	switch {
-	case text == "":
-		delete(n.text, name)
-		n.order = slices.DeleteFunc(n.order, func(s string) bool { return s == name })
-	case !had:
-		n.order = append(n.order, name)
-		fallthrough
-	default:
-		n.text[name] = text
+	if text == "" {
+		delete(n.text[name], box)
+		if len(n.text[name]) == 0 {
+			delete(n.text, name)
+			n.order = slices.DeleteFunc(n.order, func(s string) bool { return s == name })
+		}
+		return
 	}
+	if n.text[name] == nil {
+		n.text[name] = map[string]string{}
+		n.order = append(n.order, name)
+	}
+	n.text[name][box] = text
+}
+
+// summary is a line for the list: a picture's notes, the first line of
+// each, after its box's label.
+func (n *notes) summary(name string) string {
+	var parts []string
+	for _, box := range n.boxes(name) {
+		l, _, _ := strings.Cut(n.text[name][box], "\n")
+		if box != "" {
+			l = box + ": " + l
+		}
+		parts = append(parts, l)
+	}
+	s := strings.Join(parts, " · ")
+	if r := []rune(s); len(r) > 48 {
+		s = string(r[:47]) + "…"
+	}
+	return s
+}
+
+// boxes are the boxes a picture has notes in: the one box's first, then
+// the labels in order.
+func (n *notes) boxes(name string) []string {
+	var bs []string
+	for box := range n.text[name] {
+		bs = append(bs, box)
+	}
+	slices.Sort(bs)
+	return bs
 }
 
 // write writes the file whole, by a rename, so that a reader never sees
@@ -73,7 +120,13 @@ func (n *notes) write() error {
 	var b strings.Builder
 	b.WriteString("# Feedback\n")
 	for _, name := range n.order {
-		b.WriteString("\n## " + name + "\n\n" + n.text[name] + "\n")
+		b.WriteString("\n## " + name + "\n")
+		for _, box := range n.boxes(name) {
+			if box != "" {
+				b.WriteString("\n### " + box + "\n")
+			}
+			b.WriteString("\n" + n.text[name][box] + "\n")
+		}
 	}
 	tmp, err := os.CreateTemp(filepath.Dir(n.path), ".feedback-*")
 	if err != nil {
@@ -93,13 +146,4 @@ func (n *notes) write() error {
 		return err
 	}
 	return os.Rename(tmp.Name(), n.path)
-}
-
-// first is a note's first line, short enough for the list.
-func first(text string) string {
-	l, _, _ := strings.Cut(text, "\n")
-	if r := []rune(l); len(r) > 48 {
-		l = string(r[:47]) + "…"
-	}
-	return l
 }

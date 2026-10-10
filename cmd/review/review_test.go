@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -35,8 +36,9 @@ func pictures(t *testing.T, names ...string) string {
 	return dir
 }
 
-// runReview runs review on a test host until the test ends.
-func runReview(t *testing.T, h *hottytest.Host, args ...string) {
+// runReview runs review on a test host until the test ends, with a
+// feedback box for each of boxes (one without).
+func runReview(t *testing.T, h *hottytest.Host, boxes []string, args ...string) {
 	t.Helper()
 	shots, dir, err := find(args)
 	if err != nil {
@@ -46,7 +48,7 @@ func runReview(t *testing.T, h *hottytest.Host, args ...string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	a, err := newApp(shots, n, filepath.Join(dir, "brief.md"), theme.Theme{})
+	a, err := newApp(shots, n, filepath.Join(dir, "brief.md"), boxes, theme.Theme{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +90,7 @@ func TestReview(t *testing.T) {
 		t.Fatal(err)
 	}
 	h := hottytest.New(t, hottytest.Size(120, 40))
-	runReview(t, h, dir)
+	runReview(t, h, nil, dir)
 	eventually(t, "the surface", func() bool { return h.Surface(surfaceID) != nil })
 	s := h.Surface(surfaceID)
 	if src, _ := s.Attr("shot", "src"); src != "cid:shot-0" {
@@ -107,7 +109,7 @@ func TestReview(t *testing.T) {
 
 	feedback := filepath.Join(dir, "feedback.md")
 	read := func() string { b, _ := os.ReadFile(feedback); return string(b) }
-	if err := h.Fill(surfaceID, "note", "Too dark."); err != nil {
+	if err := h.Fill(surfaceID, "note0", "Too dark."); err != nil {
 		t.Fatal(err)
 	}
 	if err := h.Click(surfaceID, "save"); err != nil {
@@ -124,20 +126,20 @@ func TestReview(t *testing.T) {
 		_, _, sent := h.Resource("shot-1")
 		return src == "cid:shot-1" && sent
 	})
-	if v, _ := s.Value("note"); v != "" {
+	if v, _ := s.Value("note0"); v != "" {
 		t.Fatalf("b.png's box has %q", v)
 	}
 	if got := s.TextOf("brief"); !strings.Contains(got, "Nothing red.") {
 		t.Fatalf("b.png's brief: %q", got)
 	}
-	if err := h.Fill(surfaceID, "note", "Fine.\nThe gap is wide."); err != nil {
+	if err := h.Fill(surfaceID, "note0", "Fine.\nThe gap is wide."); err != nil {
 		t.Fatal(err)
 	}
 	if err := h.Click(surfaceID, "files~i0"); err != nil {
 		t.Fatal(err)
 	}
 	eventually(t, "a.png back, its note in the box", func() bool {
-		v, _ := s.Value("note")
+		v, _ := s.Value("note0")
 		return v == "Too dark."
 	})
 	if got := read(); got != "# Feedback\n\n## a.png\n\nToo dark.\n\n## b.png\n\nFine.\nThe gap is wide.\n" {
@@ -149,9 +151,10 @@ func TestReview(t *testing.T) {
 func TestNotes(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "feedback.md")
 	n, _ := loadNotes(path)
-	n.set("x.png", "One.\n\nTwo.")
-	n.set("y.png", "Three.")
-	n.set("z.png", "  ")
+	n.set("x.png", "", "One.\n\nTwo.")
+	n.set("y.png", "A", "Three.")
+	n.set("y.png", "B", "Four.")
+	n.set("z.png", "", "  ")
 	if err := n.write(); err != nil {
 		t.Fatal(err)
 	}
@@ -159,11 +162,66 @@ func TestNotes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Join(m.order, " ") != "x.png y.png" || m.text["x.png"] != "One.\n\nTwo." || m.text["y.png"] != "Three." {
+	if strings.Join(m.order, " ") != "x.png y.png" || m.get("x.png", "") != "One.\n\nTwo." ||
+		m.get("y.png", "A") != "Three." || m.get("y.png", "B") != "Four." {
 		t.Fatalf("read back %q %q", m.order, m.text)
 	}
-	m.set("x.png", "")
+	if got := m.summary("y.png"); got != "A: Three. · B: Four." {
+		t.Fatalf("y.png's summary: %q", got)
+	}
+	m.set("x.png", "", "")
 	if strings.Join(m.order, " ") != "y.png" {
 		t.Fatalf("after a blank note: %q", m.order)
+	}
+}
+
+// TestBoxes: with boxes A and B, a picture has a box for each, and its
+// section in feedback.md a part for each that has a note.
+func TestBoxes(t *testing.T) {
+	dir := pictures(t, "a.png", "b.png")
+	h := hottytest.New(t, hottytest.Size(120, 40))
+	runReview(t, h, []string{"A", "B"}, dir)
+	eventually(t, "the surface", func() bool { return h.Surface(surfaceID) != nil })
+	s := h.Surface(surfaceID)
+	for i, want := range []string{"Feedback on A", "Feedback on B"} {
+		if got := s.TextOf(fmt.Sprintf("note%d~l", i)); got != want {
+			t.Fatalf("box %d is %q", i, got)
+		}
+	}
+	feedback := filepath.Join(dir, "feedback.md")
+	read := func() string { b, _ := os.ReadFile(feedback); return string(b) }
+	if err := h.Fill(surfaceID, "note0", "Too tight."); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.Fill(surfaceID, "note1", "Better."); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.Click(surfaceID, "save"); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "both saved", func() bool {
+		return read() == "# Feedback\n\n## a.png\n\n### A\n\nToo tight.\n\n### B\n\nBetter.\n"
+	})
+	if err := h.Click(surfaceID, "files~i1"); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "b.png's empty boxes", func() bool {
+		a, _ := s.Value("note0")
+		b, _ := s.Value("note1")
+		src, _ := s.Attr("shot", "src")
+		return src == "cid:shot-1" && a == "" && b == ""
+	})
+	if err := h.Fill(surfaceID, "note1", "Only B."); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.Click(surfaceID, "files~i0"); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "a.png's notes back", func() bool {
+		b, _ := s.Value("note1")
+		return b == "Better."
+	})
+	if got := read(); !strings.HasSuffix(got, "## b.png\n\n### B\n\nOnly B.\n") {
+		t.Fatalf("feedback.md:\n%s", got)
 	}
 }

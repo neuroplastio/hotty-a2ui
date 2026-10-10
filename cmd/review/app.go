@@ -47,6 +47,9 @@ type app struct {
 	// again whenever one shows, so that it can be written as the review
 	// goes.
 	brief string
+	// boxes are the feedback boxes' labels, a box each: A and B for a
+	// blind pair. None is one box, unlabelled in the notes.
+	boxes []string
 	// cur is the picture shown.
 	cur int
 	// sent is the pictures the host has.
@@ -56,8 +59,8 @@ type app struct {
 	frame string
 }
 
-func newApp(shots []shot, n *notes, brief string, th theme.Theme) (*app, error) {
-	a := &app{s: hottytea.New(), run: story.NewRun(), shots: shots, notes: n, brief: brief, sent: map[string]bool{}}
+func newApp(shots []shot, n *notes, brief string, boxes []string, th theme.Theme) (*app, error) {
+	a := &app{s: hottytea.New(), run: story.NewRun(), shots: shots, notes: n, brief: brief, boxes: boxes, sent: map[string]bool{}}
 	a.run.Out = func(o a2ui.Outbound) {
 		if o.Action != nil {
 			a.acts = append(a.acts, o.Action)
@@ -73,34 +76,47 @@ func newApp(shots []shot, n *notes, brief string, th theme.Theme) (*app, error) 
 	return a, nil
 }
 
-// surface is the messages that make the surface: the picture's name, the
-// list of pictures, the feedback box and Save down the side; the picture
-// beside them, and what to look for in it under it.
+// surface is the messages that make the surface: the picture's name and
+// the list of pictures down the side; beside them the picture, what to
+// look for in it, the feedback boxes (side by side, A under A's half and B
+// under B's for a blind pair) and Save.
 func (a *app) surface() []map[string]any {
 	sh := a.shots[0]
 	data := map[string]any{
 		"files": a.files(), "cur": sh.name, "img": "cid:" + sh.id,
-		"title": a.title(0), "brief": a.lookFor(sh.name), "note": a.notes.text[sh.name], "status": "",
+		"title": a.title(0), "brief": a.lookFor(sh.name), "note": a.noteData(sh.name), "status": "",
 	}
 	bind := func(path string) map[string]any { return map[string]any{"@path": path} }
 	cat := hottycat.ID
+	var boxes []any
+	var fields []any
+	for i, box := range a.keys() {
+		label := "Feedback"
+		if box != "" {
+			label = "Feedback on " + box
+		}
+		id := fmt.Sprintf("note%d", i)
+		boxes = append(boxes, id)
+		fields = append(fields, obj("id", id, "component", "TextField", "label", label,
+			"value", bind(fmt.Sprintf("/note/%d", i)), "variant", "longText", "weight", 1))
+	}
 	return []map[string]any{
 		msg("createSurface", obj("surfaceId", surfaceID, "catalogId", basicCatalog, "dataModel", data)),
-		msg("updateComponents", obj("surfaceId", surfaceID, "components", []any{
+		msg("updateComponents", obj("surfaceId", surfaceID, "components", append(fields,
 			obj("id", "root", "component", "Row", "children", []any{"side", "main"}),
-			obj("id", "side", "component", "Column", "children", []any{"title", "files", "note", "act", "help", "save_key"}, "weight", 1),
-			obj("id", "main", "component", "Column", "children", []any{"pic", "brief"}, "weight", 3),
+			obj("id", "side", "component", "Column", "children", []any{"title", "files", "help", "save_key"}, "weight", 1),
+			obj("id", "main", "component", "Column", "children", []any{"pic", "brief", "boxes", "act"}, "weight", 3),
+			obj("id", "boxes", "component", "Row", "children", boxes),
 			// The picture weighted alone in a Row: as wide as the column, as
 			// tall as the picture is at that width, no taller than the
 			// surface (profile §2).
 			obj("id", "pic", "component", "Row", "children", []any{"shot"}),
 			obj("id", "files", "component", "HottyList", "catalogId", cat, "title", "Pictures",
 				"items", bind("/files"), "selected", bind("/cur"), "filterable", true, "height", 8,
-				"onActivate", obj("functionCall", obj("@call", "hottyFocus", "catalogId", cat, "args", obj("id", "note")))),
-			obj("id", "note", "component", "TextField", "label", "Feedback", "value", bind("/note"), "variant", "longText"),
+				"onActivate", obj("functionCall", obj("@call", "hottyFocus", "catalogId", cat, "args", obj("id", "note0")))),
 			obj("id", "act", "component", "Row", "children", []any{"save", "status"}, "align", "center"),
 			obj("id", "save", "component", "Button", "child", "save_t", "variant", "primary",
-				"action", obj("event", obj("name", "save", "context", obj("file", bind("/cur"), "note", bind("/note"))))),
+				"action", obj("event", obj("name", "save", "context", obj("file", bind("/cur"))))),
 			obj("id", "save_t", "component", "Text", "text", "Save"),
 			obj("id", "status", "component", "Text", "text", bind("/status"), "variant", "caption", "weight", 1),
 			obj("id", "help", "component", "HottyKeyHints", "catalogId", cat),
@@ -108,18 +124,36 @@ func (a *app) surface() []map[string]any {
 			obj("id", "title", "component", "Text", "text", bind("/title")),
 			obj("id", "brief", "component", "Text", "text", bind("/brief")),
 			obj("id", "shot", "component", "Image", "url", bind("/img"), "description", bind("/cur"), "fit", "contain", "weight", 1),
-		})),
+		))),
 	}
 }
 
-// files is the list's items: each picture, under it its note's first
-// line.
+// keys are the boxes' keys in the notes: their labels, or "" for the one
+// box.
+func (a *app) keys() []string {
+	if len(a.boxes) == 0 {
+		return []string{""}
+	}
+	return a.boxes
+}
+
+// noteData is a picture's notes as the boxes' data: /note/0, /note/1, ….
+func (a *app) noteData(name string) map[string]any {
+	d := map[string]any{}
+	for i, box := range a.keys() {
+		d[fmt.Sprint(i)] = a.notes.get(name, box)
+	}
+	return d
+}
+
+// files is the list's items: each picture, under it the first line of
+// its notes.
 func (a *app) files() []any {
 	var items []any
 	for _, sh := range a.shots {
 		item := obj("label", sh.name, "value", sh.name)
-		if t := a.notes.text[sh.name]; t != "" {
-			item["description"] = "✎ " + first(t)
+		if t := a.notes.summary(sh.name); t != "" {
+			item["description"] = "✎ " + t
 		}
 		items = append(items, item)
 	}
@@ -130,10 +164,10 @@ func (a *app) files() []any {
 // under a heading; nothing when it has none.
 func (a *app) lookFor(name string) string {
 	b, err := loadNotes(a.brief)
-	if err != nil || b.text[name] == "" {
+	if err != nil || b.get(name, "") == "" {
 		return ""
 	}
-	return "**What to look for**\n\n" + b.text[name]
+	return "**What to look for**\n\n" + b.get(name, "")
 }
 
 // title heads the picture: its name, and where it is in the list.
@@ -208,10 +242,8 @@ func (a *app) settle() {
 	acts := a.acts
 	a.acts = nil
 	for _, act := range acts {
-		if act.Name == "save" {
-			file, _ := act.Context["file"].(string)
-			note, _ := act.Context["note"].(string)
-			a.save(file, note, true)
+		if file, _ := act.Context["file"].(string); act.Name == "save" && file == a.shots[a.cur].name {
+			a.keep(true)
 		}
 	}
 	name, _ := a.sf.S.Data.Value("/cur").(string)
@@ -223,33 +255,35 @@ func (a *app) settle() {
 	}
 }
 
-// show shows another picture, its note in the box; what was typed about
+// show shows another picture, its notes in the boxes; what was typed about
 // the one before is saved.
 func (a *app) show(i int) {
-	a.keep()
+	a.keep(false)
 	a.cur = i
 	sh := a.shots[i]
 	a.fail(a.feed(
 		data("/img", "cid:"+sh.id),
 		data("/title", a.title(i)),
 		data("/brief", a.lookFor(sh.name)),
-		data("/note", a.notes.text[sh.name]),
+		data("/note", a.noteData(sh.name)),
 	))
 }
 
-// keep saves the note in the box on the picture shown, if it changed.
-func (a *app) keep() {
-	note, _ := a.sf.S.Data.Value("/note").(string)
-	a.save(a.shots[a.cur].name, note, false)
-}
-
-// save writes a picture's note to the file: when it changed, or when the
-// user asked.
-func (a *app) save(name, note string, asked bool) {
-	if strings.TrimSpace(note) == a.notes.text[name] && !asked {
+// keep writes the notes in the boxes on the picture shown to the file:
+// when one changed, or when the user asked.
+func (a *app) keep(asked bool) {
+	name := a.shots[a.cur].name
+	changed := false
+	for i, box := range a.keys() {
+		note, _ := a.sf.S.Data.Value(fmt.Sprintf("/note/%d", i)).(string)
+		if strings.TrimSpace(note) != a.notes.get(name, box) {
+			a.notes.set(name, box, note)
+			changed = true
+		}
+	}
+	if !changed && !asked {
 		return
 	}
-	a.notes.set(name, note)
 	status := "Saved in " + filepath.Base(a.notes.path)
 	if err := a.notes.write(); err != nil {
 		status = "✗ " + err.Error()
@@ -258,7 +292,7 @@ func (a *app) save(name, note string, asked bool) {
 }
 
 func (a *app) quit() tea.Cmd {
-	a.keep()
+	a.keep(false)
 	return tea.Sequence(a.s.Close(), tea.Quit)
 }
 

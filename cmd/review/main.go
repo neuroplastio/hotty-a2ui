@@ -13,6 +13,8 @@
 //	review a.png b.png      these
 //	review -out notes.md    the feedback in notes.md (feedback.md beside the pictures without it)
 //	review -brief ask.md    what to look for, from ask.md (brief.md beside the pictures without it)
+//	review -boxes A,B .shots/blind
+//	                        a feedback box for each side of a blind pair
 //
 // The list picks the picture; Enter on it goes to the feedback box.
 // Control+s saves, and so does moving to another picture or quitting.
@@ -39,6 +41,7 @@ import (
 func main() {
 	out := flag.String("out", "", "keep the feedback in `file` (default: feedback.md beside the pictures)")
 	brief := flag.String("brief", "", "what to look for in each picture, from `file` (default: brief.md beside the pictures)")
+	boxes := flag.String("boxes", "", "a feedback box for each of these `labels`, comma-separated, as A,B for a blind pair (default: one box)")
 	themeName := flag.String("theme", "", "paint in this `theme`; the host's own colours without it")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: review [flags] [directory | picture...]")
@@ -53,13 +56,19 @@ func main() {
 		}
 		args = append(args, flag.Arg(0))
 	}
-	if err := run(args, *out, *brief, *themeName); err != nil {
+	var labels []string
+	for l := range strings.SplitSeq(*boxes, ",") {
+		if l = strings.TrimSpace(l); l != "" {
+			labels = append(labels, l)
+		}
+	}
+	if err := run(args, *out, *brief, labels, *themeName); err != nil {
 		fmt.Fprintln(os.Stderr, "review:", err)
 		os.Exit(1)
 	}
 }
 
-func run(args []string, out, brief, themeName string) error {
+func run(args []string, out, brief string, boxes []string, themeName string) error {
 	var th theme.Theme
 	if themeName != "" {
 		t, ok := theme.ByName(themeName)
@@ -82,7 +91,7 @@ func run(args []string, out, brief, themeName string) error {
 	if err != nil {
 		return err
 	}
-	a, err := newApp(shots, n, brief, th)
+	a, err := newApp(shots, n, brief, boxes, th)
 	if err != nil {
 		return err
 	}
