@@ -319,6 +319,13 @@ func TestSliderDrag(t *testing.T) {
 	if v() != 1.0 {
 		t.Errorf("two steps right of 0: %v", v())
 	}
+	// The knob is a square, as a HottySwitch's, in the accent with the
+	// track up to it while the slider has the keyboard.
+	f := r.Draw(20)
+	knob, done := f.Cells[b.y][tr.x+1], f.Cells[b.y][tr.x]
+	if knob.Text != "■" || knob.Role != Accent || knob.Attr != 0 || done.Text != "━" || done.Role != Accent {
+		t.Errorf("focused at 1: track %q %v, knob %q %v %v", done.Text, done.Role, knob.Text, knob.Role, knob.Attr)
+	}
 }
 
 // TestSliderSteady: the track keeps its length and place whatever the
