@@ -3,23 +3,20 @@
 Last updated: 2026-10-10
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** a look at KIT-LOOK (journal 2026-10-09.4):
-fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
-2026-10-09.5): progress bars and spinners; at KIT-01c (journal
-2026-10-09.7): the table; at KIT-04c (journal 2026-10-09.9): the list;
-at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
-(journal 2026-10-09.11): the scroll view; at KIT-05c (journal
-2026-10-09.12): code and its colours; and at KIT-06c (journal
-2026-10-09.13): the diff; at the icons (journal 2026-10-10.1,
-story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; at
-KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; at
-KIT-22c (journal 2026-10-10.5): the switch; at KIT-10c (journal
-2026-10-10.6): the charts; at KIT-SLIDE (journal 2026-10-10.7): the
-sliders, and its four open points; at KIT-23c (journal 2026-10-10.8):
-drag and drop in cells, and its three proposals; at KIT-11c (journal
-2026-10-10.9): suggestions in cells, and its seven proposals; at KIT-13c
-(journal 2026-10-10.10, shot `make shot NAME=toast`): toasts and
-tooltips, and its proposals.
+**Waiting on the maintainer:** round 2 of the review (`.shots/round2/blind`
+in `cmd/review`, made with `scripts/pair-shot.sh` and
+`scripts/blind-shots.sh`), the fixes for
+[round 1](../feedback/2026-10-10-review-round-1.md): the terminal's colours
+learned, tinted diffs, the progress gradient (journal 2026-10-10.11);
+underlined fields, labels above or inline, which the maintainer picks
+(2026-10-10.12); suggestions over the form, and a ghost-only style
+(2026-10-10.13); the table's scrollbar, code scrolled sideways, the
+viewport filled (2026-10-10.14). Round 1 left out, still to look at: the
+icons (journal 2026-10-10.1, story `basic/icons`); KIT-BOOK (2026-10-10.4):
+the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
+(2026-10-10.7): the sliders, and its four open points; KIT-23c
+(2026-10-10.8): drag and drop in cells, and its three proposals; and the
+proposals of KIT-11c (2026-10-10.9) and KIT-13c (2026-10-10.10).
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
