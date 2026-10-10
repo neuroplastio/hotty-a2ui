@@ -50,6 +50,12 @@ func init() {
 	register("switch", "hotty/switch", "huh: Confirm, inline, as an on/off setting (KIT-22)", func() tea.Model {
 		return screen{newSwitches()}
 	})
+	register("confirm", "hotty/confirm", "huh: Confirm, a yes or no question (KIT-16)", func() tea.Model {
+		return screen{newConfirm()}
+	})
+	register("confirm-form", "hotty/confirm-form", "huh: Confirm ending a form (KIT-16)", func() tea.Model {
+		return screen{newConfirmForm()}
+	})
 	// Bubble Tea has no charts: ntcharts' (charts.go).
 	register("chart", "hotty/chart", "ntcharts: time series line chart, bar chart (KIT-10)", func() tea.Model {
 		return screen{newCharts()}
@@ -318,6 +324,34 @@ func newSwitches() *form {
 			return nil
 		}),
 		setting("Weekly digest by email", &v.digest),
+	)).WithShowHelp(true)}
+}
+
+// confirm: huh's Confirm on its own, as huh.NewConfirm().Run() asks a
+// question: the story's, with No picked at the start, as a false value
+// shows it. y and n answer, ←/→ (h/l) switch, Enter takes the one picked.
+func newConfirm() *form {
+	var del bool
+	return &form{huh.NewForm(huh.NewGroup(
+		huh.NewConfirm().Title("Delete 3 files?").
+			Description("notes.md, todo.md and draft.md go to the trash.").
+			Affirmative("Yes").Negative("No").Value(&del),
+	)).WithShowHelp(true)}
+}
+
+// confirm-form: a form that ends in huh's Confirm, whose answer submits
+// it, with the story's fields: the repository's name and description,
+// then the question, Yes picked at the start.
+func newConfirmForm() *form {
+	v := struct {
+		name, desc string
+		create     bool
+	}{name: "hotty-kit", create: true}
+	return &form{huh.NewForm(huh.NewGroup(
+		huh.NewNote().Title("New repository"),
+		huh.NewInput().Title("Name").Value(&v.name),
+		huh.NewInput().Title("Description").Value(&v.desc),
+		huh.NewConfirm().Title("Create the repository?").Affirmative("Yes").Negative("No").Value(&v.create),
 	)).WithShowHelp(true)}
 }
 

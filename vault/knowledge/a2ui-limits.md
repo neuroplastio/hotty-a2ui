@@ -155,7 +155,7 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 | KIT-13 Toast and tooltip | toast: `message`, `tone`, `duration`, bound `open`; tooltip: `accessibility.description` | Fits. L6 |
 | KIT-14 Timer and stopwatch | `start` or `duration`, bound `running`, `onTimeout` | Fits. L6 |
 | KIT-15 Paginator | bound `page`, `pages` | Fits |
-| KIT-16 Confirm | bound `value`, labels | Fits |
+| KIT-16 Confirm | Settled (KIT-16c, profile §6.24): nothing; a pattern of two Buttons, each with its own action, and HottyShortcuts for y, n and the arrows. Its keys are the surface's (NEIO-11 question 4), and a kept yes or no is a HottySwitch's or a CheckBox's value | Fits |
 | KIT-17 File picker | `root` (a grant's name), bound `path`, `filter` | Fits. **L10** |
 | KIT-18 Terminal | `command` (a registered id), `lines` or a stream | Fits. L4, **L10** |
 | KIT-19 Big text | `text`, `font` | Fits |

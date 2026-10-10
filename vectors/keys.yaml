@@ -534,6 +534,55 @@
     - key: Enter
     - expect: {actions: [saveAccount], context: {email: ada@example.com, twoFactor: true, digest: true}}
 
+- name: A Confirm of two Buttons and four HottyShortcuts starts on No; ArrowLeft and ArrowRight move between Yes and No, Enter presses the one with the keyboard, y and n press Yes and No, with the keyboard or without it
+  story: hotty/confirm
+  steps:
+    - expect: {focused: no, actions: []}
+    - key: ArrowLeft
+    - expect: {focused: yes, actions: []}
+    - key: ArrowLeft
+    - expect: {focused: yes}
+    - key: ArrowRight
+    - expect: {focused: no}
+    - key: Enter
+    - expect: {focused: no, actions: [keep]}
+    - key: ArrowLeft
+    - key: Space
+    - expect: {focused: yes, actions: [keep, delete], context: {files: [notes.md, todo.md, draft.md]}}
+    - key: n
+    - expect: {focused: yes, actions: [keep, delete, keep]}
+    - key: y
+    - expect: {focused: yes, actions: [keep, delete, keep, delete]}
+    - blur: true
+    - key: n
+    - expect: {focused: null, actions: [keep, delete, keep, delete, keep]}
+
+- name: A Confirm in a HottyForm; in a field y and n type and the arrows move the caret, on Yes and No they answer; Enter in a field submits
+  story: hotty/confirm-form
+  steps:
+    - expect: {focused: name}
+    - type: y
+    - key: ArrowLeft
+    - key: n
+    - expect: {focused: name, actions: [], data: {/name: hotty-kitny}}
+    - key: Tab
+    - key: Tab
+    - expect: {focused: yes}
+    - key: ArrowRight
+    - expect: {focused: no}
+    - key: n
+    - expect: {focused: no, actions: [cancel]}
+    - key: ArrowLeft
+    - key: Enter
+    - expect: {focused: yes, actions: [cancel, create], context: {name: hotty-kitny, description: ""}}
+    - focus: description
+    - type: A kit
+    - key: Enter
+    - expect: {focused: description, actions: [cancel, create, create], context: {name: hotty-kitny, description: A kit}}
+    - key: Tab
+    - key: y
+    - expect: {focused: yes, actions: [cancel, create, create, create], context: {description: A kit}}
+
 - name: Tab goes through a HottyRangeSlider's two knobs; the arrows move the one with the keyboard, which stops where it meets the other
   story: hotty/slider
   steps:

@@ -85,7 +85,7 @@ so that an error comes and goes as a text delta.
 | Icon | `span role=img`, holding an inline `svg` 1em square whose one `path` is filled with `currentColor`, so it takes the text's colour, the theme's or a Button's. One of the 59 names is its Material Symbols shape (Sharp, filled; `favoriteOff` and `starOff` unfilled), generated into `icons/` by `make icons` (gov R-4). An `svgPath` is drawn as A2UI's reference renderers draw it, in a 24 box, and only when it is path data and nothing else, at most 8 KB (`icons.Path`). The kit writes the `svg` itself, so a path is only ever an attribute. A name with no shape, or a path it doesn't accept, is the glyph cells draw. A HottyIcon is drawn the same way (§6.15); its path, with a `strokeWidth`, is stroked with `currentColor` that wide, with round caps and joins, and not filled |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
-| Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing |
+| Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. While it has the host's focus it is filled with `--k-focus`, its label in `--k-on-accent`, as cells reverses it in the accent (§3.4) and huh fills the answer a Confirm would give (§6.24): a fill, where the host's own 1px focus ring may drop out on a rounded edge at a fractional scale. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing; it keeps the ring |
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input`. With suggestions (§6.22), the `input` names (`list`) a `datalist` (`~x`) of the agent's options, which follows them by deltas: a host that draws a datalist, as a browser's DOM does, shows its own list, whose pick comes back as `input`. Blitz draws none (checked with `hotty render`), so on hottyterm the field is plain. The kit's list under the field, its ghost text and its keys are cells' until a list of the kit's own, a surface at a higher z (vault KIT-11h): a host keeps Tab (SPEC.md §10.2 ignores a binding of it) and leaves the value of the field it has focused alone (SPEC.md §6.2) |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a chevron in `--k-muted` (Material's `keyboard_arrow_down`, `keyboard_arrow_up` while the list is open, 1.25em), whose list opens in a surface of its own (below); else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9). An option's icon (§6.16) goes before its label: in the list, on a chip or a checkbox, and on the select while the option is picked |
@@ -1102,8 +1102,12 @@ by white space, such as `Control+s=submit Control+k=program`. It applies
 to the text fields inside the component, and to the component itself if
 it is one, over the surface's keymap (§5) and those of the components
 around it, key by key, the nearest last. On a host it is the element's
-`data-keys`; in cells the rendition resolves it the same way. Other
-renderers ignore it.
+`data-keys`; in cells the rendition resolves it the same way. A key bound
+to `program` there reaches the program from any element inside with the
+keyboard, a Button too, before the host scrolls with it (SPEC.md §10.2,
+*Keys for the program*): a Confirm's Row gives its Buttons' arrows to
+its HottyShortcuts so (§6.24). In cells a Button leaves those keys to the
+HottyShortcuts anyway (§3.7). Other renderers ignore it.
 
 ### 6.6 HottyProgress
 
@@ -1199,6 +1203,11 @@ so the agent places it once and never updates it. The renderer builds it
    dismiss` (§6.23); and `esc close` while a Modal is open.
 2. The surface's HottyShortcuts that have a `label` (§6.1), each its key
    as bubbles writes keys (`ctrl+s`, `alt+←`, `pgdn`) and the label.
+   Those with the same label are one hint, their keys joined by `/`, as a
+   bubbles binding of several keys shows them (`←/→ move`, §6.24). While
+   a text field has the keyboard, a HottyShortcut whose key it takes, a
+   character it types or a key its keymap binds to an edit, is left out,
+   since the key never reaches it (§6.1).
 3. In the short view, `? more` while `toggle` is on.
 
 The full view, which `?` switches to and back from (`toggle`, on by
@@ -1715,6 +1724,49 @@ description has no row.
   it as `aria-description`, for a screen reader. A floating tooltip, a
   surface of its own by the element (SPEC.md §5.2), is vault KIT-13h.
 - **In text** it is not written: a pipe has no pointer and no focus.
+
+### 6.24 Confirm, a pattern
+
+A yes or no question, as huh's Confirm asks one ("Delete 3 files?"), is
+no component of the hotty catalog. It is two basic Buttons and four
+HottyShortcuts, as A2UI's own notification example asks with two Buttons
+(catalog instruction 24; the stories hotty/confirm and
+hotty/confirm-form; vault KIT-16c):
+
+- a Text with the question, then a Row of two Buttons, Yes and No, each
+  with an action of its own: the answer is an event, sent at once, as a
+  Button's is;
+- HottyShortcuts `y` and `n`, whose `press` is Yes and No; and
+  ArrowLeft and ArrowRight, labelled alike, whose actions call
+  `hottyFocus` (§6.3) with Yes and with No, so that the help line reads
+  `←/→ move • y yes • n no` (§6.10);
+- on the Row, `keys` (§6.5) `ArrowLeft=program ArrowRight=program`, so
+  that a host, which scrolls with the arrows a focused button leaves,
+  gives them to the program;
+- `autofocus` (§6.4) on the answer given by default: No before what
+  cannot be undone, as huh's Confirm starts on false.
+
+| rendition | a Confirm |
+| --- | --- |
+| cells | the Buttons (§3.4), ` Yes   No `: the one with the keyboard reversed in the accent, the other on its grey fill, as huh fills the answer its Confirm would give. Enter or Space presses the one with the keyboard |
+| host | the same Buttons, the one with the host's focus filled with `--k-focus` (§2) |
+| text | the question, then `[ Yes ]  [ No ]` (§4) |
+
+Where it is not huh's Confirm:
+- **The keys are the surface's** (§6.1), not the question's. A surface
+  asks one question so. A text field with the keyboard keeps y, n and the
+  arrows (§3.7); from an element that leaves them (a Button elsewhere, a
+  CheckBox, a HottySwitch) they answer and move. Whether a HottyShortcut
+  can belong to a component is NEIO-11's open question 4.
+- **The answer is an action, not a value.** Once the keyboard leaves,
+  both Buttons are grey, where huh keeps its answer filled. A yes or no
+  the user sets and changes is a HottySwitch (§6.17) or a CheckBox, as
+  the stories hotty/switch and hotty/form hold huh's Confirm.
+- **In a form** Enter in a field submits the HottyForm (§6.2), where
+  huh's goes on to the next field, so Yes at the form's end sends the
+  form's event.
+- huh's h and l, and its Y and N, would be four more HottyShortcuts; the
+  stories leave them out.
 
 ## 7. Fallbacks
 

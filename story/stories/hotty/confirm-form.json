@@ -1,0 +1,198 @@
+{
+  "name": "Confirm in a form",
+  "kind": "component",
+  "component": "Button, HottyShortcut, HottyForm",
+  "icon": "help",
+  "description": "A form that ends in a yes or no question, as a huh form ends in a Confirm: the question heads the HottyForm, and Yes and No come after its fields, the Confirm story's two Buttons and four HottyShortcuts. Name has the keyboard at the start: there y and n type, and ← and → move the caret, since a text field takes the keys it uses before any HottyShortcut. Tab goes on to Yes, filled in the accent; then y creates the repository and n cancels, ← and → move between them, and Enter or Space presses the one with the keyboard. Enter in a field submits the form, which creates it too.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "repo",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true,
+        "dataModel": {
+          "name": "hotty-kit",
+          "description": ""
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "repo",
+        "components": [
+          {
+            "id": "root",
+            "component": "HottyForm",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "child": "fields",
+            "onSubmit": {
+              "event": {
+                "name": "create",
+                "context": {
+                  "name": {
+                    "@path": "/name"
+                  },
+                  "description": {
+                    "@path": "/description"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "fields",
+            "component": "Column",
+            "children": [
+              "question",
+              "name",
+              "description",
+              "answers",
+              "help",
+              "left_key",
+              "right_key",
+              "yes_key",
+              "no_key"
+            ]
+          },
+          {
+            "id": "question",
+            "component": "Text",
+            "text": "## Create the repository?"
+          },
+          {
+            "id": "name",
+            "component": "TextField",
+            "label": "Name",
+            "value": {
+              "@path": "/name"
+            },
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "autofocus": true
+                }
+              }
+            }
+          },
+          {
+            "id": "description",
+            "component": "TextField",
+            "label": "Description",
+            "value": {
+              "@path": "/description"
+            }
+          },
+          {
+            "id": "answers",
+            "component": "Row",
+            "children": [
+              "yes",
+              "no"
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "keys": "ArrowLeft=program ArrowRight=program"
+                }
+              }
+            }
+          },
+          {
+            "id": "yes",
+            "component": "Button",
+            "child": "yes_t",
+            "action": {
+              "event": {
+                "name": "create",
+                "context": {
+                  "name": {
+                    "@path": "/name"
+                  },
+                  "description": {
+                    "@path": "/description"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "yes_t",
+            "component": "Text",
+            "text": "Yes"
+          },
+          {
+            "id": "no",
+            "component": "Button",
+            "child": "no_t",
+            "action": {
+              "event": {
+                "name": "cancel",
+                "context": {}
+              }
+            }
+          },
+          {
+            "id": "no_t",
+            "component": "Text",
+            "text": "No"
+          },
+          {
+            "id": "help",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "left_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "ArrowLeft",
+            "label": "move",
+            "action": {
+              "functionCall": {
+                "@call": "hottyFocus",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "yes"
+                }
+              }
+            }
+          },
+          {
+            "id": "right_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "ArrowRight",
+            "label": "move",
+            "action": {
+              "functionCall": {
+                "@call": "hottyFocus",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "no"
+                }
+              }
+            }
+          },
+          {
+            "id": "yes_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "y",
+            "press": "yes",
+            "label": "yes"
+          },
+          {
+            "id": "no_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "n",
+            "press": "no",
+            "label": "no"
+          }
+        ]
+      }
+    }
+  ]
+}

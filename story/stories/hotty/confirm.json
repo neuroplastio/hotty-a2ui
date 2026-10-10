@@ -1,0 +1,168 @@
+{
+  "name": "Confirm",
+  "kind": "component",
+  "component": "Button, HottyShortcut",
+  "icon": "help",
+  "description": "A yes or no question, as huh's Confirm asks one: not a component of its own but two Buttons in a Row and four HottyShortcuts. No has the keyboard at the start (autofocus), so it is filled in the accent and Yes is grey, as huh shows the answer it would give. y presses Yes and n presses No, ← and → move between them, and Enter or Space presses the one with the keyboard; each answer is an event of its own, as A2UI's notification example has them. The keys are the surface's, so a surface asks one question this way.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "confirm",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true,
+        "dataModel": {
+          "files": [
+            "notes.md",
+            "todo.md",
+            "draft.md"
+          ]
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "confirm",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "question",
+              "about",
+              "answers",
+              "help",
+              "left_key",
+              "right_key",
+              "yes_key",
+              "no_key"
+            ]
+          },
+          {
+            "id": "question",
+            "component": "Text",
+            "text": "## Delete 3 files?"
+          },
+          {
+            "id": "about",
+            "component": "Text",
+            "text": "notes.md, todo.md and draft.md go to the trash.",
+            "variant": "caption"
+          },
+          {
+            "id": "answers",
+            "component": "Row",
+            "children": [
+              "yes",
+              "no"
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "keys": "ArrowLeft=program ArrowRight=program"
+                }
+              }
+            }
+          },
+          {
+            "id": "yes",
+            "component": "Button",
+            "child": "yes_t",
+            "action": {
+              "event": {
+                "name": "delete",
+                "context": {
+                  "files": {
+                    "@path": "/files"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "yes_t",
+            "component": "Text",
+            "text": "Yes"
+          },
+          {
+            "id": "no",
+            "component": "Button",
+            "child": "no_t",
+            "action": {
+              "event": {
+                "name": "keep",
+                "context": {}
+              }
+            },
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "autofocus": true
+                }
+              }
+            }
+          },
+          {
+            "id": "no_t",
+            "component": "Text",
+            "text": "No"
+          },
+          {
+            "id": "help",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "left_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "ArrowLeft",
+            "label": "move",
+            "action": {
+              "functionCall": {
+                "@call": "hottyFocus",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "yes"
+                }
+              }
+            }
+          },
+          {
+            "id": "right_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "ArrowRight",
+            "label": "move",
+            "action": {
+              "functionCall": {
+                "@call": "hottyFocus",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "no"
+                }
+              }
+            }
+          },
+          {
+            "id": "yes_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "y",
+            "press": "yes",
+            "label": "yes"
+          },
+          {
+            "id": "no_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "n",
+            "press": "no",
+            "label": "no"
+          }
+        ]
+      }
+    }
+  ]
+}

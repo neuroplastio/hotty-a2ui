@@ -1370,6 +1370,83 @@ func TestSwitchOnHost(t *testing.T) {
 	x.check(r)
 }
 
+// A Confirm on a host, two Buttons in a Row and HottyShortcuts (the
+// stories hotty/confirm and hotty/confirm-form): the Row's keys give a
+// focused Button's arrows to the program, where a host would scroll the
+// surface with them (SPEC §10.2, keys for the program), and the
+// HottyShortcuts move the keyboard between Yes and No by hottyFocus, the
+// host's focus with it; y and n press them. The keyboard starts on No.
+func TestConfirmOnHost(t *testing.T) {
+	run, err := story.Start(story.Find("hotty/confirm"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := hottytest.New(t)
+	r := New(run.Surfaces()[0].C, "confirm")
+	send := func(cmds ...string) {
+		t.Helper()
+		for _, c := range cmds {
+			_, _ = io.WriteString(h, c)
+		}
+		if errs := h.Errors(); len(errs) > 0 {
+			t.Fatalf("the host refused: %v", errs)
+		}
+	}
+	seen := 0
+	pump := func() {
+		t.Helper()
+		send(r.Update()...)
+		for evs := h.Events(); seen < len(evs); evs = h.Events() {
+			for _, ev := range evs[seen:] {
+				seen++
+				if err := r.Event(ev); err != nil {
+					t.Fatal(err)
+				}
+				send(r.Update()...)
+			}
+		}
+	}
+	send(hotty.Doc("confirm", r.Doc()), hotty.Place("confirm", hotty.Placement{Cols: 64, Rows: 8}))
+	pump()
+	s := h.Surface("confirm")
+	if s.Focused() != "no" {
+		t.Fatalf("the host's focus starts on %q", s.Focused())
+	}
+	keys, _ := s.Attr("answers", "data-keys")
+	if km := hotty.ParseKeymap(keys); !km.Program("ArrowLeft") || !km.Program("ArrowRight") {
+		t.Errorf("the Row's keys %q leave the arrows to the host", keys)
+	}
+	key := func(k, focused string) {
+		t.Helper()
+		if h.Key(k) {
+			t.Fatalf("the host took %s on a button", k)
+		}
+		cmds, ok, err := r.Key(k)
+		if !ok || err != nil {
+			t.Fatalf("%s: %v %v", k, ok, err)
+		}
+		send(cmds...)
+		pump()
+		if s.Focused() != focused || r.C.St.Focus != focused {
+			t.Errorf("after %s the host's focus is %q, the program's %q, want %q", k, s.Focused(), r.C.St.Focus, focused)
+		}
+	}
+	key("ArrowLeft", "yes")
+	key("ArrowRight", "no")
+	key("y", "no")
+	key("ArrowLeft", "yes")
+	key("n", "yes")
+	var names []string
+	for _, e := range run.Actions() {
+		var m struct{ Action struct{ Name string } }
+		must(t, json.Unmarshal(e.JSON, &m))
+		names = append(names, m.Action.Name)
+	}
+	if !slices.Equal(names, []string{"delete", "keep"}) {
+		t.Errorf("the actions: %v", names)
+	}
+}
+
 // A HottyKeyHints on a host is the line cells draws, a kbd for each key;
 // it follows the element the program knows has the keyboard, and ?, which
 // reaches the program from a box, shows the full view's groups as columns.

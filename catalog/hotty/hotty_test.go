@@ -30,6 +30,10 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"s","component":"HottyShortcut","key":"Control+s"}`, false},
 		{`{"id":"s","component":"HottyShortcut","key":"Control+s","press":"save","action":{"event":{"name":"x"}}}`, false},
 		{`{"id":"s","component":"HottyShortcut","key":"Hyper+s","press":"save"}`, false},
+		// A Confirm's (instruction 24): a letter presses an answer, an arrow
+		// moves the keyboard to one.
+		{`{"id":"s","component":"HottyShortcut","key":"y","press":"yes","label":"yes"}`, true},
+		{`{"id":"s","component":"HottyShortcut","key":"ArrowLeft","label":"move","action":{"functionCall":{"@call":"hottyFocus","args":{"id":"yes"}}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"event":{"name":"send"}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyFocus","args":{"id":"name"}}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyBlur"}}}`, true},

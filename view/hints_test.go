@@ -157,6 +157,61 @@ func TestToggleHints(t *testing.T) {
 	}
 }
 
+// HottyShortcuts with the same label are one hint, their keys joined as a
+// bubbles binding's are ("←/→ move"); one the text field with the keyboard
+// takes, a character it types or a key its keymap binds, is left out
+// while it has it, as the key never reaches the shortcut (the Confirm
+// pattern in a form, vault KIT-16c).
+func TestShortcutHints(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	h := `"catalogId":"` + hotty.ID + `"`
+	focus := func(id string) string {
+		return `{"functionCall":{"@call":"hottyFocus",` + h + `,"args":{"id":"` + id + `"}}}`
+	}
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"name":""}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["name","answers","hints","left","right","y","n","save_key"]},
+	 {"id":"name","component":"TextField","label":"Name","value":{"@path":"/name"}},
+	 {"id":"answers","component":"Row","children":["yes","no"]},
+	 {"id":"yes","component":"Button","child":"yes_t","action":{"event":{"name":"yes"}}},
+	 {"id":"yes_t","component":"Text","text":"Yes"},
+	 {"id":"no","component":"Button","child":"no_t","action":{"event":{"name":"no"}}},
+	 {"id":"no_t","component":"Text","text":"No"},
+	 {"id":"hints","component":"HottyKeyHints",` + h + `},
+	 {"id":"left","component":"HottyShortcut",` + h + `,"key":"ArrowLeft","label":"move","action":` + focus("yes") + `},
+	 {"id":"right","component":"HottyShortcut",` + h + `,"key":"ArrowRight","label":"move","action":` + focus("no") + `},
+	 {"id":"y","component":"HottyShortcut",` + h + `,"key":"y","press":"yes","label":"yes"},
+	 {"id":"n","component":"HottyShortcut",` + h + `,"key":"n","press":"no","label":"no"},
+	 {"id":"save_key","component":"HottyShortcut",` + h + `,"key":"Control+s","action":{"event":{"name":"save"}},"label":"save"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	all := []string{"←/→ move", "y yes", "n no", "ctrl+s save"}
+	for _, step := range []struct {
+		focus string
+		short []string
+	}{
+		{"", append(slices.Clone(all), "? more")},
+		{"no", append(append([]string{"enter press"}, all...), "? more")},
+		{"name", []string{"ctrl+s save", "? more"}},
+	} {
+		c.Focus(step.focus)
+		short, full := c.KeyHints("", false)
+		if got := hintKeys(short); !slices.Equal(got, step.short) {
+			t.Errorf("%q focused: %q, want %q", step.focus, got, step.short)
+		}
+		if step.focus == "" && !slices.Equal(hintKeys(full[0]), all) {
+			t.Errorf("the full view's shortcuts: %q", hintKeys(full[0]))
+		}
+	}
+	// A keymap that leaves a key to the program gives its hint back.
+	c.Focus("name")
+	if short, _ := c.KeyHints("ArrowLeft=program ArrowRight=program", false); !slices.Equal(hintKeys(short), []string{"←/→ move", "ctrl+s save", "? more"}) {
+		t.Errorf("the arrows the program's: %q", hintKeys(short))
+	}
+}
+
 // KeyText writes keys as bubbles' help does.
 func TestKeyText(t *testing.T) {
 	for key, want := range map[string]string{

@@ -32,10 +32,11 @@ func mapKeyHints(b *Builder, n *a2ui.Node) *Element {
 // KeyHints are the keys the surface takes now: short, one line, as
 // bubbles' short help has them; full, the columns of its full help. The
 // element with the keyboard comes first, then the surface's
-// HottyShortcuts that have a label, then, in the full view, Tab, Shift+Tab
-// and ?. Short ends with "? more" when ? shows the full view. keys is the
-// surface's keymap (a rendition's SetKeys), which a text field's
-// components' keymaps override.
+// HottyShortcuts that have a label (those with the same label as one, and
+// none the text field with the keyboard takes), then, in the full view,
+// Tab, Shift+Tab and ?. Short ends with "? more" when ? shows the full
+// view. keys is the surface's keymap (a rendition's SetKeys), which a text
+// field's components' keymaps override.
 //
 // host is true for a rendition on a host, which moves focus among the
 // elements it works itself without telling the renderer (profile §2, the
@@ -56,11 +57,25 @@ func (c *Controller) KeyHints(keys string, host bool) (short []Hint, full [][]Hi
 		}
 		full[len(full)-1] = append(full[len(full)-1], esc)
 	}
+	// A key the text field with the keyboard uses, a character it types or
+	// a key its keymap binds to an edit, never reaches a Shortcut (profile
+	// §6.1): its hint goes while the field has the keyboard.
+	var field *hotty.Keymap
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && (e.Kind == TextField || e.Kind == DateTime) {
+		field = hotty.Resolve(e.Kind == TextField && e.Variant == "longText", append([]string{keys}, c.V.KeyChain(e.ID)...)...)
+	}
+	// Shortcuts with the same label are one hint, their keys joined by /, as
+	// a bubbles binding of several keys shows them: "←/→ move".
 	var shortcuts []Hint
 	for _, sc := range c.V.Shortcuts {
-		if sc.Label != "" {
-			shortcuts = append(shortcuts, Hint{KeyText(sc.Key), sc.Label})
+		if sc.Label == "" || field != nil && field.Lookup(sc.Key) != "" {
+			continue
 		}
+		if i := slices.IndexFunc(shortcuts, func(h Hint) bool { return h.Desc == sc.Label }); i >= 0 {
+			shortcuts[i].Key += "/" + KeyText(sc.Key)
+			continue
+		}
+		shortcuts = append(shortcuts, Hint{KeyText(sc.Key), sc.Label})
 	}
 	short = append(short, shortcuts...)
 	general := []Hint{{"tab", "next"}, {"shift+tab", "back"}}
