@@ -8,7 +8,11 @@ sounds good"). Applied in KIT-00.
 - Every component of the hotty catalog is `Hotty` and the plain noun A2UI
   would use: `HottyTable`, `HottyProgress`.
 - Every function is `hotty` and the verb: `hottyFocus`, `hottyScrollTo`.
-- Extension keys stay under `io_neuroplast_hotty`.
+- Extension keys stay under `io_neuroplast_hotty`. The maintainer asked
+  for a bare `hotty` on 2026-10-10 and kept the full name when it turned
+  out to break A2UI v1.0's rule that a third-party extension's name is a
+  prefix, an underscore and a name (protocol, "Extensions", rule 3).
+  `hotty_icons` and the like would pass that rule; they weren't chosen.
 - The catalog id is `https://hotty.neuroplast.io/a2ui/v1/catalog` since
   2026-10-10. The maintainer judged `https://neuroplast.io/hotty/a2ui/v1/catalog.json`
   wrong: it put HOTTY under a path of the company's site, not HOTTY's own
