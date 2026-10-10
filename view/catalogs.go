@@ -144,6 +144,8 @@ func init() {
 	Register(hotty.ID, "HottyDiff", mapDiff)
 	Register(hotty.ID, "HottyTree", mapTree)
 	Register(hotty.ID, "HottySwitch", mapSwitch)
+	Register(hotty.ID, "HottyChart", mapChart)
+	Register(hotty.ID, "HottySparkline", mapSparkline)
 	Register(hotty.ID, "HottyIcon", func(b *Builder, n *a2ui.Node) *Element {
 		// As Icon's name: a name, or {svgPath, strokeWidth}.
 		if m, ok := b.Raw(n, "name").(map[string]any); ok {

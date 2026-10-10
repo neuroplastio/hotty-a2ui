@@ -5,7 +5,7 @@
   "title": "HOTTY Catalog",
   "description": "Keys, forms and focus for A2UI surfaces shown in a terminal: the hotty catalog of the HOTTY profile of A2UI. Mix it with the basic catalog component by component. Its names start with Hotty (components) and hotty (functions), so that none can be one A2UI adds later.",
   "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://hotty.neuroplast.io/a2ui/v1/catalog\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.\n\n8. HottyTable shows rows of data: give `columns` (each a `key` into the rows, a `header`, and `align`: \"end\" for numbers) and `rows`, a list of objects, best bound to the data model. Set `rowKey` to the field that identifies a row, and bind `selected` to a path: the user's selection is written there. To act on the selected row, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `height` to scroll long tables.\n\n9. HottyList shows items to pick from, a label and a line under it each: give `items`, a list of objects with `label`, `description` and `value` (what identifies the item), best bound to the data model, and bind `selected` to a path: the user's pick is written there. To act on it, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `filterable` to let the user type / and narrow the items by their labels, and `height` to show long lists a page at a time.\n\n10. HottyKeyHints is a help line: the keys the user can press now, those of the component with the keyboard and the surface's HottyShortcuts. Put one at the bottom of a surface that takes keys, and give each HottyShortcut a short `label` (\"save\", \"quit\") so that it shows there. The user presses ? for the full view.\n\n11. HottyScrollView shows content taller than the room it has, in a box `height` rows tall that the user scrolls: give it a `child` (a long Text, say), or `lines`, a list of strings. For a log or a command's output, bind `lines` to a list in the data model, add each line by writing the next index with updateDataModel (/log/0, /log/1, …), and set `follow` so that the box shows the newest. Call hottyScrollTo(id, \"start\" or \"end\") to move it.\n\n12. HottyCode shows source code, highlighted: give `code` and `language` (a name such as \"go\" or a file name such as \"main.go\"). Set `lineNumbers` for a file or an excerpt of one (with `startLine`), and `marks` to point at lines: {\"line\": 12, \"kind\": \"error\"}, or a range with `end`; kinds are highlight, added, removed, error and warning. Put a long listing in a HottyScrollView. Code inside prose can stay a fenced block in a Text (```python), which is highlighted too.\n\n13. HottyDiff shows a change to code, as a review does: give `patch`, a unified diff of one or more files (git diff's output), or the `old` and `new` text of one file with its `file` name. Set `view` to \"split\" for the two sides next to each other. Bind `selected` to a path: the hunk the user picks is written there, as \"path:line\". To act on it (stage it, revert it, comment on it), give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Big diffs belong in props rather than the data model, and in a HottyScrollView.\n\n14. HottyTree shows nodes in branches that fold, such as files in folders or a site's sections: give `items`, a list of nodes, each with a `label`, a `value` (what identifies it), an optional `icon` (a name as HottyIcon takes) and `children`, best bound to the data model. Bind `selected` to a path: the user's selection is written there, and the branches it is in show open. Bind `expanded` to keep which branches are open, or give a list to open some at first. To act on a leaf, give `onActivate` an action whose context reads the selected path; it runs on Enter or a second click. For a filter field, bind a TextField's value and the tree's `filter` to the same path. Set `height` to scroll a long tree. For buttons that open or close every branch, call hottyExpandAll(id) or hottyCollapseAll(id) from their actions.\n\n15. HottyIcon shows an icon the basic Icon's 59 names lack, by its Material Symbols name as Google Fonts writes it (\"account_tree\", \"terminal\"); use the basic Icon for those it has. For a shape of your own, give {\"svgPath\": …}, with `strokeWidth` for an outline one. A renderer may have only some of Material's icons, and shows a mark for the others.\n\n16. To show icons on tabs or options, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"icons\": …}}} on a Tabs, as a list of names, one per tab in order, or on a ChoicePicker, as an object from an option's `value` to its name. Names are as HottyIcon takes them. Terminals without graphics show the titles alone.\n\n17. HottySwitch is an on/off switch for one setting, as a phone's settings show them: give a `label` and bind `value`, a boolean, to the data model, where the user's flips are written. Prefer it to a CheckBox for a setting that takes effect at once; keep the CheckBox for a choice that a form sends later, such as accepting terms. Set `disabled` (true, or bound to a path) while it cannot change; it and the switch's checks take a literal or a path, not a function call. Space, Enter or a click flips it: Enter on it does not submit a HottyForm.",
+  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://hotty.neuroplast.io/a2ui/v1/catalog\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.\n\n8. HottyTable shows rows of data: give `columns` (each a `key` into the rows, a `header`, and `align`: \"end\" for numbers) and `rows`, a list of objects, best bound to the data model. Set `rowKey` to the field that identifies a row, and bind `selected` to a path: the user's selection is written there. To act on the selected row, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `height` to scroll long tables.\n\n9. HottyList shows items to pick from, a label and a line under it each: give `items`, a list of objects with `label`, `description` and `value` (what identifies the item), best bound to the data model, and bind `selected` to a path: the user's pick is written there. To act on it, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `filterable` to let the user type / and narrow the items by their labels, and `height` to show long lists a page at a time.\n\n10. HottyKeyHints is a help line: the keys the user can press now, those of the component with the keyboard and the surface's HottyShortcuts. Put one at the bottom of a surface that takes keys, and give each HottyShortcut a short `label` (\"save\", \"quit\") so that it shows there. The user presses ? for the full view.\n\n11. HottyScrollView shows content taller than the room it has, in a box `height` rows tall that the user scrolls: give it a `child` (a long Text, say), or `lines`, a list of strings. For a log or a command's output, bind `lines` to a list in the data model, add each line by writing the next index with updateDataModel (/log/0, /log/1, …), and set `follow` so that the box shows the newest. Call hottyScrollTo(id, \"start\" or \"end\") to move it.\n\n12. HottyCode shows source code, highlighted: give `code` and `language` (a name such as \"go\" or a file name such as \"main.go\"). Set `lineNumbers` for a file or an excerpt of one (with `startLine`), and `marks` to point at lines: {\"line\": 12, \"kind\": \"error\"}, or a range with `end`; kinds are highlight, added, removed, error and warning. Put a long listing in a HottyScrollView. Code inside prose can stay a fenced block in a Text (```python), which is highlighted too.\n\n13. HottyDiff shows a change to code, as a review does: give `patch`, a unified diff of one or more files (git diff's output), or the `old` and `new` text of one file with its `file` name. Set `view` to \"split\" for the two sides next to each other. Bind `selected` to a path: the hunk the user picks is written there, as \"path:line\". To act on it (stage it, revert it, comment on it), give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Big diffs belong in props rather than the data model, and in a HottyScrollView.\n\n14. HottyTree shows nodes in branches that fold, such as files in folders or a site's sections: give `items`, a list of nodes, each with a `label`, a `value` (what identifies it), an optional `icon` (a name as HottyIcon takes) and `children`, best bound to the data model. Bind `selected` to a path: the user's selection is written there, and the branches it is in show open. Bind `expanded` to keep which branches are open, or give a list to open some at first. To act on a leaf, give `onActivate` an action whose context reads the selected path; it runs on Enter or a second click. For a filter field, bind a TextField's value and the tree's `filter` to the same path. Set `height` to scroll a long tree. For buttons that open or close every branch, call hottyExpandAll(id) or hottyCollapseAll(id) from their actions.\n\n15. HottyIcon shows an icon the basic Icon's 59 names lack, by its Material Symbols name as Google Fonts writes it (\"account_tree\", \"terminal\"); use the basic Icon for those it has. For a shape of your own, give {\"svgPath\": …}, with `strokeWidth` for an outline one. A renderer may have only some of Material's icons, and shows a mark for the others.\n\n16. To show icons on tabs or options, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"icons\": …}}} on a Tabs, as a list of names, one per tab in order, or on a ChoicePicker, as an object from an option's `value` to its name. Names are as HottyIcon takes them. Terminals without graphics show the titles alone.\n\n17. HottySwitch is an on/off switch for one setting, as a phone's settings show them: give a `label` and bind `value`, a boolean, to the data model, where the user's flips are written. Prefer it to a CheckBox for a setting that takes effect at once; keep the CheckBox for a choice that a form sends later, such as accepting terms. Set `disabled` (true, or bound to a path) while it cannot change; it and the switch's checks take a literal or a path, not a function call. Space, Enter or a click flips it: Enter on it does not submit a HottyForm.\n\n18. HottyChart draws numbers on an axis: `kind` \"line\" (the default) for a trend over time, or \"bar\" for amounts by category. Give `values`, a list of numbers, or `series` for several, each a `label` and its `values`; and `labels`, one for each point (times, days, names). Bind values to a list in the data model and add a point by writing the next index (/cpu/42), and set `window` to keep the last points only, so that the chart slides as they arrive. The axis fits the values, from 0; set `min` and `max` to zoom in, and `height` for the plot's rows (8). Keep long series out of a surface with sendDataModel, which would send them back with every action.\n\n19. HottySparkline is a trend in a few cells, with no axis: give `values`, bound as a chart's, and put it in a Row between a Text that names it and one with the latest value. Set `window` to keep it that many columns wide as values arrive, and `height` for a taller one.",
   "components": {
     "HottyShortcut": {
       "type": "object",
@@ -677,6 +677,147 @@
           ]
         }
       ]
+    },
+    "HottyChart": {
+      "type": "object",
+      "description": "A chart of numbers on an axis: a line chart, in braille dots in a terminal and a line on a HOTTY host, or a bar chart, its bars in eighths of a row. Labelled ticks up its side, the points' labels under it, and a legend when it has several series or a named one. It does not take the keyboard.",
+      "properties": {
+        "component": {
+          "const": "HottyChart"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "line",
+            "bar"
+          ],
+          "default": "line",
+          "description": "line joins the values, for a trend over time; bar draws a bar for each value, for amounts by category, several series side by side."
+        },
+        "values": {
+          "description": "The values of a chart of one series, oldest first: numbers, and a null where one is missing. Bind it to a list in the data model, and add a point by writing the next index (/cpu/42): the data model has no append.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "series": {
+          "description": "Several series, each a `label` for the legend and its `values`, which may each be bound to a list in the data model: {\"label\": \"cpu\", \"values\": {\"@path\": \"/cpu\"}}. Give either `values` or `series`.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/chartSeries"
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "labels": {
+          "$ref": "common_types.json#/$defs/DynamicStringList",
+          "description": "A label for each point, in the same order: times or dates for a line, categories for bars. A line chart shows a few of them under its axis, a bar chart each under its bars."
+        },
+        "min": {
+          "type": "number",
+          "description": "The value at the bottom of the axis. By default the axis fits the values: from 0 when they are all positive (or all negative), to a round number past the furthest."
+        },
+        "max": {
+          "type": "number",
+          "description": "The value at the top of the axis. A value outside min and max is drawn at the edge."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 8,
+          "description": "How many rows tall the plot is, without its axis, labels and legend."
+        },
+        "window": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "How many points the chart holds: the last ones, the newest at the right edge, so that a series that grows slides along. By default it shows all of them, across its width."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column, as CSS 'flex-grow'."
+        }
+      },
+      "required": [
+        "component"
+      ]
+    },
+    "HottySparkline": {
+      "type": "object",
+      "description": "A sparkline: a trend in a few cells, a column for each value, rising from the bottom in eighths of a row, with no axis and no labels. Put it in a Row beside a Text that names it and one with the latest value. It does not take the keyboard.",
+      "properties": {
+        "component": {
+          "const": "HottySparkline"
+        },
+        "values": {
+          "description": "The values, oldest first: numbers, and a null where one is missing. Bind it to a list in the data model, and add a value by writing the next index (/load/42): the data model has no append.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "min": {
+          "type": "number",
+          "description": "The value at the bottom. By default 0, or the lowest value when that is below 0."
+        },
+        "max": {
+          "type": "number",
+          "description": "The value at the top. By default the highest value."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "How many rows tall it is."
+        },
+        "window": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many values it shows, a column each: the last ones, the newest at the right edge, so that it keeps its width as values arrive. By default, as many as it has."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column, as CSS 'flex-grow'."
+        }
+      },
+      "required": [
+        "component",
+        "values"
+      ]
     }
   },
   "functions": {
@@ -857,6 +998,12 @@
         },
         {
           "$ref": "#/components/HottySwitch"
+        },
+        {
+          "$ref": "#/components/HottyChart"
+        },
+        {
+          "$ref": "#/components/HottySparkline"
         }
       ],
       "discriminator": {
@@ -908,6 +1055,39 @@
       },
       "required": [
         "label"
+      ]
+    },
+    "chartSeries": {
+      "type": "object",
+      "description": "A series of a HottyChart.",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "What the series is: its name in the legend."
+        },
+        "values": {
+          "description": "Its values, oldest first: numbers, and a null where one is missing. Bind it to a list in the data model to add points by index.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": [
+        "values"
       ]
     }
   }

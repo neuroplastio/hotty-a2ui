@@ -102,6 +102,8 @@ so that an error comes and goes as a text delta.
 | HottyDiff | `div` in the mono face, filled with `--k-tonal` as a HottyCode's; with hunks, `tabindex=0 role=listbox`, whose `data-keys` gives the program ArrowUp, ArrowDown, Home, End, k, j, g and G (a HottyScrollView around it binds the letters to scroll actions, SPEC.md §10.2). For each file with a name (or of several), a row (`k-diff-file`): its name, bold, then what the change adds and removes, `+N` in `--k-success` and `-M` in `--k-error`, or new, deleted or binary. A run of unchanged lines left out is a muted row, `⋯ N unchanged lines` (`k-fold`). Each hunk is a `div tabindex=-1 role=option data-on=click` (`k-hunk`), whose id is the diff's, `~b` and the hunk's index: its header in info and its section muted (`k-hh`), then its lines. Unified, a line is a flex row (`k-dl`): its old number and its new (`--k-lo` and `--k-ln` wide, `aria-hidden`), its sign, then its code, its tokens in a HottyCode's spans. Split, the hunk is a grid of two equal columns, the old side and the new (`k-ds`), paired as cells pairs them, a rule between them and the header across both. A removed line (`k-d-del`) is filled with a sixth of `--k-error`, an added one (`k-d-add`) with a sixth of `--k-success`, and its changed words (`k-w`) more. The selected hunk (`k-sel`, `aria-selected`) has a rail on its left and its header reversed, muted, and in `--k-focus` while the diff has the keyboard (`k-on`). It then has the host's focus itself, so that the host scrolls it into view (SPEC.md §5.3) as cells keeps it in sight. A split diff stays split at any width, its sides wrapping: the markup does not know the width, and a host has no container queries |
 | HottyTree | `div tabindex=0 role=tree`, as a HottyList's box, holding the nodes the view shows (the same rows as cells, §3.4), each a `div role=treeitem data-on=click` whose id is the tree's and `~q` and the node's index, with `aria-level`, `aria-expanded` on a branch and `aria-selected`. A row is a flex row indented `--k-5` a level (`--k-level`): its fold (`k-node-fold`, a column wide), `▸` or `▾` in `--k-muted` before a branch and blank before a leaf, so that a level's labels line up; its icon, as an Icon draws it, or a blank one as wide where another node has an icon; then its label, the filter's matches in `span.k-match`, and a closed branch's count (`k-node-count`, as cells', §3.4) in `--k-muted`. The selected node is marked as a HottyList's selected item: filled with `--k-tonal`, a 3px bar at its start in `--k-border`, and in `--k-focus` with its text while the tree has the keyboard (`k-on`). Its `data-keys` are a HottyList's; its letters and Enter reach the program anyway, a focused box using no keys. Each row is `--k-node-h` (2rem) tall. With a `height`, the box is that many rows tall and holds every node that shows, and the host scrolls it (SPEC.md §5.3), with the wheel and a thin scrollbar; the selected node is `tabindex=-1` and has the host's focus while the tree has the keyboard, so that the host scrolls it into view as the selection moves, as a HottyDiff's selected hunk does. Guides are cells' (§3.4): a host has the room to indent instead. Its empty text shows when no node does |
 | HottySwitch | `button type=button role=switch` with `aria-checked`, `disabled` while it is, holding its pill (`k-switch-track`, `aria-hidden`) and its label (`~l`), so that a click on either flips it, as do Space and Enter, which a host clicks a button with (SPEC.md §10.2); then its error. On or off is that one attribute, so a flip is one delta. Off, the pill is filled with `--k-tonal` and ringed in `--k-muted`, its knob `--k-muted` at its start; on, it is `--k-accent`, its knob `--k-on-accent` at its end, so that the two differ by more than a shade where the accent is the foreground (no theme), as Material's switch does. The ring, and a focus ring of `--k-focus` around the pill while it has the host's focus, are shadows, which draw where a thin rounded border may not. The knob does not slide: Blitz runs no transitions, and a slide by deltas is vault KIT-22h |
+| HottyChart | `div role=img`, named by its `accessibility.label`, else `Line chart` or `Bar chart` and its series' labels; a grid of its ticks' labels and its plot. The labels (`k-chart-y`, `aria-hidden`, in `--k-muted`) are each placed at its value's height, all of them, in a column as wide as the widest, in `ch`. The plot (`~a`) is `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), its left and bottom borders the axes, 2px in `--k-border`, since a 1px straight edge drops out at a fractional scale. The axis is the view's, cells' (§6.18), so a value sits at the same height in both. A line is an inline `svg` a series (`~g0`, `~g1`, …), stretched over the plot (`preserveAspectRatio=none`), holding one `path` (`~c0`, …) that hotty-go's `chart.Line` makes: a break where a value is missing, a lone value a dot, round joins, stroked 1.5 wide in `currentColor` with presentation attributes only, which every host's SVG takes. A new point is so an attribute's delta a line. Bars are boxes, a group a point and a bar a series in it, each from the axis's 0 to its value, placed by percentages, so that one below 0 hangs from it. The series' colours are cells' (§3.4), set by the series' class: `--k-info`, `--k-warning`, `--k-success`, `--k-error`, and round again. Under the plot: a line's points' labels, three evenly spread (the first and the last among them), or a bar chart's each under its bars; then the legend, when it has several series or a labelled one, a key a series (a stroke for a line, a square for bars) and its label in `--k-muted`. With no values, the plot says `No data`. The `svg`'s box is 480 by 20 a row, a guess at the plot's width that the markup cannot know: on a plot much wider or narrower the stroke thickens where the line is steep (vault KIT-10h) |
+| HottySparkline | `span role=img`, named by its `accessibility.label`, else `Sparkline`: a box `--k-n` columns wide (its `window`, else its values' count, at most the room), `--k-rows` terminal rows tall, in `--k-info`, holding a bar a value, a terminal column wide (`1ch` of the mono face), from its bottom, as tall as its value is between its `min` and `max`, at least an eighth of a row; a missing value has no height. The bars come newest first in a row that runs right to left (`row-reverse`), so that the newest is at the box's right edge and a box too narrow loses the oldest, as in cells |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 
 **Updates are deltas.** The document goes once. After it, the renderer
@@ -241,6 +243,8 @@ Natural widths:
 | HottyCode | its gutter (§3.4) and its widest line |
 | HottyDiff | 1 for the rail, then its gutter (§3.4) and its widest line; split, twice a side's gutter and that line, and 3; or a file's row, a hunk's header or a fold, if one is wider |
 | HottyTree | 2 for the bar, plus its widest node, whether it shows or not, so that it keeps its width as branches open and close: its guides (4 a level below the roots), its fold (2), its label and, on a branch, a space and its count; or its empty text |
+| HottyChart | its widest tick label, 2 for the axis and a space, and its plot or its legend, whichever is wider: a line's plot is 40; bars', a group a point, as wide as its widest label or 2 a series, one column between groups (at least 8, and `No data`) |
+| HottySparkline | its `window`, else its values' count |
 | Image, Icon, HottyIcon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -267,6 +271,8 @@ Minimums:
   when that is narrower.
 - A HottyDiff's is its rail, its unified gutter and 8 columns of code.
 - A HottyTree's is its bar, a level of guides and 4.
+- A HottyChart's is its tick labels, the axis and a space, and 8.
+- A HottySparkline's is 1: it shows the newest values that fit (§3.4).
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -287,7 +293,9 @@ How the containers lay their children out:
     whatever comes before, as bubbles' help sits a row under its list.
     A HottyScrollView has one after it, whatever comes after: its box
     draws no edge but the scrollbar, so what follows would read as its
-    content. So do a HottyCode and a HottyDiff, which draw no edge at all. Before it, the rule for controls applies, so a title above
+    content. So do a HottyCode and a HottyDiff, which draw no edge at all,
+    and a HottyChart, whose legend or labels would read as a title of what
+    follows. Before it, the rule for controls applies, so a title above
     it stays on the row before its box.
     Through a Row, a Column or a HottyForm, the rule sees its first child
     (or, before it, its last).
@@ -355,6 +363,8 @@ How the containers lay their children out:
 | HottyCode | a row for each line, or with `wrap` (the default) as many as the line takes, broken by cluster under the code: first its number, right-aligned as wide as the widest, in `muted`, and a space, when `lineNumbers` is on; then, when the code has marks, the line's sign and a space (`▎` in `info` for highlight, `+` in `success` for added, `-` and `✗` in `error` for removed and error, `!` in `warning`); then the code. Continuation rows leave the gutter blank. Without `wrap` a long line is cut with `…`. Each token is coloured by its kind (package `highlight`): keywords `info` and bold, types and builtins `info`, functions' names bold, strings `success`, numbers and constants `warning`, as are preprocessor lines, decorators and attributes, comments `muted` and italic, a diff's added and removed lines `success` and `error`, its hunk headers `info` and bold, and the rest `fg`. Not `accent`, which marks only focus (§3.6). A marked line's rows are tinted across the width (§3.6): toward `selection` itself for highlight, a sixth of the way toward `success`, `error` or `warning` for the others. As OpenTUI's Code and LineNumbers; glamour, the reference shot's, draws code blocks with neither numbers nor marks |
 | HottyDiff | a column for the rail, then rows. For each file: a blank row before all but the first; its name when it has one (or the diff has several files), bold, then `+N` in `success` and `-M` in `error`, or `new`, `deleted` or `binary`. For each hunk: `⋯ N unchanged lines` in `muted` when it leaves lines out before it (and after the last, where the diff knows, from two texts); its header in `info` and its section in `muted`; then its lines. Unified, a line is its old number and its new (blank on the side that does not have it), right-aligned as wide as the widest, in `muted`, each and a space, when `lineNumbers` is on (the default); its sign (`-` in `error`, `+` in `success`) and a space; then its code, its tokens coloured as a HottyCode's, wrapped under the code or, without `wrap`, cut with `…`. Split, where each side has room for 16 columns of code (unified where not): the old side, ` │ ` in `border`, then the new, each a number, a sign and code; a context line on both, and in a run of removed lines followed by added ones, each removed line beside the added line that replaces it; a row is as tall as its taller side, and a side with no line is blank. A removed line's rows are tinted a sixth of the way toward `error`, an added one's toward `success`, its changed words a third (§3.6). The selected hunk's rows have `▎` in the rail and its header is reversed, both in `muted`, in `accent` while the diff has the keyboard; a scroll view around it keeps that hunk in sight. With no hunks and no name, `No changes` in `muted`. As OpenTUI's Diff, which has no names, folds, word marks or selection |
 | HottyTree | as lipgloss's tree draws one, a row a node, every row 2 columns in: for each level below the roots, its guides in `border`, `│   ` down past an ancestor a sibling follows (else four blanks), then `├── ` before a node a sibling follows and `└── ` before the last; a branch's fold, `▶ ` closed or `▼ ` open, in `muted`, as bubbles' tree has it, or a root leaf's two blank columns, so that the roots line up; its label, the filter's matches underlined, cut with `…` when it does not fit; and a closed branch's count, ` 3`, in `muted`. A node's siblings are those that show, so that while a filter applies a line ends at its last match. The selected node's first two columns are `│ `: in `accent` with its label, bold, while the tree has the keyboard, and in `muted` otherwise. With a `height`, that many rows show: moved as little as brings the selected node into view when the selection moves, and three rows a notch by the wheel, which leaves the selection where it is (§3.7). A node's icon is a host's: few have a glyph a column wide, and the guides and folds say what a tree is. With no node shown, its empty text in `muted`. |
+| HottyChart | as ntcharts draws one: its ticks' labels in `muted`, right-aligned as wide as the widest, each on the row its value is drawn in (`view.TickRow`), `┤` there on the axis and `│` on the other rows, and `└` then `─` across under the plot, in `border`. The axis (§6.18) has its ticks a free row apart where the plot is tall enough; where it is not, 0's label, the top tick's and the bottom one's come first, then each other one with a free row either side, as plothot labels its axis. A line is braille dots (hotty-go's `braille`), two across and four down a cell, in its series' colour, joining its points: a point's dot row runs from the middle of the bottom row, the axis's low end, to the middle of the top row, so that a tick's label is level with its value; its dot column is its slot's (§6.18). A missing value breaks the line, and a lone value is a dot. A cell takes the colour of the last series to put a dot in it. Under the plot, three of its points' labels (five where the plot is 60 columns or wider), evenly spread over its slots: the first starting at its slot, the last ending at its own, the others centred, and one that would touch the one before it left out. Bars are a group a point, the plot's columns shared out between them a column apart, each series' bar an equal part of its group, in its colour, from the axis's 0, which may fall inside a row, to its value: a cell its bar covers from the cell's bottom is that many eighths (`▁` to `█`, at least `▁` in the cell 0 is in); one it covers from the top, below 0 or above a 0 inside the row, is `▀` from a quarter, `█` from three quarters, and `▔` for less, since a cell has no other blocks that hang. Where the groups do not fit at a column a bar, the last points that fit show. Each label is centred under its group, cut with `…`. Then the legend, when it has several series or a labelled one: a key in the series' colour, `━` for a line and `■` for bars, and its label in `muted`, three columns between series. The series' colours are `info`, `warning`, `success` and `error`, then round again; not `accent`, which marks only focus (§3.6). With no values, `No data` in `muted` in the plot's middle row. |
+| HottySparkline | as ntcharts' sparkline: a column a value, in `info`, rising from its bottom in eighths of a row (hotty-go's `blocks`), `height` rows tall, from its `min` at the bottom to its `max` at the top: the newest value in its last column and those before it to the left, as many as fit, so that a sparkline with a `window` keeps its width as values arrive. A value at `min` or below is `▁`, so that only a missing value is blank. |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
@@ -663,6 +673,13 @@ reference is `rendition/text`.
   cells draws it (its guides, folds and closed branches' counts), after
   `> ` for the selected node and two spaces for the others; its empty
   text when it shows none.
+- A HottyChart is a table of its values: a row a point, its label first
+  (else its number, from 1), and a column a series under its label
+  (`value` for one without), the numbers as the data model writes them,
+  aligned to the end, a missing one blank, two spaces apart; `No data`
+  when it has no values. A pipe reads the numbers, not a picture.
+- A HottySparkline is its values on a line, a space apart, `–` where one
+  is missing; nothing when it has none.
 - A HottyScrollView is all of its content, whatever its `height`: its
   lines, a line each, or its child.
 - A HottyCode is its code as it is, each line after its number when the
@@ -1100,6 +1117,59 @@ another setting rules it out. Without a `label`, give
 A component of the hotty catalog takes only that catalog's functions
 (vault a2ui-limits L1), so its `disabled` and its checks' conditions are
 literals or paths, not basic's `not` or `or`.
+
+### 6.18 HottyChart
+
+Numbers on an axis: `kind` `line` (the default), a trend over time, or
+`bar`, amounts by category. `values` are one series' numbers, oldest
+first; `series` are several, each a `label` for the legend and its
+`values`. A null, or anything that is not a finite number, is a missing
+value. `labels` are a label a point, in the same order: times for a line,
+categories for bars. Each of them is literal or bound, and best bound to
+a list in the data model, where the agent adds a point by writing the
+next index (`/cpu/42`): the data model has no append (vault a2ui-limits
+L4). A long series belongs out of a surface with `sendDataModel`, which
+would send it back with every action (L5). It takes no focus and no
+keys.
+
+`height` is the plot's rows (8), without the axis, the labels and the
+legend. `window` is the points its x axis holds: the last `window` of
+them, the newest at the right edge, so that a series that grows slides
+along, and the slots before its first point blank while it fills.
+Without one, its points spread across the plot. A point's slot is its
+place among `max(window, points)`, so that cells and a host put it at
+the same place across.
+
+The axis is the view's (`view.ChartAxis`), shared by every rendition:
+fitted to the values by hotty-go's `series.Scale`, from 0 when they are
+all of one sign, with some headroom, its ends on round ticks, about
+`max(3, min(6, height / 2))` steps of them. When those ticks would not
+each fall in a row of their own with a free row between, so that cells
+labels them all, it is the axis Scale makes with the most steps that
+does, if that spans at most half as much again; in a plot too short for
+any, the tightest of them, with the fewest ticks. `min` and `max` fix an
+end instead; a `max` not above the `min` is dropped. A value outside the
+axis is drawn at its edge. A tick's label has the decimals its step
+needs (`0.25`, `0.50`), and is in thousands (`k`), millions (`M`) or
+billions (`G`) once the step is one (`2.5k`, `125k`), so that the labels
+stay narrow.
+
+In cells a line is braille dots and bars eighths of a row (§3.4); on a
+host, an `svg` line and boxes (§2); in text, a table of the values (§4).
+Horizontal bars, a scatter of points, an area under a line and a second
+axis are not drawn.
+
+### 6.19 HottySparkline
+
+A trend in a few cells, with no axis and no labels: `values`, as a
+HottyChart's (§6.18), a column each, rising from the bottom. Put it in a
+Row between a Text that names it and one with the latest value, bound to
+the last index. Its bottom is `min`, else 0, or its lowest value when
+that is below 0; its top is `max`, else its highest value. `window` is
+the columns it keeps: its last values, the newest at the right edge, so
+that it keeps its width as values arrive and shows its slots blank while
+it fills; without one, a column a value. `height` is its rows (1). It
+takes no focus and no keys.
 
 ## 7. Fallbacks
 

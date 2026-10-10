@@ -5,6 +5,7 @@ package text
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -136,6 +137,18 @@ func element(e *view.Element) []string {
 		return richList(e)
 	case view.Tree:
 		return tree(e)
+	case view.Chart:
+		return chartTable(e)
+	case view.Sparkline:
+		// Its values, oldest first, "–" where one is missing.
+		if len(e.Series) == 0 || len(e.Series[0].Values) == 0 {
+			return nil
+		}
+		var vs []string
+		for _, v := range e.Series[0].Values {
+			vs = append(vs, numberOr(v, "–"))
+		}
+		return []string{strings.Join(vs, " ")}
 	case view.KeyHints:
 		// A pipe takes no keys.
 		return nil
@@ -256,6 +269,58 @@ func table(e *view.Element) []string {
 		out = append(out, "  No rows")
 	}
 	return out
+}
+
+// chartTable is a HottyChart as text: its values as a table, a row a
+// point, its label first (else its number, from 1), and a column a
+// series, headed by its label, the numbers aligned to the end and a
+// missing one blank; "No data" when it has no values.
+func chartTable(e *view.Element) []string {
+	if e.Empty() {
+		return []string{"No data"}
+	}
+	rows := [][]string{{""}}
+	for i, s := range e.Series {
+		rows[0] = append(rows[0], fallback(s.Label, "series "+strconv.Itoa(i+1)))
+	}
+	if len(e.Series) == 1 && e.Series[0].Label == "" {
+		rows[0][1] = "value"
+	}
+	for j := range e.Points() {
+		row := []string{fallback(e.PointLabel(j), strconv.Itoa(j+1))}
+		for i := range e.Series {
+			row = append(row, numberOr(e.At(i, j), ""))
+		}
+		rows = append(rows, row)
+	}
+	ws := make([]int, len(rows[0]))
+	for _, row := range rows {
+		for k, s := range row {
+			ws[k] = max(ws[k], cells.Width(s))
+		}
+	}
+	out := make([]string, len(rows))
+	for r, row := range rows {
+		parts := make([]string, len(row))
+		for k, s := range row {
+			pad := strings.Repeat(" ", ws[k]-cells.Width(s))
+			if k == 0 {
+				parts[k] = s + pad
+			} else {
+				parts[k] = pad + s
+			}
+		}
+		out[r] = strings.TrimRight(strings.Join(parts, "  "), " ")
+	}
+	return out
+}
+
+// numberOr is v as the data model writes it, or missing for NaN.
+func numberOr(v float64, missing string) string {
+	if math.IsNaN(v) {
+		return missing
+	}
+	return a2ui.NumberString(v)
 }
 
 // richList is a HottyList as text: its title, its status line, then

@@ -178,3 +178,35 @@ func TestDiff(t *testing.T) {
 		t.Errorf("got\n%s\nwant\n%s", got, want)
 	}
 }
+
+// TestChart: a HottyChart reads as a table of its values, a row a point,
+// its label first (else its number), a column a series under its label,
+// the numbers aligned to the end and a missing one blank; "No data" with
+// none. A HottySparkline reads as its values, "–" where one is missing.
+func TestChart(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"mem":[40,null,1250.5]}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["a","b","c","d"]},
+	 {"id":"a","component":"HottyChart","catalogId":"` + hotty.ID + `","labels":["10:00","10:01","10:02"],
+	  "series":[{"label":"cpu","values":[12,-8,61]},{"label":"memory","values":{"@path":"/mem"}}]},
+	 {"id":"b","component":"HottyChart","catalogId":"` + hotty.ID + `","kind":"bar","values":[3,4]},
+	 {"id":"c","component":"HottyChart","catalogId":"` + hotty.ID + `","values":{"@path":"/none"}},
+	 {"id":"d","component":"HottySparkline","catalogId":"` + hotty.ID + `","values":[1,null,2.5,-3]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	want := "       cpu  memory\n" +
+		"10:00   12      40\n" +
+		"10:01   -8\n" +
+		"10:02   61  1250.5\n" +
+		"   value\n" +
+		"1      3\n" +
+		"2      4\n" +
+		"No data\n" +
+		"1 – 2.5 -3\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}

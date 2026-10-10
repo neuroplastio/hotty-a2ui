@@ -12,8 +12,9 @@ at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 2026-10-09.12): code and its colours; and at KIT-06c (journal
 2026-10-09.13): the diff; at the icons (journal 2026-10-10.1,
 story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; at
-KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; and at
-KIT-22c (journal 2026-10-10.5): the switch.
+KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; at
+KIT-22c (journal 2026-10-10.5): the switch; and at KIT-10c (journal
+2026-10-10.6): the charts.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -28,8 +29,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-10c** — Chart: sparkline, braille line chart and bars, using
-  hotty-go's chart, braille and series.
 - [ ] **KIT-11c** — Suggestions: ghost text and a list under the field.
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
 - [ ] **KIT-13c** — Toast and tooltip (tooltip from
@@ -119,7 +118,10 @@ As of 2026-10-09, from the hotty agent:
   button wait for the clipboard.
 - [ ] **KIT-06h** — Diff: split view in columns, acting on hunks.
 - [ ] **KIT-09h** — Tree: disclosure triangles, guides.
-- [ ] **KIT-10h** — Chart as SVG, with presentation attributes, not CSS.
+- [ ] **KIT-10h** — Chart on a host past the baseline, whose line is
+  already an SVG with presentation attributes (journal 2026-10-10.6): its
+  box at the plot's real size, not a 480-wide guess that thickens a steep
+  stroke on a wide plot; the value under the pointer.
 - [ ] **KIT-11h** — Suggestions in a surface at a higher z.
 - [ ] **KIT-12h** — Selection and copy: the host's own. Blocked: the
   clipboard is parked by the maintainer.
@@ -155,6 +157,20 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-10c** — `HottyChart` and `HottySparkline`, held against
+  ntcharts (journal 2026-10-10.6, awaiting the maintainer's look).
+  - A chart is a line (`kind` line, braille) or bars (eighths of a row,
+    grouped a point), of `values` or `series`, literal or bound, with
+    `labels`, `window`, `min`, `max` and `height`. The agent adds a point
+    by writing the next index (L4).
+  - The axis is the view's, fitted by hotty-go's `series.Scale` with its
+    ticks a free row apart; bars hang below 0, which may fall inside a
+    row. Ticks `┤`, a legend, the series in info, warning, success, error.
+  - A sparkline is a column a value (hotty-go's `blocks`), from 0 or its
+    lowest value; a `window` keeps its width as values arrive.
+  - On a host the line is an SVG path from hotty-go's `chart.Line`, a new
+    point one attribute's delta; bars and sparklines are boxes. Text is
+    a table of the values.
 - [x] **KIT-22c** — `HottySwitch`, an on/off switch for a setting, held
   against huh's Confirm, inline (journal 2026-10-10.5, awaiting the
   maintainer's look).

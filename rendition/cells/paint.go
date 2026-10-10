@@ -189,6 +189,10 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		l.paintList(cv, e, x, y, w)
 	case view.Tree:
 		l.paintTree(cv, e, x, y, w)
+	case view.Chart:
+		l.paintChart(cv, e, x, y, w)
+	case view.Sparkline:
+		l.paintSpark(cv, e, x, y, w)
 	case view.KeyHints:
 		l.paintKeyHints(cv, e, x, y, w)
 	case view.ScrollView:

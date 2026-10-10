@@ -111,6 +111,11 @@ func (l *layout) minimum(e *view.Element) int {
 		n = listMinimum(e)
 	case view.Tree:
 		n = treeMinimum(e)
+	case view.Chart:
+		n = chartMinimum(e)
+	case view.Sparkline:
+		// It shows the last values that fit.
+		n = min(sparkWidth(e), 1)
 	case view.KeyHints:
 		// It cuts what does not fit (shortHints).
 		n = 1
@@ -274,15 +279,16 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 // its fields, or when one is a field and the other a Button, as bubbles
 // sets a form's button apart; before a HottyKeyHints, as bubbles' help
 // sits a row under what it is for; after a HottyScrollView, whose box
-// draws no edge but its scrollbar, or a HottyCode, which draws none, so
-// that what follows does not read as its content; else none, so that a
-// stack of CheckBoxes or of Buttons stays tight.
+// draws no edge but its scrollbar, a HottyCode, which draws none, or a
+// HottyChart, whose labels and legend end it, so that what follows does
+// not read as its content; else none, so that a stack of CheckBoxes or of
+// Buttons stays tight.
 func separator(kids []*view.Element, i int) int {
 	if i == 0 {
 		return 0
 	}
 	a, b := edge(kids[i-1], false), edge(kids[i], true)
-	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView {
+	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView || a.Kind == view.Chart {
 		return 1
 	}
 	if !isControlElement(a) || !isControlElement(b) {

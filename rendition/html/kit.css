@@ -640,3 +640,44 @@ textarea.k-input { min-height: 5.5rem; }
 .k-t-string, .k-t-inserted { color: var(--k-success); }
 .k-t-literal, .k-t-meta { color: var(--k-warning); }
 .k-t-deleted, .k-t-invalid { color: var(--k-error); }
+
+/* HottyChart (profile §2): a grid of the ticks' labels and the plot, and
+   under the plot the points' labels and the legend. The plot is --k-rows
+   terminal rows tall, its axes its left and bottom borders, 2px since a
+   1px straight edge drops out at a fractional scale. A line is an
+   svg a series over the plot, stroked with currentColor, which its class
+   sets: presentation attributes only, which every host's SVG takes
+   (hotty-go's chart). Bars are boxes, from the axis's 0 to their value.
+   The series' colours are cells': info, warning, success, error. */
+.k-chart { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--k-2); row-gap: var(--k-1);
+  font-size: 0.8125rem; line-height: 1rem; font-variant-numeric: tabular-nums; }
+.k-chart-y { position: relative; height: calc(var(--k-rows) * var(--hotty-cell-h, 1.25rem)); color: var(--k-muted); }
+.k-chart-y > span { position: absolute; right: 0; margin-top: -0.5rem; white-space: nowrap; }
+.k-chart-plot { position: relative; height: calc(var(--k-rows) * var(--hotty-cell-h, 1.25rem));
+  border-left: 2px solid var(--k-border); border-bottom: 2px solid var(--k-border); }
+.k-chart-plot > svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+.k-chart-empty { position: absolute; top: 50%; left: 0; right: 0; margin-top: -0.5rem; text-align: center; color: var(--k-muted); }
+.k-chart-bar .k-chart-plot { display: flex; column-gap: var(--k-2); }
+.k-bar-group { flex: 1 1 0; min-width: 0; display: flex; column-gap: 1px; }
+.k-bar { position: relative; flex: 1 1 0; min-width: 0; }
+.k-bar > i { position: absolute; left: 0; right: 0; background: currentColor; }
+.k-chart-x, .k-chart-cats, .k-chart-legend { grid-column: 2; display: flex; color: var(--k-muted); }
+.k-chart-x { justify-content: space-between; white-space: nowrap; }
+.k-chart-cats { column-gap: var(--k-2); }
+.k-chart-cats > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.k-chart-legend { flex-wrap: wrap; column-gap: var(--k-4); }
+.k-key { display: inline-block; vertical-align: middle; width: 1rem; height: 2px; margin-right: 0.5ch; background: currentColor; }
+.k-chart-bar .k-key { width: 0.625rem; height: 0.625rem; }
+.k-series-0 { color: var(--k-info, var(--hotty-ansi-6, var(--k-link))); }
+.k-series-1 { color: var(--k-warning); }
+.k-series-2 { color: var(--k-success); }
+.k-series-3 { color: var(--k-error); }
+
+/* HottySparkline: a column a value, a terminal column wide, from the
+   bottom of a box --k-rows terminal rows tall and --k-n columns wide, in
+   info. The newest comes first in a row that runs right to left, so that
+   it ends at the box's right edge, and a box too narrow loses the oldest. */
+.k-spark { display: inline-flex; flex-direction: row-reverse; align-items: flex-end; overflow: hidden; vertical-align: bottom;
+  width: calc(var(--k-n) * 1ch); max-width: 100%; height: calc(var(--k-rows) * var(--hotty-cell-h, 1.25rem));
+  font-family: var(--k-mono); color: var(--k-info, var(--hotty-ansi-6, var(--k-link))); }
+.k-spark > i { flex: none; width: 1ch; background: currentColor; }

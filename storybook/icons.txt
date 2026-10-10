@@ -28,6 +28,8 @@ notes
 palette
 progress_activity
 rocket_launch
+show_chart
+ssid_chart
 stream
 swap_vert
 sync_problem

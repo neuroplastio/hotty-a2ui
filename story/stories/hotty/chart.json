@@ -1,0 +1,239 @@
+{
+  "name": "Chart",
+  "kind": "component",
+  "component": "HottyChart",
+  "icon": "show_chart",
+  "description": "A line chart of two series bound to the data model, /cpu and /mem, with a time a point in /t and a legend; the slider under it moves the newest CPU value, /cpu/19, as an agent writes a point (an index each; the data model has no append), and the axis grows to fit. Deploys a day as bars, two series side by side. A balance that goes below 0, its bars hanging from the axis's 0. A chart whose values are bound to a path not set yet, which has no data. In cells the lines are braille dots and the bars eighths of a row; on a HOTTY host, a line and boxes.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "chart",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "cpu": [
+            12,
+            18,
+            15,
+            22,
+            30,
+            28,
+            35,
+            31,
+            40,
+            38,
+            45,
+            42,
+            50,
+            47,
+            44,
+            52,
+            58,
+            55,
+            61,
+            57
+          ],
+          "mem": [
+            40,
+            41,
+            41,
+            43,
+            44,
+            44,
+            46,
+            45,
+            47,
+            48,
+            48,
+            49,
+            50,
+            50,
+            51,
+            52,
+            52,
+            53,
+            54,
+            54
+          ],
+          "t": [
+            "10:00",
+            "10:01",
+            "10:02",
+            "10:03",
+            "10:04",
+            "10:05",
+            "10:06",
+            "10:07",
+            "10:08",
+            "10:09",
+            "10:10",
+            "10:11",
+            "10:12",
+            "10:13",
+            "10:14",
+            "10:15",
+            "10:16",
+            "10:17",
+            "10:18",
+            "10:19"
+          ]
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "chart",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "loadTitle",
+              "load",
+              "last",
+              "deploysTitle",
+              "deploys",
+              "balanceTitle",
+              "balance",
+              "emptyTitle",
+              "empty"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Chart"
+          },
+          {
+            "id": "loadTitle",
+            "component": "Text",
+            "text": "**Load**, the last 20 minutes (%)"
+          },
+          {
+            "id": "load",
+            "component": "HottyChart",
+            "series": [
+              {
+                "label": "cpu",
+                "values": {
+                  "@path": "/cpu"
+                }
+              },
+              {
+                "label": "mem",
+                "values": {
+                  "@path": "/mem"
+                }
+              }
+            ],
+            "labels": {
+              "@path": "/t"
+            },
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "last",
+            "component": "Slider",
+            "label": "CPU at 10:19",
+            "value": {
+              "@path": "/cpu/19"
+            },
+            "min": 0,
+            "max": 150,
+            "steps": 30
+          },
+          {
+            "id": "deploysTitle",
+            "component": "Text",
+            "text": "**Deploys** a day"
+          },
+          {
+            "id": "deploys",
+            "component": "HottyChart",
+            "kind": "bar",
+            "series": [
+              {
+                "label": "api",
+                "values": [
+                  12,
+                  19,
+                  7,
+                  23,
+                  16,
+                  4,
+                  9
+                ]
+              },
+              {
+                "label": "web",
+                "values": [
+                  8,
+                  11,
+                  9,
+                  14,
+                  20,
+                  2,
+                  5
+                ]
+              }
+            ],
+            "labels": [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri",
+              "Sat",
+              "Sun"
+            ],
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "balanceTitle",
+            "component": "Text",
+            "text": "**Balance** by month ($)"
+          },
+          {
+            "id": "balance",
+            "component": "HottyChart",
+            "kind": "bar",
+            "values": [
+              420,
+              310,
+              -180,
+              -60,
+              250,
+              530
+            ],
+            "labels": [
+              "Jan",
+              "Feb",
+              "Mar",
+              "Apr",
+              "May",
+              "Jun"
+            ],
+            "height": 6,
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "emptyTitle",
+            "component": "Text",
+            "text": "**Errors**, waiting for the first point"
+          },
+          {
+            "id": "empty",
+            "component": "HottyChart",
+            "values": {
+              "@path": "/errors"
+            },
+            "height": 3,
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          }
+        ]
+      }
+    }
+  ]
+}

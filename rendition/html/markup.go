@@ -229,6 +229,10 @@ func (m *markup) element(e *view.Element) *node {
 		n = richList(e)
 	case view.Tree:
 		n = m.tree(e)
+	case view.Chart:
+		n = chartView(e)
+	case view.Sparkline:
+		n = sparkline(e)
 	case view.KeyHints:
 		n = m.keyHints(e)
 	case view.ScrollView:

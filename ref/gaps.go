@@ -50,6 +50,13 @@ func init() {
 	register("switch", "hotty/switch", "huh: Confirm, inline, as an on/off setting (KIT-22)", func() tea.Model {
 		return screen{newSwitches()}
 	})
+	// Bubble Tea has no charts: ntcharts' (charts.go).
+	register("chart", "hotty/chart", "ntcharts: time series line chart, bar chart (KIT-10)", func() tea.Model {
+		return screen{newCharts()}
+	})
+	register("sparkline", "hotty/sparkline", "ntcharts: sparkline (KIT-10)", func() tea.Model {
+		return screen{newSparklines()}
+	})
 }
 
 // progress: bars at fixed values, each under its label, and one that

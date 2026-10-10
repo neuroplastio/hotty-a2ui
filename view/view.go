@@ -107,6 +107,15 @@ const (
 	// text; Shown, the nodes that show, and Matched; Height and Top as a
 	// Table's, Top in Shown; Placeholder, what shows when it has no node.
 	Tree Kind = "tree"
+	// Chart is series of numbers drawn on an axis (HottyChart): Variant,
+	// line or bar; Series; Labels, a label a point; Height, the plot's
+	// rows; Window, the points its x axis holds (0: as many as it has);
+	// Min, Max and Step, its axis (YAxis).
+	Chart Kind = "chart"
+	// Sparkline is one series of numbers in a few cells, a column each
+	// (HottySparkline): Series, Height, Window as a Chart's; Min and Max,
+	// the values at its bottom and its top.
+	Sparkline Kind = "sparkline"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -248,6 +257,13 @@ type Element struct {
 	// Open adds those the selection is in).
 	Nodes    []TreeNode `json:"nodes,omitempty"`
 	Expanded []string   `json:"expanded,omitempty"`
+
+	// Chart and Sparkline: the series, the points' labels, and the points
+	// the x axis holds (0: as many as there are). Their Height is the
+	// plot's rows; Min, Max and Step its axis.
+	Series []Series `json:"series,omitempty"`
+	Labels []string `json:"labels,omitempty"`
+	Window int      `json:"window,omitempty"`
 
 	// Placeholder: State is the node's (pending, unknown, cyclic).
 	State a2ui.NodeState `json:"state,omitempty"`

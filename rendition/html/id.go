@@ -36,6 +36,9 @@ const (
 	partLines  = "j" // a HottyScrollView's lines, which a log appends to
 	partHunk   = "b" // a HottyDiff's hunks, "b0" to "bN", by their index
 	partNode   = "q" // a HottyTree's nodes, "q0" to "qN", by their index
+	partPlot   = "a" // a HottyChart's plot
+	partSeries = "g" // a HottyChart's lines' svgs, "g0" to "gN", a series each
+	partPath   = "c" // the line in each, "c0" to "cN": a new point is its d's delta
 	surfaceID  = "~s"
 	layerID    = "~o" // the overlay an open Modal or list shows in
 	backdropID = "~d"
