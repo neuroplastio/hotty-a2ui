@@ -28,7 +28,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
 - [ ] **KIT-14c** — Timer and stopwatch, with `onTimeout`.
 - [ ] **KIT-15c** — Paginator.
-- [ ] **KIT-16c** — Confirm, or a story showing it as a pattern of Buttons.
 - [ ] **KIT-19c** — Big text.
 - [ ] **KIT-20c** — QR code.
 - [ ] **KIT-17c** — File picker, with the profile's rule for granted roots
@@ -211,6 +210,14 @@ built on it).
 
 ## Done
 
+- [x] **KIT-16c** — Confirm, as a pattern of two Buttons and HottyShortcuts,
+  not a component (journal 2026-10-10.26, profile §6.24, instruction 24):
+  y and n press, ← → move (`hottyFocus`), Enter picks, the focused one
+  filled; stories `hotty/confirm` and `hotty/confirm-form`. Key hints
+  merge shortcuts of one label and leave out keys a text field takes; on
+  a host a focused Button is filled with the focus colour (every Button).
+  For the maintainer's look: the host's focus fill, a blank row before
+  Buttons after Text (huh has one), a HottyConfirm after all.
 - [x] **KIT-27** — Schema validation is optional (journal 2026-10-10.22):
   `a2ui.Validator`, nil by default, and `a2ui/schema` with A2UI's
   (`schema.NewProcessor`), which the conformance suites and the story
