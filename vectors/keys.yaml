@@ -410,3 +410,33 @@
     - expect: {focused: things, actions: [openThing], context: {thing: noguchi-lamps}}
     - key: Escape
     - expect: {focused: things, data: {/selected: raspberry-pis}}
+
+- name: A HottyTree's keys move its selection and open and close its branches, Enter acts on a leaf, and a filter shows what matches
+  story: hotty/tree
+  steps:
+    - focus: tree
+    - expect: {focused: tree, data: {/selected: rendition/cells/tree.go}}
+    - key: ArrowDown
+    - expect: {data: {/selected: rendition/html, /expanded: [rendition, rendition/cells]}}
+    - key: ArrowRight
+    - expect: {data: {/selected: rendition/html, /expanded: [rendition, rendition/cells, rendition/html]}}
+    - key: l
+    - expect: {data: {/selected: rendition/html/html.go}}
+    - key: h
+    - key: h
+    - expect: {data: {/selected: rendition/html, /expanded: [rendition, rendition/cells]}}
+    - key: G
+    - key: Enter
+    - expect: {focused: tree, actions: [openFile], context: {file: README.md}}
+    - key: Home
+    - key: Enter
+    - expect: {data: {/selected: a2ui, /expanded: [a2ui, rendition, rendition/cells]}, actions: [openFile]}
+    - focus: filter
+    - type: kit
+    - focus: tree
+    - key: ArrowDown
+    - expect: {focused: tree, data: {/selected: rendition}}
+    - key: j
+    - key: j
+    - key: Enter
+    - expect: {focused: tree, actions: [openFile, openFile], context: {file: rendition/html/kit.css}}

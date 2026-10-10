@@ -13,6 +13,7 @@ import (
 	"charm.land/bubbles/v2/progress"
 	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/table"
+	btree "charm.land/bubbles/v2/tree"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/glamour/v2"
@@ -40,6 +41,9 @@ func init() {
 	})
 	register("code", "hotty/code", "glamour: code blocks (KIT-05)", func() tea.Model {
 		return screen{&codeRef{}}
+	})
+	register("tree", "hotty/tree", "bubbles: tree (KIT-09)", func() tea.Model {
+		return screen{newTree()}
 	})
 }
 
@@ -239,6 +243,37 @@ func (m *listRef) Update(msg tea.Msg) tea.Cmd {
 }
 
 func (m *listRef) View() string { return m.l.View() }
+
+// tree: bubbles' tree with the story's files, rendition and cells open,
+// as the story starts. bubbles' tree has one root, so the repository is
+// it; the story's roots are its children.
+type treeRef struct{ t btree.Model }
+
+func newTree() *treeRef {
+	dir := func(name string, kids ...any) *btree.Node { return btree.Root(name).Child(kids...).Close() }
+	cells := dir("cells", "cells.go", "keys.go", "tree.go").Open()
+	root := btree.Root("hotty-a2ui").Child(
+		dir("a2ui", "data.go", "processor.go", "surface.go"),
+		dir("catalog", dir("basic", "catalog.json"), dir("hotty", "catalog.go", "catalog.json")),
+		dir("docs", "profile.md", "storybook.md"),
+		dir("rendition", cells, dir("html", "html.go", "kit.css", "tree.go"), dir("text", "text.go")).Open(),
+		dir("view", "act.go", "tree.go", "view.go"),
+		"go.mod", "Makefile", "README.md")
+	return &treeRef{btree.New(root, 60, 16)}
+}
+
+func (m *treeRef) Init() tea.Cmd { return nil }
+
+func (m *treeRef) Update(msg tea.Msg) tea.Cmd {
+	if ws, ok := msg.(tea.WindowSizeMsg); ok {
+		m.t.SetSize(ws.Width, ws.Height)
+	}
+	var cmd tea.Cmd
+	m.t, cmd = m.t.Update(msg)
+	return cmd
+}
+
+func (m *treeRef) View() string { return m.t.View() }
 
 // viewport: two of bubbles' viewports, the story's build log at its end
 // and its document (the Text's Markdown, as is: bubbles has no renderer

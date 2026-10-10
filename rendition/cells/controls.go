@@ -37,8 +37,8 @@ func isField(e *view.Element) bool {
 
 // isControlElement reports whether an element is a control a Column may
 // set a blank row apart from (separator): a field, a Button that is not a
-// List's row, a Progress, a Spinner, a Table, a HottyList or a
-// HottyScrollView.
+// List's row, a Progress, a Spinner, a Table, a HottyList, a
+// HottyScrollView or a HottyTree.
 func isControlElement(e *view.Element) bool {
 	if isField(e) {
 		return true
@@ -49,7 +49,8 @@ func isControlElement(e *view.Element) bool {
 	case e.Kind == view.Button:
 		return !e.Item
 	}
-	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.ScrollView
+	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.ScrollView ||
+		e.Kind == view.Tree
 }
 
 // hasTitle reports whether an element has a title row of its own: a text
@@ -152,6 +153,8 @@ func controlWidth(e *view.Element) int {
 		return tableWidth(columnWidths(e))
 	case view.RichList:
 		return listWidth(e)
+	case view.Tree:
+		return treeWidth(e)
 	case view.Image:
 		return Width(imageText(e))
 	case view.Icon:
@@ -187,6 +190,8 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 		h = 2 + bodyRows(e)
 	case view.RichList:
 		h = listHeight(e)
+	case view.Tree:
+		h = treeHeight(e)
 	case view.KeyHints:
 		h = len(l.r.keyHints(e, w))
 	case view.Choice:

@@ -10,8 +10,9 @@ fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
 at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 (journal 2026-10-09.11): the scroll view; at KIT-05c (journal
 2026-10-09.12): code and its colours; and at KIT-06c (journal
-2026-10-09.13): the diff; and at the icons (journal 2026-10-10.1,
-story `basic/icons`). Phase 1 is a go
+2026-10-09.13): the diff; at the icons (journal 2026-10-10.1,
+story `basic/icons`); and at KIT-09c (journal 2026-10-10.2): the tree.
+Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
@@ -25,7 +26,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-09c** — Tree: guides, folding, a selected node.
 - [ ] **KIT-22c** — Toggle: `HottySwitch`, an iPhone-like on/off switch
   for a boolean (the maintainer, 2026-10-10).
 - [ ] **KIT-10c** — Chart: sparkline, braille line chart and bars, using
@@ -142,6 +142,20 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-09c** — `HottyTree` in cells, held against bubbles' tree
+  (journal 2026-10-10.2, awaiting the maintainer's look).
+  - Nodes of a label, an icon (a host's), a value and children, literal
+    or bound. `selected` and `expanded` are written where bound;
+    unbound, the folding is the renderer's. The selection's branches
+    show open.
+  - lipgloss's guides, bubbles' `▶`/`▼` folds, a closed branch's count;
+    the list's `│` bar on the selected node, bold in the accent.
+  - ↑ ↓ (k j) move, → (l) opens then goes in, ← (h) closes then goes
+    up; Enter and Space fold a branch or act on a leaf. A click selects,
+    folds a branch, and acts on the selected leaf.
+  - `filter`, bound to a field's path: what matches, the branches to it
+    and what it holds, all open, matches underlined.
+  - On a host a `role=tree` box, indented, with folds and icons.
 - [x] **KIT-06c** — `HottyDiff` in cells, held against OpenTUI's Diff
   (journal 2026-10-09.13, awaiting the maintainer's look).
   - A patch of one or more files, or two texts compared (package

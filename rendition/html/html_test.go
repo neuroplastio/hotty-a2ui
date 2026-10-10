@@ -1059,6 +1059,71 @@ func TestListOnHost(t *testing.T) {
 	}
 }
 
+// A HottyTree on a host is a box, as a HottyList is: a treeitem a node
+// it shows, indented a level a step; a click selects a node, opens or
+// closes a branch and acts on a selected leaf, and the keys the box gives
+// the program move it.
+func TestTreeOnHost(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"sel":"","open":[]}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyTree","catalogId":"`+hottycat.ID+`","selected":{"@path":"/sel"},"expanded":{"@path":"/open"},
+  "items":[{"label":"src","icon":"folder","value":"src","children":[{"label":"main.go","value":"main"}]},{"label":"README.md","value":"readme"}],
+  "onActivate":{"event":{"name":"open","context":{"file":{"@path":"/sel"}}}}}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	node := func(i int) string { return partID("root", partNode+strconv.Itoa(i)) }
+	for _, want := range [][3]string{{"root", "tabindex", "0"}, {"root", "role", "tree"}, {"root", "data-keys", treeKeys},
+		{node(0), "role", "treeitem"}, {node(0), "aria-level", "1"}, {node(0), "aria-expanded", "false"}, {node(2), "style", "--k-level: 0"}} {
+		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
+			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
+		}
+	}
+	if _, ok := s.Element(node(1)); ok {
+		t.Error("main.go shows in a closed branch")
+	}
+	if !strings.Contains(s.HTML(), `<svg viewBox="0 0 24 24"`) {
+		t.Errorf("src has no folder icon:\n%s", s.HTML())
+	}
+	must(t, x.h.Click(r.name, node(0)))
+	x.pump()
+	if got := r.C.S.Data.Value("/sel"); got != "src" || !r.C.St.Keyboard || r.C.St.Focus != "root" {
+		t.Fatalf("a click on src: selected %v, keyboard %v on %q", got, r.C.St.Keyboard, r.C.St.Focus)
+	}
+	if v, _ := s.Attr(node(1), "aria-level"); v != "2" {
+		t.Errorf("src did not open: main.go's level is %q", v)
+	}
+	if v, _ := s.Attr(node(0), "aria-expanded"); v != "true" {
+		t.Errorf("src's aria-expanded is %q", v)
+	}
+	key := func(k string) {
+		t.Helper()
+		if _, ok, err := r.Key(k); !ok || err != nil {
+			t.Fatalf("%s: %v %v", k, ok, err)
+		}
+		x.update(r)
+		x.check(r)
+	}
+	key("ArrowDown")
+	if got := r.C.S.Data.Value("/sel"); got != "main" {
+		t.Errorf("ArrowDown selected %v", got)
+	}
+	key("h")
+	key("h")
+	if _, ok := s.Element(node(1)); ok || r.C.S.Data.Value("/sel") != "src" {
+		t.Errorf("h h: main.go shows, or %v is selected", r.C.S.Data.Value("/sel"))
+	}
+	must(t, x.h.Click(r.name, node(2)))
+	x.pump()
+	must(t, x.h.Click(r.name, node(2)))
+	x.pump()
+	if len(x.actions) != 1 || x.actions[0].Name != "open" || x.actions[0].Context["file"] != "readme" {
+		t.Fatalf("a second click on README.md: %+v", x.actions)
+	}
+}
+
 // A HottyKeyHints on a host is the line cells draws, a kbd for each key;
 // it follows the element the program knows has the keyboard, and ?, which
 // reaches the program from a box, shows the full view's groups as columns.

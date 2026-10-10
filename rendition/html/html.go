@@ -283,6 +283,16 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			}
 			return nil
 		}
+		if e.Kind == view.Tree {
+			// A node is selected by a click, a branch opened or closed by
+			// it, and a leaf acted on by another (view.Controller.ClickNode).
+			c.Focus(id)
+			r.host = keyboard{true, id}
+			if i, err := strconv.Atoi(strings.TrimPrefix(part, partNode)); err == nil && strings.HasPrefix(part, partNode) {
+				return c.ClickNode(id, i)
+			}
+			return nil
+		}
 		if e.Kind == view.Slider && (part == partLess || part == partMore) {
 			n := 1
 			if part == partLess {
@@ -304,11 +314,15 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		}
 		return c.Activate(id)
 	case hotty.EventInput, hotty.EventChange:
-		// A field the host commits as it gives the keyboard up keeps its
-		// value, not the focus: that is in the other rendition now.
-		r.host.focus = id
-		if !r.Away {
-			c.St.Focus = id
+		// A text field's change is its commit, which comes as the host
+		// gives its keyboard up: to where the program moved it, or to the
+		// other rendition. So only typing, or a control's change, which
+		// comes at once, says where the keyboard is.
+		if ev.Kind == hotty.EventInput || e.Kind != view.TextField && e.Kind != view.DateTime {
+			r.host.focus = id
+			if !r.Away {
+				c.St.Focus = id
+			}
 		}
 		switch e.Kind {
 		case view.CheckBox:
@@ -455,6 +469,13 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	// So is a HottyDiff, whose keys (diffKeys) move its selection.
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.DiffView {
 		if ok, err := c.DiffKey(e.ID, key); ok {
+			return nil, true, err
+		}
+	}
+	// And a HottyTree, whose keys (treeKeys) move its selection and open
+	// and close its branches.
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Tree {
+		if ok, err := c.TreeKey(e.ID, key); ok {
 			return nil, true, err
 		}
 	}

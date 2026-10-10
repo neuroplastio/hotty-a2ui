@@ -99,6 +99,9 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	if e.Kind == view.RichList {
 		return r.c.ListKey(e.ID, name)
 	}
+	if e.Kind == view.Tree {
+		return r.c.TreeKey(e.ID, name)
+	}
 	if e.Kind == view.Slider {
 		switch name {
 		case "ArrowLeft", "ArrowDown":

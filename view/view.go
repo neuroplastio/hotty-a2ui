@@ -98,6 +98,12 @@ const (
 	// Variant, unified or split; Numbers, whether line numbers show; Wrap;
 	// RowIDs, its hunks' ids, and Value, the selected one's, as a Table's.
 	DiffView Kind = "diff"
+	// Tree is nodes in branches that fold (HottyTree): Nodes, in
+	// pre-order; RowIDs, each node's id; Value, the selected one's;
+	// Expanded, the ids of the branches unfolded; Query, its filter's
+	// text; Shown, the nodes that show, and Matched; Height and Top as a
+	// Table's, Top in Shown; Placeholder, what shows when it has no node.
+	Tree Kind = "tree"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -230,6 +236,11 @@ type Element struct {
 	// DiffView: its files of hunks (shared: not to be changed).
 	Diff *diff.Diff `json:"diff,omitempty"`
 
+	// Tree: its nodes, and the ids of the branches unfolded (TreeNode
+	// Open adds those the selection is in).
+	Nodes    []TreeNode `json:"nodes,omitempty"`
+	Expanded []string   `json:"expanded,omitempty"`
+
 	// Placeholder: State is the node's (pending, unknown, cyclic).
 	State a2ui.NodeState `json:"state,omitempty"`
 
@@ -275,7 +286,7 @@ func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree:
 		return true
 	case DiffView:
 		return len(e.RowIDs) > 0

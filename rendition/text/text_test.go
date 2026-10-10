@@ -73,6 +73,25 @@ func TestTable(t *testing.T) {
 	}
 }
 
+// TestTree: a tree reads as every node it shows, whatever its height, as
+// cells draws them, "> " on the selected one.
+func TestTree(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyTree","catalogId":"` + hotty.ID + `","selected":"b","height":1,"items":[
+	  {"label":"src","children":[{"label":"a.go"},{"label":"pkg","children":[{"label":"b.go","value":"b"}]}]},
+	  {"label":"docs","children":[{"label":"x.md"}]},{"label":"README.md"}]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	want := "  ▼ src\n  ├── a.go\n  └── ▼ pkg\n>     └── b.go\n  ▶ docs 1\n    README.md\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
 // TestScrollView: a scroll view reads as all of its content, whatever its
 // height: its lines, or its child.
 func TestScrollView(t *testing.T) {

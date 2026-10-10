@@ -109,6 +109,8 @@ func (l *layout) minimum(e *view.Element) int {
 		n = tableMinimum(e)
 	case view.RichList:
 		n = listMinimum(e)
+	case view.Tree:
+		n = treeMinimum(e)
 	case view.KeyHints:
 		// It cuts what does not fit (shortHints).
 		n = 1

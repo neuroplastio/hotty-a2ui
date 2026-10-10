@@ -96,10 +96,11 @@ so that an error comes and goes as a text delta.
 | HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track sweeps across it with the clock (§3.4): the element's `--k-at` is where it starts, so that a tick is one attribute's delta |
 | HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h |
 | HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`. Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type and the item under the pointer are vault KIT-04h |
-| HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h |
+| HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a HottyDiff's, a HottyTree's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h |
 | HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there. Its `data-keys` binds the keys bubbles' viewport scrolls with to the host's scroll actions (SPEC.md §10.2, *Scrolling keys*), so that they scroll it as in cells (§3.7): j and k, f, b, Space and Shift+Space, u and d (Control+u, Control+d), g and G, and h and l while its lines are cut. A Button in it keeps Space and a field in it types the letters, since a key an element uses stays its own and a field leaves scroll actions out. Following the tail on a host is vault KIT-07h |
 | HottyCode | `div` in the mono face, filled with `--k-tonal` as a Text's code block is, a flex row (`k-cl`) for each line: its number, right-aligned as wide as the widest (`--k-ln`), in `--k-muted` and `aria-hidden`; its mark's sign, when the code has marks; then its code (`k-src`), a span for each token that is not plain, of class `k-t-` and its kind, which the sheet colours with the roles cells uses (§3.4). A marked row has `k-m-` and its kind: a highlighted one is filled with `--k-selection`, the others with a sixth of their role's colour (`color-mix`). Lines wrap, `pre-wrap`; with `wrap` false they do not, and the box scrolls sideways, which the host does itself (SPEC.md §5.3), every row as wide as the widest so that a tint reaches the end. A Text's fenced code block is goldmark's `pre` and `code`, its tokens in the same spans |
 | HottyDiff | `div` in the mono face, filled with `--k-tonal` as a HottyCode's; with hunks, `tabindex=0 role=listbox`, whose `data-keys` gives the program ArrowUp, ArrowDown, Home, End, k, j, g and G (a HottyScrollView around it binds the letters to scroll actions, SPEC.md §10.2). For each file with a name (or of several), a row (`k-diff-file`): its name, bold, then what the change adds and removes, `+N` in `--k-success` and `-M` in `--k-error`, or new, deleted or binary. A run of unchanged lines left out is a muted row, `⋯ N unchanged lines` (`k-fold`). Each hunk is a `div tabindex=-1 role=option data-on=click` (`k-hunk`), whose id is the diff's, `~b` and the hunk's index: its header in info and its section muted (`k-hh`), then its lines. Unified, a line is a flex row (`k-dl`): its old number and its new (`--k-lo` and `--k-ln` wide, `aria-hidden`), its sign, then its code, its tokens in a HottyCode's spans. Split, the hunk is a grid of two equal columns, the old side and the new (`k-ds`), paired as cells pairs them, a rule between them and the header across both. A removed line (`k-d-del`) is filled with a sixth of `--k-error`, an added one (`k-d-add`) with a sixth of `--k-success`, and its changed words (`k-w`) more. The selected hunk (`k-sel`, `aria-selected`) has a rail on its left and its header reversed, muted, and in `--k-focus` while the diff has the keyboard (`k-on`). It then has the host's focus itself, so that the host scrolls it into view (SPEC.md §5.3) as cells keeps it in sight. A split diff stays split at any width, its sides wrapping: the markup does not know the width, and a host has no container queries |
+| HottyTree | `div tabindex=0 role=tree`, as a HottyList's box, holding the nodes the view shows (the same rows as cells, §3.4), each a `div role=treeitem data-on=click` whose id is the tree's and `~q` and the node's index, with `aria-level`, `aria-expanded` on a branch and `aria-selected`. A row is a flex row indented `--k-5` a level (`--k-level`): its fold (`k-node-fold`, a column wide), `▸` or `▾` in `--k-muted` before a branch and blank before a leaf, so that a level's labels line up; its icon, as an Icon draws it, or a blank one as wide where another node has an icon; then its label, the filter's matches in `span.k-match`. The selected node is marked as a HottyList's selected item: filled with `--k-tonal`, a 3px bar at its start in `--k-border`, and in `--k-focus` with its text while the tree has the keyboard. Its `data-keys` are a HottyList's; its letters and Enter reach the program anyway, a focused box using no keys. With a `height`, hidden rows keep it while fewer nodes show. Guides are cells' (§3.4): a host has the room to indent instead. Its empty text shows when no node does |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 
 **Updates are deltas.** The document goes once. After it, the renderer
@@ -152,7 +153,11 @@ that first.
 when they differ: `a=focus` at the element `autofocus` (§6.4) or `hottyFocus`
 (§6.3) names, `a=blur` for `hottyBlur`. Within the surface, Tab moves focus
 where the program does not see it (SPEC.md §9), so the renderer knows the
-element last clicked or edited, not always the one focused.
+element last clicked or edited, not always the one focused. Edited means
+typed in (`input`), or a control's `change`, which comes at once: a text
+field's `change` is its commit as the host's focus leaves it, often for
+where the renderer just moved the keyboard, so it says nothing about where
+the keyboard is.
 
 ## 3. Cells
 
@@ -233,6 +238,7 @@ Natural widths:
 | HottyScrollView | its widest line unwrapped (whether it wraps them or not), or its child's natural width, plus 2 for the scrollbar |
 | HottyCode | its gutter (§3.4) and its widest line |
 | HottyDiff | 1 for the rail, then its gutter (§3.4) and its widest line; split, twice a side's gutter and that line, and 3; or a file's row, a hunk's header or a fold, if one is wider |
+| HottyTree | 2 for the bar, plus its widest node, whether it shows or not, so that it keeps its width as branches open and close: its guides (4 a level below the roots), its fold (2), its label and, on a branch, a space and its count; or its empty text |
 | Image, Icon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
@@ -258,6 +264,7 @@ Minimums:
 - A HottyCode's is its gutter and 8 columns of code, or its widest line
   when that is narrower.
 - A HottyDiff's is its rail, its unified gutter and 8 columns of code.
+- A HottyTree's is its bar, a level of guides and 4.
 - Any other control's is its natural width.
 - For containers, a Row adds its children's minimums and the columns
   between them; a Column, a HottyForm, a Modal and a Tabs take their widest
@@ -344,6 +351,7 @@ How the containers lay their children out:
 | HottyScrollView | a box `height` rows tall, as bubbles' viewport: its content, 2 columns narrower than the box, then a blank column and the scrollbar down the last. Its lines are a row each, cut at the box and scrolled sideways six columns at a time, or with `wrap` broken between characters into the rows they take; a child is laid out at the content's width, and shows through the box at the rows scrolled to: what it hides takes no click, and the element with the keyboard inside it is scrolled into sight. It starts at its top, or with `follow` at its end, where it stays as lines arrive until the user scrolls up, and follows again once back at the end. The scrollbar, while the content is taller than the box, is a track of `│` in `border` faint and on it a thumb of `┃` as long as the share that shows (at least a row), where it shows, in `muted`, and in `accent` while the box has the keyboard. bubbles' viewport draws no scrollbar: without one, a box with no edge gives no sign that it scrolls |
 | HottyCode | a row for each line, or with `wrap` (the default) as many as the line takes, broken by cluster under the code: first its number, right-aligned as wide as the widest, in `muted`, and a space, when `lineNumbers` is on; then, when the code has marks, the line's sign and a space (`▎` in `info` for highlight, `+` in `success` for added, `-` and `✗` in `error` for removed and error, `!` in `warning`); then the code. Continuation rows leave the gutter blank. Without `wrap` a long line is cut with `…`. Each token is coloured by its kind (package `highlight`): keywords `info` and bold, types and builtins `info`, functions' names bold, strings `success`, numbers and constants `warning`, as are preprocessor lines, decorators and attributes, comments `muted` and italic, a diff's added and removed lines `success` and `error`, its hunk headers `info` and bold, and the rest `fg`. Not `accent`, which marks only focus (§3.6). A marked line's rows are tinted across the width (§3.6): toward `selection` itself for highlight, a sixth of the way toward `success`, `error` or `warning` for the others. As OpenTUI's Code and LineNumbers; glamour, the reference shot's, draws code blocks with neither numbers nor marks |
 | HottyDiff | a column for the rail, then rows. For each file: a blank row before all but the first; its name when it has one (or the diff has several files), bold, then `+N` in `success` and `-M` in `error`, or `new`, `deleted` or `binary`. For each hunk: `⋯ N unchanged lines` in `muted` when it leaves lines out before it (and after the last, where the diff knows, from two texts); its header in `info` and its section in `muted`; then its lines. Unified, a line is its old number and its new (blank on the side that does not have it), right-aligned as wide as the widest, in `muted`, each and a space, when `lineNumbers` is on (the default); its sign (`-` in `error`, `+` in `success`) and a space; then its code, its tokens coloured as a HottyCode's, wrapped under the code or, without `wrap`, cut with `…`. Split, where each side has room for 16 columns of code (unified where not): the old side, ` │ ` in `border`, then the new, each a number, a sign and code; a context line on both, and in a run of removed lines followed by added ones, each removed line beside the added line that replaces it; a row is as tall as its taller side, and a side with no line is blank. A removed line's rows are tinted a sixth of the way toward `error`, an added one's toward `success`, its changed words a third (§3.6). The selected hunk's rows have `▎` in the rail and its header is reversed, both in `muted`, in `accent` while the diff has the keyboard; a scroll view around it keeps that hunk in sight. With no hunks and no name, `No changes` in `muted`. As OpenTUI's Diff, which has no names, folds, word marks or selection |
+| HottyTree | as lipgloss's tree draws one, a row a node, every row 2 columns in: for each level below the roots, its guides in `border`, `│   ` down past an ancestor a sibling follows (else four blanks), then `├── ` before a node a sibling follows and `└── ` before the last; a branch's fold, `▶ ` closed or `▼ ` open, in `muted`, as bubbles' tree has it, or a root leaf's two blank columns, so that the roots line up; its label, the filter's matches underlined, cut with `…` when it does not fit; and a closed branch's count, ` 3`, in `muted`. A node's siblings are those that show, so that while a filter applies a line ends at its last match. The selected node's first two columns are `│ `: in `accent` with its label, bold, while the tree has the keyboard, and in `muted` otherwise. With a `height`, that many rows show, moved as little as brings the selected node into view. A node's icon is a host's: few have a glyph a column wide, and the guides and folds say what a tree is. With no node shown, its empty text in `muted`. |
 | HottySpinner | the frame of its set the clock is at, in `info`, then the label after the widest frame's columns and a space, so that it stays put. One that is not active leaves the frame's columns blank. |
 | Placeholder | `…` in `muted` while pending; `! Type` in `warning` when the type is unknown or the component contains itself |
 | an error | `✗ message` in `error` under its control, wrapped, its continuation lines indented 2 |
@@ -535,6 +543,16 @@ In the output:
   move, Enter applies it (and drops it when it leaves nothing), and Escape
   drops it. Escape also drops a filter that applies. Each change to the
   filter selects the first item it leaves, as bubbles' does.
+- **A HottyTree** moves its selection by ArrowUp and ArrowDown (k and j)
+  to the node above or below that shows, by PageUp and PageDown its
+  height's rows, and by Home and End (g and G) to its first node and its
+  last; with none selected, each selects the first. ArrowRight (l) opens
+  a closed branch, else goes to its first child; ArrowLeft (h) closes an
+  open branch, else goes to the parent. Enter and Space open or close the
+  selected branch, and act on the selected leaf (§6.14). While a filter
+  applies, every branch shows open and stays so. On a host its box gives
+  those keys to the program (§2), so the renderer moves it there too
+  (`view.Controller.TreeKey`).
 - **A HottyScrollView** scrolls as bubbles' viewport does: ArrowUp and
   ArrowDown (k and j) a row; PageUp (b) and PageDown (f, Space) a page;
   u and d (Control+u, Control+d) half a page; Home and End (g and G) to
@@ -572,6 +590,9 @@ In the output:
     row acts on it (§6.8); a click on its header only focuses it; so too
     a HottyList's items (§6.9), and its title and status line, and a
     HottyDiff's hunks (§6.13), its files' names and folds;
+  - a click on a HottyTree's node selects it, and opens or closes it
+    when it is a branch (while no filter applies), or acts on it when it
+    is the selected leaf (§6.14, `view.Controller.ClickNode`);
   - a click on a Slider's track sets the value at that column:
     min + (max − min) × column / (track − 1), stepped and clamped, and
     the value follows the pointer while the button stays down;
@@ -628,6 +649,10 @@ reference is `rendition/text`.
   leaves, whatever its `height`: its label, ` — ` and its description,
   after `> ` for the selected item and two spaces for the others; its
   empty text when it has no items.
+- A HottyTree is every node it shows, whatever its `height`, drawn as
+  cells draws it (its guides, folds and closed branches' counts), after
+  `> ` for the selected node and two spaces for the others; its empty
+  text when it shows none.
 - A HottyScrollView is all of its content, whatever its `height`: its
   lines, a line each, or its child.
 - A HottyCode is its code as it is, each line after its number when the
@@ -869,7 +894,7 @@ Which view shows is the renderer's state, shared by the surface's
 renditions. It takes no focus and sends nothing.
 
 On a host, the component's keys are those of a HottyTable, a HottyList,
-a HottyDiff, a Slider or a select, whose keys the program works; the host moves focus
+a HottyDiff, a HottyTree, a Slider or a select, whose keys the program works; the host moves focus
 among the others without telling the renderer (§2, the keyboard). A
 HottyScrollView's keys are the host's own there, so it has none.
 
@@ -952,6 +977,42 @@ click on the selected hunk (§3.7). Bind `selected` to a path that the
 action's context reads to stage, revert or comment on that hunk. Its
 keys are §3.7's. A big patch belongs in props rather than the data
 model, where every change to it would be sent again.
+
+### 6.14 HottyTree
+
+Nodes in a hierarchy, one selected at a time, as a file tree or an
+outline shows them: lipgloss's tree in cells (§3.4), a host's tree view
+on a host (§2). `items` are objects with a `label`, an optional `icon`
+(an Icon's name, which a host draws), a `value` and `children`, more such
+objects; literal, or best bound to the data model, so that the agent
+changes them with `updateDataModel`. A node is identified by its `value`,
+as text, or by its place without one (`0.2.1`, its index at each level
+from the roots down). `selected` (a DynamicString) is the selected
+node's, as a HottyList's is (§6.9).
+
+`expanded` is the ids of the open branches. Bound, the renderer writes it
+as the user opens and closes them, so that the agent sees what is open
+and opens a branch by writing it; a literal is only where the tree
+starts, and the renderer keeps the folding in its own state from then
+on. The branches the selected node is in show open whatever `expanded`
+says, so that the agent reveals a node by selecting it; moving the
+selection then writes them into `expanded`, so that they stay open.
+Closing the branch the selection is in selects the branch.
+
+`filter` (a DynamicString) narrows the tree; bind it to a TextField's
+value. A node shows when its label holds the filter's characters in
+order, ignoring case (sahilm/fuzzy, as a HottyList's filter), when one
+inside it does, so that the branches leading to a match show, or when it
+is inside one that does; every branch among them shows open, the nodes
+keep their order, and the characters matched are marked. Unlike a
+HottyList's, the filter is the data model's, as the field holding it is.
+
+Enter, or a click on the selected leaf, runs `onActivate`, whose context
+reads the selection from where `selected` is bound; on a branch, Enter
+opens or closes it. Its keys are §3.7's. `height` is the rows it shows,
+moved as the selection moves (§3.4); without one, it is as tall as the
+nodes that show. `emptyText` shows when none does (`Nothing here.` by
+default).
 
 ## 7. Fallbacks
 

@@ -37,6 +37,9 @@ type State struct {
 	Tail map[string]bool
 	// Query is each HottyList's filter, by its id.
 	Query map[string]Query
+	// Open are the branches unfolded in each HottyTree whose expanded is
+	// not bound, by its id: what the user made them.
+	Open map[string][]string
 	// FullHints: the surface's HottyKeyHints show their full view (?).
 	FullHints bool
 }
@@ -44,7 +47,7 @@ type State struct {
 // NewState is a surface's state before the user does anything.
 func NewState() *State {
 	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}, Query: map[string]Query{},
-		Left: map[string]int{}, Tail: map[string]bool{}}
+		Left: map[string]int{}, Tail: map[string]bool{}, Open: map[string][]string{}}
 }
 
 // Mapper makes an element of a node, children included; nil when the

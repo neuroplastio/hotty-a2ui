@@ -125,6 +125,8 @@ func (c *Controller) Activate(id string) error {
 		if c.S.Env().OpenURL != nil && e.URL != "" {
 			err = c.S.Env().OpenURL(e.URL)
 		}
+	case Tree:
+		err = c.activateTree(e)
 	case Table, RichList, DiffView:
 		// Its selected row (a HottyDiff's hunk) is acted on: onActivate,
 		// whose context reads the row from where selected is bound (an
@@ -261,11 +263,28 @@ func (c *Controller) TableKey(id, key string) (ok bool, err error) {
 // Table's, a HottyList's and a HottyDiff's value is its selected
 // property; any other's, value.
 func (c *Controller) set(e *Element, v any) error {
+	prop := "value"
+	if e.Kind == Table || e.Kind == RichList || e.Kind == DiffView || e.Kind == Tree {
+		prop = "selected"
+	}
+	return c.setProp(e, prop, v)
+}
+
+// setProp is set for a prop of the element's: a HottyTree's expanded,
+// besides its selected. Unbound, a tree's expanded stays in State.Open;
+// an expanded that would not change is not written.
+func (c *Controller) setProp(e *Element, prop string, v any) error {
 	c.St.Touched[e.ID] = true
 	n := c.V.Node(e.ID)
-	prop := "value"
-	if e.Kind == Table || e.Kind == RichList || e.Kind == DiffView {
-		prop = "selected"
+	if prop == "expanded" {
+		l, _ := v.([]string)
+		if slices.Equal(l, e.Expanded) {
+			return nil
+		}
+		if bd, ok := n.Props[prop].(a2ui.Bound); !ok || !bd.Writable() {
+			c.St.Open[e.ID] = l
+			return nil
+		}
 	}
 	if l, ok := v.([]string); ok {
 		a := make([]any, len(l))

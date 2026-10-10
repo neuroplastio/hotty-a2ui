@@ -127,6 +127,8 @@ func element(e *view.Element) []string {
 		return table(e)
 	case view.RichList:
 		return richList(e)
+	case view.Tree:
+		return tree(e)
 	case view.KeyHints:
 		// A pipe takes no keys.
 		return nil
@@ -272,6 +274,44 @@ func richList(e *view.Element) []string {
 		out = append(out, s)
 	}
 	if len(e.Items) == 0 {
+		out = append(out, "  "+e.Placeholder)
+	}
+	return out
+}
+
+// tree is a HottyTree as text: every node it shows, whatever its height,
+// drawn as cells draws it (guides, a fold before a branch, a closed one's
+// count), "> " marking the selected one; its empty text when it shows
+// none.
+func tree(e *view.Element) []string {
+	var out []string
+	sel := e.SelectedRow()
+	for _, i := range e.Shown {
+		n := e.Nodes[i]
+		s := "  "
+		if i == sel {
+			s = "> "
+		}
+		if n.Level > 0 {
+			through, last := e.Guides(i)
+			for _, on := range through {
+				s += map[bool]string{true: "│   ", false: "    "}[on]
+			}
+			s += map[bool]string{true: "└── ", false: "├── "}[last]
+		}
+		switch {
+		case n.Branch() && (n.Open || e.Filtering()):
+			s += "▼ " + n.Label
+		case n.Branch():
+			s += "▶ " + n.Label + " " + strconv.Itoa(n.Kids)
+		case n.Level == 0:
+			s += "  " + n.Label
+		default:
+			s += n.Label
+		}
+		out = append(out, s)
+	}
+	if len(e.Shown) == 0 {
 		out = append(out, "  "+e.Placeholder)
 	}
 	return out
