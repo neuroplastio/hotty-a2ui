@@ -184,7 +184,7 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 	h := 1
 	switch e.Kind {
 	case view.TextField, view.DateTime:
-		h = fieldRows(e)
+		h = fieldRows(e) + l.r.suggestRows(e)
 		if e.Label != "" {
 			h++
 		}

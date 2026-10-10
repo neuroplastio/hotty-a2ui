@@ -33,6 +33,9 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	if c.St.Keyboard {
 		switch e := c.V.Find(c.St.Focus); {
 		case isTextControl(e):
+			if ok, err := r.suggestKey(e, key); ok {
+				return true, err
+			}
 			if ok, err := r.editKey(e, key); ok {
 				return true, err
 			}

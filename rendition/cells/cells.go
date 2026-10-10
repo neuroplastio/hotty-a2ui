@@ -296,6 +296,11 @@ func (r *Rendition) click(col, row int) error {
 	c.Focus(e.ID)
 	switch {
 	case isTextControl(e):
+		if h.opt >= 0 {
+			// A row of its suggestions: picked, the caret after it.
+			delete(r.cursor, e.ID)
+			return c.PickSuggestion(e.ID, h.opt)
+		}
 		if a := h.field; a != nil && row >= a.y {
 			// The caret goes where the press is, and a drag from there
 			// selects (Drag), as in a GUI's field.

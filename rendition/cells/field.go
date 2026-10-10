@@ -199,6 +199,10 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 		}
 		cv.write(vx, row, vw, fit(line(hint, style{role: Muted, attr: Faint}), vw))
 	}
+	if focused && !long {
+		// A suggestion's rest after the value, for Tab or → (profile §6.22).
+		paintGhost(cv, e, area, vw, colOf(lines[0], len(lines[0]), obscured))
+	}
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff
 		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows && r.caretOn(e.ID) {
@@ -208,5 +212,6 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 		}
 	}
 	r.hits = append(r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + rows, id: e.ID, opt: -1, field: area})
-	l.paintError(cv, e, x, row+rows, w)
+	n := l.paintSuggestions(cv, e, x, row+rows, w)
+	l.paintError(cv, e, x, row+rows+n, w)
 }
