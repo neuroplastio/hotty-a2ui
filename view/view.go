@@ -49,8 +49,18 @@ const (
 	// Option is one of a Choice's options as a child: Label, Active when
 	// it is picked.
 	Option Kind = "option"
-	// Slider edits a number from Min to Max.
+	// Slider edits a number from Min to Max; Fill says which side of its
+	// knob is filled (io_neuroplast_hotty.fill).
 	Slider Kind = "slider"
+	// RangeSlider edits a range of numbers from Min to Max
+	// (HottyRangeSlider): Label, Step and Error as a Slider's, Disabled
+	// while it cannot be moved; its two Knob children, the start's and the
+	// end's (Range).
+	RangeSlider Kind = "rangeslider"
+	// Knob is one of a RangeSlider's two knobs, each a Tab stop: Value, its
+	// number; Selected, 0 for the start's and 1 for the end's; Label, its
+	// name for a screen reader; Disabled as its RangeSlider.
+	Knob Kind = "knob"
 	// DateTime edits a date, a time, or both (ISO 8601).
 	DateTime Kind = "datetime"
 	// Tabs shows its Tab children as a bar, and after them the content
@@ -189,10 +199,14 @@ type Element struct {
 	Options  []ChoiceOption `json:"options,omitempty"`
 	Multiple bool           `json:"multiple,omitempty"`
 	Filter   bool           `json:"filter,omitempty"`
-	// Slider: the range, and the step (0: any value). Progress: Max.
+	// Slider and RangeSlider: the range, and the step (0: any value).
+	// Progress: Max.
 	Min  float64 `json:"min,omitempty"`
 	Max  float64 `json:"max,omitempty"`
 	Step float64 `json:"step,omitempty"`
+	// Fill: a Slider's filled side, "end" from its knob to Max
+	// (io_neuroplast_hotty.fill); "" from Min to its knob.
+	Fill string `json:"fill,omitempty"`
 	// DateTime: which parts it edits, and its bounds (DateHint).
 	Date   bool   `json:"date,omitempty"`
 	Time   bool   `json:"time,omitempty"`
@@ -308,10 +322,11 @@ type A11y struct {
 
 // Focusable reports whether the element takes the keyboard (SPEC §10.1):
 // a control, a Tabs' title, a Choice's option, a link, a Modal whose
-// trigger is not a control. A disabled Button or Switch does not.
+// trigger is not a control, a RangeSlider's knob. A disabled Button,
+// Switch or knob does not.
 func (e *Element) Focusable() bool {
 	switch e.Kind {
-	case Button, Switch:
+	case Button, Switch, Knob:
 		return !e.Disabled
 	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree:
 		return true

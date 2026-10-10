@@ -38,6 +38,11 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"w","component":"HottySwitch","value":true,"disabled":{"@path":"/airplane"},"checks":[{"condition":{"@path":"/wifi"},"message":"On, please"}]}`, true},
 		{`{"id":"w","component":"HottySwitch","label":"Wi-Fi"}`, false},
 		{`{"id":"w","component":"HottySwitch","value":"yes"}`, false},
+		{`{"id":"p","component":"HottyRangeSlider","label":"Price","start":{"@path":"/price/start"},"end":{"@path":"/price/end"},"max":100,"steps":20}`, true},
+		{`{"id":"p","component":"HottyRangeSlider","start":10,"end":90,"min":0,"max":100,"disabled":{"@path":"/off"},"checks":[{"condition":{"@path":"/ok"},"message":"Pick a range"}]}`, true},
+		{`{"id":"p","component":"HottyRangeSlider","start":10,"max":100}`, false},
+		{`{"id":"p","component":"HottyRangeSlider","start":10,"end":90}`, false},
+		{`{"id":"p","component":"HottyRangeSlider","start":10,"end":90,"max":100,"steps":0}`, false},
 	} {
 		var d map[string]any
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {

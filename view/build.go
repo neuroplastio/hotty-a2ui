@@ -275,6 +275,16 @@ func keys(n *a2ui.Node) string {
 	return s
 }
 
+// fill reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.fill on a Slider: "end" fills it from its knob to
+// its max; anything else, "start" the default, from its min to its knob.
+func fill(n *a2ui.Node) string {
+	if hottyExt(n)["fill"] == "end" {
+		return "end"
+	}
+	return ""
+}
+
 // iconNames reads the hotty extension metadata.extensions
 // .io_neuroplast_hotty.icons: a Tabs' icons, a name a tab in order
 // (byIndex), or a ChoicePicker's, a name an option's value; "" where it

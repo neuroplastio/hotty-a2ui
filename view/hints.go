@@ -80,10 +80,10 @@ func (c *Controller) KeyHints(keys string, host bool) (short []Hint, full [][]Hi
 
 // programKeys reports whether a host leaves an element's keys to the
 // program, which works it: a box (a Table, a HottyList), a Slider, a
-// select (rendition/html's Key).
+// HottyRangeSlider's knob, a select (rendition/html's Key).
 func programKeys(e *Element) bool {
 	switch e.Kind {
-	case Table, RichList, Slider, DiffView, Tree:
+	case Table, RichList, Slider, Knob, DiffView, Tree:
 		return true
 	case Choice:
 		return len(e.Children) == 0
@@ -173,7 +173,7 @@ func (c *Controller) elementHints(e *Element, keys string) (short []Hint, groups
 		short = []Hint{{"space", "pick"}}
 	case Choice:
 		short = []Hint{{"enter", "open"}}
-	case Slider:
+	case Slider, Knob:
 		short = []Hint{{"←/→", "adjust"}}
 		return short, [][]Hint{append(slices.Clone(short), Hint{"home/end", "min/max"})}
 	case Button:

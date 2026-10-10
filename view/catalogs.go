@@ -94,7 +94,7 @@ func init() {
 			if math.IsNaN(v) {
 				v = lo
 			}
-			e := &Element{Kind: Slider, Label: b.String(n, "label"), Min: lo, Max: hi, Value: v, Error: b.FieldError(n)}
+			e := &Element{Kind: Slider, Label: b.String(n, "label"), Min: lo, Max: hi, Value: v, Fill: fill(n), Error: b.FieldError(n)}
 			if steps := a2ui.ToNumber(b.Raw(n, "steps")); steps >= 1 && hi > lo {
 				e.Step = (hi - lo) / math.Floor(steps)
 			}
@@ -144,6 +144,7 @@ func init() {
 	Register(hotty.ID, "HottyDiff", mapDiff)
 	Register(hotty.ID, "HottyTree", mapTree)
 	Register(hotty.ID, "HottySwitch", mapSwitch)
+	Register(hotty.ID, "HottyRangeSlider", mapRange)
 	Register(hotty.ID, "HottyChart", mapChart)
 	Register(hotty.ID, "HottySparkline", mapSparkline)
 	Register(hotty.ID, "HottyIcon", func(b *Builder, n *a2ui.Node) *Element {

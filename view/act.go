@@ -165,14 +165,28 @@ func (c *Controller) CloseModal() {
 
 // SetValue is the user's edit of a control: a TextField's or a
 // DateTime's string, a CheckBox's or a Switch's bool, a Slider's number
-// (clamped to its range, on its steps), a Choice's value or values. A
-// bound value goes to the data model; another stays the renderer's.
+// (clamped to its range, on its steps), a RangeSlider's knob's (as a
+// Slider's, and stopped where it meets the other knob), a Choice's value
+// or values. A bound value goes to the data model; another stays the
+// renderer's.
 func (c *Controller) SetValue(id string, v any) error {
 	e := c.V.Find(id)
 	if e == nil {
 		return nil
 	}
 	switch e.Kind {
+	case Knob:
+		f := a2ui.ToNumber(v)
+		if math.IsNaN(f) {
+			return nil
+		}
+		r, i := c.rangeOf(id)
+		if r == nil || r.Disabled {
+			return nil
+		}
+		err := c.setKnob(r, i, f)
+		c.Rebuild()
+		return err
 	case Slider:
 		f := a2ui.ToNumber(v)
 		if math.IsNaN(f) {
@@ -189,22 +203,27 @@ func (c *Controller) SetValue(id string, v any) error {
 	return err
 }
 
-// StepSlider moves a Slider by n of its steps (back when n < 0), or to an
-// end: "Home" its Min, "End" its Max. A Slider with no step moves by a
-// twentieth of its range. It does nothing to any other element.
+// StepSlider moves a Slider, or a RangeSlider's knob, by n of its steps
+// (back when n < 0), or to an end: "Home" its Min, "End" its Max. A Slider
+// with no step moves by a twentieth of its range; a knob stops where it
+// meets the other. It does nothing to any other element.
 func (c *Controller) StepSlider(id string, n int, to string) error {
 	e := c.V.Find(id)
-	if e == nil || e.Kind != Slider {
+	s := e
+	if e != nil && e.Kind == Knob {
+		s, _ = c.rangeOf(id)
+	}
+	if e == nil || s == nil || e.Kind != Slider && e.Kind != Knob {
 		return nil
 	}
 	f, _ := e.Value.(float64)
 	switch to {
 	case "Home":
-		f = e.Min
+		f = s.Min
 	case "End":
-		f = e.Max
+		f = s.Max
 	default:
-		f += float64(n) * e.SliderStep()
+		f += float64(n) * s.SliderStep()
 	}
 	return c.SetValue(id, f)
 }
@@ -486,6 +505,11 @@ func (e *Element) sliderDecimals() int {
 // is as the value moves (0.45 is wider than 1).
 func (e *Element) SliderWidth() int {
 	v, _ := e.Value.(float64)
+	return e.valueWidth(v)
+}
+
+// valueWidth is SliderWidth with v as the value.
+func (e *Element) valueWidth(v float64) int {
 	w := max(len(a2ui.NumberString(e.Min)), len(a2ui.NumberString(e.Max)), len(a2ui.NumberString(v)))
 	if d := e.sliderDecimals(); d > 0 {
 		whole := 0
