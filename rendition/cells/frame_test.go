@@ -8,16 +8,16 @@ import (
 )
 
 // TerminalQuery asks for the text's and the background's colours, and
-// for each colour of the floor's by its number, once.
+// for each colour of the floor's and the two magentas by number, once.
 func TestTerminalQuery(t *testing.T) {
 	q := TerminalQuery()
-	for _, ask := range []string{"\x1b]10;?\x1b\\", "\x1b]11;?\x1b\\", "\x1b]4;1;?", "\x1b]4;2;?", "\x1b]4;3;?", "\x1b]4;6;?", "\x1b]4;8;?", "\x1b]4;12;?"} {
+	for _, ask := range []string{"\x1b]10;?\x1b\\", "\x1b]11;?\x1b\\", "\x1b]4;1;?", "\x1b]4;2;?", "\x1b]4;3;?", "\x1b]4;5;?", "\x1b]4;6;?", "\x1b]4;8;?", "\x1b]4;12;?", "\x1b]4;13;?"} {
 		if n := strings.Count(q, ask); n != 1 {
 			t.Errorf("%q asked %d times in %q", ask, n, q)
 		}
 	}
-	if n := strings.Count(q, "\x1b]4;"); n != 6 {
-		t.Errorf("%d OSC 4 questions, want 6", n)
+	if n := strings.Count(q, "\x1b]4;"); n != 8 {
+		t.Errorf("%d OSC 4 questions, want 8", n)
 	}
 }
 

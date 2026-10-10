@@ -62,7 +62,8 @@ const (
 
 // TerminalQuery asks the terminal for the colours cells works out blends
 // and tints from where the theme leaves the roles to it: its text's (OSC
-// 10), its background's (OSC 11) and the floor's (OSC 4, by number). A
+// 10), its background's (OSC 11), the floor's and its two magentas (OSC 4,
+// by number). A
 // program writes it once, at the start, and gives the answers to
 // theme.Terminal (Hear, Hex) and the Terminal to the theme it paints
 // with (theme.Theme.Term). Nothing waits on them: until they come, and
@@ -77,6 +78,9 @@ func TerminalQuery() string {
 			b.WriteString("\x1b]4;" + n + ";?\x1b\\")
 		}
 	}
+	// Its magentas, which no role is, for a HottyProgress's fill alone
+	// (Cell.Fill).
+	b.WriteString("\x1b]4;5;?\x1b\\\x1b]4;13;?\x1b\\")
 	return b.String()
 }
 
@@ -141,6 +145,11 @@ type Cell struct {
 	// Mix 0 is Role's alone.
 	To  Role
 	Mix uint8
+	// Fill marks a HottyProgress's fill: where the theme leaves the accent
+	// to the terminal and the terminal said its accent and its magenta,
+	// Mix/255 of the way from the one to the other (fillColour); elsewhere
+	// Role into To, as any blend.
+	Fill bool
 	// Back and BackMix tint the cell's background: BackMix/255 of the way
 	// from the background to Back's colour (a marked line of code), where
 	// both are known, the theme's or the terminal's; BackMix 0 is no tint.
@@ -297,7 +306,9 @@ func (c Cell) style(th *theme.Theme) string {
 		return strings.Join(p, ";")
 	}
 	hex := th.Colour(roleNames[c.Role])
-	if c.Mix > 0 {
+	if f := c.fillColour(th); f != "" {
+		hex = f
+	} else if c.Mix > 0 {
 		if m := mix(colour(th, c.Role), colour(th, c.To), c.Mix); m != "" {
 			hex = m
 		}
@@ -323,6 +334,22 @@ func (c Cell) style(th *theme.Theme) string {
 		p = append(p, truecolour("48", th.Bg))
 	}
 	return strings.Join(p, ";")
+}
+
+// fillColour is a HottyProgress fill cell's colour in the terminal's own
+// gradient (profile §3.4): Mix/255 of the way from its accent (OSC 4;12)
+// into its bright magenta (4;13, else 4;5), blue into pink in most
+// palettes, as bubbles' default gradient goes; "" where the theme colours
+// the accent itself, or the terminal has not said both.
+func (c Cell) fillColour(th *theme.Theme) string {
+	if !c.Fill || th.Accent != "" {
+		return ""
+	}
+	magenta := th.Term.ANSI[13]
+	if magenta == "" {
+		magenta = th.Term.ANSI[5]
+	}
+	return mix(colour(th, Accent), magenta, c.Mix)
 }
 
 // tinted reports whether the cell's background can be tinted (BackMix):

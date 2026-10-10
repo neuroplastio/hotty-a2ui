@@ -48,14 +48,18 @@ func TestProgress(t *testing.T) {
 	if d := r.Animating(); d != 0 {
 		t.Errorf("bars with values animate every %v", d)
 	}
-	// Info blends into accent across the bar; a done bar is success.
+	// The fill blends across the bar (info into accent, or the terminal's
+	// own gradient); a done bar is success.
 	for x, mix := range map[int]uint8{0: 0, 6: 255 * 6 / 19, 7: 255 * 7 / 19} {
-		if c := f.Cells[1][x]; c.Role != Info || c.To != Accent || c.Mix != mix {
-			t.Errorf("cell %d: %v to %v by %d, want info to accent by %d", x, c.Role, c.To, c.Mix, mix)
+		if c := f.Cells[1][x]; c.Role != Info || c.To != Accent || c.Mix != mix || !c.Fill {
+			t.Errorf("cell %d: %v to %v by %d (fill %v), want info to accent by %d", x, c.Role, c.To, c.Mix, c.Fill, mix)
 		}
 	}
-	if c := f.Cells[3][19]; c.Role != Success || c.Mix != 0 {
-		t.Errorf("a done bar's cell: %v by %d, want success alone", c.Role, c.Mix)
+	if c := f.Cells[3][19]; c.Role != Success || c.Mix != 0 || c.Fill {
+		t.Errorf("a done bar's cell: %v by %d (fill %v), want success alone", c.Role, c.Mix, c.Fill)
+	}
+	if c := f.Cells[1][10]; c.Fill {
+		t.Errorf("the track is a fill: %+v", c)
 	}
 	th := theme.Theme{Info: "#000000", Accent: "#ffffff"}
 	for mix, want := range map[uint8]string{0: "38;2;0;0;0", 51: "38;2;51;51;51", 255: "38;2;255;255;255"} {
@@ -75,6 +79,28 @@ func TestProgress(t *testing.T) {
 	}
 	if got := (Cell{Role: Info, To: Accent}).style(&term); got != "36" {
 		t.Errorf("no mix, the terminal's colours known: %q, want info's ANSI 36", got)
+	}
+
+	// A fill goes from the terminal's accent into its bright magenta once
+	// it said both (its magenta, else), from the bar's first cell; where
+	// it hasn't, or the theme colours the accent, it is info into accent.
+	fill := func(mix uint8) Cell { return Cell{Role: Info, To: Accent, Mix: mix, Fill: true} }
+	if got := fill(51).style(&term); got != "38;2;51;51;51" {
+		t.Errorf("a fill, no magenta said: %q, want info into accent", got)
+	}
+	term.Term.ANSI[12], term.Term.ANSI[13] = "#0000ff", "#ff00ff"
+	for mix, want := range map[uint8]string{0: "38;2;0;0;255", 51: "38;2;51;0;255", 255: "38;2;255;0;255"} {
+		if got := fill(mix).style(&term); got != want {
+			t.Errorf("a fill by %d, the terminal's magenta: %q, want %q", mix, got, want)
+		}
+	}
+	term.Term.ANSI[13], term.Term.ANSI[5] = "", "#ff00ff"
+	if got := fill(51).style(&term); got != "38;2;51;0;255" {
+		t.Errorf("a fill, magenta from 5: %q", got)
+	}
+	named := theme.Theme{Info: "#000000", Accent: "#ffffff", Term: term.Term}
+	if got := fill(51).style(&named); got != "38;2;51;51;51" {
+		t.Errorf("a fill in a theme that colours the accent: %q, want info into accent", got)
 	}
 }
 

@@ -16,10 +16,12 @@ type style struct {
 	role Role
 	attr Attr
 	link string
-	// to and mix blend the colour toward another role's (Cell.To); back
+	// to and mix blend the colour toward another role's (Cell.To), fill
+	// in the terminal's own gradient where it has one (Cell.Fill); back
 	// and backMix tint the background (Cell.Back).
 	to      Role
 	mix     uint8
+	fill    bool
 	back    Role
 	backMix uint8
 	// backAttr and monoAttr show back where it cannot tint (Cell.BackAttr).
@@ -155,11 +157,11 @@ func (cv *canvas) set(x, y int, g glyph) {
 		g = glyph{text: " ", width: 1, style: g.style}
 	}
 	cv.unwide(x, y)
-	row[x] = Cell{Text: g.text, Width: g.width, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix,
+	row[x] = Cell{Text: g.text, Width: g.width, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix, Fill: g.fill,
 		Back: g.back, BackMix: g.backMix, BackAttr: g.backAttr, MonoAttr: g.monoAttr}
 	if g.width == 2 {
 		cv.unwide(x+1, y)
-		row[x+1] = Cell{Width: 0, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix,
+		row[x+1] = Cell{Width: 0, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix, Fill: g.fill,
 			Back: g.back, BackMix: g.backMix, BackAttr: g.backAttr, MonoAttr: g.monoAttr}
 	}
 }
