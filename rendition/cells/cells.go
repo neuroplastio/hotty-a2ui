@@ -8,7 +8,6 @@ package cells
 import (
 	"time"
 
-	"github.com/neuroplastio/hotty-go"
 	"github.com/neuroplastio/hotty-go/hottyedit"
 
 	"github.com/neuroplastio/hotty-a2ui/view"
@@ -43,8 +42,9 @@ type Rendition struct {
 	// ids in the order painted, the innermost last (Wheel).
 	scrolls     map[string]scrolled
 	scrollOrder []string
-	drag        string        // the Slider or HottyRangeSlider a click on its track started dragging
+	drag        string        // the Slider or HottyRangeSlider a click on its track started dragging, or the text control a press in its value did
 	knob        int           // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
+	anchor      int           // where in the text control the press was, which a drag selects from
 	anim        time.Duration // how soon the last Draw changes again (Animating)
 
 	// Clock is the time a Draw paints at: a Spinner's frame, an
@@ -58,7 +58,7 @@ type box struct{ x, y, w, h int }
 // New is a surface's rendition in cells.
 func New(c *view.Controller) *Rendition {
 	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
-		keys: hotty.TerminalKeys, fields: map[string]*hottyedit.Field{}, Clock: time.Now}
+		fields: map[string]*hottyedit.Field{}, Clock: time.Now}
 }
 
 // Animating is how soon the last Draw's frame changes by itself: the
@@ -76,9 +76,15 @@ func (r *Rendition) animate(d time.Duration) {
 
 // SetKeys sets the keymap the text controls edit by, as rendition/html's
 // SetKeys sets a surface's: the default keymap, then keys, then the
-// components' own (io_neuroplast_hotty.keys). New starts with
-// hotty.TerminalKeys; "" is SPEC §10.2's default keymap alone.
+// components' own (io_neuroplast_hotty.keys). New starts with "", SPEC
+// §10.2's default keymap alone, a GUI field's; hotty.TerminalKeys gives
+// Bubble Tea's.
 func (r *Rendition) SetKeys(keys string) { r.keys = keys }
+
+// blockCursor reports whether a text control's cursor is a block: under a
+// keymap set over the default one, a terminal's (hotty.TerminalKeys),
+// whose keys a block says, as a line says a GUI field's (profile §3.5).
+func (r *Rendition) blockCursor() bool { return r.keys != "" }
 
 // focused reports whether id has the keyboard.
 func (r *Rendition) focused(id string) bool {
@@ -214,13 +220,12 @@ func (r *Rendition) Click(col, row int) error {
 	switch {
 	case isTextControl(e):
 		if a := h.field; a != nil && row >= a.y {
-			v, _ := e.Value.(string)
-			lines := [][]string{clusters(v)}
-			if isLongText(e) {
-				lines = splitClusters(lines[0])
-			}
-			li := min(row-a.y+a.voff, len(lines)-1)
-			r.cursor[e.ID] = offset(lines, li, indexAt(lines[li], col-a.x+a.hoff, e.Variant == "obscured"))
+			// The caret goes where the press is, and a drag from there
+			// selects (Drag), as in a GUI's field.
+			p := posAt(e, a, col, row)
+			r.field(e).Select(p, p)
+			r.cursor[e.ID] = p
+			r.drag, r.anchor = e.ID, p
 		}
 		return nil
 	case isSelect(e):
@@ -270,19 +275,30 @@ func (r *Rendition) Click(col, row int) error {
 // Drag is the pointer at a cell with the primary button still down,
 // after a Click: a Slider whose track the click landed on follows it, and
 // so does the knob of a HottyRangeSlider the click picked (stopped where
-// it meets the other), clamped to the track's ends, as last drawn. After
-// any other click it does nothing.
+// it meets the other), clamped to the track's ends, as last drawn; a text
+// control the click landed in selects from there to the pointer, a row
+// above or below its lines selecting to its first or last. After any
+// other click it does nothing.
 func (r *Rendition) Drag(col, row int) error {
 	if r.drag == "" {
 		return nil
 	}
 	e := r.c.V.Find(r.drag)
-	if e == nil || e.Kind != view.Slider && e.Kind != view.RangeSlider {
+	if e == nil || e.Kind != view.Slider && e.Kind != view.RangeSlider && !isTextControl(e) {
 		r.drag = ""
 		return nil
 	}
 	for _, h := range r.hits {
-		if h.id != e.ID || h.track == nil {
+		if h.id != e.ID {
+			continue
+		}
+		if h.field != nil {
+			p := posAt(e, h.field, col, row)
+			r.field(e).Select(r.anchor, p)
+			r.cursor[e.ID] = p
+			return nil
+		}
+		if h.track == nil {
 			continue
 		}
 		if e.Kind == view.RangeSlider {
@@ -293,6 +309,19 @@ func (r *Rendition) Drag(col, row int) error {
 		return r.slideTo(e, h.track, col)
 	}
 	return nil
+}
+
+// posAt is the place in a text control's value at a cell of its area, as
+// last drawn: before its first character left of it, after its last right
+// of it, and in its first or last line above or below it.
+func posAt(e *view.Element, a *fieldArea, col, row int) int {
+	v, _ := e.Value.(string)
+	lines := [][]string{clusters(v)}
+	if isLongText(e) {
+		lines = splitClusters(lines[0])
+	}
+	li := min(max(row-a.y+a.voff, 0), len(lines)-1)
+	return offset(lines, li, indexAt(lines[li], col-a.x+a.hoff, e.Variant == "obscured"))
 }
 
 // Release is the primary button let go: a drag ends.

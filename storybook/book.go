@@ -161,7 +161,7 @@ type tickMsg struct{}
 // New is a Book. It starts once the terminal is known: on the Session's
 // ReadyMsg, or at the first View after it.
 func New(o Options) *Book {
-	b := &Book{o: o, theme: o.Theme, keys: keysTerminal, seq: map[*a2ui.Surface]int{}, panes: map[string]*pane{}}
+	b := &Book{o: o, theme: o.Theme, keys: keysDefault, seq: map[*a2ui.Surface]int{}, panes: map[string]*pane{}}
 	if b.theme.Name == "" {
 		b.theme = theme.Default
 	}
@@ -960,6 +960,9 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if f := b.focus; f != nil && f.kind == asCells && f.s.C.St.Keyboard && f.frame != nil {
 		if c, row, ok := f.frame.Cursor(); ok && row >= f.top && row < f.top+f.rect.H {
 			b.cursor = tea.NewCursor(r.X+f.rect.X+c, r.Y+f.rect.Y+row-f.top)
+			if !f.frame.BlockCursor() {
+				b.cursor.Shape = tea.CursorBar
+			}
 		}
 	}
 	if b.o.Plain {

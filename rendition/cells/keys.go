@@ -154,17 +154,8 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 // a number has. ok is false for a key the keymap leaves to the program.
 // The data model is written on every change.
 func (r *Rendition) editKey(e *view.Element, key string) (ok bool, err error) {
-	v, _ := e.Value.(string)
-	long := isLongText(e)
-	km := hotty.Resolve(long, append([]string{r.keys}, r.c.V.KeyChain(e.ID)...)...)
-	pos := r.cursorOf(e.ID, len(clusters(v)))
-	// The field is kept while nothing else moves its caret or changes its
-	// value, so that a run of row moves keeps its place along the row.
-	f := r.fields[e.ID]
-	if f == nil || f.Value != v || f.Caret != pos || f.Multiline != long {
-		f = &hottyedit.Field{Value: v, Caret: pos, Multiline: long, Password: e.Variant == "obscured"}
-		r.fields[e.ID] = f
-	}
+	km := hotty.Resolve(isLongText(e), append([]string{r.keys}, r.c.V.KeyChain(e.ID)...)...)
+	f := r.field(e)
 	f.Rows = r.pageRows(e)
 	switch km.Lookup(key) {
 	case "":
@@ -186,6 +177,22 @@ func (r *Rendition) editKey(e *view.Element, key string) (ok bool, err error) {
 		return true, r.c.SetValue(e.ID, f.Value)
 	}
 	return true, nil
+}
+
+// field is the hottyedit.Field a text control edits by: the one kept while
+// nothing else moved its caret or changed its value, so that a run of row
+// moves keeps its place along the row and a selection stays; else a new
+// one, with nothing selected.
+func (r *Rendition) field(e *view.Element) *hottyedit.Field {
+	v, _ := e.Value.(string)
+	long := isLongText(e)
+	pos := r.cursorOf(e.ID, len(clusters(v)))
+	f := r.fields[e.ID]
+	if f == nil || f.Value != v || f.Caret != pos || f.Multiline != long {
+		f = &hottyedit.Field{Value: v, Caret: pos, Multiline: long, Password: e.Variant == "obscured"}
+		r.fields[e.ID] = f
+	}
+	return f
 }
 
 func (r *Rendition) pageRows(e *view.Element) int {

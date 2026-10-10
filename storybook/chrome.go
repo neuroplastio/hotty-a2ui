@@ -147,7 +147,7 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 		obj("id", "view", "component", "Column", "children", map[bool][]any{true: {"rend_r", "keys_p_r", "theme_p_r", "find"}, false: {"rend", "keys_p", "theme_p", "find"}}[native]),
 		picker("rend", "Rendition", "/rendition", rendOpts),
 		picker("theme_p", "Theme", "/theme", themeOpts),
-		picker("keys_p", "Keys", "/keys", [][3]string{{keysTerminal, "Terminal", "terminal"}, {keysDefault, "Default", "keyboard"}}),
+		picker("keys_p", "Keys", "/keys", [][3]string{{keysDefault, "Default", "keyboard"}, {keysTerminal, "Terminal", "terminal"}}),
 		// The filter is nav's (Book.settle hands it over): here it stays
 		// in sight while nav scrolls.
 		// On a host its caption lines it up with the selects; in cells its

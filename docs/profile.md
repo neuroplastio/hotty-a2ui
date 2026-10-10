@@ -426,11 +426,9 @@ without colour:
 - A HottyRangeSlider's range is in `accent`, and so is the knob with the
   keyboard, whose number in the value is in `accent` and bold, so that
   without colour the value still says which knob the keys move.
-- A text field's prompt is in `accent`, and its cursor cell is reversed.
-  What Shift or Control+a selected (§5) is on the `selection` colour, or
-  reversed where the theme can't tint, as a terminal shows its own; the
-  cursor cell is not reversed then, as a GUI's field shows no caret beside
-  a selection.
+- A text field's prompt is in `accent`. What Shift, Control+a or a drag
+  selected (§5) is on the `selection` colour, or reversed where the theme
+  can't tint, as a terminal shows its own.
 
 ### 3.5 Text fields
 
@@ -448,7 +446,14 @@ without colour:
 - **With the keyboard** a field shows the cursor:
   - The cursor is an index into the value's clusters; it starts at the
     end.
-  - The cell under it is reversed, and `Frame.Cursor` reports it.
+  - `Frame.Cursor` reports it, and the terminal's cursor goes there. Its
+    shape says which keys the field has. Under the default keymap, a
+    GUI field's, it is a line (`Frame.BlockCursor` false; a program asks
+    the terminal for a bar, DECSCUSR), since a GUI's muscle memory comes
+    with a line. Under a keymap set over it, a terminal's
+    (`TerminalKeys`), it is a block, and the cell under it is reversed
+    too, except beside a selection, where a block would read as one more
+    selected cell. A HottyList's filter has the same cursor.
   - The field scrolls as little as keeps the cursor in it: across, by
     columns (it shows from the start whenever the cursor's line fits),
     and for a longText, down by lines.
@@ -618,7 +623,9 @@ In the output:
 **A click** lands on the topmost thing drawn at its cell:
 - **Something that takes focus** gets the keyboard, and then:
   - a field puts its cursor before the cluster clicked (a click on its
-    label line only focuses it);
+    label line only focuses it), and a drag from there selects to the
+    cluster under the pointer, to the value's start or end past them, as
+    in a GUI's field;
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
   - a click on a HottyTable's row selects it, and a click on its selected
@@ -739,11 +746,13 @@ terminal implements them. In cells the renderer does, by the same rules:
   focused component does not use, reach the program. Keys are named as
   SPEC.md §10.4 has them: `Control+s`, `Alt+b`, `A`, `Space`.
 - **A text field's keys are its keymap** (SPEC.md §10.2). The renderer
-  sets the surface's on its top elements as `data-keys`: hotty-go's
-  `TerminalKeys`, the keys of Bubble Tea's text input (Control+e, Alt+b
-  and Alt+f, Control+w, Control+k, Control+u…) over SPEC.md's default
-  keymap, unless the program sets another (`SetKeys`; empty for the
-  default keymap alone). Either way a field keeps a GUI's muscle memory:
+  sets the surface's on its top elements as `data-keys`: none by default,
+  so that fields have SPEC.md's default keymap, a GUI field's, and a line
+  cursor in cells (§3.5). A program may set another over it (`SetKeys`),
+  such as hotty-go's `TerminalKeys`, the keys of Bubble Tea's text input
+  (Control+e, Alt+b and Alt+f, Control+w, Control+k, Control+u…), which
+  cells shows with a block cursor. Either way a field keeps a GUI's
+  muscle memory:
   Shift with any move selects from where the caret was, Control+a selects
   all (in `TerminalKeys` too, where Home goes to the line's start), and
   typing or deleting replaces the selection. A component's `keys` (§6.5) overrides it key by key for

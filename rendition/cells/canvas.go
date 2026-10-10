@@ -132,10 +132,14 @@ func (cv *canvas) clipTo(b box) *box {
 	return was
 }
 
-// cursorAt puts the frame's cursor at (x, y), if that is inside the clip.
-func (cv *canvas) cursorAt(x, y int) {
+// cursorAt puts the frame's cursor at (x, y), if that is inside the clip:
+// a block, the cell reversed, or a line (Frame.BlockCursor).
+func (cv *canvas) cursorAt(x, y int, block bool) {
 	if cv.in(x, y) {
-		cv.f.cursorCol, cv.f.cursorRow, cv.f.cursor = x, y, true
+		cv.f.cursorCol, cv.f.cursorRow, cv.f.cursor, cv.f.cursorBlock = x, y, true, block
+		if block {
+			cv.f.Cells[y][x].Attr |= Reverse
+		}
 	}
 }
 

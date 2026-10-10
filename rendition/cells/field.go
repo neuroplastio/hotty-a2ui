@@ -177,13 +177,10 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff
-		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows && cv.in(cx, cy) {
-			// A selection shows no block caret, as a GUI's field shows
-			// none beside one: it would read as one more selected cell.
-			if s0 == s1 {
-				cv.f.Cells[cy][cx].Attr |= Reverse
-			}
-			cv.cursorAt(cx, cy)
+		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows {
+			// A block beside a selection would read as one more selected
+			// cell, so a selection takes the line.
+			cv.cursorAt(cx, cy, r.blockCursor() && s0 == s1)
 		}
 	}
 	r.hits = append(r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + rows, id: e.ID, opt: -1, field: area})

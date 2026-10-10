@@ -90,7 +90,7 @@ type keyboard struct {
 // New is the rendition of a controller's surface, as the host surface
 // name.
 func New(c *view.Controller, name string) *Rendition {
-	return &Rendition{C: c, name: name, keys: hotty.TerminalKeys, Clock: time.Now}
+	return &Rendition{C: c, name: name, Clock: time.Now}
 }
 
 // Animating is how soon the document the last Doc or Update made changes
@@ -121,9 +121,9 @@ func (r *Rendition) SetTheme(th theme.Theme) { r.theme = th }
 // SetKeys sets the keymap of the surface's text fields from the next Doc
 // or Update on: a data-keys value on the surface's top elements (SPEC
 // §10.2), which a component's own (io_neuroplast_hotty.keys) overrides
-// key by key. New starts with hotty.TerminalKeys, so that fields edit as
-// Bubble Tea's do, and as the cells rendition's; "" leaves the host's
-// default keymap.
+// key by key. New starts with "", the host's default keymap, a GUI
+// field's, as the cells rendition starts; hotty.TerminalKeys gives Bubble
+// Tea's.
 func (r *Rendition) SetKeys(keys string) { r.keys = keys }
 
 // SetFit says, from the next Doc or Update on, whether the program sizes

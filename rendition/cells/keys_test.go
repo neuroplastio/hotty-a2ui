@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	hottygo "github.com/neuroplastio/hotty-go"
+
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	"github.com/neuroplastio/hotty-a2ui/catalog/hotty"
@@ -81,13 +83,15 @@ func TestTyping(t *testing.T) {
 
 // TestFieldSelection: Shift with a move and Control+a select (SPEC §10.2),
 // and the field shows what is selected on the selection colour, reversed
-// where the theme can't tint, with no block caret beside it.
+// where the theme can't tint. Under the default keymap the cursor is a
+// line, the terminal's; under a terminal's it is a block, the cell
+// reversed, but not beside a selection.
 func TestFieldSelection(t *testing.T) {
 	c, _, _ := form(t)
 	r := New(c)
 	c.Focus("name")
 	r.Draw(40)
-	shows := func(when string, sel []bool, caret int) {
+	shows := func(when string, sel []bool, block int) {
 		t.Helper()
 		f := r.Draw(40)
 		// "┃ > abc": the value from column 4, on the title's next row.
@@ -97,9 +101,12 @@ func TestFieldSelection(t *testing.T) {
 			if got := cell.Back == Selection && cell.BackMix == 255 && cell.BackAttr == Reverse; got != want {
 				t.Errorf("%s: %q selected %v", when, cell.Text, got)
 			}
-			if got := cell.Attr&Reverse != 0; got != (i == caret) {
-				t.Errorf("%s: %q a block caret %v", when, cell.Text, got)
+			if got := cell.Attr&Reverse != 0; got != (i == block) {
+				t.Errorf("%s: %q a block cursor %v", when, cell.Text, got)
 			}
+		}
+		if _, _, ok := f.Cursor(); !ok || f.BlockCursor() != (block >= 0) {
+			t.Errorf("%s: a cursor %v, a block %v", when, ok, f.BlockCursor())
 		}
 	}
 	keys(t, r, "a", "b", "c", "Shift+ArrowLeft", "Shift+ArrowLeft")
@@ -108,9 +115,58 @@ func TestFieldSelection(t *testing.T) {
 		t.Errorf("the cursor at %d %v, want 5", col, ok)
 	}
 	keys(t, r, "End")
-	shows("End", []bool{false, false, false, false}, 3)
+	shows("End", []bool{false, false, false, false}, -1)
 	keys(t, r, "Control+a")
 	shows("Control+a", []bool{true, true, true, false}, -1)
+
+	r.SetKeys(hottygo.TerminalKeys)
+	keys(t, r, "End")
+	shows("End, in the terminal keymap", []bool{false, false, false, false}, 3)
+	keys(t, r, "Shift+Home")
+	shows("Shift+Home, in the terminal keymap", []bool{true, true, true, false}, -1)
+}
+
+// TestFieldMouseSelection: a press in a field's value puts the caret
+// there, and a drag selects from it to the pointer, past the value's ends
+// to them; typing replaces the selection.
+func TestFieldMouseSelection(t *testing.T) {
+	c, data, _ := form(t)
+	r := New(c)
+	c.Focus("name")
+	r.Draw(40)
+	keys(t, r, "a", "b", "c", "d")
+	// "┃ > abcd" on row 1: b is at column 5.
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	must(r.Click(5, 1))
+	f := r.Draw(40)
+	if col, _, _ := f.Cursor(); col != 5 {
+		t.Errorf("a press at b: the cursor at %d", col)
+	}
+	must(r.Drag(6, 1))
+	must(r.Drag(30, 1))
+	r.Release()
+	f = r.Draw(40)
+	for i, want := range []bool{false, true, true, true} {
+		if got := f.Cells[1][4+i].Back == Selection; got != want {
+			t.Errorf("dragged past the end: %q selected %v", f.Cells[1][4+i].Text, got)
+		}
+	}
+	keys(t, r, "x")
+	if got := data()["name"]; got != "ax" {
+		t.Errorf("typing over the selection: %q", got)
+	}
+	must(r.Click(6, 1))
+	must(r.Drag(0, 1))
+	r.Release()
+	keys(t, r, "Delete")
+	if got := data()["name"]; got != "" {
+		t.Errorf("a drag from the end to left of the value, and Delete: %q", got)
+	}
 }
 
 func TestLongText(t *testing.T) {

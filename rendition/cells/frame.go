@@ -100,7 +100,7 @@ type Frame struct {
 	Cells [][]Cell
 
 	cursorCol, cursorRow int
-	cursor               bool
+	cursor, cursorBlock  bool
 }
 
 func newFrame(cols, rows int) *Frame {
@@ -120,6 +120,11 @@ func newFrame(cols, rows int) *Frame {
 func (f *Frame) Cursor() (col, row int, ok bool) {
 	return f.cursorCol, f.cursorRow, f.cursor
 }
+
+// BlockCursor reports whether the terminal's cursor is a block, as under a
+// terminal's keymap, the frame having reversed the cell it is on; else it
+// is a line, a GUI field's, which the terminal draws (profile §3.5).
+func (f *Frame) BlockCursor() bool { return f.cursorBlock }
 
 // Plain is the frame's text: its rows joined by "\n", trailing spaces
 // trimmed, with no styles.

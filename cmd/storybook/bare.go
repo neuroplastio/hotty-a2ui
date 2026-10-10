@@ -193,6 +193,9 @@ func (m *bareModel) draw() {
 		}
 		if c, row, ok := p.f.Cursor(); ok && p.s.C.St.Keyboard {
 			m.cur = tea.NewCursor(c, top+row)
+			if !p.f.BlockCursor() {
+				m.cur.Shape = tea.CursorBar
+			}
 		}
 		if m.plain {
 			b.WriteString(strings.TrimRight(p.f.ANSI(false), "\n"))

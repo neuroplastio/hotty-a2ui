@@ -3,8 +3,9 @@
 # (hottytest, which takes keys as SPEC §10.2 has a host take them).
 #
 # A vector is a story (story: a name, or messages: inline), the keymap of
-# its text fields (keys: a data-keys value; hotty.TerminalKeys when not
-# given, as the renditions start) and steps:
+# its text fields (keys: a data-keys value, or "terminal" for
+# hotty.TerminalKeys; the default keymap alone when not given, as the
+# renditions start) and steps:
 #   key: a key, as SPEC §10.4 names it ("Tab", "Shift+Tab", "Space", "Control+s")
 #   type: characters, one key each
 #   focus: the program gives the keyboard at an element (by view id)
@@ -224,6 +225,7 @@
 # components' own (io_neuroplast_hotty.keys), the field's last. Typing
 # after a move shows where it left the caret.
 - name: the terminal keymap moves and deletes by characters, words and lines
+  keys: terminal
   messages: &field
     - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {t: ""}}}
     - version: v1.0
@@ -279,6 +281,7 @@
     - expect: {focused: t, data: {/t: "!x"}}
 
 - name: Control+a selects all, in the terminal keymap as in the default, and Home still goes to the line's start
+  keys: terminal
   messages: *field
   steps:
     - focus: t
@@ -308,6 +311,7 @@
     - expect: {focused: t, data: {/t: "x <y"}}
 
 - name: row moves in a multi-line field keep their place along the row
+  keys: terminal
   messages:
     - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {t: ""}}}
     - version: v1.0
@@ -341,6 +345,7 @@
     - expect: {focused: t, data: {/t: "5abcd3ef\nab1\nabc2def4"}}
 
 - name: a password field is one word
+  keys: terminal
   messages:
     - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {p: ""}}}
     - version: v1.0
@@ -361,6 +366,7 @@
     - expect: {focused: p, data: {/p: ""}}
 
 - name: a component's keymap overrides the surface's key by key, its fields' own last
+  keys: terminal
   messages:
     - {version: v1.0, createSurface: {surfaceId: s, catalogId: "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json", dataModel: {name: "", note: ""}}}
     - version: v1.0

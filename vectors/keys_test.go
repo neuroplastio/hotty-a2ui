@@ -103,8 +103,12 @@ func play(t *testing.T, v vector, rendition string) {
 		}
 	}
 	s := run.Surfaces()[0]
-	keys := hotty.TerminalKeys
-	if v.Keys != nil {
+	keys := ""
+	switch {
+	case v.Keys == nil:
+	case *v.Keys == "terminal":
+		keys = hotty.TerminalKeys
+	default:
 		keys = *v.Keys
 	}
 	var p player
