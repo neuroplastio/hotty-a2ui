@@ -126,6 +126,13 @@ func element(e *view.Element) []string {
 	case view.Slider:
 		f, _ := e.Value.(float64)
 		return errLine([]string{field(e.Label, a2ui.NumberString(f)+" ("+a2ui.NumberString(e.Min)+"–"+a2ui.NumberString(e.Max)+")")})
+	case view.RangeSlider:
+		// Its start and its end, as a field's value: "Price: 20–70".
+		s := field(e.Label, e.RangeText())
+		if e.Disabled {
+			s += " (disabled)"
+		}
+		return errLine([]string{s})
 	case view.Progress:
 		if f, ok := e.Fraction(); ok {
 			return []string{field(e.Label, fmt.Sprintf("%.0f%%", f*100))}

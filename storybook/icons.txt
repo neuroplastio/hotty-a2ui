@@ -37,6 +37,7 @@ table
 terminal
 toggle_on
 touch_app
+tune
 vertical_split
 web
 widgets

@@ -36,8 +36,31 @@ type player interface {
 	focus(id string)
 	blur()
 	click(id string)
+	// tap, press, move and release are the pointer on a Slider's or a
+	// HottyRangeSlider's track where it stands for v: a click there, and a
+	// drag's press, moves and release.
+	tap(id string, v float64)
+	press(id string, v float64)
+	move(v float64)
+	release(v float64)
 	// focused is the element with the keyboard; "" for none.
 	focused() string
+}
+
+// pointer is a tap's or a press's {on, at}, or a move's or a release's
+// {at}.
+func pointer(t *testing.T, where string, st any) (on string, at float64) {
+	m, _ := st.(map[string]any)
+	on, _ = m["on"].(string)
+	switch v := m["at"].(type) {
+	case int:
+		at = float64(v)
+	case float64:
+		at = v
+	default:
+		t.Fatalf("%s: no number at", where)
+	}
+	return on, at
 }
 
 func TestKeys(t *testing.T) {
@@ -105,6 +128,16 @@ func play(t *testing.T, v vector, rendition string) {
 			p.blur()
 		case st["click"] != nil:
 			p.click(fmt.Sprint(st["click"]))
+		case st["tap"] != nil:
+			p.tap(pointer(t, where, st["tap"]))
+		case st["press"] != nil:
+			p.press(pointer(t, where, st["press"]))
+		case st["move"] != nil:
+			_, at := pointer(t, where, st["move"])
+			p.move(at)
+		case st["release"] != nil:
+			_, at := pointer(t, where, st["release"])
+			p.release(at)
 		case st["expect"] != nil:
 			ex, _ := st["expect"].(map[string]any)
 			if f, ok := ex["focused"]; ok {
@@ -184,6 +217,8 @@ type cellsPlayer struct {
 	t *testing.T
 	c *view.Controller
 	r *cells.Rendition
+	// pressed is the track a press is on, until its release.
+	pressed string
 }
 
 func newCellsPlayer(t *testing.T, c *view.Controller, keys string) *cellsPlayer {
@@ -214,6 +249,46 @@ func (p *cellsPlayer) click(id string) {
 	p.r.Draw(80)
 }
 
+// cell is the cell of a track that stands for v (cells.TrackCell).
+func (p *cellsPlayer) cell(id string, v float64) (col, row int) {
+	p.t.Helper()
+	col, row, ok := p.r.TrackCell(id, v)
+	if !ok {
+		p.t.Fatalf("no track for %s", id)
+	}
+	return col, row
+}
+
+func (p *cellsPlayer) tap(id string, v float64) {
+	if err := p.r.Click(p.cell(id, v)); err != nil {
+		p.t.Fatal(err)
+	}
+	p.r.Release()
+	p.r.Draw(80)
+}
+
+func (p *cellsPlayer) press(id string, v float64) {
+	p.pressed = id
+	if err := p.r.Click(p.cell(id, v)); err != nil {
+		p.t.Fatal(err)
+	}
+	p.r.Draw(80)
+}
+
+func (p *cellsPlayer) move(v float64) {
+	if err := p.r.Drag(p.cell(p.pressed, v)); err != nil {
+		p.t.Fatal(err)
+	}
+	p.r.Draw(80)
+}
+
+func (p *cellsPlayer) release(v float64) {
+	p.move(v)
+	p.r.Release()
+	p.pressed = ""
+	p.r.Draw(80)
+}
+
 func (p *cellsPlayer) focused() string {
 	if !p.c.St.Keyboard {
 		return ""
@@ -223,19 +298,25 @@ func (p *cellsPlayer) focused() string {
 
 // hostPlayer plays the HTML rendition on a host: the host takes the keys
 // it uses (hottytest.Key, SPEC §10.2), and the rest reach the rendition
-// as they reach a program.
+// as they reach a program. The host says where in a dragged element the
+// pointer is (SPEC §9.1, Caps.Steps), as hottyterm does.
 type hostPlayer struct {
 	t    *testing.T
 	h    *hottytest.Host
 	r    *html.Rendition
 	seen int
+	// pressed is the track a press is on, until its release.
+	pressed string
 }
 
 const surface = "story"
 
 func newHostPlayer(t *testing.T, c *view.Controller, keys string) *hostPlayer {
-	p := &hostPlayer{t: t, h: hottytest.New(t), r: html.New(c, surface)}
+	caps := hottytest.DefaultCaps()
+	caps.Steps = true
+	p := &hostPlayer{t: t, h: hottytest.New(t, hottytest.Caps(caps)), r: html.New(c, surface)}
 	p.r.SetKeys(keys)
+	p.r.SetSteps(true)
 	p.send(hotty.Doc(surface, p.r.Doc()), hotty.Place(surface, hotty.Placement{Cols: 80, Rows: 24}))
 	p.settle()
 	return p
@@ -285,6 +366,52 @@ func (p *hostPlayer) click(id string) {
 	if err := p.h.Click(surface, html.DOMID(id)); err != nil {
 		p.t.Fatal(err)
 	}
+	p.settle()
+}
+
+// step is the notch of a track that stands for v, and its step along the
+// track (html.Rendition.TrackStep). The host lays nothing out, so a player
+// says which element is under the pointer and which step it is at.
+func (p *hostPlayer) step(id string, v float64) (notch string, x int) {
+	p.t.Helper()
+	notch, x, ok := p.r.TrackStep(id, v)
+	if !ok {
+		p.t.Fatalf("no track for %s", id)
+	}
+	return notch, x
+}
+
+func (p *hostPlayer) tap(id string, v float64) {
+	notch, _ := p.step(id, v)
+	if err := p.h.Click(surface, notch); err != nil {
+		p.t.Fatal(err)
+	}
+	p.settle()
+}
+
+func (p *hostPlayer) press(id string, v float64) {
+	p.pressed = id
+	notch, x := p.step(id, v)
+	if err := p.h.DragStartStep(surface, notch, x, 0, x, 0); err != nil {
+		p.t.Fatal(err)
+	}
+	p.settle()
+}
+
+func (p *hostPlayer) move(v float64) {
+	notch, x := p.step(p.pressed, v)
+	if err := p.h.DragMoveStep(notch, x, 0, x, 0); err != nil {
+		p.t.Fatal(err)
+	}
+	p.settle()
+}
+
+func (p *hostPlayer) release(v float64) {
+	notch, x := p.step(p.pressed, v)
+	if err := p.h.DragEndStep(notch, x, 0, x, 0); err != nil {
+		p.t.Fatal(err)
+	}
+	p.pressed = ""
 	p.settle()
 }
 

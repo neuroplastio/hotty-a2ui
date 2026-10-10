@@ -10,6 +10,11 @@
 #   focus: the program gives the keyboard at an element (by view id)
 #   blur: the program takes it back
 #   click: the user clicks an element (by view id)
+#   tap: {on: a Slider's or a HottyRangeSlider's view id, at: a value}:
+#     a click on its track where it stands for the value
+#   press: {on, at}, then move: {at} and release: {at}: a drag along that
+#     track, from its press to its release (on the host, as one that says
+#     where on the track the pointer is, SPEC §9.1's steps)
 #   expect:
 #     focused: the element with the keyboard, by view id; null for none
 #     actions: the names of every action the agent has had, in order
@@ -499,3 +504,73 @@
     - focus: email
     - key: Enter
     - expect: {actions: [saveAccount], context: {email: ada@example.com, twoFactor: true, digest: true}}
+
+- name: Tab goes through a HottyRangeSlider's two knobs; the arrows move the one with the keyboard, which stops where it meets the other
+  story: hotty/slider
+  steps:
+    - focus: rating
+    - key: Tab
+    - expect: {focused: price/knob/0}
+    - key: ArrowRight
+    - expect: {focused: price/knob/0, data: {/price/start: 25, /price/end: 70}}
+    - key: Tab
+    - expect: {focused: price/knob/1}
+    - key: ArrowLeft
+    - expect: {data: {/price/start: 25, /price/end: 65}}
+    - key: Home
+    - expect: {focused: price/knob/1, data: {/price/start: 25, /price/end: 25}}
+    - key: ArrowDown
+    - expect: {data: {/price/start: 25, /price/end: 25}}
+    - key: Shift+Tab
+    - expect: {focused: price/knob/0}
+    - key: End
+    - expect: {data: {/price/start: 25, /price/end: 25}}
+    - key: Home
+    - expect: {data: {/price/start: 0, /price/end: 25}}
+    - key: Tab
+    - key: Tab
+    - expect: {focused: volume}
+    - key: Shift+Tab
+    - key: End
+    - expect: {focused: price/knob/1, data: {/price/start: 0, /price/end: 100}}
+
+- name: A tap on a HottyRangeSlider's track moves the nearer knob there, which takes the keyboard; a click on a knob gives it the keyboard where it is
+  story: hotty/slider
+  steps:
+    - tap: {on: price, at: 85}
+    - expect: {focused: price/knob/1, data: {/price/start: 20, /price/end: 85}}
+    - tap: {on: price, at: 10}
+    - expect: {focused: price/knob/0, data: {/price/start: 10, /price/end: 85}}
+    - tap: {on: price, at: 45}
+    - expect: {focused: price/knob/0, data: {/price/start: 45, /price/end: 85}}
+    - click: price/knob/1
+    - expect: {focused: price/knob/1, data: {/price/start: 45, /price/end: 85}}
+    - key: ArrowRight
+    - expect: {data: {/price/end: 90}}
+    - tap: {on: rating, at: 5}
+    - expect: {focused: rating, data: {/rating: 5}}
+
+- name: A drag moves the knob its press picks, stopped where it meets the other; from where they meet, its first move picks the knob it goes towards
+  story: hotty/slider
+  steps:
+    - press: {on: price, at: 70}
+    - expect: {focused: price/knob/1, data: {/price/start: 20, /price/end: 70}}
+    - move: {at: 90}
+    - expect: {data: {/price/end: 90}}
+    - move: {at: 5}
+    - expect: {data: {/price/start: 20, /price/end: 20}}
+    - release: {at: 5}
+    - expect: {focused: price/knob/1, data: {/price/start: 20, /price/end: 20}}
+    - press: {on: price, at: 20}
+    - expect: {data: {/price/start: 20, /price/end: 20}}
+    - move: {at: 40}
+    - release: {at: 40}
+    - expect: {focused: price/knob/1, data: {/price/start: 20, /price/end: 40}}
+    - press: {on: price, at: 40}
+    - move: {at: 40}
+    - move: {at: 30}
+    - release: {at: 30}
+    - expect: {focused: price/knob/1, data: {/price/start: 20, /price/end: 30}}
+    - press: {on: price, at: 0}
+    - release: {at: 0}
+    - expect: {focused: price/knob/0, data: {/price/start: 0, /price/end: 30}}

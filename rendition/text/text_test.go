@@ -118,6 +118,34 @@ func TestSwitch(t *testing.T) {
 	}
 }
 
+// TestRangeSlider: a range reads as a field does, "Label: start–end",
+// "(disabled)" after a disabled one, its error on the next line; a Slider
+// that fills from its end reads as any Slider.
+func TestRangeSlider(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	h := `"catalogId":"` + hotty.ID + `"`
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"lo":20,"hi":70,"narrow":false}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["price","year","bare","rating"]},
+	 {"id":"price","component":"HottyRangeSlider",` + h + `,"label":"Price","start":{"@path":"/lo"},"end":{"@path":"/hi"},"max":100,
+	  "checks":[{"condition":{"@path":"/narrow"},"message":"Too wide"}]},
+	 {"id":"year","component":"HottyRangeSlider",` + h + `,"label":"Year","start":2,"end":4,"max":10,"disabled":true},
+	 {"id":"bare","component":"HottyRangeSlider",` + h + `,"start":0.5,"end":1,"max":1},
+	 {"id":"rating","component":"Slider","label":"Minimum rating","value":3,"min":1,"max":5,
+	  "metadata":{"extensions":{"io_neuroplast_hotty":{"fill":"end"}}}}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	c.St.Touched["price"] = true
+	c.Rebuild()
+	got := text.Render(c.V)
+	want := "Price: 20–70\n✗ Too wide\nYear: 2–4 (disabled)\n0.5–1\nMinimum rating: 3 (1–5)\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
 // TestScrollView: a scroll view reads as all of its content, whatever its
 // height: its lines, or its child.
 func TestScrollView(t *testing.T) {

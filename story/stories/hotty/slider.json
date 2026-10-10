@@ -1,0 +1,138 @@
+{
+  "name": "Slider",
+  "kind": "component",
+  "component": "Slider, HottyRangeSlider",
+  "icon": "tune",
+  "description": "Sliders for a number and for a range. Brightness is a plain one, filled from its start to its knob. Speed is stepped: its knob snaps to quarters from 0.5 to 2. Minimum rating fills from its knob to its end (io_neuroplast_hotty.fill), as a filter for what is above it reads. Price is a HottyRangeSlider: two knobs and the range between them filled, each knob a Tab stop that stops where it meets the other. Volume has no label of its own, an icon either side, as a phone's has. The arrows move the slider or the knob that has the keyboard, and Home and End take it to the ends. A click on a track moves the slider there, or the range's nearer knob, and a drag moves it with the pointer. Each value is written to the data model.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "slider",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "brightness": 60,
+          "speed": 1,
+          "rating": 3,
+          "price": {
+            "start": 20,
+            "end": 70
+          },
+          "volume": 40
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "slider",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "brightness",
+              "speed",
+              "rating",
+              "price",
+              "volume_row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Sliders"
+          },
+          {
+            "id": "brightness",
+            "component": "Slider",
+            "label": "Brightness",
+            "value": {
+              "@path": "/brightness"
+            },
+            "min": 0,
+            "max": 100
+          },
+          {
+            "id": "speed",
+            "component": "Slider",
+            "label": "Speed",
+            "value": {
+              "@path": "/speed"
+            },
+            "min": 0.5,
+            "max": 2,
+            "steps": 6
+          },
+          {
+            "id": "rating",
+            "component": "Slider",
+            "label": "Minimum rating",
+            "value": {
+              "@path": "/rating"
+            },
+            "min": 1,
+            "max": 5,
+            "steps": 4,
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "fill": "end"
+                }
+              }
+            }
+          },
+          {
+            "id": "price",
+            "component": "HottyRangeSlider",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "label": "Price",
+            "start": {
+              "@path": "/price/start"
+            },
+            "end": {
+              "@path": "/price/end"
+            },
+            "min": 0,
+            "max": 100,
+            "steps": 20
+          },
+          {
+            "id": "volume_row",
+            "component": "Row",
+            "align": "center",
+            "children": [
+              "volume_down",
+              "volume",
+              "volume_up"
+            ]
+          },
+          {
+            "id": "volume_down",
+            "component": "Icon",
+            "name": "volumeDown"
+          },
+          {
+            "id": "volume",
+            "component": "Slider",
+            "value": {
+              "@path": "/volume"
+            },
+            "min": 0,
+            "max": 100,
+            "weight": 1,
+            "accessibility": {
+              "label": "Volume"
+            }
+          },
+          {
+            "id": "volume_up",
+            "component": "Icon",
+            "name": "volumeUp"
+          }
+        ]
+      }
+    }
+  ]
+}
