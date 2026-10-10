@@ -71,6 +71,7 @@ they're built.
 | KIT-19 | **Big text** | OpenTUI ASCIIFont | Low | figlet-style block letters | Large display type |
 | KIT-20 | **QR code** | OpenTUI QR | Low | Half blocks (`▀▄█`) | SVG, checked with `hotty render` at 1.6x |
 | KIT-21 | **3D and audio** | OpenTUI three.js and audio | Parked | Not for a terminal UI kit. AudioPlayer is already a labelled link. Media is gov R-2's research | — |
+| KIT-22 | **Toggle** (`HottySwitch`) | iOS's switch, Material's Switch; the maintainer asked for it (2026-10-10) | Medium | A boolean as CheckBox's (label, bound value, checks), drawn as a track with a knob at its end: `accent` when on, `muted` when off. Space, Enter or a click flips it | A pill with a knob, `role=switch` and `aria-checked`. The knob slides by deltas, since Blitz runs no CSS transitions (host-motion) |
 
 ## What "parity" means here
 

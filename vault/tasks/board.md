@@ -26,6 +26,8 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 ## Phase 1 — Cells parity
 
 - [ ] **KIT-09c** — Tree: guides, folding, a selected node.
+- [ ] **KIT-22c** — Toggle: `HottySwitch`, an iPhone-like on/off switch
+  for a boolean (the maintainer, 2026-10-10).
 - [ ] **KIT-10c** — Chart: sparkline, braille line chart and bars, using
   hotty-go's chart, braille and series.
 - [ ] **KIT-11c** — Suggestions: ghost text and a list under the field.
@@ -116,6 +118,7 @@ As of 2026-10-09, from the hotty agent:
 - [ ] **KIT-20h** — QR code as SVG.
 - [ ] **KIT-17h** — File picker.
 - [ ] **KIT-18h** — Terminal.
+- [ ] **KIT-22h** — Toggle: a pill whose knob slides by deltas.
 
 ## Later
 
