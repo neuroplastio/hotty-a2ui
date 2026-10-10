@@ -245,7 +245,7 @@ func TestDiffInScrollView(t *testing.T) {
 	keys(t, r, "G")
 	keys(t, r, "G")
 	// Taller than the box: its start, the fold before it first.
-	if got := r.Draw(40).Plain(); !strings.HasPrefix(got, " ⋯ 9 unchanged lines") || !strings.Contains(got, "@@ -23,7 +23,7 @@") {
+	if got := r.Draw(40).Plain(); !strings.HasPrefix(got, "  ⋯ 9 unchanged lines") || !strings.Contains(got, "@@ -23,7 +23,7 @@") {
 		t.Fatalf("G: the last hunk's start not at the top:\n%s", got)
 	}
 	keys(t, r, "g")

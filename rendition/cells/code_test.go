@@ -87,6 +87,48 @@ func TestCodeTint(t *testing.T) {
 	}
 }
 
+// Lines cut at the width scroll sideways under the wheel, six columns a
+// notch, the gutter staying put: a "…" stands at each side that hides
+// more, and the widest line's end is as far as it goes. A notch over code
+// that fits, or the wheel up and down, leaves it to what holds it.
+func TestCodeSideways(t *testing.T) {
+	r := coding(t, codeComp("c", `"code":"abcdefghijklmnopqrstuvwxyz\nxy","lineNumbers":true,"wrap":false`))
+	if got := r.Draw(14).Plain(); got != "1 abcdefghijk…\n2 xy" {
+		t.Fatalf("cut: %q", got)
+	}
+	if r.Wheel(5, 0, 0, 1) {
+		t.Error("the wheel down scrolled the code")
+	}
+	if !r.Wheel(5, 1, 1, 0) {
+		t.Fatal("the wheel right did not scroll the code")
+	}
+	if got := r.Draw(14).Plain(); got != "1 …hijklmnopq…\n2" {
+		t.Errorf("6 columns right: %q", got)
+	}
+	for range 3 {
+		r.Wheel(0, 0, 1, 0)
+		r.Draw(14)
+	}
+	if got := r.Draw(14).Plain(); got != "1 …pqrstuvwxyz\n2" || r.c.V.Find("c").Left != 14 {
+		t.Errorf("right to the end: %q at %d", got, r.c.V.Find("c").Left)
+	}
+	if r.Wheel(5, 0, 1, 0) {
+		t.Error("the wheel right scrolled past the end")
+	}
+	for range 3 {
+		r.Wheel(5, 0, -1, 0)
+		r.Draw(14)
+	}
+	if got := r.Draw(14).Plain(); got != "1 abcdefghijk…\n2 xy" {
+		t.Errorf("back to the start: %q", got)
+	}
+	fits := coding(t, codeComp("c", `"code":"abc","wrap":false`))
+	fits.Draw(14)
+	if fits.Wheel(1, 0, 1, 0) {
+		t.Error("code that fits scrolled")
+	}
+}
+
 // A HottyCode takes its gutter and its widest line, and a blank row
 // follows it in a Column, as one follows a scroll view.
 func TestCodeLayout(t *testing.T) {

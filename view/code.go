@@ -8,7 +8,8 @@ import (
 // HottyCode (profile §6.12) in the view: source code as lines of tokens
 // (package highlight), which the renditions colour by role; line numbers
 // and marked lines in a gutter. It has no height: a HottyScrollView
-// scrolls a long one.
+// scrolls a long one. Its lines that do not wrap scroll sideways in cells
+// (Controller.Scrolled), as a HottyScrollView's do.
 
 // Mark is what a marked line of code is: its sign and its tint.
 type Mark string
@@ -26,13 +27,17 @@ const (
 // says; Numbers, its lineNumbers prop; FirstLine, its startLine (1 by
 // default); Marks, each of its marks' lines (from line to end) with its
 // kind, a later mark over an earlier; Wrap, its wrap prop, true by
-// default.
+// default; Left, without Wrap, the first column of code cells shows
+// (profile §3.7: the wheel scrolls its cut lines sideways).
 func mapCode(b *Builder, n *a2ui.Node) *Element {
 	lang := b.String(n, "language")
 	e := &Element{Kind: Listing, Lang: lang, Code: highlight.Lines(b.String(n, "code"), lang), Numbers: b.Bool(n, "lineNumbers"),
 		FirstLine: 1, Wrap: b.Raw(n, "wrap") == nil || b.Bool(n, "wrap")}
 	if v := b.Raw(n, "startLine"); v != nil {
 		e.FirstLine = int(a2ui.ToNumber(v))
+	}
+	if !e.Wrap {
+		e.Left = b.St.Left[n.Key]
 	}
 	marks, _ := b.Raw(n, "marks").([]any)
 	for _, m := range marks {

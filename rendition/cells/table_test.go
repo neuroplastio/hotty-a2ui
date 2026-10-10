@@ -35,22 +35,36 @@ func cityTable(t *testing.T) (*Rendition, *view.Controller, *[]string) {
 
 // A Table is its header, a rule that says which rows show while the body
 // scrolls, and the rows, each cell padded a column a side, cut with "…"
-// when the columns do not fit; the widest columns give way first.
+// when the columns do not fit; the widest columns give way first. While
+// it scrolls, a scroll view's bar runs down the body a blank column past
+// the last column's padding, and the rule runs over them.
 func TestTableDraws(t *testing.T) {
 	r, _, _ := cityTable(t)
 	want := " Rank  City       Population\n" +
-		"────────────────── 1–2 of 3 ─\n" +
-		"    1  Tokyo      37,274,000\n" +
-		"    2  Delhi      32,065,760"
+		"──────────────────── 1–2 of 3 ─\n" +
+		"    1  Tokyo      37,274,000  ┃\n" +
+		"    2  Delhi      32,065,760  │"
 	if got := r.Draw(40).Plain(); got != want {
 		t.Fatalf("at 40 columns:\n%s\nwant\n%s", got, want)
 	}
-	want = " Rank  City   Popu…\n" +
+	want = " Rank  City  Pop…\n" +
 		"───────── 1–2 of 3 ─\n" +
-		"    1  Tokyo  37,2…\n" +
-		"    2  Delhi  32,0…"
+		"    1  Tok…  37,…  ┃\n" +
+		"    2  Del…  32,…  │"
 	if got := r.Draw(20).Plain(); got != want {
 		t.Fatalf("at 20 columns:\n%s\nwant\n%s", got, want)
+	}
+}
+
+// A table that shows all its rows has no bar, and keeps its width.
+func TestTableNoBar(t *testing.T) {
+	r := coding(t, `{"id":"t","component":"HottyTable","catalogId":"`+hotty.ID+`","columns":[{"key":"city","header":"City"}],
+		"rows":[{"city":"Tokyo"},{"city":"Delhi"}],"height":2}`)
+	if got := r.Draw(40).Plain(); got != " City\n───────\n Tokyo\n Delhi" {
+		t.Errorf("got\n%s", got)
+	}
+	if w := tableNatural(r.c.V.Find("t")); w != 7 {
+		t.Errorf("natural width %d", w)
 	}
 }
 
@@ -65,12 +79,18 @@ func TestTableSelection(t *testing.T) {
 	if cell := f.Cells[3][0]; cell.Attr&Reverse != 0 {
 		t.Errorf("an unselected row is reversed")
 	}
+	if thumb, track := f.Cells[2][30], f.Cells[3][30]; thumb.Role != Muted || thumb.Attr != 0 || track.Role != Border || track.Attr != Faint {
+		t.Errorf("the bar without the keyboard: %+v %+v", thumb, track)
+	}
 	c.Focus("root")
 	f = r.Draw(40)
 	for x := range 28 {
 		if cell := f.Cells[2][x]; cell.Role != Accent || cell.Attr&Reverse == 0 {
 			t.Fatalf("the focused selected row at %d: %v %v", x, cell.Role, cell.Attr)
 		}
+	}
+	if thumb := f.Cells[2][30]; thumb.Text != "┃" || thumb.Role != Accent || thumb.Attr&Reverse != 0 {
+		t.Errorf("the bar with the keyboard: %+v", thumb)
 	}
 }
 
@@ -94,9 +114,9 @@ func TestTableKeysAndClicks(t *testing.T) {
 	}
 	keys(t, r, "ArrowDown")
 	want := " Rank  City       Population\n" +
-		"────────────────── 2–3 of 3 ─\n" +
-		"    2  Delhi      32,065,760\n" +
-		"    3  São Paulo  22,429,800"
+		"──────────────────── 2–3 of 3 ─\n" +
+		"    2  Delhi      32,065,760  │\n" +
+		"    3  São Paulo  22,429,800  ┃"
 	if got := r.Draw(40).Plain(); got != want {
 		t.Fatalf("after ArrowDown:\n%s\nwant\n%s", got, want)
 	}

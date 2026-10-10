@@ -105,7 +105,8 @@ const (
 	ScrollView Kind = "scrollview"
 	// Listing is source code (HottyCode): Code, its lines as tokens;
 	// Lang; Numbers, whether its line numbers show, from FirstLine; Marks,
-	// by line number; Wrap, whether long lines wrap.
+	// by line number; Wrap, whether long lines wrap; Left, without it, the
+	// first column of code shown.
 	Listing Kind = "code"
 	// DiffView is a change to files (HottyDiff): Diff, its files of hunks;
 	// Variant, unified or split; Numbers, whether line numbers show; Wrap;

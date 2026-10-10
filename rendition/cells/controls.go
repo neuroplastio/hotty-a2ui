@@ -152,7 +152,7 @@ func controlWidth(e *view.Element) int {
 		}
 		return n
 	case view.Table:
-		return tableWidth(columnWidths(e))
+		return tableNatural(e)
 	case view.RichList:
 		return listWidth(e)
 	case view.Tree:

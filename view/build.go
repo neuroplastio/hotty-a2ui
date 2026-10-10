@@ -32,7 +32,7 @@ type State struct {
 	// field's list shows, by id.
 	Scroll map[string]int
 	// Left is the first column each HottyScrollView of lines that do not
-	// wrap shows; Tail whether it follows the tail, once the user or the
+	// wrap shows, and each HottyCode that does not wrap; Tail whether it follows the tail, once the user or the
 	// agent moved it (its follow prop until then).
 	Left map[string]int
 	Tail map[string]bool

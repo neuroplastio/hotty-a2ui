@@ -96,19 +96,25 @@ type codeRow struct {
 }
 
 // codeRows are a HottyCode's rows at width w: each line's code in the
-// columns past the gutter, broken into rows of them with wrap, cut at
-// them with "…" without; at noWrap, a row a line.
+// columns past the gutter, broken into rows of them with wrap; without,
+// the columns from its Left, cut with "…" at a side that hides more
+// (codeWindow); at noWrap, a row a line.
 func codeRows(e *view.Element, w int) []codeRow {
 	n, s := codeGutter(e)
 	cw := max(w-n-s, 1)
 	if w == noWrap {
 		cw = noWrap
 	}
+	left, _ := codeLeft(e, cw)
 	var out []codeRow
 	for i, l := range e.Code {
 		gs := tokenGlyphs(l, Fg)
-		if !e.Wrap || cw == noWrap {
-			out = append(out, codeRow{line: i, first: true, gs: fit(gs, cw)})
+		if cw == noWrap {
+			out = append(out, codeRow{line: i, first: true, gs: gs})
+			continue
+		}
+		if !e.Wrap {
+			out = append(out, codeRow{line: i, first: true, gs: codeWindow(gs, left, cw)})
 			continue
 		}
 		for j, t := range chars(gs, cw) {
@@ -116,6 +122,34 @@ func codeRows(e *view.Element, w int) []codeRow {
 		}
 	}
 	return out
+}
+
+// codeWindow is a line of code shown from column left, cw columns of it:
+// a "…" in its first column while columns before it are hidden, and in
+// its last while more follow, as a cut line ends.
+func codeWindow(gs []glyph, left, cw int) []glyph {
+	if left > 0 {
+		rest := skipCols(gs, left+1)
+		if len(rest) == 0 {
+			// The line ends before the window: nothing of it shows.
+			return nil
+		}
+		gs = append([]glyph{{text: "…", width: 1, style: rest[0].style}}, rest...)
+	}
+	return fit(gs, cw)
+}
+
+// codeLeft is the first column of code a HottyCode without wrap shows in
+// cw columns: its Left, at most what shows its widest line's end; and the
+// widest line's width. Lines that wrap, or fit, show from the start.
+func codeLeft(e *view.Element, cw int) (left, wide int) {
+	if e.Wrap || cw == noWrap {
+		return 0, 0
+	}
+	for _, l := range e.Code {
+		wide = max(wide, width(tokenGlyphs(l, Fg)))
+	}
+	return min(max(e.Left, 0), max(wide-cw, 0)), wide
 }
 
 // codeWidth is a HottyCode's natural width: its gutter and its widest
@@ -138,10 +172,28 @@ func codeMinimum(e *view.Element) int {
 
 // paintCode paints a HottyCode at (x, y), w wide (profile §3.4): each row
 // its line's number, in muted, and its mark's sign on the line's first
-// row, then its code; a marked line's rows tinted across the width.
+// row, then its code; a marked line's rows tinted across the width. Lines
+// cut at the width scroll sideways under the wheel (Wheel), as a scroll
+// view's do, the gutter staying put: its box, where it shows, is one.
 func (l *layout) paintCode(cv *canvas, e *view.Element, x, y, w int) {
 	n, s := codeGutter(e)
-	for i, r := range codeRows(e, w) {
+	rows := codeRows(e, w)
+	if cw := max(w-n-s, 1); !e.Wrap && w != noWrap {
+		if left, wide := codeLeft(e, cw); wide > cw {
+			if left != e.Left {
+				l.r.c.Scrolled(e.ID, 0, left, false)
+			}
+			at := box{x, y, w, len(rows)}
+			if c := cv.clip; c != nil {
+				x0, y0 := max(at.x, c.x), max(at.y, c.y)
+				x1, y1 := min(at.x+at.w, c.x+c.w), min(at.y+at.h, c.y+c.h)
+				at = box{x0, y0, max(x1-x0, 0), max(y1-y0, 0)}
+			}
+			l.r.scrolls[e.ID] = scrolled{at: at, page: len(rows), rows: len(rows), cols: cw, wide: wide, left: left}
+			l.r.scrollOrder = append(l.r.scrollOrder, e.ID)
+		}
+	}
+	for i, r := range rows {
 		num := e.FirstLine + r.line
 		if r.first && n > 0 {
 			digits := strconv.Itoa(num)

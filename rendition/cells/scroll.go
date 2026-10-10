@@ -7,14 +7,15 @@ import (
 )
 
 // A HottyScrollView in cells (profile §3.3, §3.4, §3.7), as bubbles'
-// viewport: Height rows of its content from its Top, then a blank column
-// and a scrollbar. Lines that do not wrap are cut at the width, from its
+// viewport: Height rows of its content from its Top, a column in, then a
+// blank column and a scrollbar, in a box filled with the surface. Lines that do not wrap are cut at the width, from its
 // Left; a child is laid out at the width and painted shifted up, through
 // the box (canvas.clip). Where it is scrolled is the controller's state
 // (view.Controller.Scrolled), clamped here to the content as last drawn.
 
 const (
 	scrollBar = 2 // the columns right of the content: a blank one and the bar
+	scrollPad = 1 // the column left of the content, inside the box's fill
 	wheelRows = 3 // the rows a notch of the wheel scrolls, as bubbles' viewport
 	sideCols  = 6 // the columns ← and → scroll, as bubbles' viewport
 )
@@ -63,31 +64,32 @@ func scrollLines(e *view.Element, w int) [][]glyph {
 }
 
 // scrollWidth is a HottyScrollView's natural width: its widest line
-// unwrapped, wrap or not, or its child's, and the scrollbar's columns.
+// unwrapped, wrap or not, or its child's, and the padding's and the
+// scrollbar's columns.
 func (l *layout) scrollWidth(e *view.Element) int {
 	if k := scrollChild(e); k != nil {
-		return l.natural(k) + scrollBar
+		return l.natural(k) + scrollPad + scrollBar
 	}
 	n := 0
 	for _, s := range e.Lines {
 		n = max(n, Width(s))
 	}
-	return n + scrollBar
+	return n + scrollPad + scrollBar
 }
 
 // scrollMinimum is the narrowest a HottyScrollView gets: its child's, or
-// a column of its lines, and the scrollbar's columns.
+// a column of its lines, and the padding's and the scrollbar's columns.
 func (l *layout) scrollMinimum(e *view.Element) int {
 	if k := scrollChild(e); k != nil {
-		return l.minimum(k) + scrollBar
+		return l.minimum(k) + scrollPad + scrollBar
 	}
-	return 1 + scrollBar
+	return 1 + scrollPad + scrollBar
 }
 
 // paintScroll paints a HottyScrollView at (x, y), w wide.
 func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
-	cw, page := max(w-scrollBar, 1), e.Height
+	cx, cw, page := x+scrollPad, max(w-scrollPad-scrollBar, 1), e.Height
 	k := scrollChild(e)
 	var rows [][]glyph
 	total, wide := 0, 0
@@ -122,19 +124,27 @@ func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w int) {
 	// The box itself takes a click, under whatever the content has.
 	r.hits = append(r.hits, hit{x: x, y: y, w: w, h: page, id: e.ID, opt: -1})
 	if k != nil {
-		was := cv.clipTo(box{x, y, cw, page})
+		was := cv.clipTo(box{cx, y, cw, page})
 		from := len(r.hits)
-		l.paint(cv, k, x, y-top, cw, total)
+		l.paint(cv, k, cx, y-top, cw, total)
 		cv.clip = was
-		r.clipHits(from, k, box{x, y, cw, page})
+		r.clipHits(from, k, box{cx, y, cw, page})
 	} else {
 		for i := range page {
 			if top+i < len(rows) {
-				cv.write(x, y+i, cw, skipCols(rows[top+i], left))
+				cv.write(cx, y+i, cw, skipCols(rows[top+i], left))
 			}
 		}
 	}
 	l.paintScrollbar(cv, e, x+w-1, y, page, total, top)
+	// The box is filled with the surface's colour, so that it stands apart
+	// from what is around it, where the theme colours the surface (Cell.Back
+	// is no tint otherwise); what its content tinted keeps its own.
+	cv.restyle(x, y, w, page, func(c *Cell) {
+		if c.BackMix == 0 {
+			c.Back, c.BackMix = Surface, 255
+		}
+	})
 }
 
 // revealFocus is the top that keeps the element with the keyboard in

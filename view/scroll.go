@@ -58,10 +58,11 @@ func (c *Controller) ScrollTo(id, to string) {
 	c.Rebuild()
 }
 
-// Scrolled records where a rendition scrolled a HottyScrollView: top, its
-// first row shown; left, its first column; tail, whether that is the end,
-// so that it follows what comes. The cells rendition clamps them to its
-// content, and calls this when they change.
+// Scrolled records where a rendition scrolled a HottyScrollView, or a
+// HottyCode's lines sideways: top, its first row shown; left, its first
+// column; tail, whether that is the end, so that it follows what comes.
+// The cells rendition clamps them to its content, and calls this when
+// they change.
 func (c *Controller) Scrolled(id string, top, left int, tail bool) {
 	c.St.Scroll[id], c.St.Left[id], c.St.Tail[id] = top, left, tail
 	if e := c.V.Find(id); e != nil {

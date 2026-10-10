@@ -45,13 +45,31 @@ func tableWidth(ws []int) int {
 	return n
 }
 
-// tableMinimum is a Table's minimum: each column at most minColumn wide.
+// tableBar is the columns a Table's scrollbar takes after its last
+// column's padding: while its body scrolls, a blank one and the bar, as a
+// scroll view's (scrollBar), so that the selected row's fill ends apart
+// from the thumb; none otherwise.
+func tableBar(e *view.Element) int {
+	if len(e.Cells) > bodyRows(e) {
+		return scrollBar
+	}
+	return 0
+}
+
+// tableNatural is a Table's natural width: its columns at their natural
+// widths, and its scrollbar.
+func tableNatural(e *view.Element) int {
+	return tableWidth(columnWidths(e)) + tableBar(e)
+}
+
+// tableMinimum is a Table's minimum: each column at most minColumn wide,
+// and its scrollbar.
 func tableMinimum(e *view.Element) int {
 	ws := columnWidths(e)
 	for j := range ws {
 		ws[j] = min(ws[j], minColumn)
 	}
-	return tableWidth(ws)
+	return tableWidth(ws) + tableBar(e)
 }
 
 // fitColumns are a Table's columns' widths in w columns: their natural
@@ -122,13 +140,15 @@ func tableRow(cells []string, cols []view.Column, ws []int, st style) []glyph {
 
 // paintTable paints a Table at (x, y), w wide: the header, bold; a rule
 // in border, which says which rows show while the body scrolls; then the
-// rows from the first shown. The selected row is reversed across the
-// table, in the accent while the table has the keyboard and in muted
-// otherwise.
+// rows from the first shown, and while it scrolls a scroll view's bar
+// beside them, past the last column's padding. The selected row is
+// reversed across the table, in the accent while the table has the
+// keyboard and in muted otherwise.
 func (l *layout) paintTable(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
-	ws := fitColumns(e, w)
-	tw := min(tableWidth(ws), w)
+	bar := min(tableBar(e), w)
+	ws := fitColumns(e, w-bar)
+	tw := min(tableWidth(ws), w-bar)
 	headers := make([]string, len(e.Columns))
 	for j, c := range e.Columns {
 		headers[j] = c.Header
@@ -136,14 +156,17 @@ func (l *layout) paintTable(cv *canvas, e *view.Element, x, y, w int) {
 	cv.write(x, y, w, tableRow(headers, e.Columns, ws, style{attr: Bold}))
 	h, n := bodyRows(e), len(e.Cells)
 	top := e.Top
-	rule := repeat("─", tw, style{role: Border})
+	rule := repeat("─", tw+bar, style{role: Border})
 	if n > h {
 		at := " " + strconv.Itoa(top+1) + "–" + strconv.Itoa(min(top+h, n)) + " of " + strconv.Itoa(n) + " "
-		if aw := Width(at); aw+2 <= tw {
-			rule = concat(repeat("─", tw-aw-1, style{role: Border}), line(at, style{role: Muted}), repeat("─", 1, style{role: Border}))
+		if aw := Width(at); aw+2 <= tw+bar {
+			rule = concat(repeat("─", tw+bar-aw-1, style{role: Border}), line(at, style{role: Muted}), repeat("─", 1, style{role: Border}))
 		}
 	}
 	cv.write(x, y+1, w, rule)
+	if bar > 0 {
+		l.paintScrollbar(cv, e, x+tw+bar-1, y+2, h, n, top)
+	}
 	r.hits = append(r.hits, hit{x: x, y: y, w: tw, h: 2, id: e.ID, opt: -1})
 	if n == 0 {
 		cv.write(x+cellPad, y+2, w-cellPad, fit(line("No rows", style{role: Muted}), w-cellPad))
@@ -162,7 +185,7 @@ func (l *layout) paintTable(cv *canvas, e *view.Element, x, y, w int) {
 		cv.write(x, y+2+i-top, w, row)
 		r.hits = append(r.hits, hit{x: x, y: y + 2 + i - top, w: tw, h: 1, id: e.ID, opt: i})
 	}
-	r.boxes[e.ID] = box{x, y, tw, 2 + h}
+	r.boxes[e.ID] = box{x, y, tw + bar, 2 + h}
 }
 
 // clickTable is a click on a Table, which has the keyboard now: on a row,

@@ -8,6 +8,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	"github.com/neuroplastio/hotty-a2ui/catalog/hotty"
+	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -42,14 +43,14 @@ const sixLines = `["line 1","line 2","line 3","line 4","line 5","line 6"]`
 // first is a frame's first row as text.
 func first(f *Frame) string { return strings.SplitN(f.Plain(), "\n", 2)[0] }
 
-// A scroll view shows height rows of its lines, a blank column, then the
-// scrollbar: a thumb of ┃ as long as the share that shows, where it shows,
+// A scroll view shows height rows of its lines a column in, a blank
+// column, then the scrollbar: a thumb of ┃ as long as the share that shows, where it shows,
 // on a track of │. The thumb is muted, and accent while the view has the
 // keyboard; the track is border, faint.
 func TestScrollDraws(t *testing.T) {
 	r, c, _ := scrolling(t, `"lines":{"@path":"/log"},"height":3`, sixLines)
 	f := r.Draw(20)
-	want := fmt.Sprintf("%-19s┃\n%-19s┃\n%-19s│", "line 1", "line 2", "line 3")
+	want := fmt.Sprintf(" %-18s┃\n %-18s┃\n %-18s│", "line 1", "line 2", "line 3")
 	if got := f.Plain(); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
 	}
@@ -61,7 +62,7 @@ func TestScrollDraws(t *testing.T) {
 		t.Errorf("focused, the thumb is %v", thumb.Role)
 	}
 	r2, _, _ := scrolling(t, `"lines":["short"],"height":3`, `[]`)
-	if got := r2.Draw(20).Plain(); got != "short\n\n" {
+	if got := r2.Draw(20).Plain(); got != " short\n\n" {
 		t.Errorf("all of it shows, so no bar: %q", got)
 	}
 }
@@ -88,7 +89,7 @@ func TestScrollKeys(t *testing.T) {
 	if !r.Wheel(5, 1, 0, 1) || c.V.Find("root").Top != 3 {
 		t.Fatalf("the wheel down: top %d", c.V.Find("root").Top)
 	}
-	if got := first(r.Draw(20)); !strings.HasPrefix(got, "line 4") {
+	if got := first(r.Draw(20)); !strings.HasPrefix(got, " line 4") {
 		t.Errorf("after the wheel: %q", got)
 	}
 	if r.Wheel(5, 1, 0, 1) {
@@ -113,22 +114,22 @@ func TestScrollFollows(t *testing.T) {
 		}
 		c.Rebuild()
 	}
-	if got := first(r.Draw(20)); !strings.HasPrefix(got, "line 4") {
+	if got := first(r.Draw(20)); !strings.HasPrefix(got, " line 4") {
 		t.Fatalf("it starts at %q", got)
 	}
 	add(7)
-	if got := first(r.Draw(20)); !strings.HasPrefix(got, "line 5") {
+	if got := first(r.Draw(20)); !strings.HasPrefix(got, " line 5") {
 		t.Fatalf("a line arrived: %q", got)
 	}
 	c.Focus("root")
 	keys(t, r, "k")
 	add(8)
-	if got := first(r.Draw(20)); !strings.HasPrefix(got, "line 4") {
+	if got := first(r.Draw(20)); !strings.HasPrefix(got, " line 4") {
 		t.Fatalf("scrolled up, a line arrived: %q", got)
 	}
 	keys(t, r, "End")
 	add(9)
-	if got := first(r.Draw(20)); !strings.HasPrefix(got, "line 7") {
+	if got := first(r.Draw(20)); !strings.HasPrefix(got, " line 7") {
 		t.Errorf("back at the end, a line arrived: %q", got)
 	}
 	// Without follow, hottyScrollTo's end is where it goes, once.
@@ -137,7 +138,7 @@ func TestScrollFollows(t *testing.T) {
 	c.ScrollTo("root", "end")
 	r.Draw(20)
 	add(7)
-	if got := first(r.Draw(20)); !strings.HasPrefix(got, "line 4") {
+	if got := first(r.Draw(20)); !strings.HasPrefix(got, " line 4") {
 		t.Errorf("scrolled to the end, then a line: %q", got)
 	}
 }
@@ -149,36 +150,61 @@ func TestScrollSideways(t *testing.T) {
 	long := `["0123456789abcdefghijklmnopqrstuvwxyz","x"]`
 	r, c, _ := scrolling(t, `"lines":{"@path":"/log"},"height":2`, long)
 	c.Focus("root")
-	if got := first(r.Draw(20)); got != "0123456789abcdefgh" {
+	if got := first(r.Draw(21)); got != " 0123456789abcdefgh" {
 		t.Fatalf("cut: %q", got)
 	}
-	// At 20 columns: keys() draws at 40, where the lines fit.
-	at20 := func(ks ...string) string {
+	// At 21 columns, 18 of lines: keys() draws at 40, where the lines fit.
+	at21 := func(ks ...string) string {
 		t.Helper()
 		for _, k := range ks {
 			if ok, err := r.Key(k); !ok || err != nil {
 				t.Fatalf("%s: %v %v", k, ok, err)
 			}
-			r.Draw(20)
+			r.Draw(21)
 		}
-		return first(r.Draw(20))
+		return first(r.Draw(21))
 	}
-	if got := at20("l", "ArrowRight"); got != "cdefghijklmnopqrst" {
+	if got := at21("l", "ArrowRight"); got != " cdefghijklmnopqrst" {
 		t.Errorf("12 columns right: %q", got)
 	}
-	if got := at20("l", "l", "l"); got != "ijklmnopqrstuvwxyz" {
+	if got := at21("l", "l", "l"); got != " ijklmnopqrstuvwxyz" {
 		t.Errorf("right, clamped to the widest line: %q", got)
 	}
-	if got := at20("h", "h", "h", "h", "h"); got != "0123456789abcdefgh" {
+	if got := at21("h", "h", "h", "h", "h"); got != " 0123456789abcdefgh" {
 		t.Errorf("back left, clamped: %q", got)
 	}
 	r, c, _ = scrolling(t, `"lines":{"@path":"/log"},"height":3,"wrap":true`, long)
 	c.Focus("root")
-	if got := r.Draw(20).Plain(); got != "0123456789abcdefgh\nijklmnopqrstuvwxyz\nx" {
+	if got := r.Draw(21).Plain(); got != " 0123456789abcdefgh\n ijklmnopqrstuvwxyz\n x" {
 		t.Errorf("wrapped:\n%s", got)
 	}
 	if ok, _ := r.Key("l"); ok {
 		t.Error("l scrolls lines that wrap")
+	}
+}
+
+// A scroll view's box is filled with the surface's colour, so that it
+// stands apart, where the theme colours the surface; what its content
+// tints keeps its own, and the terminal's background is left alone.
+func TestScrollSurface(t *testing.T) {
+	r, _, _ := scrolling(t, `"lines":{"@path":"/log"},"height":2`, `["a"]`)
+	f := r.Draw(10)
+	for _, at := range [][2]int{{0, 0}, {9, 0}, {9, 1}} {
+		if c := f.Cells[at[1]][at[0]]; c.Back != Surface || c.BackMix != 255 {
+			t.Errorf("(%d,%d): %v %d", at[0], at[1], c.Back, c.BackMix)
+		}
+	}
+	th := theme.Theme{Name: "t", Bg: "#000000", Fg: "#ffffff", Surface: "#112233"}
+	if !strings.Contains(f.Themed(th), "48;2;17;34;51") {
+		t.Error("no surface in a theme that colours it")
+	}
+	if strings.Contains(f.Themed(theme.Default), "48;") {
+		t.Error("the terminal's background is painted")
+	}
+	r = coding(t, `{"id":"v","component":"HottyScrollView","catalogId":"`+hotty.ID+`","height":1,"child":"c"}`,
+		codeComp("c", `"code":"a","marks":[{"line":1,"kind":"error"}]`))
+	if c := r.Draw(10).Cells[0][2]; c.Back != Error || c.BackMix != 42 {
+		t.Errorf("a marked line in the box: %v %d", c.Back, c.BackMix)
 	}
 }
 
@@ -193,7 +219,7 @@ func TestScrollChild(t *testing.T) {
 	}
 	col := `{"id":"col","component":"Column","children":[` + strings.Join(ids, ",") + `]}`
 	r, c, actions := scrolling(t, `"child":"col","height":3`, `[]`, append([]string{col}, buttons...)...)
-	if got := r.Draw(20).Plain(); got != fmt.Sprintf("%-19s┃\n%-19s┃\n%-19s│", "[ B1 ]", "[ B2 ]", "[ B3 ]") {
+	if got := r.Draw(20).Plain(); got != fmt.Sprintf(" %-18s┃\n %-18s┃\n %-18s│", "[ B1 ]", "[ B2 ]", "[ B3 ]") {
 		t.Fatalf("got\n%s", r.Draw(20).Plain())
 	}
 	if _, _, _, _, ok := r.Box("b4"); ok {
@@ -202,7 +228,7 @@ func TestScrollChild(t *testing.T) {
 	must(t, r.Click(2, 1))
 	c.Focus("root")
 	keys(t, r, "G")
-	if got := first(r.Draw(20)); !strings.HasPrefix(got, "[ B4 ]") {
+	if got := first(r.Draw(20)); !strings.HasPrefix(got, " [ B4 ]") {
 		t.Fatalf("at the end: %q", got)
 	}
 	must(t, r.Click(2, 2))
@@ -237,13 +263,14 @@ func TestScrollSetApart(t *testing.T) {
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
 	}
-	if got := New(view.NewController(p.Surface("s"))).Draw(20).Plain(); got != "Log\none\n\nAfter" {
+	if got := New(view.NewController(p.Surface("s"))).Draw(20).Plain(); got != "Log\n one\n\nAfter" {
 		t.Errorf("got %q", got)
 	}
 }
 
-// A scroll view's natural width is its widest line and its scrollbar,
-// whether it wraps them or not: in a Row it takes that, not less.
+// A scroll view's natural width is its widest line, its padding and its
+// scrollbar, whether it wraps them or not: in a Row it takes that, not
+// less.
 func TestScrollWidth(t *testing.T) {
 	for _, wrap := range []string{"false", "true"} {
 		p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
@@ -255,7 +282,7 @@ func TestScrollWidth(t *testing.T) {
 		if err := p.ProcessJSON([]byte(msgs)); err != nil {
 			t.Fatal(err)
 		}
-		if got := New(view.NewController(p.Surface("s"))).Draw(40).Plain(); got != "a line   |" {
+		if got := New(view.NewController(p.Surface("s"))).Draw(40).Plain(); got != " a line   |" {
 			t.Errorf("wrap %s: %q", wrap, got)
 		}
 	}
