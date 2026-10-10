@@ -14,7 +14,8 @@ at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; at
 KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; at
 KIT-22c (journal 2026-10-10.5): the switch; at KIT-10c (journal
-2026-10-10.6): the charts.
+2026-10-10.6): the charts; at KIT-SLIDE (journal 2026-10-10.7): the
+sliders, and its four open points.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -35,10 +36,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   source or a drop target for the agent
   ([drag-and-drop](../knowledge/drag-and-drop.md), model C with P2,
   picked 2026-10-10).
-- [ ] **KIT-SLIDE** — Sliders: a Slider that fills from its end
-  (`io_neuroplast_hotty.fill`), `HottyRangeSlider` with two knobs, and
-  a story of their own; Progress keeps one slider. The rail stays as it
-  is (`━━━━■⎯⎯⎯⎯`), approved 2026-10-10.
 - [ ] **KIT-11c** — Suggestions: ghost text and a list under the field.
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
 - [ ] **KIT-13c** — Toast and tooltip (tooltip from
@@ -170,6 +167,21 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-SLIDE** — Sliders: a Slider that fills from its end and
+  `HottyRangeSlider`, story `hotty/slider` (journal 2026-10-10.7,
+  awaiting the maintainer's look).
+  - `io_neuroplast_hotty.fill` `"end"` swaps a Slider's sides,
+    `⎯⎯⎯⎯■━━━━`, the rail's glyphs unchanged; on a host the fill.
+  - A range: `start` and `end` bound each to a path, `min`, `max`,
+    `steps` (the basic Slider's name), `checks`, `disabled`; cells
+    `⎯⎯■━━━━■⎯⎯ 20–70`, the range and the focused knob in the accent,
+    its number bold. Text `Price: 20–70`.
+  - Each knob a Tab stop that stops where it meets the other; a click or
+    a drag moves the nearer knob, and where they meet the first move
+    picks.
+  - On a host two `role=slider` buttons on one track; a drag by §9.1
+    steps, taps by the notches. A tap after a drag let go off a slider
+    is a tap again (a Slider's too).
 - [x] **KIT-10c** — `HottyChart` and `HottySparkline`, held against
   ntcharts (journal 2026-10-10.6, awaiting the maintainer's look).
   - A chart is a line (`kind` line, braille) or bars (eighths of a row,

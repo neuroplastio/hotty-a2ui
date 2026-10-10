@@ -88,7 +88,7 @@ so that an error comes and goes as a text delta.
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a chevron in `--k-muted` (Material's `keyboard_arrow_down`, `keyboard_arrow_up` while the list is open, 1.25em), whose list opens in a surface of its own (below); else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9). An option's icon (§6.16) goes before its label: in the list, on a chip or a checkbox, and on the select while the option is picked |
-| Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output` as wide as the widest value (§3.3's), in `ch`. The track is cut into notches, one a value (at most 41; twenty steps without a `step`), each centred on where the knob stands at its value and half one at either end, so that a tap, a click, sets the value tapped. On a host with `steps` (SPEC.md §4, §9.1) the track is the drag target, `data-on="drag"` and `data-steps` its notches' count less one, and the notches take `click` alone: a drag sets the value of the step under the pointer wherever the pointer goes, off the track and out of the surface too, until it is let go, and the click it ends with changes nothing more. Without `steps` each notch has `data-on="drag click"`: a drag sets the value of the notch under the pointer, and stops where there is none. The track's `touch-action: pan-y` lets a finger drag it: one that moves along the track drags, and one that moves up or down scrolls. Hosts draw `input type=range` unevenly (Blitz not at all) |
+| Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output` as wide as the widest value (§3.3's), in `ch`. The track is cut into notches, one a value (at most 41; twenty steps without a `step`), each centred on where the knob stands at its value and half one at either end, so that a tap, a click, sets the value tapped. On a host with `steps` (SPEC.md §4, §9.1) the track is the drag target, `data-on="drag"` and `data-steps` its notches' count less one, and the notches take `click` alone: a drag sets the value of the step under the pointer wherever the pointer goes, off the track and out of the surface too, until it is let go, and the click it ends with changes nothing more. Without `steps` each notch has `data-on="drag click"`: a drag sets the value of the notch under the pointer, and stops where there is none. The track's `touch-action: pan-y` lets a finger drag it: one that moves along the track drags, and one that moves up or down scrolls. Its fill runs from the rail's start to the knob, or, with `fill` `"end"` (§6.16), from the knob to the rail's end. Hosts draw `input type=range` unevenly (Blitz not at all) |
 | DateTimeInput | `input type=text` with the ISO 8601 value, its form as the placeholder, as in cells (§3.5). Hosts draw date and time inputs unevenly (Blitz not at all), and none takes an offset such as `Z` |
 | Tabs | a `tablist` of `button role=tab`, each its icon (§6.16) and its title, then the tab shown |
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
@@ -102,6 +102,7 @@ so that an error comes and goes as a text delta.
 | HottyDiff | `div` in the mono face, filled with `--k-tonal` as a HottyCode's; with hunks, `tabindex=0 role=listbox`, whose `data-keys` gives the program ArrowUp, ArrowDown, Home, End, k, j, g and G (a HottyScrollView around it binds the letters to scroll actions, SPEC.md §10.2). For each file with a name (or of several), a row (`k-diff-file`): its name, bold, then what the change adds and removes, `+N` in `--k-success` and `-M` in `--k-error`, or new, deleted or binary. A run of unchanged lines left out is a muted row, `⋯ N unchanged lines` (`k-fold`). Each hunk is a `div tabindex=-1 role=option data-on=click` (`k-hunk`), whose id is the diff's, `~b` and the hunk's index: its header in info and its section muted (`k-hh`), then its lines. Unified, a line is a flex row (`k-dl`): its old number and its new (`--k-lo` and `--k-ln` wide, `aria-hidden`), its sign, then its code, its tokens in a HottyCode's spans. Split, the hunk is a grid of two equal columns, the old side and the new (`k-ds`), paired as cells pairs them, a rule between them and the header across both. A removed line (`k-d-del`) is filled with a sixth of `--k-error`, an added one (`k-d-add`) with a sixth of `--k-success`, and its changed words (`k-w`) more. The selected hunk (`k-sel`, `aria-selected`) has a rail on its left and its header reversed, muted, and in `--k-focus` while the diff has the keyboard (`k-on`). It then has the host's focus itself, so that the host scrolls it into view (SPEC.md §5.3) as cells keeps it in sight. A split diff stays split at any width, its sides wrapping: the markup does not know the width, and a host has no container queries |
 | HottyTree | `div tabindex=0 role=tree`, as a HottyList's box, holding the nodes the view shows (the same rows as cells, §3.4), each a `div role=treeitem data-on=click` whose id is the tree's and `~q` and the node's index, with `aria-level`, `aria-expanded` on a branch and `aria-selected`. A row is a flex row indented `--k-5` a level (`--k-level`): its fold (`k-node-fold`, a column wide), `▸` or `▾` in `--k-muted` before a branch and blank before a leaf, so that a level's labels line up; its icon, as an Icon draws it, or a blank one as wide where another node has an icon; then its label, the filter's matches in `span.k-match`, and a closed branch's count (`k-node-count`, as cells', §3.4) in `--k-muted`. The selected node is marked as a HottyList's selected item: filled with `--k-tonal`, a 3px bar at its start in `--k-border`, and in `--k-focus` with its text while the tree has the keyboard (`k-on`). Its `data-keys` are a HottyList's; its letters and Enter reach the program anyway, a focused box using no keys. Each row is `--k-node-h` (2rem) tall. With a `height`, the box is that many rows tall and holds every node that shows, and the host scrolls it (SPEC.md §5.3), with the wheel and a thin scrollbar; the selected node is `tabindex=-1` and has the host's focus while the tree has the keyboard, so that the host scrolls it into view as the selection moves, as a HottyDiff's selected hunk does. Guides are cells' (§3.4): a host has the room to indent instead. Its empty text shows when no node does |
 | HottySwitch | `button type=button role=switch` with `aria-checked`, `disabled` while it is, holding its pill (`k-switch-track`, `aria-hidden`) and its label (`~l`), so that a click on either flips it, as do Space and Enter, which a host clicks a button with (SPEC.md §10.2); then its error. On or off is that one attribute, so a flip is one delta. Off, the pill is filled with `--k-tonal` and ringed in `--k-muted`, its knob `--k-muted` at its start; on, it is `--k-accent`, its knob `--k-on-accent` at its end, so that the two differ by more than a shade where the accent is the foreground (no theme), as Material's switch does. The ring, and a focus ring of `--k-focus` around the pill while it has the host's focus, are shadows, which draw where a thin rounded border may not. The knob does not slide: Blitz runs no transitions, and a slide by deltas is vault KIT-22h |
+| HottyRangeSlider | a Slider's field (§6.20): its label (`~l`), then a row (`~r`) of the track and an `output` as wide as the widest range, in `ch`, naming both knobs (`for`); no `−` or `+`. The track is `div role=group`, named by the label (`aria-labelledby`), holding the rail, the fill from the start's knob to the end's, a Slider's notches, and the two knobs, each `button type=button role=slider` (`k-thumb`, the knob's view id, `price/knob/0` and `price/knob/1`) named `Price, start` and `Price, end` (`aria-label`; `Start` and `End` without a label), with `aria-valuenow` and its own range up to the other knob in `aria-valuemin` and `aria-valuemax`, as a multi-thumb slider has it. Each knob is a Tab stop, a button, whose arrows, Home and End the host leaves to the program (SPEC.md §10.2). On a host with `steps` the track is the drag target, as a Slider's, the notches take `click` alone, and the knobs nothing: a press anywhere on the track, a knob too, moves the nearer knob to the step under the pointer and gives it the keyboard, and the drag moves it on. The press's blur, which the host sends as the track takes no focus (SPEC.md §10.1), leaves the keyboard on the knob, and the next update gives the host it back (`a=focus`). Without `steps` each knob and each notch has `data-on="drag"` (the notches `drag click`): a drag from a knob moves it to the notch under the pointer. A tap on a notch moves the nearer knob there. A knob is a disc, `--k-accent`, ringed by a 2px outline of `--k-focus` while it has the host's focus (an outline, which Blitz draws round, where it draws a spread shadow's corners square). A disabled one's knobs are `disabled`, its notches take nothing, and the field is faint (`k-off`), its label and value too |
 | HottyChart | `div role=img`, named by its `accessibility.label`, else `Line chart` or `Bar chart` and its series' labels; a grid of its ticks' labels and its plot. The labels (`k-chart-y`, `aria-hidden`, in `--k-muted`) are each placed at its value's height, all of them, in a column as wide as the widest, in `ch`. The plot (`~a`) is `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), its left and bottom borders the axes, 2px in `--k-border`, since a 1px straight edge drops out at a fractional scale. The axis is the view's, cells' (§6.18), so a value sits at the same height in both. A line is an inline `svg` a series (`~g0`, `~g1`, …), stretched over the plot (`preserveAspectRatio=none`), holding one `path` (`~c0`, …) that hotty-go's `chart.Line` makes: a break where a value is missing, a lone value a dot, round joins, stroked 1.5 wide in `currentColor` with presentation attributes only, which every host's SVG takes. A new point is so an attribute's delta a line. Bars are boxes, a group a point and a bar a series in it, each from the axis's 0 to its value, placed by percentages, so that one below 0 hangs from it. The series' colours are cells' (§3.4), set by the series' class: `--k-info`, `--k-warning`, `--k-success`, `--k-error`, and round again. Under the plot: a line's points' labels, three evenly spread (the first and the last among them), or a bar chart's each under its bars; then the legend, when it has several series or a labelled one, a key a series (a stroke for a line, a square for bars) and its label in `--k-muted`. With no values, the plot says `No data`. The `svg`'s box is 480 by 20 a row, a guess at the plot's width that the markup cannot know: on a plot much wider or narrower the stroke thickens where the line is steep (vault KIT-10h) |
 | HottySparkline | `span role=img`, named by its `accessibility.label`, else `Sparkline`: a box `--k-n` columns wide (its `window`, else its values' count, at most the room), `--k-rows` terminal rows tall, in `--k-info`, holding a bar a value, a terminal column wide (`1ch` of the mono face), from its bottom, as tall as its value is between its `min` and `max`, at least an eighth of a row; a missing value has no height. The bars come newest first in a row that runs right to left (`row-reverse`), so that the newest is at the box's right edge and a box too narrow loses the oldest, as in cells |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
@@ -121,9 +122,9 @@ renderer's own state: a tab shown, a Modal opened.
 | event | does |
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
-| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
+| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a tap on a HottyRangeSlider's track moves its nearer knob there, and a click on a knob gives it the keyboard; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
 | `submit` | the HottyForm submits (§6.2) |
-| `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it |
+| `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it. A HottyRangeSlider's dragstart picks the knob that moves (§6.20), and each drag moves it, stopped where it meets the other. The click a drag ends with, which comes right after its dragend and only when it was let go on the slider, changes nothing more |
 | `focus`, `blur` | the surface has the keyboard, or not |
 
 Typing reaches the data model at every key (`data-on=input`), as A2UI's
@@ -234,6 +235,7 @@ Natural widths:
 | a select | 2 for the gutter, plus the label's width or the widest option's label and ` ▾`, whichever is wider |
 | a Choice's options | 2 for the gutter, plus the label's width or the widest option row (`> [ ] label`), whichever is wider; chips, all the options in one row two columns apart |
 | Slider | 2 for the gutter, the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
+| HottyRangeSlider | a Slider's, its value's width that of the widest range: twice a Slider's value's width, and 1 for the `–` |
 | HottyProgress | its label's width or 25 (a bar of 20 and ` 100%`), whichever is wider |
 | HottySpinner | its set's widest frame, plus 1 and the label when it has one |
 | HottyTable | its columns' widths, each a column's `width`, else its header's or its widest cell's, whichever is wider, plus 2 for each column (a column of padding each side) |
@@ -257,7 +259,8 @@ Minimums:
 - A Text's minimum is its longest word. A list item's indent and marker
   count with its first word.
 - A field's is the gutter and its label's longest word, and at least 3.
-- A Slider's is the gutter, 4 and its value's width.
+- A Slider's is the gutter, 4 and its value's width; a HottyRangeSlider's
+  too, its value's width a range's.
 - A Choice's options' is the gutter and its widest option, or its label's
   longest word if that is wider.
 - A HottyProgress's is its label's longest word, and at least 8: a bar of 3
@@ -354,7 +357,8 @@ How the containers lay their children out:
 | HottySwitch | past the gutter, its track with the knob at one end, then a space and its label, on one row: `▬▬■` in `accent` while it is on, a bar into a filled knob, and `□⎯⎯` in `muted` while it is off, a hollow knob on a thin line (`⎯`, not `─`: a terminal draws `─` itself at the cell's middle, where the font's square need not sit, and a font draws `⎯`, often a symbol font by fallback, since few coding fonts have it; a Slider's thin track is the same), so that without colour the knob's end, its fill and the track's weight still say which; then the error. Its label is in `accent` while it has the keyboard. A disabled one is `muted` and faint throughout, its knob still at its end. The switch and its label take a click |
 | a select (one value, `checkbox` display) | past the gutter, a title row, then the picked option's label, or `…` in `muted` when none is picked, and ` ▾` in `muted`. While its list is open (§3.7), the options follow one a row: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
 | a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options: one a row, `[•] label` or `[ ] label` after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect); chips two columns apart, wrapping, `( label )` and `(● label)` when picked. Then the error. |
-| Slider | past the gutter, `label ━━━━■⎯⎯⎯⎯ 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `■` at round((value − min) / (max − min) × (track − 1)), and after it the track is `⎯` in `border`. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
+| Slider | past the gutter, `label ━━━━■⎯⎯⎯⎯ 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `■` at round((value − min) / (max − min) × (track − 1)), and after it the track is `⎯` in `border`. With `fill` `"end"` (§6.16) the two sides swap, `⎯⎯⎯⎯■━━━━ 50`: `⎯` in `border` up to the knob and `━` after it, the glyphs the same. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
+| HottyRangeSlider | a Slider's row with two knobs, `label ⎯⎯■━━━━■⎯⎯ 20–70`: the start's and the end's, each `■` where a Slider's would stand at its value, `━` between them and `⎯` in `border` either side, then the range, `start–end`. Where both would take one column, the end's goes a column right (the start's a column left, at the track's end), so that both show, `■■`. A disabled one is `muted` and faint throughout. Then the error. |
 | HottyProgress | its label on a row, when it has one, then the bar and the percentage on the next: ` 42%`, five columns (`%3.0f%%` after a space, half to even). The bar takes the columns before them, filled in eighths of a cell: `█` for each full cell, then one of `▏▎▍▌▋▊▉` for a cell part filled, blending from `info` into `accent` across the bar (§3.6), or `success` alone once full. The rest is `░` in `border`. Without a value, a segment of a quarter of the bar (at least one cell) is `█` in `info`, moving with the clock (below), and the percentage's columns are blank. When the bar would be shorter than 3, the percentage is dropped. |
 | HottyTable | a header row, bold; a rule of `─` in `border`; then a row for each row the body shows, a cell for each column: its text, padded a column each side, cut with `…` when wider than its column, at the start, the centre (rounded down) or the end as `align` says. The columns take their natural widths; while the table is too wide, a column at a time comes off the widest that is wider than 3 (the first of equals), and once none is, off the widest. The body shows `height` rows, or all of them (one, `No rows` in `muted`, when it has none): from the first it showed, moved as little as brings the selected row into view, never past the last (the view's `Top`, the same in both renditions). While it scrolls, the rule ends with ` 4–10 of 12 ` in `muted` and one more `─`. The selected row is reversed across the table, in `accent` while the table has the keyboard and in `muted` otherwise. |
 | HottyList | as bubbles' list with its default delegate, every line 2 columns in: its title, ` Title ` in `accent` reversed, and a blank row (neither without a title); its status line in `muted` and a blank row; then the items of the page that shows, each its label and, under it, its description in `muted` (one row an item, with no blank rows between, when none has a description; else two, a blank row between). The selected item's first two columns are `│ `: in `accent` with its label and description while the list has the keyboard, and in `muted` otherwise, its text plain. A label too wide is cut with `…`; its characters that matched the filter are underlined. With a `height`, a page shows that many items, from the page that holds the selected one, and the body keeps their rows on every page; after it, while the items take more than a page, a blank row and a dot for each page (`•`, the page shown's in `fg`, the others in `border`; `3/10` in `muted` when the dots do not fit), whose two rows stay while a filter leaves one page. The status line is `12 items` (`1 item`, `No items`); while a filter applies, `“query” 7 items`, or `Nothing matched`, then ` • 5 filtered`. While the filter is typed, `Filter: ` in `accent` and the text take the title's row, with the cursor after them. With no items, the empty text shows in `muted` in the body. |
@@ -397,15 +401,17 @@ storybook's `Book.Tick` and `storybook -bare` do, on Bubble Tea's
 `tea.Every`. So two renditions of one surface made at once show the same
 frame, and a test sets the clock (`Rendition.Clock`, in both).
 
-**Fields** are the text fields, DateTime, CheckBox, HottySwitch, Choice
-and Slider: the controls huh calls fields, drawn as huh draws them.
+**Fields** are the text fields, DateTime, CheckBox, HottySwitch, Choice,
+Slider and HottyRangeSlider: the controls huh calls fields, drawn as huh
+draws them.
 - **The gutter.** A field's first two columns are its gutter. While the
   field has the keyboard (for a Choice's options, one of them), the
   gutter is `┃ ` in `accent` down the field's rows; otherwise it is blank.
 - **The title.** A text field, a DateTime or a Choice with a label has a
   title row: the label, bold, in `accent` while the field has the
-  keyboard. A CheckBox's, a HottySwitch's and a Slider's labels are on
-  their one row.
+  keyboard. A CheckBox's, a HottySwitch's, a Slider's and a
+  HottyRangeSlider's labels are on their one row. A HottyRangeSlider has
+  the keyboard while either knob does.
 
 **Focus** (the element with the keyboard). Each focused element is in
 `accent`, with a glyph or an attribute so that the focus still shows
@@ -415,7 +421,11 @@ without colour:
   is not a control are reversed whole.
 - A CheckBox's box is in `accent`; a box option's row starts with `> `.
 - A HottySwitch's label is in `accent`.
-- A Slider's track is in `accent` up to the knob, and so is the knob.
+- A Slider's track is in `accent` up to the knob, and so is the knob
+  (from the knob, with `fill` `"end"`).
+- A HottyRangeSlider's range is in `accent`, and so is the knob with the
+  keyboard, whose number in the value is in `accent` and bold, so that
+  without colour the value still says which knob the keys move.
 - A text field's prompt is in `accent`, and its cursor cell is reversed.
   What Shift or Control+a selected (§5) is on the `selection` colour, or
   reversed where the theme can't tint, as a terminal shows its own; the
@@ -537,6 +547,10 @@ In the output:
   the step's decimals: 0.45 less 0.05 is 0.4, not 0.39999999999999997.
   On a host the slider is a button, which leaves these keys to the
   program (SPEC.md §10.2), so the renderer steps it there too.
+- **A HottyRangeSlider's knob** steps as a Slider does, by its range's
+  step, and stops where it meets the other knob: the start's goes no
+  higher than the end, and the end's no lower than the start, Home and
+  End included. Tab goes from the start's knob to the end's.
 - **A HottyTable** moves its selection by ArrowUp and ArrowDown (k and j)
   a row, by PageUp and PageDown the rows its body shows, and by Home and
   End (g and G) to its first row and its last, clamped, as bubbles'
@@ -617,6 +631,13 @@ In the output:
   - a click on a Slider's track sets the value at that column:
     min + (max − min) × column / (track − 1), stepped and clamped, and
     the value follows the pointer while the button stays down;
+  - a click on a HottyRangeSlider's track moves the nearer knob to the
+    value at that column (the start's, midway between them) and gives it
+    the keyboard; a click on a knob gives it the keyboard where it is.
+    Either way the knob follows the pointer while the button stays down,
+    stopped where it meets the other. Where the knobs meet, the click
+    moves neither, and the first column the pointer moves to picks the
+    knob it goes towards (§6.20);
   - anything else is activated.
 - **A disabled Button** does not take the keyboard, but the click still
   activates it, as in rendition/html; the controller decides what that
@@ -660,7 +681,9 @@ reference is `rendition/text`.
 - A field is `Label: value`; an obscured one shows `•` for each
   character, and an empty one its placeholder in parentheses.
 - A CheckBox is `[x] Label` or `[ ] Label`; a ChoicePicker `Label: ` and
-  the labels picked; a Slider `Label: value (min–max)`.
+  the labels picked; a Slider `Label: value (min–max)`; a
+  HottyRangeSlider `Label: start–end`, followed by `(disabled)` while it
+  is.
 - A HottySwitch is `Label: on` or `Label: off` (`on` or `off` alone
   without a label), followed by `(disabled)` while it is.
 - A Button is `[ label ]`, followed by `(disabled)` while its checks fail.
@@ -745,10 +768,11 @@ the host had focused, wherever Tab took it. A renderer whose fields report
 `input` is current anyway; the blur keeps it so for a field that does not.
 
 **Vectors.** `vectors/keys.yaml` checks all of this against both
-renditions: a story played by keys, focus, blur and clicks, with who has
-the keyboard, the actions the agent got and the data model expected after
-each step. The host side runs on hottytest's host, whose `Key` takes keys
-as SPEC.md §10.2 has a host take them.
+renditions: a story played by keys, focus, blur, clicks, and taps and
+drags on a slider's track, with who has the keyboard, the actions the
+agent got and the data model expected after each step. The host side
+runs on hottytest's host, whose `Key` takes keys as SPEC.md §10.2 has a
+host take them, and which reports a drag's steps (SPEC.md §9.1).
 
 ## 6. The hotty catalog
 
@@ -913,7 +937,7 @@ so the agent places it once and never updates it. The renderer builds it
    hunk`, `↓/j next hunk`, `enter choose`, a field's `enter submit` in
    a HottyForm, a CheckBox's `space toggle`, a HottySwitch's
    `space/enter toggle`, a Button's `enter press`, a
-   Slider's `←/→ adjust`, a select's `enter open`, a HottyScrollView's
+   Slider's or a HottyRangeSlider's knob's `←/→ adjust`, a select's `enter open`, a HottyScrollView's
    `↑/k up`, `↓/j down`, `f/pgdn page down`, `b/pgup page up`; and
    `esc close` while a Modal is open.
 2. The surface's HottyShortcuts that have a `label` (§6.1), each its key
@@ -934,7 +958,7 @@ Which view shows is the renderer's state, shared by the surface's
 renditions. It takes no focus and sends nothing.
 
 On a host, the component's keys are those of a HottyTable, a HottyList,
-a HottyDiff, a HottyTree, a Slider or a select, whose keys the program works; the host moves focus
+a HottyDiff, a HottyTree, a Slider, a HottyRangeSlider's knob or a select, whose keys the program works; the host moves focus
 among the others without telling the renderer (§2, the keyboard). A
 HottyScrollView's keys are the host's own there, so it has none.
 
@@ -1088,7 +1112,7 @@ come.
 It is as tall as the text around it and takes its colour, and takes no
 focus. In cells and text it is its glyph (§3.4), as an Icon is.
 
-### 6.16 icons
+### 6.16 icons and fill
 
 `metadata.extensions.io_neuroplast_hotty.icons` gives the titles of a
 Tabs, or the options of a ChoicePicker, an icon each, which the basic
@@ -1100,6 +1124,16 @@ a host the icon goes before the title or the label (§2), hidden from a
 screen reader, which the label tells; cells and text leave it out, as
 few icons have a glyph a column wide, as a HottyTree's (§6.14). Other
 renderers ignore it, as they do autofocus (§6.4) and keys (§6.5).
+
+`metadata.extensions.io_neuroplast_hotty.fill` says which side of a
+Slider's knob is filled: `"start"`, the default, from `min` to the knob,
+as every Slider is; or `"end"`, from the knob to `max`, for a value whose
+chosen part lies above it, such as a minimum rating, where what the
+filter keeps is what is filled. In cells the track's two sides swap
+(`⎯⎯⎯⎯■━━━━`, §3.4), its glyphs and the knob unchanged, and on a host the
+fill goes on the other side of the knob (§2). The value, its keys and its
+clicks are a Slider's either way. Any other value is the default, and
+other renderers ignore it, filling from the start.
 
 ### 6.17 HottySwitch
 
@@ -1176,6 +1210,42 @@ the columns it keeps: its last values, the newest at the right edge, so
 that it keeps its width as values arrive and shows its slots blank while
 it fills; without one, a column a value. `height` is its rows (1). It
 takes no focus and no keys.
+
+### 6.20 HottyRangeSlider
+
+A range of numbers picked on one track, such as a price filter: a
+Slider with two knobs, the start's and the end's, and the range between
+them filled. Give it a `label`, `max` (and `min`, 0 by default), and bind
+`start` and `end` (DynamicNumbers) each to a path of its own, where the
+user's moves are written; a literal end is the renderer's state once
+moved, as an unbound Slider's value is. `steps`, a whole number, cuts the
+range into that many steps, which both knobs snap to, as a Slider's
+`steps` does; without it a knob moves by a twentieth of the range and
+lands on a hundredth. An end with no value is the range's own end, and
+the start is never past the end: each is clamped to the range, and the
+end to the start.
+
+Each knob is a Tab stop, the start's first. The arrows, Home and End
+move the knob with the keyboard as they move a Slider, and it stops
+where it meets the other (§3.7), so that the two can meet but never
+cross. A click or a tap on the track moves the nearer knob there and
+gives it the keyboard (the start's, midway between them); a click on a
+knob only gives it the keyboard. A drag moves the knob its press picked
+with the pointer, stopped where it meets the other. Where the knobs
+meet, a press moves neither and the drag's first move picks the knob it
+goes towards, so that a range shut to one value can open either way.
+Meanwhile the keyboard is on the knob pressed, in cells, where each has
+a column; on a host, where one hides the other, on the end's, which can
+move away (the start's at `max`). A move counts as touching it, for its
+`checks`.
+
+Cells draws `label ⎯⎯■━━━━■⎯⎯ 20–70` (§3.4); a host draws a track with
+two knobs, each a `role=slider` named `Label, start` and `Label, end` for
+a screen reader (§2); text is `Label: 20–70` (§4). Without a `label`,
+give `accessibility.label`, which names the knobs. `disabled` (a
+DynamicBoolean) keeps both knobs from moving and from the keyboard. Its
+`disabled` and its checks' conditions are literals or paths, as a
+HottySwitch's are (§6.17).
 
 ## 7. Fallbacks
 

@@ -20,8 +20,8 @@ every component of another catalog carries its `catalogId`.
   do now.
 - Effect: a hotty component's dynamic props and checks can call only the
   hotty catalog's functions, not basic's (`not`, `or`, `required`). A
-  HottySwitch's `disabled` and its checks' conditions are literals or paths
-  (KIT-22c).
+  HottySwitch's and a HottyRangeSlider's `disabled` and their checks'
+  conditions are literals or paths (KIT-22c, KIT-SLIDE).
 - Fix: a composite catalog, generated from basic's definitions verbatim plus
   ours, for an agent to use as the surface default. Upstream's own samples do
   this (`basic_with_mcp_catalog.json`, Gemini Enterprise's composite). It's
