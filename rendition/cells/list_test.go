@@ -74,8 +74,8 @@ func TestListDraws(t *testing.T) {
 func TestListSelection(t *testing.T) {
 	r, c, _ := snacks(t)
 	f := r.Draw(30)
-	if bar, label := f.Cells[4][0], f.Cells[4][2]; bar.Role != Muted || label.Role != Fg {
-		t.Errorf("unfocused: bar %v, label %v", bar.Role, label.Role)
+	if bar, label := f.Cells[4][0], f.Cells[4][2]; bar.Role != Muted || label.Role != Fg || label.Attr&Bold == 0 {
+		t.Errorf("unfocused: bar %v, label %v %v, want its label bold", bar.Role, label.Role, label.Attr)
 	}
 	c.Focus("root")
 	f = r.Draw(30)

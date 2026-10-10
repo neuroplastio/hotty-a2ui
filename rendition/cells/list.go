@@ -103,7 +103,8 @@ func marked(s string, at []int, st style) []glyph {
 
 // paintList paints a HottyList at (x, y), w wide. The selected item's
 // bar, label and description are in the accent while the list has the
-// keyboard, and its bar alone, in muted, otherwise. A label's characters
+// keyboard; otherwise its bar is in muted and its label bold, as a
+// HottyTree's (the maintainer, round 6). A label's characters
 // that matched the filter are underlined; the filter line, while typed,
 // has the cursor at its end.
 func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
@@ -144,7 +145,7 @@ func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
 		it := e.Items[i]
 		label, desc, bar := style{}, style{role: Muted}, style{}
 		if i == sel {
-			bar.role = Muted
+			label, bar = style{attr: Bold}, style{role: Muted}
 			if focused {
 				label, desc, bar = style{role: Accent}, style{role: Accent}, style{role: Accent}
 			}
