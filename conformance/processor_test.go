@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/a2ui/schema"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 )
 
@@ -45,7 +46,7 @@ func TestConformanceProcessor(t *testing.T) {
 				if v := caseVersion(c); v != "" && v != a2ui.Version {
 					t.Skipf("protocol version %s", v)
 				}
-				p := a2ui.NewProcessor(catalogsFor(t, c)...)
+				p := schema.NewProcessor(catalogsFor(t, c)...)
 				if action == "get_renderer_capabilities" {
 					args, _ := c["args"].(map[string]any)
 					if got := p.Capabilities(str(args["version"])); !jsonEqual(t, got, c["expect"]) {

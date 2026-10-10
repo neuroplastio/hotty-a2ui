@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/a2ui/schema"
 )
 
 // TestConformanceRPC runs rpc_functions.yaml (handle_rpc in the brief):
@@ -22,7 +23,7 @@ func TestConformanceRPC(t *testing.T) {
 		t.Run(str(c["name"]), func(t *testing.T) {
 			args, _ := c["args"].(map[string]any)
 			exp, _ := c["expect"].(map[string]any)
-			p := a2ui.NewProcessor(rpcCatalog(c, args, exp))
+			p := schema.NewProcessor(rpcCatalog(c, args, exp))
 			var out []a2ui.Outbound
 			p.Send = func(o a2ui.Outbound) { out = append(out, o) }
 			activated := args["userActivationPresent"] == true

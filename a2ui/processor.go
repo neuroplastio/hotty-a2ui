@@ -50,6 +50,9 @@ type Processor struct {
 	// Changed is called after the agent's messages change a surface: it
 	// was created or updated, and resolved again, or it was deleted.
 	Changed func(s *Surface, deleted bool)
+	// Validator checks the agent's messages against A2UI's schemas; nil
+	// trusts them past what applying them needs (Validator).
+	Validator Validator
 
 	catalogs []*Catalog
 	surfaces map[string]*Surface
@@ -158,7 +161,7 @@ func (p *Processor) Process(payload any) error {
 	if err := checkNesting(payload, 0, 0); err != nil {
 		return p.fail(err, "")
 	}
-	ops, err := prepare(msgs)
+	ops, err := p.prepare(msgs)
 	if err != nil {
 		return p.fail(err, "")
 	}
@@ -279,7 +282,7 @@ func checkNesting(v any, depth, calls int) error {
 
 // prepare checks every message: the payload's version, one action each,
 // and the action's v1.0 schema.
-func prepare(msgs []map[string]any) ([]op, error) {
+func (p *Processor) prepare(msgs []map[string]any) ([]op, error) {
 	if len(msgs) == 0 {
 		return nil, nil
 	}
@@ -317,8 +320,10 @@ func prepare(msgs []map[string]any) ([]op, error) {
 			return nil, &ValidationError{Msg: fmt.Sprintf("Invalid v1.0 message: %s carries no action. Allowed actions: %s.", where, strings.Join(agentActions, ", "))}
 		}
 		action := actions[0]
-		if err := checkSchema(envelopes()[action], m, fmt.Sprintf("Invalid v1.0 message: %s (%s)", where, action)); err != nil {
-			return nil, err
+		if p.Validator != nil {
+			if err := p.Validator.Message(action, m, fmt.Sprintf("Invalid v1.0 message: %s (%s)", where, action)); err != nil {
+				return nil, err
+			}
 		}
 		body, _ := m[action].(map[string]any)
 		if p, ok := body["path"].(string); ok && action == "updateDataModel" {
@@ -550,7 +555,10 @@ func (p *Processor) checkComponent(s *Surface, d map[string]any) error {
 			return &ValidationError{Msg: fmt.Sprintf("Component '%s': Unrecognized reserved protocol directive '%s' at %s: keys starting with a single '@' are reserved; write '@%s' for a literal key", id, key, at, key), Path: at}
 		}
 	}
-	return cat.CheckComponent(d)
+	if p.Validator == nil {
+		return nil
+	}
+	return p.Validator.Component(cat, d)
 }
 
 func findReservedKey(v any, at string) (string, string, bool) {
@@ -816,9 +824,11 @@ func (p *Processor) callRendererFunction(o op) {
 		refuse("Function '%s' requires user activation context to execute.", name)
 		return
 	}
-	if err := cat.CheckCall(name, call); err != nil {
-		refuse("%s", strings.TrimPrefix(err.Error(), "a2ui: "))
-		return
+	if p.Validator != nil {
+		if err := p.Validator.Call(cat, name, call); err != nil {
+			refuse("%s", strings.TrimPrefix(err.Error(), "a2ui: "))
+			return
+		}
 	}
 	if f.Impl == nil {
 		answer(nil, "EXECUTION_ERROR", fmt.Sprintf("Function '%s' has no implementation in this renderer.", name))

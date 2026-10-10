@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/a2ui/schema"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 )
 
@@ -22,7 +23,7 @@ func TestConformanceCommonTypes(t *testing.T) {
 			steps, _ := c["steps"].([]any)
 			for i, st := range steps {
 				step := st.(map[string]any)
-				err := a2ui.CheckCommonType(str(c["definition"]), step["value"])
+				err := schema.CheckCommonType(str(c["definition"]), step["value"])
 				if want, ok := step["expectError"].(map[string]any); ok {
 					checkError(t, "value "+string(mustJSON(t, step["value"])), err, want)
 				} else if err != nil {
@@ -57,6 +58,7 @@ func TestConformanceCatalog(t *testing.T) {
 			}
 			var cat *a2ui.Catalog
 			var err error
+			v := &schema.Validator{}
 			if strings.HasSuffix(str(c["catalogPath"]), "catalogs/basic/v1/catalog.json") {
 				b, rerr := os.ReadFile(filepath.Join(conformanceDir, "..", str(c["catalogPath"])))
 				if rerr != nil {
@@ -91,13 +93,13 @@ func TestConformanceCatalog(t *testing.T) {
 			}
 			valid, _ := exp["validComponents"].([]any)
 			for _, d := range valid {
-				if err := cat.CheckComponent(d.(map[string]any)); err != nil {
+				if err := v.Component(cat, d.(map[string]any)); err != nil {
 					t.Errorf("%s: %v", mustJSON(t, d), err)
 				}
 			}
 			invalid, _ := exp["invalidComponents"].([]any)
 			for _, d := range invalid {
-				if err := cat.CheckComponent(d.(map[string]any)); err == nil {
+				if err := v.Component(cat, d.(map[string]any)); err == nil {
 					t.Errorf("%s is accepted", mustJSON(t, d))
 				}
 			}

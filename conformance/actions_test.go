@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/a2ui/schema"
 	"go.yaml.in/yaml/v3"
 )
 
@@ -130,7 +131,7 @@ func TestConformanceSelectCatalog(t *testing.T) {
 			if def == "" {
 				def = "basic"
 			}
-			p := a2ui.NewProcessor()
+			p := schema.NewProcessor()
 			if cats, ok := args["catalogs"].(map[string]any); ok {
 				for id, m := range cats {
 					v := str(m.(map[string]any)["protocolVersion"])

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/a2ui/schema"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	thirdparty "github.com/neuroplastio/hotty-a2ui/third_party"
 )
@@ -27,7 +28,7 @@ func TestBasicExamples(t *testing.T) {
 			if err := json.Unmarshal(b, &ex); err != nil {
 				t.Fatal(err)
 			}
-			p := a2ui.NewProcessor(basic.Catalog())
+			p := schema.NewProcessor(basic.Catalog())
 			var reported []string
 			p.Send = func(o a2ui.Outbound) {
 				if o.Error != nil {

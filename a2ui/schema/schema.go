@@ -1,4 +1,10 @@
-package a2ui
+// Package schema checks what an agent sends against A2UI v1.0's JSON
+// schemas: its Validator is the a2ui.Validator a renderer sets on its
+// processor when an outside agent writes the messages (NewProcessor). A
+// program that is its own agent leaves this package out, and with it
+// jsonschema and x/text, about 0.4 MB of a js/wasm binary gzipped
+// (hotty-a2ui journal 2026-10-10.21).
+package schema
 
 import (
 	"encoding/json"
@@ -9,6 +15,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	thirdparty "github.com/neuroplastio/hotty-a2ui/third_party"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 	"github.com/santhosh-tekuri/jsonschema/v6/kind"
@@ -102,6 +109,66 @@ func openCatalog() map[string]any {
 	}}
 }
 
+// Validator checks messages, components and function calls against
+// A2UI's schemas (a2ui.Validator), compiling each catalog's once, on first
+// use. Its zero value is ready; it may be shared by processors and
+// goroutines.
+type Validator struct {
+	mu   sync.Mutex
+	cats map[*a2ui.Catalog]*catalogSchemas
+}
+
+var _ a2ui.Validator = (*Validator)(nil)
+
+// NewProcessor is a2ui.NewProcessor with A2UI's schemas checked: for a
+// renderer whose agent is another program.
+func NewProcessor(catalogs ...*a2ui.Catalog) *a2ui.Processor {
+	p := a2ui.NewProcessor(catalogs...)
+	p.Validator = &Validator{}
+	return p
+}
+
+// Message checks a v1.0 message against its action's envelope, with any
+// component and any call allowed: a component's own properties are
+// checked against its surface's catalog when it is applied (Component).
+func (v *Validator) Message(action string, m map[string]any, what string) error {
+	sch := envelopes()[action]
+	if sch == nil {
+		return nil
+	}
+	return checkSchema(sch, m, what)
+}
+
+// Component checks a component definition against its type's schema,
+// ComponentCommon's properties with it; an open catalog accepts anything.
+func (v *Validator) Component(c *a2ui.Catalog, def map[string]any) error {
+	s, err := v.schemas(c)
+	if err != nil {
+		return err
+	}
+	typ, _ := def["component"].(string)
+	sch := s.components[typ]
+	if sch == nil {
+		return nil
+	}
+	id, _ := def["id"].(string)
+	return checkSchema(sch, def, fmt.Sprintf("Component '%s' (%s)", id, typ))
+}
+
+// Call checks a call of one of the catalog's functions, {"@call", "args",
+// …}, against the function's schema.
+func (v *Validator) Call(c *a2ui.Catalog, name string, call map[string]any) error {
+	s, err := v.schemas(c)
+	if err != nil {
+		return err
+	}
+	sch := s.functions[name]
+	if sch == nil {
+		return nil
+	}
+	return checkSchema(sch, call, fmt.Sprintf("Invalid arguments for function '%s'", name))
+}
+
 // catalogSchemas are a catalog's components and functions, compiled.
 type catalogSchemas struct {
 	once       sync.Once
@@ -112,13 +179,22 @@ type catalogSchemas struct {
 
 // schemas compiles the catalog's schemas, once: its document's, and those
 // of the functions it was given without one. An open catalog has none.
-func (c *Catalog) schemas() (*catalogSchemas, error) {
-	s := &c.compiled
+func (v *Validator) schemas(c *a2ui.Catalog) (*catalogSchemas, error) {
+	v.mu.Lock()
+	if v.cats == nil {
+		v.cats = map[*a2ui.Catalog]*catalogSchemas{}
+	}
+	s := v.cats[c]
+	if s == nil {
+		s = &catalogSchemas{}
+		v.cats[c] = s
+	}
+	v.mu.Unlock()
 	s.once.Do(func() { s.err = s.compile(c) })
 	return s, s.err
 }
 
-func (s *catalogSchemas) compile(c *Catalog) error {
+func (s *catalogSchemas) compile(c *a2ui.Catalog) error {
 	s.components = map[string]*jsonschema.Schema{}
 	s.functions = map[string]*jsonschema.Schema{}
 	if c.Open {
@@ -155,8 +231,8 @@ func (s *catalogSchemas) compile(c *Catalog) error {
 			"args":      true,
 		},
 	}}
-	for _, name := range SortedKeys(funcs) {
-		alts = append(alts, map[string]any{"$ref": "#/functions/" + EscapeToken(name)})
+	for _, name := range a2ui.SortedKeys(funcs) {
+		alts = append(alts, map[string]any{"$ref": "#/functions/" + a2ui.EscapeToken(name)})
 	}
 	defs["anyFunction"] = map[string]any{"anyOf": alts}
 	doc["$defs"] = defs
@@ -166,11 +242,11 @@ func (s *catalogSchemas) compile(c *Catalog) error {
 		return fmt.Errorf("a2ui: catalog %s: %w", c.ID, err)
 	}
 	for _, name := range c.ComponentNames() {
-		url := localBase + "components/" + EscapeToken(name)
+		url := localBase + "components/" + a2ui.EscapeToken(name)
 		err := comp.AddResource(url, map[string]any{
 			"allOf": []any{
 				map[string]any{"$ref": commonTypesURL + "#/$defs/ComponentCommon"},
-				map[string]any{"$ref": activeURL + "#/components/" + EscapeToken(name)},
+				map[string]any{"$ref": activeURL + "#/components/" + a2ui.EscapeToken(name)},
 				map[string]any{"properties": map[string]any{"component": map[string]any{"type": "string"}}},
 			},
 			"unevaluatedProperties": false,
@@ -184,9 +260,9 @@ func (s *catalogSchemas) compile(c *Catalog) error {
 		}
 		s.components[name] = sch
 	}
-	for _, name := range SortedKeys(funcs) {
-		url := localBase + "functions/" + EscapeToken(name)
-		if err := comp.AddResource(url, map[string]any{"$ref": activeURL + "#/functions/" + EscapeToken(name)}); err != nil {
+	for _, name := range a2ui.SortedKeys(funcs) {
+		url := localBase + "functions/" + a2ui.EscapeToken(name)
+		if err := comp.AddResource(url, map[string]any{"$ref": activeURL + "#/functions/" + a2ui.EscapeToken(name)}); err != nil {
 			return err
 		}
 		sch, err := comp.Compile(url)
@@ -261,10 +337,10 @@ func checkSchema(sch *jsonschema.Schema, v any, what string) error {
 	}
 	var ve *jsonschema.ValidationError
 	if !errors.As(err, &ve) {
-		return &ValidationError{Msg: what + ": " + err.Error()}
+		return &a2ui.ValidationError{Msg: what + ": " + err.Error()}
 	}
 	at, msg := describe(ve)
-	return &ValidationError{Msg: what + ": " + msg, Path: at}
+	return &a2ui.ValidationError{Msg: what + ": " + msg, Path: at}
 }
 
 // describe writes a schema failure as one line. An alternative (oneOf)
@@ -343,7 +419,7 @@ func pointer(segs []string) string {
 	var b strings.Builder
 	for _, s := range segs {
 		b.WriteString("/")
-		b.WriteString(EscapeToken(s))
+		b.WriteString(a2ui.EscapeToken(s))
 	}
 	return b.String()
 }
@@ -371,7 +447,7 @@ func CheckCommonType(name string, v any) error {
 	sch := commonTypes.schemas[name]
 	if sch == nil {
 		var err error
-		if sch, err = commonTypes.c.Compile(commonTypesURL + "#/$defs/" + EscapeToken(name)); err != nil {
+		if sch, err = commonTypes.c.Compile(commonTypesURL + "#/$defs/" + a2ui.EscapeToken(name)); err != nil {
 			return fmt.Errorf("a2ui: common type %s: %w", name, err)
 		}
 		commonTypes.schemas[name] = sch

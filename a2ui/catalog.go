@@ -22,8 +22,6 @@ type Catalog struct {
 	// Open accepts any component type with any properties, unchecked: a
 	// stand-in for a catalog the renderer knows only by its id.
 	Open bool
-
-	compiled catalogSchemas
 }
 
 // ComponentType is one component of a catalog.
@@ -188,37 +186,6 @@ func (c *Catalog) Component(name string) *ComponentType {
 		t.Props[k] = p
 	}
 	return t
-}
-
-// CheckComponent validates a component definition against its type's
-// schema, ComponentCommon's properties with it; an open catalog accepts
-// anything.
-func (c *Catalog) CheckComponent(def map[string]any) error {
-	s, err := c.schemas()
-	if err != nil {
-		return err
-	}
-	typ, _ := def["component"].(string)
-	sch := s.components[typ]
-	if sch == nil {
-		return nil
-	}
-	id, _ := def["id"].(string)
-	return checkSchema(sch, def, fmt.Sprintf("Component '%s' (%s)", id, typ))
-}
-
-// CheckCall validates a call of one of the catalog's functions,
-// {"@call", "args", …}, against the function's schema.
-func (c *Catalog) CheckCall(name string, call map[string]any) error {
-	s, err := c.schemas()
-	if err != nil {
-		return err
-	}
-	sch := s.functions[name]
-	if sch == nil {
-		return nil
-	}
-	return checkSchema(sch, call, fmt.Sprintf("Invalid arguments for function '%s'", name))
 }
 
 // checkIdentifiers checks that a v1 catalog names its components, their

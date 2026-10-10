@@ -39,9 +39,9 @@ and the cells beside it follow, and the other way round.
 ## Highlights
 
 - ⚙️ **A complete A2UI v1.0 core**: the data model, expressions and functions,
-  catalogs checked against the spec's JSON Schemas, and the message
-  processor with the agent's function calls. It runs A2UI's own conformance
-  suites.
+  catalogs, and the message processor with the agent's function calls,
+  checked against the spec's JSON Schemas where another program is the
+  agent (`a2ui/schema`). It runs A2UI's own conformance suites.
 - 🧩 **Every basic component, in every rendition.** A2UI's 40-odd examples
   are the storybook's stories.
 - ⌨️ **Keys and focus as HOTTY's SPEC §10**: one set of vectors runs against
@@ -114,7 +114,8 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 | Path | What |
 | --- | --- |
 | [`docs/profile.md`](docs/profile.md) | the HOTTY profile of A2UI, a draft: renditions, keys and focus, the hotty catalog, fallbacks |
-| [`a2ui/`](a2ui) | an A2UI v1.0 core in Go: the data model, expressions and functions, catalogs checked against the spec's JSON Schemas, node resolution, and the message processor with the agent's function calls |
+| [`a2ui/`](a2ui) | an A2UI v1.0 core in Go: the data model, expressions and functions, catalogs, node resolution, and the message processor with the agent's function calls |
+| [`a2ui/schema/`](a2ui/schema) | the agent's messages, components and calls checked against the spec's JSON Schemas (`schema.NewProcessor`), for a renderer whose agent is another program; one that is its own agent leaves it out, and jsonschema with it |
 | [`catalog/basic/`](catalog/basic) | A2UI's basic catalog, its functions implemented (en-US formatting) |
 | [`catalog/hotty/`](catalog/hotty) | the hotty catalog: `HottyShortcut`, `HottyForm`, `HottyProgress`, `HottySpinner`, `HottyTable`, `HottyList`, `HottyKeyHints`, `HottyScrollView`, `HottyCode`, `HottyDiff`, `hottyFocus`, `hottyBlur`, `hottyScrollTo` |
 | [`view/`](view) | the renderer's model of a surface: its nodes made into a few kinds of element, with the renderer's own state (focus, the tab shown, the modal open), and the controller the user's acts go through |

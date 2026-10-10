@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/a2ui/schema"
 	"github.com/neuroplastio/hotty-a2ui/catalog/hotty"
 )
 
@@ -59,7 +60,7 @@ func TestCatalog(t *testing.T) {
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {
 			t.Fatal(err)
 		}
-		if err := c.CheckComponent(d); (err == nil) != tc.ok {
+		if err := (&schema.Validator{}).Component(c, d); (err == nil) != tc.ok {
 			t.Errorf("%s: %v, want ok=%v", tc.def, err, tc.ok)
 		}
 	}

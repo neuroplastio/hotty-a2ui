@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/a2ui/schema"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	"github.com/neuroplastio/hotty-a2ui/catalog/hotty"
 	thirdparty "github.com/neuroplastio/hotty-a2ui/third_party"
@@ -157,7 +158,8 @@ func NewRun() *Run {
 	h := hotty.Catalog()
 	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo, FoldAll: r.foldAll,
 		Toast: r.toast, DismissToast: r.dismissToast})
-	r.P = a2ui.NewProcessor(basic.Catalog(), h)
+	// The stories and -stream are A2UI another program wrote: checked.
+	r.P = schema.NewProcessor(basic.Catalog(), h)
 	r.P.Send = func(o a2ui.Outbound) {
 		b, _ := json.Marshal(o)
 		r.Log = append(r.Log, Entry{Out: true, At: time.Now(), JSON: b})
