@@ -3,8 +3,10 @@
 Last updated: 2026-10-10
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** round 3 of the review, the fixes for
-[round 2](../feedback/2026-10-10-review-round-2.md) (in progress). Round 1 left out, still to look at: the
+**Waiting on the maintainer:** round 3 of the review
+(`.shots/round3/blind`, in the review pane), the fixes for
+[round 2](../feedback/2026-10-10-review-round-2.md) (journals
+2026-10-10.15–.18). Round 1 left out, still to look at: the
 icons (journal 2026-10-10.1, story `basic/icons`); KIT-BOOK (2026-10-10.4):
 the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
 (2026-10-10.7): the sliders, and its four open points; KIT-23c
