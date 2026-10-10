@@ -208,7 +208,12 @@ built on it).
   also carries HOTTY 0.2's handshake, so the kit's hotty-go pin moves with
   gov's P-3 order, not ahead of it; then the cells-only key vector can run
   on hottytest. Since 2026-10-11, for the docs' own contents: every
-  heading's box in cells (`view.HeadingID`) and `Controller.GoTo`.
+  heading's box in cells (`view.HeadingID`) and `Controller.GoTo`. For
+  the maintainer: in cells a link with a scheme is no Tab stop (the
+  terminal owns OSC 8), so the keyboard can't reach outside links such as
+  "Edit this page". Making them Tab stops whose Enter writes `link` and
+  runs `onLink` would change KIT-26's model. The docs keep the model
+  meanwhile (2026-10-11).
 - [x] **KIT-20c** — `HottyQRCode` (journal 2026-10-10.31, profile §6.29,
   instruction 29): `value`, `errorCorrection` (a minimum, raised when the
   version holds more for free), `label`. Package `qr/` on rsc.io/qr's
