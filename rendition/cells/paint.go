@@ -211,8 +211,8 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 // paintProgress paints a Progress: its label on a row, then the bar and
 // the percentage, " 42%", as bubbles' progress has them. The bar is filled
 // in eighths with "█" and a partial block, blending from the terminal's
-// accent into its magenta where it said them, else from info into accent
-// (success alone once done), the rest "░" in border. An indeterminate bar
+// accent into its magenta where it said them, else from info into accent,
+// a done bar the whole blend, the rest "░" in border. An indeterminate bar
 // is a quarter of the bar filled, sliding across with the clock, and the
 // percentage's columns are blank.
 func (l *layout) paintProgress(cv *canvas, e *view.Element, x, y, w int) {
@@ -234,12 +234,9 @@ func (l *layout) paintProgress(cv *canvas, e *view.Element, x, y, w int) {
 	var bar []glyph
 	if known {
 		// Across the bar, the terminal's blue blends into its pink, as
-		// bubbles' default blend does, else info into accent (Cell.Fill);
-		// a done bar is success alone.
+		// bubbles' default blend does, else info into accent (Cell.Fill).
+		// The blend spans the whole bar, so a done bar shows all of it.
 		at := func(i int) style {
-			if f >= 1 {
-				return style{role: Success}
-			}
 			s := fill
 			s.fill = true
 			if n > 1 {

@@ -49,14 +49,14 @@ func TestProgress(t *testing.T) {
 		t.Errorf("bars with values animate every %v", d)
 	}
 	// The fill blends across the bar (info into accent, or the terminal's
-	// own gradient); a done bar is success.
+	// own gradient); a done bar is the whole blend, its last cell all accent.
 	for x, mix := range map[int]uint8{0: 0, 6: 255 * 6 / 19, 7: 255 * 7 / 19} {
 		if c := f.Cells[1][x]; c.Role != Info || c.To != Accent || c.Mix != mix || !c.Fill {
 			t.Errorf("cell %d: %v to %v by %d (fill %v), want info to accent by %d", x, c.Role, c.To, c.Mix, c.Fill, mix)
 		}
 	}
-	if c := f.Cells[3][19]; c.Role != Success || c.Mix != 0 || c.Fill {
-		t.Errorf("a done bar's cell: %v by %d (fill %v), want success alone", c.Role, c.Mix, c.Fill)
+	if c := f.Cells[3][19]; c.Role != Info || c.To != Accent || c.Mix != 255 || !c.Fill {
+		t.Errorf("a done bar's last cell: %v to %v by %d (fill %v), want info to accent by 255", c.Role, c.To, c.Mix, c.Fill)
 	}
 	if c := f.Cells[1][10]; c.Fill {
 		t.Errorf("the track is a fill: %+v", c)
