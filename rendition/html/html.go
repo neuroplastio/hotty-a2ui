@@ -80,6 +80,11 @@ type Rendition struct {
 	Clock func() time.Time
 	// anim is how soon the last Doc or Update changes again (Animating).
 	anim time.Duration
+	// hover is the element the host says the pointer is over (SPEC §9.4,
+	// hovered), whose description the HottyKeyHints shows; held the toast
+	// it is on, whose time waits; quiet the element a key or a click hid
+	// the description of, until the pointer leaves it (hush).
+	hover, held, quiet string
 }
 
 type keyboard struct {
@@ -106,8 +111,15 @@ func (r *Rendition) markup() *markup {
 	if r.Clock != nil {
 		now = r.Clock
 	}
+	// The toasts' time first: one that is gone leaves the view (TickToasts
+	// rebuilds it). The keyboard on its action holds one, and the pointer
+	// on it, where the host says where that is (hovered).
+	at := now()
+	toasts := r.C.TickToasts(at, r.heldToast)
 	short, full := r.C.KeyHints(r.keys, true)
-	m := &markup{list: r.openList(), now: now(), short: short, full: full, steps: r.steps}
+	m := &markup{list: r.openList(), now: at, short: short, full: full, steps: r.steps,
+		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover)}
+	m.animate(toasts)
 	if r.C.St.Keyboard && !r.Away {
 		m.keyboard = r.C.St.Focus
 	}
@@ -149,9 +161,10 @@ func (r *Rendition) Name() string { return r.name }
 func (r *Rendition) Doc() string {
 	m := r.markup()
 	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, m)
-	r.sent, r.anim = []*node{main, layer}, m.anim
+	ts := toasts(r.C.V, themeCSS(r.theme))
+	r.sent, r.anim = []*node{main, layer, ts}, m.anim
 	r.host = keyboard{}
-	return head + main.html() + layer.html()
+	return head + main.html() + layer.html() + ts.html()
 }
 
 // Update is the deltas that bring the host's document to the view as it
@@ -162,11 +175,13 @@ func (r *Rendition) Update() []string {
 	}
 	m := r.markup()
 	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, m)
+	ts := toasts(r.C.V, themeCSS(r.theme))
 	r.anim = m.anim
 	r.holdEdit(main)
 	out := diff(r.name, r.sent[0], main, nil)
 	out = diff(r.name, r.sent[1], layer, out)
-	r.sent = []*node{main, layer}
+	out = diff(r.name, r.sent[2], ts, out)
+	r.sent = []*node{main, layer, ts}
 	if r.pop != nil {
 		if n := popover(r.C.V, r.theme, r.openList()); n != nil {
 			out = diff(r.PopoverName(), r.pop, n, out)
@@ -211,6 +226,13 @@ func (r *Rendition) Event(ev hotty.Event) error {
 	}
 	if ev.Surface != r.name {
 		return nil
+	}
+	if ev.Kind == hotty.EventHover {
+		r.hovered(ev)
+		return nil
+	}
+	if ev.Kind == hotty.EventClick || ev.Kind == hotty.EventFocus {
+		r.hush()
 	}
 	c := r.C
 	pressed := r.pressed
@@ -476,6 +498,7 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 		key = k
 	}
 	c := r.C
+	r.hush()
 	if r.pending != "" {
 		// The blur never came: the host had given the keyboard back
 		// already. Run what waited.
@@ -484,6 +507,12 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 		if _, err = c.Shortcut(pending); err != nil {
 			return nil, true, err
 		}
+	}
+	// Escape from a toast's action, a button the host leaves it to the
+	// program from, dismisses the toast, before any Shortcut, as the cells
+	// rendition gives the focused element its keys first.
+	if e := c.V.Find(c.St.Focus); key == "Escape" && c.St.Keyboard && e != nil && e.Kind == view.ToastAction {
+		return nil, c.DismissNewest(), nil
 	}
 	if slices.ContainsFunc(c.V.Shortcuts, func(sc view.Shortcut) bool { return view.SameKey(sc.Key, key) }) {
 		if c.St.Keyboard {
@@ -515,6 +544,10 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	}
 	if key == "Escape" && c.St.Modal != "" {
 		c.CloseModal()
+		return nil, true, nil
+	}
+	// Then it dismisses the newest toast.
+	if key == "Escape" && c.DismissNewest() {
 		return nil, true, nil
 	}
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && isSelect(e) {

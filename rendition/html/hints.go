@@ -10,9 +10,16 @@ import (
 // and what they do each. The host moves focus among the elements it works
 // without telling the renderer, so their keys are left out; a box's, a
 // Slider's and a select's show, as the program's keys go there
-// (view.Controller.KeyHints). Keycaps are vault KIT-08h.
+// (view.Controller.KeyHints). Keycaps are vault KIT-08h. On a surface with
+// descriptions, a row comes first for the tooltip (profile §6.23): the
+// description of the element the pointer is over, where the host says
+// (SPEC §9.4), else of the one with the keyboard; empty, a line high,
+// when neither has one, so that nothing moves.
 func (m *markup) keyHints(e *view.Element) *node {
 	n := el("div", "id", domID(e.ID), "class", "k-hints")
+	if m.described {
+		n.add(el("div", "id", partID(e.ID, partTip), "class", "k-hints-tip").add(texts(m.tip)...))
+	}
 	if !e.Open {
 		line := el("div", "class", "k-hints-short")
 		for i, h := range m.short {

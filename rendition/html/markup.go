@@ -37,6 +37,10 @@ type markup struct {
 	// which a HottyKeyHints shows.
 	short []view.Hint
 	full  [][]view.Hint
+	// described: an element of the surface has a description, which a
+	// HottyKeyHints shows as tip, the tooltip (view.Controller.Tooltip).
+	described bool
+	tip       string
 	// keyboard is the element with the keyboard, "" while the surface
 	// has none.
 	keyboard string

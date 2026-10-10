@@ -39,12 +39,14 @@ const (
 	partPlot   = "a" // a HottyChart's plot
 	partSeries = "g" // a HottyChart's lines' svgs, "g0" to "gN", a series each
 	partPath   = "c" // the line in each, "c0" to "cN": a new point is its d's delta
+	partTip    = "z" // a HottyKeyHints' tooltip row
 	surfaceID  = "~s"
 	layerID    = "~o" // the overlay an open Modal or list shows in
 	backdropID = "~d"
 	dialogID   = "~g"
 	dismissID  = "~c" // under an open list: a click there closes it
 	popoverID  = "~p" // an open list's own surface (Rendition.Popover)
+	toastsID   = "~t" // the toasts' region, over the layer (toasts)
 )
 
 func domID(id string) string {
