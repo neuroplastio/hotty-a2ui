@@ -43,6 +43,17 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"p","component":"HottyRangeSlider","start":10,"max":100}`, false},
 		{`{"id":"p","component":"HottyRangeSlider","start":10,"end":90}`, false},
 		{`{"id":"p","component":"HottyRangeSlider","start":10,"end":90,"max":100,"steps":0}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToast","args":{"message":"Saved","kind":"success"}}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToast","args":{"message":{"@path":"/msg"},"id":"save","timeout":0,
+			"actionLabel":"Undo","action":{"event":{"name":"undo","context":{"id":{"@path":"/id"}}}}}}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToast","args":{"message":"Saved","action":{"event":{"name":"undo"}}}}}}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToast","args":{"message":"Saved","actionLabel":"Undo"}}}}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToast","args":{"message":"Saved","actionLabel":"Go",
+			"action":{"functionCall":{"@call":"hottyBlur"}}}}}}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToast","args":{"message":"Saved","kind":"fine"}}}}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyToast","args":{"message":"Saved","timeout":-1}}}}`, false},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyDismissToast","args":{"id":"save"}}}}`, true},
+		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyDismissToast"}}}`, false},
 	} {
 		var d map[string]any
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {
