@@ -355,8 +355,10 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 // HottyCode, which draws none, a HottyChart, whose labels and legend end
 // it, or a HottyPaginator, whose dots end its pages, so that what follows
 // does not read as its content; after a HottyBigText, as its own lines
-// are a row apart, so that its letters do not meet what follows; else
-// none, so that a stack of Buttons or of HottySpinners stays tight.
+// are a row apart, so that its letters do not meet what follows; before
+// a Button (or a Row of them) after a Text, as huh sets a question's
+// buttons apart (the maintainer, round 7); else none, so that a stack of
+// Buttons or of HottySpinners stays tight.
 func separator(kids []*view.Element, i int) int {
 	if i == 0 {
 		return 0
@@ -364,6 +366,9 @@ func separator(kids []*view.Element, i int) int {
 	a, b := edge(kids[i-1], false), edge(kids[i], true)
 	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView || a.Kind == view.Chart ||
 		a.Kind == view.Paginator || a.Kind == view.BigText && a.Label != "" {
+		return 1
+	}
+	if b.Kind == view.Button && a.Kind == view.Text {
 		return 1
 	}
 	if isControlElement(b) && endsInHeading(a) {

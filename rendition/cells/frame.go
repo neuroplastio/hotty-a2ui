@@ -162,8 +162,9 @@ type Cell struct {
 	BackMix uint8
 	// Where there is no tint (a terminal that has not said its colours),
 	// a cell with BackMix shows its Back by BackAttr's attributes instead
-	// (a changed word underlined), and under NO_COLOR by MonoAttr's where
-	// it has some (that word reversed), as nothing else reads there.
+	// (a changed word underlined). Under NO_COLOR any cell takes MonoAttr's
+	// attributes where it has some, as nothing else reads there: that word
+	// reversed, a paginator's other pages' dots faint.
 	BackAttr Attr
 	MonoAttr Attr
 	// BackShade shows Back, where there is no tint but the terminal has
@@ -334,12 +335,11 @@ func (c Cell) bare(th *theme.Theme) bool {
 func (c Cell) style(th *theme.Theme) string {
 	attr := c.Attr
 	tinted := c.BackMix > 0 && c.tinted(th)
-	if c.BackMix > 0 && !tinted {
-		if th == nil && c.MonoAttr != 0 {
-			attr |= c.MonoAttr
-		} else {
-			attr |= c.BackAttr
-		}
+	switch {
+	case th == nil && c.MonoAttr != 0:
+		attr |= c.MonoAttr
+	case c.BackMix > 0 && !tinted:
+		attr |= c.BackAttr
 	}
 	var p []string
 	for i, s := range sgr {

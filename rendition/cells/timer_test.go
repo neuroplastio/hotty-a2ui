@@ -30,9 +30,9 @@ func timing(t *testing.T) (*Rendition, *view.Controller, *time.Time) {
 
 // A timer is its label, a space and its time on one row, as bubbles'
 // examples draw them, counting from the first draw on the rendition's
-// clock: the stopwatch in tenths, Focus as a clock, the tea Go's way. The
-// time is in the text's colour while it counts, and the rendition asks for
-// a draw every tenth of a second.
+// clock: the stopwatch in tenths Go's way (format duration), the timers as
+// a clock, the default. The time is in the text's colour while it counts,
+// and the rendition asks for a draw every tenth of a second.
 func TestTimerRows(t *testing.T) {
 	r, _, now := timing(t)
 	at := func(ms int) string {
@@ -43,14 +43,14 @@ func TestTimerRows(t *testing.T) {
 		"Lap 0s\n" +
 		"/lapMs: 0 ms\n" +
 		"Focus 25:00\n" +
-		"Tea 10s\n" +
+		"Tea 0:10\n" +
 		" Start   Stop   Reset\n\n" +
 		"s start/stop lap • r reset lap • ? more"
 	if got := at(0); got != want {
 		t.Fatalf("at 0:\n%s\nwant\n%s", got, want)
 	}
 	got := at(3250)
-	for _, row := range []string{"Lap 3.2s", "Focus 24:57", "Tea 7s"} {
+	for _, row := range []string{"Lap 3.2s", "Focus 24:57", "Tea 0:07"} {
 		if !strings.Contains(got, row+"\n") {
 			t.Errorf("at 3.25s, no %q in\n%s", row, got)
 		}
@@ -59,7 +59,7 @@ func TestTimerRows(t *testing.T) {
 		t.Errorf("counting, it animates every %v", d)
 	}
 	f := r.Draw(60)
-	y := rowOf(t, f, "Tea 7s")
+	y := rowOf(t, f, "Tea 0:07")
 	for x, c := range f.Cells[y][:6] {
 		if c.Role != Fg {
 			t.Errorf("Tea's cell %d (%q) is %v while it counts", x, c.Text, c.Role)
@@ -76,10 +76,10 @@ func TestTimerRunsOut(t *testing.T) {
 	r, c, now := timing(t)
 	t0 := *now
 	f := r.Draw(60)
-	y, ly := rowOf(t, f, "Tea 10s"), rowOf(t, f, "Lap 0s")
+	y, ly := rowOf(t, f, "Tea 0:10"), rowOf(t, f, "Lap 0s")
 	*now = t0.Add(10 * time.Second)
 	f = r.Draw(60)
-	if l := strings.Split(f.Plain(), "\n")[y]; !strings.HasPrefix(l, "Tea 0s") {
+	if l := strings.Split(f.Plain(), "\n")[y]; !strings.HasPrefix(l, "Tea 0:00") {
 		t.Errorf("run out: %q", l)
 	}
 	if c := f.Cells[y][4]; c.Role != Muted {
@@ -106,12 +106,12 @@ func TestTimerRunsOut(t *testing.T) {
 	}
 	// A program draws after each click and each key: the draw after one
 	// counts the time up to it, and a timer started counts from it.
-	if l := strings.Split(r.Draw(60).Plain(), "\n")[y]; !strings.HasPrefix(l, "Tea 10s") {
+	if l := strings.Split(r.Draw(60).Plain(), "\n")[y]; !strings.HasPrefix(l, "Tea 0:10") {
 		t.Errorf("started over: %q", l)
 	}
 	*now = t0.Add(13600 * time.Millisecond)
 	f = r.Draw(60)
-	if l := strings.Split(f.Plain(), "\n")[y]; !strings.HasPrefix(l, "Tea 7s") {
+	if l := strings.Split(f.Plain(), "\n")[y]; !strings.HasPrefix(l, "Tea 0:07") {
 		t.Errorf("started over at 10s, at 13.6s: %q", l)
 	}
 

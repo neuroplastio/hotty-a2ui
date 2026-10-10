@@ -26,8 +26,8 @@ func TestTimer(t *testing.T) {
 	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"lap":true}}},
 {"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
  {"id":"root","component":"Column","children":["tea","lap"]},
- {"id":"tea","component":"HottyTimer","catalogId":"`+hottycat.ID+`","label":"Tea","duration":2000,"onTimeout":{"event":{"name":"ready"}}},
- {"id":"lap","component":"HottyStopwatch","catalogId":"`+hottycat.ID+`","interval":100,"running":{"@path":"/lap"}}]}}]`), &msgs))
+ {"id":"tea","component":"HottyTimer","catalogId":"`+hottycat.ID+`","label":"Tea","duration":2000,"format":"duration","onTimeout":{"event":{"name":"ready"}}},
+ {"id":"lap","component":"HottyStopwatch","catalogId":"`+hottycat.ID+`","interval":100,"format":"duration","running":{"@path":"/lap"}}]}}]`), &msgs))
 	x.process(msgs...)
 	r := x.rs["s"]
 	s := x.h.Surface(r.name)

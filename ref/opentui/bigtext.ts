@@ -23,7 +23,7 @@ const big = (text: string, font: "tiny" | "block") => new ASCIIFontRenderable(re
 page.add(text("Big text"))
 const splash = new BoxRenderable(renderer, { flexDirection: "column", alignItems: "center", width: "100%" })
 splash.add(big("HOTTY", "block"))
-splash.add(text("Web pages in a terminal"))
+splash.add(text("HTML over the TTY"))
 page.add(splash)
 page.add(text("Score, bound to the data model"))
 page.add(big("3 : 1", "tiny"))

@@ -17,9 +17,17 @@ const scrollHeight = 10
 // it is scrolled to; Active, its follow prop; Tail, whether it follows the
 // tail, as follow says until the user scrolls; Wrap, whether long lines
 // wrap.
+// A HottyScrollView's variants (Element.Variant): a box that stands apart
+// from what is around it, the default, or plain, the page itself, a docs
+// page say, with no fill and no padding.
+const (
+	ScrollBox   = "default"
+	ScrollPlain = "plain"
+)
+
 func mapScrollView(b *Builder, n *a2ui.Node) *Element {
 	e := &Element{Kind: ScrollView, Children: b.Children(n.Props["child"]), Wrap: b.Bool(n, "wrap"), Height: scrollHeight,
-		Active: b.Bool(n, "follow")}
+		Active: b.Bool(n, "follow"), Variant: b.Enum(n, "variant", ScrollBox)}
 	if len(e.Children) == 0 {
 		lines, _ := b.Raw(n, "lines").([]any)
 		e.Lines = make([]string, 0, len(lines))

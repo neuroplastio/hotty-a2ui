@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyTimer, HottyStopwatch, hottyStartTimer, hottyStopTimer, hottyToggleTimer, hottyResetTimer",
   "icon": "timer",
-  "description": "Two timers and a stopwatch, as Bubble Tea's timer and stopwatch show them, counting from when the story opens. The tea runs out after 10 seconds: it stops, writing false where its running is bound, and its onTimeout shows a toast. Its Buttons call hottyStartTimer, hottyStopTimer and hottyResetTimer, and their checks read the same path, so that Start is off while it runs and Stop while it does not; Start once it has run out brews another. The stopwatch counts in tenths, s starting and stopping it (hottyToggleTimer) and r resetting it, two HottyShortcuts; its elapsed is bound to /lapMs, the line under it, which shows the time written when it stops, when it is reset, and before any action runs. Focus counts 25 minutes down as a clock, and its onTimeout sends the agent an event.",
+  "description": "Two timers and a stopwatch, counting from when the story opens, the timers as a clock (the default) and the stopwatch as Bubble Tea writes a time (format duration). The tea runs out after 10 seconds: it stops, writing false where its running is bound, and its onTimeout shows a toast. Its Buttons call hottyStartTimer, hottyStopTimer and hottyResetTimer, and their checks read the same path, so that Start is off while it runs and Stop while it does not; Start once it has run out brews another. The stopwatch counts in tenths, s starting and stopping it (hottyToggleTimer) and r resetting it, two HottyShortcuts; its elapsed is bound to /lapMs, the line under it, which shows the time written when it stops, when it is reset, and before any action runs. Focus counts 25 minutes down as a clock, and its onTimeout sends the agent an event.",
   "messages": [
     {
       "version": "v1.0",
@@ -155,6 +155,7 @@
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Lap",
             "interval": 100,
+            "format": "duration",
             "running": {
               "@path": "/lap"
             },
@@ -179,7 +180,6 @@
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "label": "Focus",
             "duration": 1500000,
-            "format": "clock",
             "onTimeout": {
               "event": {
                 "name": "focusDone"

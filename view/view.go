@@ -151,7 +151,7 @@ const (
 	// BigText is text in large letters, a banner's (HottyBigText): Label,
 	// the text, its lines apart at "\n"; Variant, its size (BigSmall,
 	// BigMedium, BigLarge); Align, where each line goes across its box
-	// (start, center, end).
+	// (start, center, end); Shadow, whether its letters cast one.
 	BigText Kind = "bigtext"
 	// QRCode is a QR code (HottyQRCode): Value, the text it holds; QR,
 	// its modules (nil where it holds nothing or Error says why it cannot);
@@ -197,6 +197,8 @@ type Element struct {
 	Justify string `json:"justify,omitempty"`
 	Align   string `json:"align,omitempty"`
 	Scroll  bool   `json:"scroll,omitempty"`
+	// BigText: whether its letters cast a shadow down and to the right.
+	Shadow bool `json:"shadow,omitempty"`
 
 	// Text and Document: the Markdown. Variant: a Text's (body, caption), a Button's
 	// (default, primary, borderless), an Image's size (icon, avatar,

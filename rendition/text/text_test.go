@@ -128,9 +128,9 @@ func TestTimer(t *testing.T) {
 	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
 	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
 	 {"id":"root","component":"Column","children":["tea","focus","lap"]},
-	 {"id":"tea","component":"HottyTimer",` + h + `,"label":"Tea","duration":180000},
+	 {"id":"tea","component":"HottyTimer",` + h + `,"label":"Tea","duration":180000,"format":"duration"},
 	 {"id":"focus","component":"HottyTimer",` + h + `,"label":"Focus","duration":1500000,"format":"clock"},
-	 {"id":"lap","component":"HottyStopwatch",` + h + `,"interval":100}]}}]`
+	 {"id":"lap","component":"HottyStopwatch",` + h + `,"interval":100,"format":"duration"}]}}]`
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
 	}

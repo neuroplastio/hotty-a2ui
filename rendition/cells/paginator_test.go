@@ -71,8 +71,9 @@ func TestPaginatorDraws(t *testing.T) {
 	}{
 		{6, 2, Fg, 0}, {6, 3, Border, Faint}, {6, 4, Border, Faint}, {8, 2, Fg, 0},
 	} {
-		if cell := f.Cells[tc.row][tc.col]; cell.Role != tc.role || cell.Attr != tc.attr {
-			t.Errorf("row %d col %d %q: %v %v, want %v %v", tc.row, tc.col, cell.Text, cell.Role, cell.Attr, tc.role, tc.attr)
+		// The other pages' dots are plain, faint under NO_COLOR alone.
+		if cell := f.Cells[tc.row][tc.col]; cell.Role != tc.role || cell.Attr != 0 || cell.MonoAttr != tc.attr {
+			t.Errorf("row %d col %d %q: %v %v (mono %v), want %v mono %v", tc.row, tc.col, cell.Text, cell.Role, cell.Attr, cell.MonoAttr, tc.role, tc.attr)
 		}
 	}
 	if _, y, _, h, ok := r.Box("pager"); !ok || y != 0 || h != 7 {
@@ -85,7 +86,7 @@ func TestPaginatorDraws(t *testing.T) {
 			t.Errorf("focused: row %d's bar %q %v", row, bar.Text, bar.Role)
 		}
 	}
-	if dot, other := f.Cells[6][2], f.Cells[6][3]; dot.Role != Accent || other.Role != Border || other.Attr != Faint {
+	if dot, other := f.Cells[6][2], f.Cells[6][3]; dot.Role != Accent || other.Role != Border || other.MonoAttr != Faint {
 		t.Errorf("focused: the page shown %v, another %v %v", dot.Role, other.Role, other.Attr)
 	}
 	if f.Cells[7][0].Text != " " {

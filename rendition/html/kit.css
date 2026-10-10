@@ -577,6 +577,9 @@ textarea.k-input { min-height: 5.5rem; }
 .k-big-large { font-size: calc(5 * var(--hotty-cell-h, 1.25rem)); line-height: calc(6 * var(--hotty-cell-h, 1.25rem)); }
 .k-big-center { text-align: center; }
 .k-big-end { text-align: end; }
+/* A shadow down and to the right, in the border's colour, as cells casts
+   one (shadow). */
+.k-big-shadow { text-shadow: 0.08em 0.08em 0 var(--k-border); }
 
 /* HottyQRCode: its code an svg, black on white with its quiet zone in
    every theme, as a phone reads it; a module half a row a side, as in
@@ -699,6 +702,10 @@ textarea.k-input { min-height: 5.5rem; }
   overflow-y: auto; outline: none; background: var(--k-tonal); border-radius: var(--k-r-field);
   scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }
 .k-scroll:focus { outline: 2px solid var(--k-focus); outline-offset: -2px; }
+/* A plain one (variant plain) is the page itself, a docs page say: no fill,
+   no padding, no rounding; its scrollbar and its ring with the keyboard
+   stay. */
+.k-scroll.k-plain { padding: 0; background: none; border-radius: 0; }
 .k-lines { font-family: var(--k-mono); line-height: var(--hotty-cell-h, 1.25rem); white-space: pre; overflow: hidden; }
 .k-lines.k-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
 

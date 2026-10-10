@@ -68,28 +68,37 @@ func scrollLines(e *view.Element, w int) [][]glyph {
 // scrollbar's columns.
 func (l *layout) scrollWidth(e *view.Element) int {
 	if k := scrollChild(e); k != nil {
-		return l.natural(k) + scrollPad + scrollBar
+		return l.natural(k) + scrollPadding(e) + scrollBar
 	}
 	n := 0
 	for _, s := range e.Lines {
 		n = max(n, Width(s))
 	}
-	return n + scrollPad + scrollBar
+	return n + scrollPadding(e) + scrollBar
 }
 
 // scrollMinimum is the narrowest a HottyScrollView gets: its child's, or
 // a column of its lines, and the padding's and the scrollbar's columns.
 func (l *layout) scrollMinimum(e *view.Element) int {
 	if k := scrollChild(e); k != nil {
-		return l.minimum(k) + scrollPad + scrollBar
+		return l.minimum(k) + scrollPadding(e) + scrollBar
 	}
-	return 1 + scrollPad + scrollBar
+	return 1 + scrollPadding(e) + scrollBar
+}
+
+// scrollPadding is the columns left of a HottyScrollView's content: the padding
+// inside its fill, none for a plain one.
+func scrollPadding(e *view.Element) int {
+	if e.Variant == view.ScrollPlain {
+		return 0
+	}
+	return scrollPad
 }
 
 // paintScroll paints a HottyScrollView at (x, y), w wide.
 func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
-	cx, cw, page := x+scrollPad, max(w-scrollPad-scrollBar, 1), e.Height
+	cx, cw, page := x+scrollPadding(e), max(w-scrollPadding(e)-scrollBar, 1), e.Height
 	k := scrollChild(e)
 	var rows [][]glyph
 	total, wide := 0, 0
@@ -139,7 +148,11 @@ func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w int) {
 	l.paintScrollbar(cv, e, x+w-1, y, page, total, top)
 	// The box is filled with the surface's colour, so that it stands apart
 	// from what is around it, where the theme colours the surface (Cell.Back
-	// is no tint otherwise); what its content tinted keeps its own.
+	// is no tint otherwise); what its content tinted keeps its own. A plain
+	// one is the page itself, unfilled.
+	if e.Variant == view.ScrollPlain {
+		return
+	}
 	cv.restyle(x, y, w, page, func(c *Cell) {
 		if c.BackMix == 0 {
 			c.Back, c.BackMix = Surface, 255

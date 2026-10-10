@@ -56,9 +56,9 @@ const h = `"catalogId":"` + hotty.ID + `"`
 func TestTimerCounts(t *testing.T) {
 	_, c, got, t0 := timerRun(t, `{"tea":true}`, `
 	 {"id":"root","component":"Column","children":["tea","lap"]},
-	 {"id":"tea","component":"HottyTimer",`+h+`,"label":"Tea","duration":3000,"running":{"@path":"/tea"},
+	 {"id":"tea","component":"HottyTimer",`+h+`,"label":"Tea","duration":3000,"format":"duration","running":{"@path":"/tea"},
 	  "onTimeout":{"event":{"name":"ready","context":{"running":{"@path":"/tea"}}}}},
-	 {"id":"lap","component":"HottyStopwatch",`+h+`,"interval":100}`)
+	 {"id":"lap","component":"HottyStopwatch",`+h+`,"interval":100,"format":"duration"}`)
 	if e := c.V.Find("tea"); e.Variant != view.TimerCountdown || e.Label != "Tea" || e.Focusable() {
 		t.Fatalf("tea: %+v", e)
 	}
@@ -130,7 +130,7 @@ func TestTimerFunctions(t *testing.T) {
 	}
 	_, c, _, t0 := timerRun(t, `{}`, `
 	 {"id":"root","component":"Column","children":["lap","start","stop","toggle","reset"]},
-	 {"id":"lap","component":"HottyStopwatch",`+h+`},
+	 {"id":"lap","component":"HottyStopwatch",`+h+`,"format":"duration"},
 	 {"id":"start","component":"Button","child":"t","action":`+call("hottyStartTimer")+`},
 	 {"id":"stop","component":"Button","child":"t","action":`+call("hottyStopTimer")+`},
 	 {"id":"toggle","component":"Button","child":"t","action":`+call("hottyToggleTimer")+`},
@@ -243,7 +243,7 @@ func TestStopwatchElapsed(t *testing.T) {
 func TestTimerUnseen(t *testing.T) {
 	run, c, got, t0 := timerRun(t, `{}`, `
 	 {"id":"root","component":"Tabs","tabs":[{"title":"One","child":"one"},{"title":"Two","child":"egg"}]},
-	 {"id":"one","component":"HottyTimer",`+h+`,"duration":{"@path":"/later"},"onTimeout":{"event":{"name":"never"}}},
+	 {"id":"one","component":"HottyTimer",`+h+`,"duration":{"@path":"/later"},"format":"duration","onTimeout":{"event":{"name":"never"}}},
 	 {"id":"egg","component":"HottyTimer",`+h+`,"label":"Egg","duration":2000,"format":"clock","onTimeout":{"event":{"name":"boiled"}}}`)
 	if c.V.Find("egg") != nil {
 		t.Fatal("the second tab shows")

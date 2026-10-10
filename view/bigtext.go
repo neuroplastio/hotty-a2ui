@@ -12,9 +12,10 @@ const (
 
 // mapBigText makes a HottyBigText's element (profile §6.28): Label, its
 // text as it is; Variant, its size (medium without one); Align, where its
-// lines go across its box (start without one).
+// lines go across its box (start without one); Shadow, whether its
+// letters cast one.
 func mapBigText(b *Builder, n *a2ui.Node) *Element {
-	e := &Element{Kind: BigText, Label: b.String(n, "text"), Variant: BigMedium, Align: "start"}
+	e := &Element{Kind: BigText, Label: b.String(n, "text"), Variant: BigMedium, Align: "start", Shadow: b.Bool(n, "shadow")}
 	switch s := b.Enum(n, "size", BigMedium); s {
 	case BigSmall, BigLarge:
 		e.Variant = s

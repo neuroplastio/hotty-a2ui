@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyMarkdown",
   "icon": "article",
-  "description": "A docs page, as GitHub shows its Markdown: headings with GitHub's IDs, a tip and a warning as callouts, highlighted code, a table, a list, and an image (its alt text in cells; a docs: comment before it shows nothing). It is in a HottyScrollView. Tab goes through its links in place, and Enter or a click follows one. \"configuration\", \"FAQ\" and \"the top\" are #fragments: the box scrolls to their heading, in cells to its top; on a HOTTY host the heading takes the focus, which scrolls it into view. \"guide\", \"reference\" and \"the roadmap\" are relative: each is written to /page/link, which the line under the box shows, and sends open with it, which an agent would answer with that page. \"Ada Lovelace\" has a scheme, so it is a hyperlink, as a Text's links are: the terminal opens it. The help line is a HottyKeyHints.",
+  "description": "A docs page, as GitHub shows its Markdown: headings with GitHub's IDs, a tip and a warning as callouts, highlighted code, a table, a list, and an image (its alt text in cells; a docs: comment before it shows nothing). It is in a plain HottyScrollView, the page itself, with no box around it. Tab goes through its links in place, and Enter or a click follows one. \"configuration\", \"FAQ\" and \"the top\" are #fragments: the box scrolls to their heading, in cells to its top; on a HOTTY host the heading takes the focus, which scrolls it into view. \"guide\", \"reference\" and \"the roadmap\" are relative: each is written to /page/link, which the line under the box shows, and sends open with it, which an agent would answer with that page. \"Ada Lovelace\" has a scheme, so it is a hyperlink, as a Text's links are: the terminal opens it. The help line is a HottyKeyHints.",
   "messages": [
     {
       "version": "v1.0",
@@ -36,7 +36,8 @@
             "component": "HottyScrollView",
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "child": "page",
-            "height": 16
+            "height": 16,
+            "variant": "plain"
           },
           {
             "id": "page",

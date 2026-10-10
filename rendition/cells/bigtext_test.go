@@ -113,3 +113,43 @@ func TestBigTextEmpty(t *testing.T) {
 		t.Errorf("got %q", got)
 	}
 }
+
+// With a shadow, the letters cast one a column and half a row down and to
+// the right, in the border's colour, and are a column further apart: a
+// column more at the end and, at small and medium, no row more, as the
+// half row they leave blank takes it; at large a row more. Where ink and
+// shadow share a cell, the ink's half block is on the shadow's colour.
+// Under NO_COLOR the shadow is faint.
+func TestBigTextShadow(t *testing.T) {
+	for _, tc := range []struct{ props, want string }{
+		{`"text":"HI","size":"small","shadow":true`, "█▄█▄ ▀█▀▄\n█▀██  ██\n▀█▀█ ▀▀▀▄"},
+		{`"text":"HI","shadow":true`, "█▄  █▄ ▀█▀▄\n█▄▄▄██  ██\n██▀▀██  ██\n▀█  ▀█ ▀▀▀▄"},
+		{`"text":"I","size":"large","shadow":true`, "██████▄\n ▀███▀▀\n  ███\n  ███\n██████▄\n ▀▀▀▀▀▀"},
+	} {
+		r := coding(t, bigComp("b", tc.props), `{"id":"after","component":"Text","text":"after"}`)
+		f := r.Draw(40)
+		checkFrame(t, f)
+		if got, want := f.Plain(), tc.want+"\n\nafter"; got != want {
+			t.Errorf("%s:\n%s\nwant\n%s", tc.props, got, want)
+		}
+	}
+
+	r := coding(t, bigComp("b", `"text":"HI","size":"small","shadow":true`))
+	f := r.Draw(40)
+	ink, shadow, both := f.Cells[0][0], f.Cells[0][1], f.Cells[1][1]
+	if ink.Role != Fg || ink.BackMix != 0 {
+		t.Errorf("ink: %+v", ink)
+	}
+	if shadow.Role != Border || shadow.MonoAttr != Faint || shadow.BackMix != 0 {
+		t.Errorf("shadow: %+v", shadow)
+	}
+	if both.Text != "▀" || both.Role != Fg || both.Back != Border || both.BackMix != 255 || !both.BackShade {
+		t.Errorf("ink over shadow: %+v", both)
+	}
+	if got := f.ANSI(false); !strings.HasPrefix(got, "█\x1b[0;2m▄\x1b[0m█") {
+		t.Errorf("under NO_COLOR: %q", got)
+	}
+	if got := bigWidth(r.c.V.Find("b")); got != 9 {
+		t.Errorf("width %d, want 9", got)
+	}
+}

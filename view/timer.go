@@ -69,7 +69,7 @@ func readTimer(b *Builder, n *a2ui.Node) timerProps {
 	if ms := a2ui.ToNumber(b.Raw(n, "interval")); ms >= 1 {
 		t.interval = time.Duration(ms * float64(time.Millisecond))
 	}
-	t.clock = b.Enum(n, "format", "duration") == "clock"
+	t.clock = b.Enum(n, "format", "clock") == "clock"
 	// running is true by default: absent, not bound to nothing.
 	v := b.Value(n, "running")
 	_, set := n.Props["running"]

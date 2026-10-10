@@ -21,6 +21,7 @@ func TestConfirm(t *testing.T) {
 	r := New(run.Surfaces()[0].C)
 	want := "Delete 3 files?\n" +
 		"notes.md, todo.md and draft.md go to the trash.\n" +
+		"\n" +
 		" Yes   No\n" +
 		"\n" +
 		"enter press • ←/→ move • y yes • n no • ? more"

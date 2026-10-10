@@ -16,18 +16,17 @@ const pageDot = "•"
 
 // pageDots are a paginator's pages as drawn, w wide at most, as bubbles'
 // list draws its paginator: a dot a page, the page shown's in cur and the
-// others in border and faint, bubbles' "very subdued" colour, as the help
-// line's dots between keys are (and under NO_COLOR the page shown is
-// still the one dot not faint); or the page shown of how many, "3/10", in
-// num, with numbers or where the dots do not fit. A HottyList's dots are
-// these.
+// others in border, not faint (the maintainer, round 7), except under
+// NO_COLOR, where faint is all that tells the page shown's apart; or the
+// page shown of how many, "3/10", in num, with numbers or where the dots
+// do not fit. A HottyList's dots are these.
 func pageDots(pages, page, w int, numbers bool, cur, num style) []glyph {
 	if numbers || pages > w {
 		return line(strconv.Itoa(page+1)+"/"+strconv.Itoa(pages), num)
 	}
 	gs := make([]glyph, pages)
 	for p := range gs {
-		st := style{role: Border, attr: Faint}
+		st := style{role: Border, monoAttr: Faint}
 		if p == page {
 			st = cur
 		}

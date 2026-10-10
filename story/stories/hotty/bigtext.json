@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyBigText",
   "icon": "format_size",
-  "description": "Text in large letters, as OpenTUI's ASCIIFont draws it, in block letters of the kit's own pixel fonts: a title screen, HOTTY large and centred over a caption; a score bound to the data model; the three sizes, 3, 4 and 5 rows tall, of one line, lowercase in capitals; and a French line too long for one, wrapped between words and centred, its accents left off.",
+  "description": "Text in large letters, as OpenTUI's ASCIIFont draws it, in block letters of the kit's own pixel fonts: a title screen, HOTTY large and centred, its letters casting a shadow, over a caption; a score bound to the data model; the three sizes, 3, 4 and 5 rows tall, of one line, lowercase in capitals; and a French line too long for one, wrapped between words and centred, its accents left off.",
   "messages": [
     {
       "version": "v1.0",
@@ -56,12 +56,13 @@
             "text": "HOTTY",
             "size": "large",
             "align": "center",
+            "shadow": true,
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
           },
           {
             "id": "splashSub",
             "component": "Text",
-            "text": "_Web pages in a terminal_",
+            "text": "_HTML over the TTY_",
             "variant": "caption"
           },
           {

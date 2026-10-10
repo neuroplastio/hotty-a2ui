@@ -239,14 +239,18 @@ func TestTooltipRow(t *testing.T) {
 }
 
 // A field's cursor under a toast is not shown, as under any box drawn
-// over it.
+// over it. The story's four toasts end above its field, so a fifth comes
+// down over it.
 func TestToastCursor(t *testing.T) {
 	r, c, _, _ := toasting(t)
 	c.Focus("email")
 	if _, _, ok := r.Draw(80).Cursor(); !ok {
 		t.Error("no cursor at 80 columns")
 	}
+	if _, err := c.ShowToast(map[string]any{"message": "One more", "timeout": 0.0}); err != nil {
+		t.Fatal(err)
+	}
 	if col, row, ok := r.Draw(56).Cursor(); ok {
-		t.Errorf("a cursor at %d,%d, under the error toast", col, row)
+		t.Errorf("a cursor at %d,%d, under the fifth toast", col, row)
 	}
 }

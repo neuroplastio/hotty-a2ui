@@ -17,12 +17,14 @@ import (
 // line too long for its box wraps between words, and a word too long for
 // a line of its own between letters, so that nothing is cut.
 
-// bigFont is a size's font: its glyphs, their rows of pixels, and whether
-// a pixel is two columns and a row (wide) rather than half a cell.
+// bigFont is a size's font: its glyphs, their rows of pixels, whether a
+// pixel is two columns and a row (wide) rather than half a cell, and
+// whether its text casts a shadow, a column and half a row over.
 type bigFont struct {
 	glyphs map[rune][]string
 	px     int
 	wide   bool
+	shadow bool
 }
 
 var bigFonts = map[string]bigFont{
@@ -31,20 +33,36 @@ var bigFonts = map[string]bigFont{
 	view.BigLarge:  {glyphs: font3x5, px: 5, wide: true},
 }
 
-// bigFontOf is a HottyBigText's font, by its size.
+// bigFontOf is a HottyBigText's font, by its size, with its shadow.
 func bigFontOf(e *view.Element) bigFont {
-	if f, ok := bigFonts[e.Variant]; ok {
-		return f
+	f, ok := bigFonts[e.Variant]
+	if !ok {
+		f = bigFonts[view.BigMedium]
 	}
-	return bigFonts[view.BigMedium]
+	f.shadow = e.Shadow
+	return f
 }
 
-// rows is a line's rows of cells.
+// rows is a line's rows of cells, two half rows each: a shadow's half row
+// more fits in the half row the small and medium fonts leave blank, and
+// is a row more at large.
 func (f bigFont) rows() int {
+	h := f.px
 	if f.wide {
-		return f.px
+		h *= 2
 	}
-	return (f.px + 1) / 2
+	if f.shadow {
+		h++
+	}
+	return (h + 1) / 2
+}
+
+// gap is the columns between two glyphs: one, and the shadow's.
+func (f bigFont) gap() int {
+	if f.shadow {
+		return 2
+	}
+	return 1
 }
 
 // glyph is the glyph r is drawn as: its own, its capital's, its letter's
@@ -63,12 +81,15 @@ func (f bigFont) glyph(r rune) []string {
 }
 
 // width is the columns a run of runes takes: its glyphs, a column a pixel
-// (two when wide), and a column between each two.
+// (two when wide), the gap between each two, and its shadow's column.
 func (f bigFont) width(rs []rune) int {
 	n := 0
+	if f.shadow && len(rs) > 0 {
+		n = 1
+	}
 	for i, r := range rs {
 		if i > 0 {
-			n++
+			n += f.gap()
 		}
 		px := len(f.glyph(r)[0])
 		if f.wide {
@@ -142,50 +163,92 @@ func bigHeight(e *view.Element, w int) int {
 	return n*bigFontOf(e).rows() + n - 1
 }
 
-// bigRows are a line's rows of cells, as text: its glyphs' a column apart.
-func (f bigFont) bigRows(rs []rune) []string {
-	rows := make([]string, f.rows())
+// bigCells are a line's rows of cells: its glyphs a gap apart, on a grid
+// of columns and half rows, a pixel each at the small and medium sizes
+// and two by two at large, each cell drawn from its two halves (bigCell).
+// A shadow is the ink a column and half a row down and to the right, where
+// there is no ink: a pixel over at small and medium, half one at large,
+// which a whole one would swamp.
+func (f bigFont) bigCells(rs []rune) [][]glyph {
+	w, h := f.width(rs), 2*f.rows()
+	px := 1
+	if f.wide {
+		px = 2
+	}
+	ink := make([][]bool, h)
+	for y := range ink {
+		ink[y] = make([]bool, w)
+	}
+	x := 0
 	for i, r := range rs {
-		for y, s := range f.cells(f.glyph(r)) {
-			if i > 0 {
-				rows[y] += " "
+		if i > 0 {
+			x += f.gap()
+		}
+		g := f.glyph(r)
+		for gy, row := range g {
+			for gx, c := range row {
+				if c != '#' {
+					continue
+				}
+				for dy := range px {
+					for dx := range px {
+						ink[gy*px+dy][x+gx*px+dx] = true
+					}
+				}
 			}
-			rows[y] += s
+		}
+		x += len(g[0]) * px
+	}
+	at := func(x, y int) bigPixel {
+		switch {
+		case ink[y][x]:
+			return bigInk
+		case f.shadow && x > 0 && y > 0 && ink[y-1][x-1]:
+			return bigShadow
+		}
+		return bigBlank
+	}
+	rows := make([][]glyph, f.rows())
+	for y := range rows {
+		for x := range w {
+			rows[y] = append(rows[y], bigCell(at(x, 2*y), at(x, 2*y+1)))
 		}
 	}
 	return rows
 }
 
-// cells are a glyph's rows of cells, as text.
-func (f bigFont) cells(g []string) []string {
-	out := make([]string, 0, f.rows())
-	var b strings.Builder
-	if f.wide {
-		for _, row := range g {
-			b.Reset()
-			for _, c := range row {
-				if c == '#' {
-					b.WriteString("██")
-				} else {
-					b.WriteString("  ")
-				}
-			}
-			out = append(out, b.String())
-		}
-		return out
+// bigPixel is what a pixel of big text is: blank, ink or shadow.
+type bigPixel uint8
+
+const (
+	bigBlank bigPixel = iota
+	bigInk
+	bigShadow
+)
+
+// The shadow is in the border's colour, faint under NO_COLOR; a cell of
+// ink over shadow (or under it) is the ink's half block on the shadow's
+// colour, where the terminal can show it, else the ink alone.
+var (
+	shadowStyle = style{role: Border, monoAttr: Faint}
+	onShadow    = style{back: Border, backMix: 255, backShade: true}
+)
+
+// bigCell is the cell of two pixels, one over the other: a full block or
+// a half one in the ink's colour or the shadow's, or the ink's half on the
+// shadow's colour.
+func bigCell(top, bottom bigPixel) glyph {
+	if top != bottom && top != bigBlank && bottom != bigBlank {
+		return glyph{text: halfBlock(top == bigInk, bottom == bigInk), width: 1, style: onShadow}
 	}
-	for y := 0; y < f.px; y += 2 {
-		b.Reset()
-		for x := range len(g[y]) {
-			b.WriteString(halfBlock(g[y][x] == '#', y+1 < f.px && g[y+1][x] == '#'))
-		}
-		out = append(out, b.String())
+	st := style{}
+	if top == bigShadow || bottom == bigShadow {
+		st = shadowStyle
 	}
-	return out
+	return glyph{text: halfBlock(top != bigBlank, bottom != bigBlank), width: 1, style: st}
 }
 
-// halfBlock is the cell of two pixels, one over the other: inked, the
-// terminal's text colour; blank, its background.
+// halfBlock is the cell of two pixels, one over the other, inked or blank.
 func halfBlock(top, bottom bool) string {
 	switch {
 	case top && bottom:
@@ -211,11 +274,11 @@ func (l *layout) paintBigText(cv *canvas, e *view.Element, x, y, w, h int) {
 		case "end":
 			dx = max(w-lw, 0)
 		}
-		for _, s := range f.bigRows(ln) {
+		for _, gs := range f.bigCells(ln) {
 			if row >= y+h {
 				return
 			}
-			cv.write(x+dx, row, w-dx, glyphs(s, style{}))
+			cv.write(x+dx, row, w-dx, gs)
 			row++
 		}
 		row++
