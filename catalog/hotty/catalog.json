@@ -5,7 +5,7 @@
   "title": "HOTTY Catalog",
   "description": "Keys, forms and focus for A2UI surfaces shown in a terminal: the hotty catalog of the HOTTY profile of A2UI. Mix it with the basic catalog component by component. Its names start with Hotty (components) and hotty (functions), so that none can be one A2UI adds later.",
   "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://hotty.neuroplast.io/a2ui/v1/catalog\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.\n\n8. HottyTable shows rows of data: give `columns` (each a `key` into the rows, a `header`, and `align`: \"end\" for numbers) and `rows`, a list of objects, best bound to the data model. Set `rowKey` to the field that identifies a row, and bind `selected` to a path: the user's selection is written there. To act on the selected row, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `height` to scroll long tables.\n\n9. HottyList shows items to pick from, a label and a line under it each: give `items`, a list of objects with `label`, `description` and `value` (what identifies the item), best bound to the data model, and bind `selected` to a path: the user's pick is written there. To act on it, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `filterable` to let the user type / and narrow the items by their labels, and `height` to show long lists a page at a time.\n\n10. HottyKeyHints is a help line: the keys the user can press now, those of the component with the keyboard and the surface's HottyShortcuts. Put one at the bottom of a surface that takes keys, and give each HottyShortcut a short `label` (\"save\", \"quit\") so that it shows there. The user presses ? for the full view.\n\n11. HottyScrollView shows content taller than the room it has, in a box `height` rows tall that the user scrolls: give it a `child` (a long Text, say), or `lines`, a list of strings. For a log or a command's output, bind `lines` to a list in the data model, add each line by writing the next index with updateDataModel (/log/0, /log/1, …), and set `follow` so that the box shows the newest. Call hottyScrollTo(id, \"start\" or \"end\") to move it.\n\n12. HottyCode shows source code, highlighted: give `code` and `language` (a name such as \"go\" or a file name such as \"main.go\"). Set `lineNumbers` for a file or an excerpt of one (with `startLine`), and `marks` to point at lines: {\"line\": 12, \"kind\": \"error\"}, or a range with `end`; kinds are highlight, added, removed, error and warning. Put a long listing in a HottyScrollView. Code inside prose can stay a fenced block in a Text (```python), which is highlighted too.\n\n13. HottyDiff shows a change to code, as a review does: give `patch`, a unified diff of one or more files (git diff's output), or the `old` and `new` text of one file with its `file` name. Set `view` to \"split\" for the two sides next to each other. Bind `selected` to a path: the hunk the user picks is written there, as \"path:line\". To act on it (stage it, revert it, comment on it), give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Big diffs belong in props rather than the data model, and in a HottyScrollView.\n\n14. HottyTree shows nodes in branches that fold, such as files in folders or a site's sections: give `items`, a list of nodes, each with a `label`, a `value` (what identifies it), an optional `icon` (a name as HottyIcon takes) and `children`, best bound to the data model. Bind `selected` to a path: the user's selection is written there, and the branches it is in show open. Bind `expanded` to keep which branches are open, or give a list to open some at first. To act on a leaf, give `onActivate` an action whose context reads the selected path; it runs on Enter or a second click. For a filter field, bind a TextField's value and the tree's `filter` to the same path. Set `height` to scroll a long tree. For buttons that open or close every branch, call hottyExpandAll(id) or hottyCollapseAll(id) from their actions.\n\n15. HottyIcon shows an icon the basic Icon's 59 names lack, by its Material Symbols name as Google Fonts writes it (\"account_tree\", \"terminal\"); use the basic Icon for those it has. For a shape of your own, give {\"svgPath\": …}, with `strokeWidth` for an outline one. A renderer may have only some of Material's icons, and shows a mark for the others.\n\n16. To show icons on tabs or options, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"icons\": …}}} on a Tabs, as a list of names, one per tab in order, or on a ChoicePicker, as an object from an option's `value` to its name. Names are as HottyIcon takes them. Terminals without graphics show the titles alone.\n\n17. HottySwitch is an on/off switch for one setting, as a phone's settings show them: give a `label` and bind `value`, a boolean, to the data model, where the user's flips are written. Prefer it to a CheckBox for a setting that takes effect at once; keep the CheckBox for a choice that a form sends later, such as accepting terms. Set `disabled` (true, or bound to a path) while it cannot change; it and the switch's checks take a literal or a path, not a function call. Space, Enter or a click flips it: Enter on it does not submit a HottyForm.\n\n18. HottyChart draws numbers on an axis: `kind` \"line\" (the default) for a trend over time, or \"bar\" for amounts by category. Give `values`, a list of numbers, or `series` for several, each a `label` and its `values`; and `labels`, one for each point (times, days, names). Bind values to a list in the data model and add a point by writing the next index (/cpu/42), and set `window` to keep the last points only, so that the chart slides as they arrive. The axis fits the values, from 0; set `min` and `max` to zoom in, and `height` for the plot's rows (8). Keep long series out of a surface with sendDataModel, which would send them back with every action.\n\n19. HottySparkline is a trend in a few cells, with no axis: give `values`, bound as a chart's, and put it in a Row between a Text that names it and one with the latest value. Set `window` to keep it that many columns wide as values arrive, and `height` for a taller one.\n\n20. HottyRangeSlider picks a range of numbers on one track, such as a price filter: give a `label`, `max` (and `min`, 0 by default), and bind `start` and `end`, each to a path of its own, where the user's moves are written. Set `steps` to snap both ends, as a Slider's. Each knob is a Tab stop, and stops where it meets the other. Set `disabled` (true, or bound to a path) while it cannot change; it and the checks take a literal or a path, not a function call. A basic Slider fills from `min` to its knob; for one whose chosen part runs from its knob to `max`, such as a minimum rating, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"fill\": \"end\"}}} on it.",
+  "instructions": "These components and functions come from the hotty catalog: give each one \"catalogId\": \"https://hotty.neuroplast.io/a2ui/v1/catalog\". Everything else comes from the basic catalog. Every hotty component's name starts with Hotty, and every hotty function's with hotty; a name without the prefix is basic's.\n\n1. HottyShortcut binds a key to its surface. Put it anywhere in the tree (it draws nothing). Give either `press`, the id of a Button on the same surface, or `action`. Write keys as W3C key values joined by '+': \"Control+s\", \"Escape\", \"Alt+ArrowDown\", \"F5\". Prefer keys with Control or Alt that fields leave alone, such as Control+s or Control+r: while the user is typing in a field, it takes printable keys and its editing keys (Control+a, Control+e, Control+b, Control+f, Control+w, Control+u, Control+k, Control+d, Control+h, Control+p, Control+n, Alt+b, Alt+f, Alt+d).\n\n2. HottyForm wraps fields (TextField and the like, usually in a Column) and runs `onSubmit` when the user presses Enter in one of them. Do not add a submit Button just for Enter; a Button inside a HottyForm is still an ordinary Button.\n\n3. To move the keyboard to a component, call hottyFocus(id) from a Button's action, or send callRendererFunction. hottyBlur() gives the keyboard back to the terminal.\n\n4. To focus a component when the surface first appears, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"autofocus\": true}}} on it.\n\n5. To change what keys do in the text fields inside a component, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"keys\": \"Control+s=submit Control+k=program\"}}} on it: each binding is key=action, and `program` leaves the key to HottyShortcuts.\n\n6. HottyProgress shows how far a task has come: `value` from 0 to `max` (default 1, so a fraction; set max 100 for a percentage), and an optional `label` above the bar. Bind `value` to the data model and move it with updateDataModel as the task goes. Leave `value` out while the task runs but its progress is not known.\n\n7. HottySpinner shows that something is under way: a `label` beside a spinner. Bind `active` to the data model and set it to false when the work is done, or replace the spinner with the result.\n\n8. HottyTable shows rows of data: give `columns` (each a `key` into the rows, a `header`, and `align`: \"end\" for numbers) and `rows`, a list of objects, best bound to the data model. Set `rowKey` to the field that identifies a row, and bind `selected` to a path: the user's selection is written there. To act on the selected row, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `height` to scroll long tables.\n\n9. HottyList shows items to pick from, a label and a line under it each: give `items`, a list of objects with `label`, `description` and `value` (what identifies the item), best bound to the data model, and bind `selected` to a path: the user's pick is written there. To act on it, give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Set `filterable` to let the user type / and narrow the items by their labels, and `height` to show long lists a page at a time.\n\n10. HottyKeyHints is a help line: the keys the user can press now, those of the component with the keyboard and the surface's HottyShortcuts. Put one at the bottom of a surface that takes keys, and give each HottyShortcut a short `label` (\"save\", \"quit\") so that it shows there. The user presses ? for the full view.\n\n11. HottyScrollView shows content taller than the room it has, in a box `height` rows tall that the user scrolls: give it a `child` (a long Text, say), or `lines`, a list of strings. For a log or a command's output, bind `lines` to a list in the data model, add each line by writing the next index with updateDataModel (/log/0, /log/1, …), and set `follow` so that the box shows the newest. Call hottyScrollTo(id, \"start\" or \"end\") to move it.\n\n12. HottyCode shows source code, highlighted: give `code` and `language` (a name such as \"go\" or a file name such as \"main.go\"). Set `lineNumbers` for a file or an excerpt of one (with `startLine`), and `marks` to point at lines: {\"line\": 12, \"kind\": \"error\"}, or a range with `end`; kinds are highlight, added, removed, error and warning. Put a long listing in a HottyScrollView. Code inside prose can stay a fenced block in a Text (```python), which is highlighted too.\n\n13. HottyDiff shows a change to code, as a review does: give `patch`, a unified diff of one or more files (git diff's output), or the `old` and `new` text of one file with its `file` name. Set `view` to \"split\" for the two sides next to each other. Bind `selected` to a path: the hunk the user picks is written there, as \"path:line\". To act on it (stage it, revert it, comment on it), give `onActivate` an action whose context reads that path; it runs on Enter or a second click. Big diffs belong in props rather than the data model, and in a HottyScrollView.\n\n14. HottyTree shows nodes in branches that fold, such as files in folders or a site's sections: give `items`, a list of nodes, each with a `label`, a `value` (what identifies it), an optional `icon` (a name as HottyIcon takes) and `children`, best bound to the data model. Bind `selected` to a path: the user's selection is written there, and the branches it is in show open. Bind `expanded` to keep which branches are open, or give a list to open some at first. To act on a leaf, give `onActivate` an action whose context reads the selected path; it runs on Enter or a second click. For a filter field, bind a TextField's value and the tree's `filter` to the same path. Set `height` to scroll a long tree. For buttons that open or close every branch, call hottyExpandAll(id) or hottyCollapseAll(id) from their actions.\n\n15. HottyIcon shows an icon the basic Icon's 59 names lack, by its Material Symbols name as Google Fonts writes it (\"account_tree\", \"terminal\"); use the basic Icon for those it has. For a shape of your own, give {\"svgPath\": …}, with `strokeWidth` for an outline one. A renderer may have only some of Material's icons, and shows a mark for the others.\n\n16. To show icons on tabs or options, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"icons\": …}}} on a Tabs, as a list of names, one per tab in order, or on a ChoicePicker, as an object from an option's `value` to its name. Names are as HottyIcon takes them. Terminals without graphics show the titles alone.\n\n17. HottySwitch is an on/off switch for one setting, as a phone's settings show them: give a `label` and bind `value`, a boolean, to the data model, where the user's flips are written. Prefer it to a CheckBox for a setting that takes effect at once; keep the CheckBox for a choice that a form sends later, such as accepting terms. Set `disabled` (true, or bound to a path) while it cannot change; it and the switch's checks take a literal or a path, not a function call. Space, Enter or a click flips it: Enter on it does not submit a HottyForm.\n\n18. HottyChart draws numbers on an axis: `kind` \"line\" (the default) for a trend over time, or \"bar\" for amounts by category. Give `values`, a list of numbers, or `series` for several, each a `label` and its `values`; and `labels`, one for each point (times, days, names). Bind values to a list in the data model and add a point by writing the next index (/cpu/42), and set `window` to keep the last points only, so that the chart slides as they arrive. The axis fits the values, from 0; set `min` and `max` to zoom in, and `height` for the plot's rows (8). Keep long series out of a surface with sendDataModel, which would send them back with every action.\n\n19. HottySparkline is a trend in a few cells, with no axis: give `values`, bound as a chart's, and put it in a Row between a Text that names it and one with the latest value. Set `window` to keep it that many columns wide as values arrive, and `height` for a taller one.\n\n20. HottyRangeSlider picks a range of numbers on one track, such as a price filter: give a `label`, `max` (and `min`, 0 by default), and bind `start` and `end`, each to a path of its own, where the user's moves are written. Set `steps` to snap both ends, as a Slider's. Each knob is a Tab stop, and stops where it meets the other. Set `disabled` (true, or bound to a path) while it cannot change; it and the checks take a literal or a path, not a function call. A basic Slider fills from `min` to its knob; for one whose chosen part runs from its knob to `max`, such as a minimum rating, set \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"fill\": \"end\"}}} on it.\n\n21. To let the user reorder a HottyList, HottyTable or HottyTree, set `reorderable`, bind its items (`rows`) to the data model, where the new order is written, and bind `moved` to a path, where each move is written ({\"item\", \"from\", \"to\"}, places with an `index`, in a tree a `parent`) before `onMove` runs: give onMove's context that path. The user drags an item to where a line shows it lands (in a tree also into a node that has `children`, even an empty list), or presses Alt+ArrowUp and Alt+ArrowDown; in a tree Alt+ArrowLeft and Alt+ArrowRight move a node out of its branch and into the node above. Two of a kind with the same `dragType` take each other's items. For cards on a board, use a basic List of a template for each column, with \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {\"reorder\": {\"type\": \"card\", \"moved\": {\"@path\": \"/move\"}, \"onMove\": …}}}}. To let the user drop something on any component (a ticket on a person), give the thing {\"drag\": {\"type\": \"ticket\", \"value\": {\"@path\": \"id\"}}} (a list's items carry their data, by its dragType) and the target {\"drop\": {\"accepts\": [\"ticket\"], \"value\": {\"@path\": \"/dropped\"}, \"action\": …}}: what is dropped is written to value's path, and the action runs.",
   "components": {
     "HottyShortcut": {
       "type": "object",
@@ -228,6 +228,23 @@
           "$ref": "common_types.json#/$defs/Action",
           "description": "Runs when the user presses Enter on the selected row, or clicks it again. Its context should read the selection from the path selected is bound to."
         },
+        "reorderable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the user moves the rows: drags one where a line shows it would land, or presses Alt+ArrowUp or Alt+ArrowDown to move the selected one a place. The rows are written where `rows` is bound, the moved one stays selected, and onMove runs. Nothing moves while a filter applies."
+        },
+        "dragType": {
+          "type": "string",
+          "description": "What the rows are, for drag and drop, such as \"task\". A component whose io_neuroplast_hotty.drop accepts the type takes one dropped on it, as its data. Two reorderable HottyTables of one surface with the same dragType take each other's."
+        },
+        "moved": {
+          "$ref": "common_types.json#/$defs/DynamicValue",
+          "description": "Bind it to a path: when the user moves an item, the move is written there before onMove runs: {\"item\": the item's rowKey, \"from\": {\"index\": 2}, \"to\": {\"index\": 0}}. Each place also has the `path` its list is bound to, which tells two lists apart."
+        },
+        "onMove": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Runs after the user moves an item, by a drag or the keys, once the rows are written: give its context the path moved is bound to. An item from another one runs the onMove of the one it went to, or else of the one it left."
+        },
         "height": {
           "type": "integer",
           "minimum": 1,
@@ -296,6 +313,23 @@
         "onActivate": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Runs when the user presses Enter on the selected item, or clicks it again. Its context should read the selection from the path selected is bound to."
+        },
+        "reorderable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the user moves the items: drags one where a line shows it would land, or presses Alt+ArrowUp or Alt+ArrowDown to move the selected one a place. The items are written where `items` is bound, the moved one stays selected, and onMove runs. Nothing moves while a filter applies."
+        },
+        "dragType": {
+          "type": "string",
+          "description": "What the items are, for drag and drop, such as \"task\". A component whose io_neuroplast_hotty.drop accepts the type takes one dropped on it, as its data. Two reorderable HottyLists of one surface with the same dragType take each other's."
+        },
+        "moved": {
+          "$ref": "common_types.json#/$defs/DynamicValue",
+          "description": "Bind it to a path: when the user moves an item, the move is written there before onMove runs: {\"item\": the item's value, \"from\": {\"index\": 2}, \"to\": {\"index\": 0}}. Each place also has the `path` its list is bound to, which tells two lists apart."
+        },
+        "onMove": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Runs after the user moves an item, by a drag or the keys, once the items are written: give its context the path moved is bound to. An item from another one runs the onMove of the one it went to, or else of the one it left."
         },
         "filterable": {
           "type": "boolean",
@@ -574,6 +608,23 @@
         "onActivate": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Runs when the user presses Enter on the selected leaf, or clicks it again; on a branch, Enter opens or closes it instead. Its context should read the selection from the path selected is bound to."
+        },
+        "reorderable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the user moves the nodes: drags one where a line shows it would land, or onto a node that has `children` (a list, empty or not) to put it inside, or presses Alt+ArrowUp or Alt+ArrowDown to move the selected one a place; Alt+ArrowLeft moves it out of its branch, after it, and Alt+ArrowRight into the node above it, as its last child. The nodes are written where `items` is bound, the moved one stays selected, and onMove runs. Nothing moves while a filter applies."
+        },
+        "dragType": {
+          "type": "string",
+          "description": "What the nodes are, for drag and drop, such as \"task\". A component whose io_neuroplast_hotty.drop accepts the type takes one dropped on it, as its data. Two reorderable HottyTrees of one surface with the same dragType take each other's."
+        },
+        "moved": {
+          "$ref": "common_types.json#/$defs/DynamicValue",
+          "description": "Bind it to a path: when the user moves an item, the move is written there before onMove runs: {\"item\": the item's value, \"from\": {\"parent\": \"docs\", \"index\": 0}, \"to\": {\"parent\": null, \"index\": 2}}, the parent a node's value, null for the roots. Each place also has the `path` its list is bound to, which tells two lists apart."
+        },
+        "onMove": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Runs after the user moves an item, by a drag or the keys, once the nodes are written: give its context the path moved is bound to. An item from another one runs the onMove of the one it went to, or else of the one it left."
         },
         "height": {
           "type": "integer",
@@ -1107,7 +1158,7 @@
           "items": {
             "$ref": "#/$defs/treeNode"
           },
-          "description": "The nodes in this one, which makes it a branch."
+          "description": "The nodes in this one, which makes it a branch. An empty list makes a branch with nothing in it yet, such as an empty folder, which a reorderable tree moves nodes into."
         }
       },
       "required": [
@@ -1146,6 +1197,107 @@
       "required": [
         "values"
       ]
+    },
+    "io_neuroplast_hotty": {
+      "type": "object",
+      "description": "The kit's extension: \"metadata\": {\"extensions\": {\"io_neuroplast_hotty\": {…}}} on a component. Renderers that do not know it ignore it.",
+      "properties": {
+        "autofocus": {
+          "type": "boolean",
+          "description": "The component takes the keyboard as soon as it is there, until the surface has given it to anything."
+        },
+        "keys": {
+          "type": "string",
+          "description": "A keymap for the text fields inside the component, and itself if it is one: bindings key=action, white space between them, as HOTTY's data-keys (\"Control+s=submit Control+k=program\")."
+        },
+        "icons": {
+          "description": "Icons for a Tabs' titles, a name a tab in order, or for a ChoicePicker's options, an object from an option's value to its name. Names are HottyIcon's.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "drag": {
+          "type": "object",
+          "description": "The component is a drag source: the user drags it onto a component whose drop accepts its type.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "What it is, such as \"ticket\"."
+            },
+            "value": {
+              "$ref": "common_types.json#/$defs/DynamicValue",
+              "description": "What it carries, resolved in its scope: {\"@path\": \"id\"} in a template's item is the item's id."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        "drop": {
+          "type": "object",
+          "description": "The component is a drop target: the user drops onto it a drag source, or an item of a list with a dragType, whose type it accepts. What that means is the action's.",
+          "properties": {
+            "accepts": {
+              "description": "The types it takes.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "value": {
+              "$ref": "common_types.json#/$defs/DataBinding",
+              "description": "Where what is dropped is written before the action runs: a drag source's value, or a list's item's data (a HottyTable's row, a HottyList's item, a HottyTree's node, a List's item)."
+            },
+            "action": {
+              "$ref": "common_types.json#/$defs/Action",
+              "description": "Runs on the drop, in the component's scope: give its context the path value is bound to."
+            }
+          },
+          "required": [
+            "accepts",
+            "action"
+          ],
+          "additionalProperties": false
+        },
+        "reorder": {
+          "type": "object",
+          "description": "On a List whose children are a template: the user moves its items, as a reorderable HottyList's, by a drag or by Alt+ArrowUp and Alt+ArrowDown on the item that has the keyboard. The template's list is written, then onMove runs.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "What the items are, such as \"card\": Lists with the same type take each other's items, and a drop target that accepts it takes one, as its data."
+            },
+            "moved": {
+              "$ref": "common_types.json#/$defs/DataBinding",
+              "description": "Where the move is written before onMove runs: {\"item\": the item's data, \"from\": {\"path\": \"/board/todo\", \"index\": 2}, \"to\": {\"path\": \"/board/doing\", \"index\": 0}}."
+            },
+            "onMove": {
+              "$ref": "common_types.json#/$defs/Action",
+              "description": "Runs after a move. An item from another List runs the onMove of the one it went to, or else of the one it left."
+            }
+          },
+          "additionalProperties": false
+        }
+      }
     }
   }
 }

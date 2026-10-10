@@ -46,12 +46,17 @@ type State struct {
 	Revealed map[string]string
 	// FullHints: the surface's HottyKeyHints show their full view (?).
 	FullHints bool
+	// Drag is the drag the user is making, nil while none is (Lift).
+	Drag *Drag
+	// Moved are the items the user moved in each HottyList, HottyTable and
+	// HottyTree whose items are not bound, by its id (Builder.List).
+	Moved map[string]Moved
 }
 
 // NewState is a surface's state before the user does anything.
 func NewState() *State {
 	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}, Query: map[string]Query{},
-		Left: map[string]int{}, Tail: map[string]bool{}, Open: map[string][]string{}, Revealed: map[string]string{}}
+		Left: map[string]int{}, Tail: map[string]bool{}, Open: map[string][]string{}, Revealed: map[string]string{}, Moved: map[string]Moved{}}
 }
 
 // Mapper makes an element of a node, children included; nil when the
@@ -116,6 +121,9 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	e.A11y = b.a11y(n)
 	e.Autofocus = autofocus(n)
 	e.Keys = keys(n)
+	if e.Kind != Placeholder {
+		dragDrop(n, e)
+	}
 	return e
 }
 

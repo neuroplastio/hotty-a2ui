@@ -94,7 +94,40 @@ func programKeys(e *Element) bool {
 // elementHints are an element's keys, keys the surface's keymap: those
 // its short line shows, and all of them in groups, as bubbles splits a
 // component's full help into columns (a list's moves, then its filter).
+// The keys that move its item (MoveKey) follow, in a group of their own.
 func (c *Controller) elementHints(e *Element, keys string) (short []Hint, groups [][]Hint) {
+	short, groups = c.ownHints(e, keys)
+	if mv := c.moveHints(e); len(mv) > 0 {
+		short = append(short, mv[0])
+		groups = append(groups, mv)
+	}
+	return short, groups
+}
+
+// moveHints are the keys that move the item the keyboard is on
+// (MoveKey): a reorderable list's, table's or tree's selected item, while
+// no filter applies, or the item of a List with reorder that holds it.
+func (c *Controller) moveHints(e *Element) []Hint {
+	if moves(e) && isRows(e) {
+		if e.filtering() || e.Query.Editing {
+			return nil
+		}
+		h := []Hint{{"alt+↑/↓", "move"}}
+		if e.Kind == Tree {
+			h = append(h, Hint{"alt+←/→", "move out/in"})
+		}
+		return h
+	}
+	for _, a := range c.Ancestors(e.ID) {
+		if a.Kind == Stack && moves(a) {
+			return []Hint{{"alt+↑/↓", "move"}}
+		}
+	}
+	return nil
+}
+
+// ownHints are an element's own keys, as elementHints has them.
+func (c *Controller) ownHints(e *Element, keys string) (short []Hint, groups [][]Hint) {
 	enter := c.FormOf(e.ID) != nil
 	act := c.V.Node(e.ID) != nil && c.V.Node(e.ID).Props["onActivate"] != nil
 	switch e.Kind {

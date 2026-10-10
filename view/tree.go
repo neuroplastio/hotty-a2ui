@@ -15,16 +15,18 @@ import (
 
 // TreeNode is one of a HottyTree's nodes as the view has it: its label
 // and icon; its depth (0 for a root); its parent's index (-1 for a root);
-// how many children it has (a branch has some); whether it is the last of
-// its siblings that show, for the guides; and whether it is open: unfolded
-// by the user or the agent (expanded), or because the selection is inside
-// it.
+// how many children it has (a branch has some); whether it takes children,
+// a moved node (it has a list of them, empty or not: a folder); whether it
+// is the last of its siblings that show, for the guides; and whether it is
+// open: unfolded by the user or the agent (expanded), or because the
+// selection is inside it.
 type TreeNode struct {
 	Label  string `json:"label"`
 	Icon   string `json:"icon,omitempty"`
 	Level  int    `json:"level,omitempty"`
 	Parent int    `json:"parent"`
 	Kids   int    `json:"kids,omitempty"`
+	Takes  bool   `json:"takes,omitempty"`
 	Last   bool   `json:"last,omitempty"`
 	Open   bool   `json:"open,omitempty"`
 }
@@ -51,8 +53,8 @@ func mapTree(b *Builder, n *a2ui.Node) *Element {
 	if e.Expanded == nil {
 		e.Expanded = strs(b.Raw(n, "expanded"))
 	}
-	items, _ := b.Raw(n, "items").([]any)
-	e.addNodes(items, -1, "")
+	e.Movable, e.ItemType = b.Bool(n, "reorderable"), b.String(n, "dragType")
+	e.addNodes(b.List(n, "items"), -1, "")
 	open := map[string]bool{}
 	for _, id := range e.Expanded {
 		open[id] = true
@@ -104,10 +106,10 @@ func (e *Element) addNodes(items []any, parent int, place string) {
 		if v, ok := m["value"]; ok && v != nil {
 			id = a2ui.ToString(v)
 		}
-		kids, _ := m["children"].([]any)
+		kids, takes := m["children"].([]any)
 		i := len(e.Nodes)
 		e.Nodes = append(e.Nodes, TreeNode{Label: a2ui.ToString(m["label"]), Icon: a2ui.ToString(m["icon"]),
-			Level: level, Parent: parent, Kids: len(kids)})
+			Level: level, Parent: parent, Kids: len(kids), Takes: takes})
 		e.RowIDs = append(e.RowIDs, id)
 		e.addNodes(kids, i, at)
 	}

@@ -279,6 +279,17 @@ type Element struct {
 	Labels []string `json:"labels,omitempty"`
 	Window int      `json:"window,omitempty"`
 
+	// Drag and drop (profile §6.21). Movable: a HottyList, HottyTable or
+	// HottyTree that is reorderable, or a List of a template with
+	// io_neuroplast_hotty.reorder, whose items the user moves; ItemType, the
+	// type its items carry in a drag (dragType, reorder's type). DragType:
+	// the element is a drag source of that type (io_neuroplast_hotty.drag);
+	// Accepts: the types it takes as a drop target (io_neuroplast_hotty.drop).
+	Movable  bool     `json:"movable,omitempty"`
+	ItemType string   `json:"itemType,omitempty"`
+	DragType string   `json:"dragType,omitempty"`
+	Accepts  []string `json:"accepts,omitempty"`
+
 	// Placeholder: State is the node's (pending, unknown, cyclic).
 	State a2ui.NodeState `json:"state,omitempty"`
 

@@ -37,7 +37,8 @@ func mapList(b *Builder, n *a2ui.Node) *Element {
 	if _, set := n.Props["emptyText"]; !set {
 		e.Placeholder = "No items."
 	}
-	items, _ := b.Raw(n, "items").([]any)
+	e.Movable, e.ItemType = b.Bool(n, "reorderable"), b.String(n, "dragType")
+	items := b.List(n, "items")
 	labels := make([]string, 0, len(items))
 	for i, it := range items {
 		m, _ := it.(map[string]any)

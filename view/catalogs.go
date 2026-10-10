@@ -49,6 +49,13 @@ func init() {
 					c.Item = true
 				}
 			}
+			// A List of a template moves its items with
+			// io_neuroplast_hotty.reorder (profile §6.21), as a HottyList
+			// does with reorderable: List is basic's, so it takes no prop.
+			if r, ok := hottyExt(n)["reorder"].(map[string]any); ok && templatePath(b.S, n) != "" {
+				e.Movable = true
+				e.ItemType, _ = r["type"].(string)
+			}
 			return e
 		},
 		"Card": func(b *Builder, n *a2ui.Node) *Element {
@@ -280,8 +287,9 @@ func mapTable(b *Builder, n *a2ui.Node) *Element {
 		}
 		e.Columns = append(e.Columns, col)
 	}
+	e.Movable, e.ItemType = b.Bool(n, "reorderable"), b.String(n, "dragType")
 	rowKey := b.String(n, "rowKey")
-	rows, _ := b.Raw(n, "rows").([]any)
+	rows := b.List(n, "rows")
 	for i, r := range rows {
 		m, _ := r.(map[string]any)
 		cells := make([]string, len(e.Columns))
