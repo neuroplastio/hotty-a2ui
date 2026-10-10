@@ -306,6 +306,9 @@
 /* Filled, so a field shows where its border does not draw (.k-card). */
 .k-input:focus { border-color: var(--k-focus); }
 .k-input::placeholder { color: var(--k-muted); }
+/* A text field shows the I-beam, which the host draws (SPEC §9); a select
+   is a .k-input too, but a button. */
+:is(input, textarea).k-input { cursor: text; }
 .k-date { width: auto; max-width: 100%; }
 textarea.k-input { min-height: 5.5rem; }
 

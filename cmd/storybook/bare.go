@@ -29,6 +29,7 @@ import (
 type bareModel struct {
 	run   *story.Run
 	px    pixels
+	ptr   pointer
 	th    theme.Theme
 	plain bool
 	panes []*barePane
@@ -69,7 +70,7 @@ func runBare(st *story.Story, th theme.Theme) error {
 	return err
 }
 
-func (m *bareModel) Init() tea.Cmd { return nil }
+func (m *bareModel) Init() tea.Cmd { return tea.Raw(shiftCaptureOn) }
 
 func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	msg, px := m.px.update(msg)
@@ -87,14 +88,18 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		if k == "Control+c" || k == "q" && m.keyboard() == nil {
-			return m, tea.Sequence(m.px.off(), tea.Quit)
+			return m, tea.Sequence(m.px.off(), m.ptr.off(), tea.Quit)
 		}
 		m.key(k)
 	case tea.MouseClickMsg:
 		if p, row := m.at(msg.Y); p != nil && msg.Button == tea.MouseLeft {
 			m.give(p)
 			p.press = true
-			m.fail(p.r.Click(msg.X, row))
+			if msg.Mod&tea.ModShift != 0 {
+				m.fail(p.r.ShiftClick(msg.X, row))
+			} else {
+				m.fail(p.r.Click(msg.X, row))
+			}
 		}
 	case tea.MouseWheelMsg:
 		if p, row := m.at(msg.Y); p != nil {
@@ -102,6 +107,14 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.r.Wheel(msg.X, row, dx, dy)
 		}
 	case tea.MouseMotionMsg:
+		if msg.Button == tea.MouseNone {
+			// Hover: only the pointer's shape changes, nothing to draw.
+			shape := ""
+			if p, row := m.at(msg.Y); p != nil {
+				shape = p.r.Pointer(msg.X, row)
+			}
+			return m, tea.Batch(px, m.ptr.set(shape))
+		}
 		for _, p := range m.panes {
 			if p.press && msg.Button == tea.MouseLeft {
 				m.fail(p.r.Drag(msg.X, msg.Y-p.top))
@@ -209,6 +222,7 @@ func (m *bareModel) draw() {
 		}
 		if c, row, ok := p.f.Cursor(); ok && p.s.C.St.Keyboard {
 			m.cur = tea.NewCursor(c, top+row)
+			m.cur.Blink = false // the rendition blinks it
 			if !p.f.BlockCursor() {
 				m.cur.Shape = tea.CursorBar
 			}
@@ -229,7 +243,7 @@ func (m *bareModel) draw() {
 func (m *bareModel) View() tea.View {
 	v := tea.NewView(m.frame)
 	v.AltScreen = true
-	v.MouseMode = tea.MouseModeCellMotion
+	v.MouseMode = tea.MouseModeAllMotion
 	v.Cursor = m.cur
 	return v
 }

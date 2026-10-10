@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	hottygo "github.com/neuroplastio/hotty-go"
 
@@ -166,6 +167,91 @@ func TestFieldMouseSelection(t *testing.T) {
 	keys(t, r, "Delete")
 	if got := data()["name"]; got != "" {
 		t.Errorf("a drag from the end to left of the value, and Delete: %q", got)
+	}
+}
+
+// TestCaretBlinks: the caret shows when the field takes the keyboard and
+// after a key, then hides and shows by turns, caretBlink each, the frame
+// saying when to draw it again.
+func TestCaretBlinks(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	now := time.Unix(0, 0)
+	r.Clock = func() time.Time { return now }
+	c.Focus("name")
+	shows := func(when string, want bool) {
+		t.Helper()
+		f := r.Draw(40)
+		if _, _, ok := f.Cursor(); ok != want {
+			t.Errorf("%s: the caret shows %v", when, ok)
+		}
+		if d := r.Animating(); d <= 0 || d > caretBlink {
+			t.Errorf("%s: drawn again in %v", when, d)
+		}
+	}
+	shows("focused", true)
+	now = now.Add(caretBlink)
+	shows("a blink on", false)
+	now = now.Add(caretBlink)
+	shows("two on", true)
+	now = now.Add(caretBlink + 100*time.Millisecond)
+	shows("three on and a bit", false)
+	keys(t, r, "a")
+	shows("after a key", true)
+}
+
+// TestFieldShiftClick: with Shift, a press in the field that has the
+// keyboard extends the selection from its anchor, or from the caret; in a
+// field without it, it is a click.
+func TestFieldShiftClick(t *testing.T) {
+	c, data, _ := form(t)
+	r := New(c)
+	c.Focus("name")
+	r.Draw(40)
+	keys(t, r, "a", "b", "c", "d", "Home")
+	// "┃ > abcd" on row 1: d is at column 7.
+	if err := r.ShiftClick(7, 1); err != nil {
+		t.Fatal(err)
+	}
+	r.Release()
+	keys(t, r, "x")
+	if got := data()["name"]; got != "xd" {
+		t.Fatalf("Shift with a press from the caret, then x: %q", got)
+	}
+	keys(t, r, "End")
+	for _, col := range []int{4, 5} {
+		if err := r.ShiftClick(col, 1); err != nil {
+			t.Fatal(err)
+		}
+		r.Release()
+	}
+	keys(t, r, "!")
+	if got := data()["name"]; got != "x!" {
+		t.Errorf("a second Shift press moves the selection's end, not its anchor: %q", got)
+	}
+	c.Focus("note")
+	r.Draw(40)
+	if err := r.ShiftClick(5, 1); err != nil {
+		t.Fatal(err)
+	}
+	if c.St.Focus != "name" {
+		t.Errorf("Shift with a press in another field: the keyboard on %q", c.St.Focus)
+	}
+}
+
+// TestPointer: the pointer is an I-beam over a field's value, and the
+// terminal's own elsewhere.
+func TestPointer(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	r.Draw(40)
+	for _, at := range []struct {
+		col, row int
+		want     string
+	}{{5, 1, "text"}, {30, 1, "text"}, {5, 0, ""}, {2, 1, ""}} {
+		if got := r.Pointer(at.col, at.row); got != at.want {
+			t.Errorf("at %d,%d: %q, want %q", at.col, at.row, got, at.want)
+		}
 	}
 }
 

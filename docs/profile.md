@@ -472,6 +472,15 @@ without colour:
     (`TerminalKeys`), it is a block, and the cell under it is reversed
     too, except beside a selection, where a block would read as one more
     selected cell. A HottyList's filter has the same cursor.
+  - It blinks as a GUI field's caret does: it shows when the field takes
+    the keyboard, after a key and after a press, then hides and shows by
+    turns, 530 ms each, and the frame says when to draw it again
+    (`Animating`). The terminal's cursor is asked to hold steady, so the
+    two don't blink at odds.
+  - The pointer is an I-beam over a field's value (`Rendition.Pointer`
+    is `"text"`; a program sets it with OSC 22, and hears the pointer move
+    with no button down), as a browser shows over a field. On a host the
+    field's `cursor: text` asks for the same (SPEC.md §9).
   - The field scrolls as little as keeps the cursor in it: across, by
     columns (it shows from the start whenever the cursor's line fits),
     and for a longText, down by lines.
@@ -650,7 +659,10 @@ In the output:
   - a field puts its cursor before the cluster clicked (a click on its
     label line only focuses it), and a drag from there selects to the
     cluster under the pointer, to the value's start or end past them, as
-    in a GUI's field;
+    in a GUI's field. With Shift (`ShiftClick`), a press in the field that
+    has the keyboard extends the selection from its anchor, or from the
+    cursor, instead; a terminal sends Shift with a click only when the
+    program asks (XTSHIFTESCAPE), which the storybook does;
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
   - a click on a HottyTable's row selects it, and a click on its selected

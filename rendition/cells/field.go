@@ -1,6 +1,8 @@
 package cells
 
 import (
+	"time"
+
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -40,6 +42,28 @@ func offset(lines [][]string, li, ci int) int {
 	}
 	return pos + ci
 }
+
+// caretBlink is how long a caret shows and then how long it hides, as a
+// GUI field's blinks (530 ms, as Windows has it).
+const caretBlink = 530 * time.Millisecond
+
+// caretOn reports whether the caret of the text control id, which has the
+// keyboard, shows in the frame being drawn, and has the frame drawn again
+// when that changes: it shows from when the control took the keyboard, a
+// key or a press (wake), then hides and shows by turns, caretBlink each.
+// The terminal's cursor is steady, so that the two don't blink at odds.
+func (r *Rendition) caretOn(id string) bool {
+	now := r.Clock()
+	if r.blinkID != id {
+		r.blinkID, r.blinkFrom = id, now
+	}
+	since := max(now.Sub(r.blinkFrom), 0)
+	r.animate(caretBlink - since%caretBlink)
+	return since/caretBlink%2 == 0
+}
+
+// wake shows the caret anew, as a key or a press does in a GUI's field.
+func (r *Rendition) wake() { r.blinkFrom = r.Clock() }
 
 // selected is how a field shows the selected part of its value: on the
 // selection colour, or reversed where the theme can't tint, as a terminal
@@ -177,7 +201,7 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff
-		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows {
+		if cx >= 0 && cx < cv.f.Cols && cy >= 0 && cy < cv.f.Rows && r.caretOn(e.ID) {
 			// A block beside a selection would read as one more selected
 			// cell, so a selection takes the line.
 			cv.cursorAt(cx, cy, r.blockCursor() && s0 == s1)

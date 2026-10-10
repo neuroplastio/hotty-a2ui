@@ -45,6 +45,8 @@ type Rendition struct {
 	drag        string        // the Slider or HottyRangeSlider a click on its track started dragging, or the text control a press in its value did
 	knob        int           // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
 	anchor      int           // where in the text control the press was, which a drag selects from
+	blinkID     string        // the text control whose caret blinks (caretOn)
+	blinkFrom   time.Time     // when its caret last showed anew: it took the keyboard, a key, a press
 	press       *press        // a press that may start a drag and drop (drag.go)
 	anim        time.Duration // how soon the last Draw changes again (Animating)
 
@@ -211,6 +213,39 @@ func (r *Rendition) Click(col, row int) error {
 	return r.click(col, row)
 }
 
+// ShiftClick is a primary press with Shift held. In the text control that
+// has the keyboard, it extends the selection to where the press is, from
+// the selection's anchor, or else from the caret, and a drag from there
+// goes on extending it, as in a GUI's field. Anywhere else it is a Click.
+func (r *Rendition) ShiftClick(col, row int) error {
+	if h := r.hitAt(col, row); h != nil && h.field != nil && row >= h.field.y && r.focused(h.id) {
+		if e := r.c.V.Find(h.id); e != nil && isTextControl(e) {
+			f := r.field(e)
+			anchor, _ := f.Anchor()
+			p := posAt(e, h.field, col, row)
+			f.Select(anchor, p)
+			r.cursor[e.ID] = p
+			r.press, r.drag, r.anchor = nil, e.ID, anchor
+			r.wake()
+			return nil
+		}
+	}
+	return r.Click(col, row)
+}
+
+// Pointer is the pointer's shape over a cell of the last frame, as CSS
+// names it, for a program to set with OSC 22: "text", an I-beam, over a
+// text control's value, as a browser shows over a field; else "", the
+// terminal's own.
+func (r *Rendition) Pointer(col, row int) string {
+	if h := r.hitAt(col, row); h != nil && !h.disabled && h.field != nil {
+		if a := h.field; row >= a.y && row < a.y+a.rows && col >= a.x {
+			return "text"
+		}
+	}
+	return ""
+}
+
 // hitAt is the topmost hit at a cell of the last frame, or nil.
 func (r *Rendition) hitAt(col, row int) *hit {
 	for i := len(r.hits) - 1; i >= 0; i-- {
@@ -268,6 +303,7 @@ func (r *Rendition) click(col, row int) error {
 			r.field(e).Select(p, p)
 			r.cursor[e.ID] = p
 			r.drag, r.anchor = e.ID, p
+			r.wake()
 		}
 		return nil
 	case isSelect(e):
@@ -340,6 +376,7 @@ func (r *Rendition) slide(col, row int) error {
 			p := posAt(e, h.field, col, row)
 			r.field(e).Select(r.anchor, p)
 			r.cursor[e.ID] = p
+			r.wake()
 			return nil
 		}
 		if h.track == nil {

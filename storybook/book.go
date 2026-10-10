@@ -201,7 +201,7 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 		}
 	case tea.MouseClickMsg:
 		if msg.Button == tea.MouseLeft {
-			b.click(msg.X-b.at.X, msg.Y-b.at.Y)
+			b.click(msg.X-b.at.X, msg.Y-b.at.Y, msg.Mod&tea.ModShift != 0)
 		}
 	case tea.MouseWheelMsg:
 		b.wheel(msg.X-b.at.X, msg.Y-b.at.Y, msg)
@@ -626,7 +626,7 @@ func (b *Book) keymap() string {
 // host closes; on toggle, the sidebar hides or shows; in a cells pane, the one drawn last where they overlap
 // (pick's open list over nav), its rendition takes it; anywhere else the
 // keyboard goes back to the storybook.
-func (b *Book) click(x, y int) {
+func (b *Book) click(x, y int, shift bool) {
 	b.closeLists(nil)
 	if x == b.toggle[0] && y == b.toggle[1] {
 		b.toggleSidebar()
@@ -639,7 +639,11 @@ func (b *Book) click(x, y int) {
 		if f := b.focus; f != nil && f != p && f.s != p.s {
 			f.s.C.St.Keyboard = false
 		}
-		b.fail(p.cells.Click(x-p.rect.X, y-p.rect.Y+p.top))
+		if shift {
+			b.fail(p.cells.ShiftClick(x-p.rect.X, y-p.rect.Y+p.top))
+		} else {
+			b.fail(p.cells.Click(x-p.rect.X, y-p.rect.Y+p.top))
+		}
 		b.pressed = p
 		b.took(p)
 		return
@@ -648,6 +652,21 @@ func (b *Book) click(x, y int) {
 		f.s.C.St.Keyboard = false
 		b.focus = nil
 	}
+}
+
+// Pointer is the pointer's shape over a cell of the screen, as CSS names
+// it, for the program to set with OSC 22: the one the cells pane drawn
+// last there asks for (cells.Rendition.Pointer), else "", the terminal's
+// own. Over a surface the host shows the document's (SPEC §9).
+func (b *Book) Pointer(x, y int) string {
+	x, y = x-b.at.X, y-b.at.Y
+	for _, p := range slices.Backward(b.order) {
+		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
+			continue
+		}
+		return p.cells.Pointer(x-p.rect.X, y-p.rect.Y+p.top)
+	}
+	return ""
 }
 
 // took is a cells pane after a click or a release in it: it has the
@@ -987,6 +1006,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if f := b.focus; f != nil && f.kind == asCells && f.s.C.St.Keyboard && f.frame != nil {
 		if c, row, ok := f.frame.Cursor(); ok && row >= f.top && row < f.top+f.rect.H {
 			b.cursor = tea.NewCursor(r.X+f.rect.X+c, r.Y+f.rect.Y+row-f.top)
+			b.cursor.Blink = false // the rendition blinks it
 			if !f.frame.BlockCursor() {
 				b.cursor.Shape = tea.CursorBar
 			}

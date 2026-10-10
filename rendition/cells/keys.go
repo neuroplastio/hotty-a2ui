@@ -25,6 +25,7 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	}
 	mods, name := splitKey(key)
 	c := r.c
+	r.wake()
 	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
 	if key == "Escape" && r.cancelDrag() {
 		return true, nil

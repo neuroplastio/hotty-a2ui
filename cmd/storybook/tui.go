@@ -40,6 +40,7 @@ func endOnSignal(p *tea.Program) {
 type model struct {
 	s     *hottytea.Session
 	px    pixels
+	ptr   pointer
 	b     *storybook.Book
 	w, h  int
 	frame string
@@ -51,7 +52,7 @@ func newModel(o storybook.Options) *model {
 	return &model{s: hottytea.New(), b: storybook.New(o)}
 }
 
-func (m *model) Init() tea.Cmd { return m.s.Detect() }
+func (m *model) Init() tea.Cmd { return tea.Batch(m.s.Detect(), tea.Raw(shiftCaptureOn)) }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	msg, px := m.px.update(msg)
@@ -69,10 +70,18 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case streamEnd:
 		m.b.End(msg.err)
 	case endSignal:
-		return m, tea.Sequence(m.s.Close(), m.px.off(), tea.Quit)
+		return m, tea.Sequence(m.s.Close(), m.px.off(), m.ptr.off(), tea.Quit)
+	case tea.MouseMotionMsg:
+		if msg.Button == tea.MouseNone {
+			// Hover: only the pointer's shape changes, nothing to draw.
+			return m, tea.Batch(cmd, m.ptr.set(m.b.Pointer(msg.X, msg.Y)))
+		}
+		if m.b.Update(msg, m.s) {
+			return m, tea.Sequence(m.s.Close(), m.px.off(), m.ptr.off(), tea.Quit)
+		}
 	default:
 		if m.b.Update(msg, m.s) {
-			return m, tea.Sequence(m.s.Close(), m.px.off(), tea.Quit)
+			return m, tea.Sequence(m.s.Close(), m.px.off(), m.ptr.off(), tea.Quit)
 		}
 	}
 	return m, tea.Batch(cmd, m.draw(), m.b.Tick())
@@ -81,7 +90,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *model) View() tea.View {
 	v := tea.NewView(m.frame)
 	v.AltScreen = true
-	v.MouseMode = tea.MouseModeCellMotion
+	v.MouseMode = tea.MouseModeAllMotion
 	v.Cursor = m.b.Cursor()
 	v.WindowTitle = "storybook · " + m.b.Story()
 	return v
