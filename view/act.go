@@ -106,7 +106,7 @@ func (c *Controller) Activate(id string) error {
 			c.Rebuild()
 			return nil
 		}
-		err = c.S.Tree.Invoke(c.V.Node(id), "action", true)
+		err = c.invoke(c.V.Node(id), "action", true)
 	case CheckBox:
 		err = c.set(e, !e.On())
 	case Switch:
@@ -152,7 +152,7 @@ func (c *Controller) Activate(id string) error {
 			sel = e.SelectedShown()
 		}
 		if n := c.V.Node(id); sel >= 0 && n.Props["onActivate"] != nil {
-			err = c.S.Tree.Invoke(n, "onActivate", true)
+			err = c.invoke(n, "onActivate", true)
 		}
 	}
 	for _, a := range c.Ancestors(id) {
@@ -363,7 +363,7 @@ func (c *Controller) Submit(formID string) error {
 		c.Rebuild()
 		return nil
 	}
-	err := c.S.Tree.Invoke(c.V.Node(formID), "onSubmit", true)
+	err := c.invoke(c.V.Node(formID), "onSubmit", true)
 	c.Rebuild()
 	return err
 }
@@ -391,7 +391,7 @@ func (c *Controller) Shortcut(key string) (ok bool, err error) {
 			}
 			return true, nil
 		}
-		err = c.S.Tree.Invoke(c.V.Node(sc.ID), "action", true)
+		err = c.invoke(c.V.Node(sc.ID), "action", true)
 		c.Rebuild()
 		return true, err
 	}

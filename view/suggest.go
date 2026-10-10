@@ -261,5 +261,5 @@ func (c *Controller) suggestInput(id string) error {
 	if !ok {
 		return nil
 	}
-	return c.S.Dispatch(a, n.Scope, n.ComponentID, true)
+	return c.dispatch(a, n.Scope, n.ComponentID, true)
 }

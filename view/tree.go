@@ -411,7 +411,7 @@ func (c *Controller) activateTree(e *Element) error {
 		return c.ToggleNode(e.ID, sel)
 	}
 	if n := c.V.Node(e.ID); n.Props["onActivate"] != nil {
-		return c.S.Tree.Invoke(n, "onActivate", true)
+		return c.invoke(n, "onActivate", true)
 	}
 	return nil
 }

@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyTimer, HottyStopwatch, hottyStartTimer, hottyStopTimer, hottyToggleTimer, hottyResetTimer",
   "icon": "timer",
-  "description": "Two timers and a stopwatch, as Bubble Tea's timer and stopwatch show them, counting from when the story opens. The tea runs out after 10 seconds: it stops, writing false where its running is bound, and its onTimeout shows a toast. Its Buttons call hottyStartTimer, hottyStopTimer and hottyResetTimer, and their checks read the same path, so that Start is off while it runs and Stop while it does not; Start once it has run out brews another. The stopwatch counts in tenths, s starting and stopping it (hottyToggleTimer) and r resetting it, two HottyShortcuts. Focus counts 25 minutes down as a clock, and its onTimeout sends the agent an event.",
+  "description": "Two timers and a stopwatch, as Bubble Tea's timer and stopwatch show them, counting from when the story opens. The tea runs out after 10 seconds: it stops, writing false where its running is bound, and its onTimeout shows a toast. Its Buttons call hottyStartTimer, hottyStopTimer and hottyResetTimer, and their checks read the same path, so that Start is off while it runs and Stop while it does not; Start once it has run out brews another. The stopwatch counts in tenths, s starting and stopping it (hottyToggleTimer) and r resetting it, two HottyShortcuts; its elapsed is bound to /lapMs, the line under it, which shows the time written when it stops, when it is reset, and before any action runs. Focus counts 25 minutes down as a clock, and its onTimeout sends the agent an event.",
   "messages": [
     {
       "version": "v1.0",
@@ -12,7 +12,8 @@
         "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
         "dataModel": {
           "tea": true,
-          "lap": true
+          "lap": true,
+          "lapMs": 0
         }
       }
     },
@@ -27,6 +28,7 @@
             "children": [
               "title",
               "lap",
+              "lap_ms",
               "focus",
               "tea",
               "tea_keys",
@@ -155,6 +157,20 @@
             "interval": 100,
             "running": {
               "@path": "/lap"
+            },
+            "elapsed": {
+              "@path": "/lapMs"
+            }
+          },
+          {
+            "id": "lap_ms",
+            "component": "Text",
+            "variant": "caption",
+            "text": {
+              "@call": "formatString",
+              "args": {
+                "value": "/lapMs: ${/lapMs} ms"
+              }
             }
           },
           {

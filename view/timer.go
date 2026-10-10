@@ -187,7 +187,10 @@ func isTimer(n *a2ui.Node) bool {
 func (c *Controller) TickTimers(now time.Time) time.Duration {
 	b := &Builder{S: c.S, St: c.St}
 	seen := map[string]bool{}
-	var ended []*a2ui.Node
+	// ended: the HottyTimers that ran out at this draw; stopped: the
+	// HottyStopwatches that stopped counting, whose time is written where
+	// their elapsed is bound (writeElapsed).
+	var ended, stopped []*a2ui.Node
 	next := time.Duration(0)
 	for _, n := range c.S.Tree.Nodes() {
 		if !isTimer(n) {
@@ -213,7 +216,11 @@ func (c *Controller) TickTimers(now time.Time) time.Duration {
 				ended = append(ended, n)
 			}
 		}
+		was := st.counting
 		st.counting = t.counts(st.Elapsed)
+		if was && !st.counting && !t.countdown {
+			stopped = append(stopped, n)
+		}
 		if st.counting && (next == 0 || TimerStep(t.interval) < next) {
 			next = TimerStep(t.interval)
 		}
@@ -223,7 +230,10 @@ func (c *Controller) TickTimers(now time.Time) time.Duration {
 			delete(c.St.Timers, k)
 		}
 	}
-	if len(ended) == 0 {
+	for _, n := range stopped {
+		c.writeElapsed(n, c.St.Timers[n.Key].Elapsed)
+	}
+	if len(ended) == 0 && len(stopped) == 0 {
 		// Nothing else changed: the elements show the new time.
 		c.V.Walk(func(e *Element) bool {
 			if st := c.St.Timers[e.ID]; e.Kind == Timer && st != nil {
@@ -238,7 +248,7 @@ func (c *Controller) TickTimers(now time.Time) time.Duration {
 		// that start it, see it stopped.
 		c.setRunning(n, false)
 		if n.Props["onTimeout"] != nil {
-			c.S.Tree.Invoke(n, "onTimeout", false)
+			c.invoke(n, "onTimeout", false)
 		}
 	}
 	c.Rebuild()
@@ -289,11 +299,58 @@ func (c *Controller) TimerDo(key, do string) error {
 		if st := c.St.Timers[key]; st != nil {
 			st.Elapsed, st.last = 0, time.Time{}
 		}
+		err = c.writeElapsed(n, 0)
 	default:
 		return fmt.Errorf("a timer does not %q", do)
 	}
 	c.Rebuild()
 	return err
+}
+
+// writeElapsed writes a HottyStopwatch's time counted, d, in whole
+// milliseconds, where its elapsed is bound: when it stops, when it is
+// reset, and before an action runs (syncElapsed). It writes nothing where
+// elapsed is not bound, or where the model holds that time already, and
+// never at a draw while it counts, which would rewrite the model ten times
+// a second.
+func (c *Controller) writeElapsed(n *a2ui.Node, d time.Duration) error {
+	bd, ok := n.Props["elapsed"].(a2ui.Bound)
+	if n.Type != "HottyStopwatch" || !ok || !bd.Writable() {
+		return nil
+	}
+	ms := float64(d.Milliseconds())
+	if a2ui.ToNumber(bd.Value) == ms {
+		return nil
+	}
+	return c.S.Write(bd.Path, ms)
+}
+
+// syncElapsed writes each HottyStopwatch's time where its elapsed is bound
+// (writeElapsed), as the last draw counted it: the time the user sees.
+func (c *Controller) syncElapsed() {
+	for _, n := range c.S.Tree.Nodes() {
+		if isTimer(n) && n.Type == "HottyStopwatch" {
+			var d time.Duration
+			if st := c.St.Timers[n.Key]; st != nil {
+				d = st.Elapsed
+			}
+			c.writeElapsed(n, d)
+		}
+	}
+}
+
+// invoke runs a node's action property (a2ui.Resolver.Invoke), and dispatch
+// an action (a2ui.Surface.Dispatch), each after syncElapsed, so that the
+// action's context reads every stopwatch's time: a lap, a submit. Every
+// action the view runs goes through one of them.
+func (c *Controller) invoke(n *a2ui.Node, prop string, activation bool) error {
+	c.syncElapsed()
+	return c.S.Tree.Invoke(n, prop, activation)
+}
+
+func (c *Controller) dispatch(action map[string]any, scope a2ui.Scope, source string, activation bool) error {
+	c.syncElapsed()
+	return c.S.Dispatch(action, scope, source, activation)
 }
 
 // FindTimer is the node key of a HottyTimer or HottyStopwatch by its

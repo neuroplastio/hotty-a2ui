@@ -3,7 +3,10 @@
 Last updated: 2026-10-11
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** nothing from the review rounds: round 5
+**Waiting on the maintainer:** the look questions below, kept for one
+feedback loop (blind review rounds, as rounds 3–6) once the legs in flight
+land (KIT-25/26 now), the maintainer said 2026-10-11. Nothing from the
+review rounds: round 5
 settled the fields' look, round 6 the unfocused selections
 ([round 6](../feedback/2026-10-10-review-round-6.md)). Round 1 left out, still to look at: the
 icons (journal 2026-10-10.1, story `basic/icons`); KIT-BOOK (2026-10-10.4):
@@ -186,6 +189,10 @@ built on it).
 
 ## Later
 
+- [ ] **KIT-SIZE** — A program carries only the components it uses: the
+  renditions split into nested Go modules (the maintainer, 2026-10-11:
+  "optimize later with nested go.mod modules"). Not before the kit's
+  components settle.
 - [ ] **KIT-CAT** — A composite catalog: basic's definitions verbatim plus
   the hotty catalog, generated, so an agent can use it as the surface
   default (L1). Do it when the agent integration starts, which the
@@ -256,9 +263,11 @@ built on it).
   the surface's state and counts on the rendition's clock
   (`TickTimers`), a hidden one too; hottyStartTimer, hottyStopTimer,
   hottyToggleTimer, hottyResetTimer for Buttons and HottyShortcuts. Story
-  `hotty/timer`. Open for the maintainer: a bound `elapsed` for a
-  stopwatch's time in an action's context; the default format; a focused
-  Button that becomes disabled keeps the keyboard.
+  `hotty/timer`. A stopwatch's bound `elapsed` (the maintainer's ok,
+  2026-10-11; journal 2026-10-11.2) is written before any action runs,
+  when it stops and at a reset. A focused Button that becomes disabled
+  keeps the keyboard: ok (the maintainer). Open for the maintainer's
+  look: the default format.
 - [x] **KIT-16c** — Confirm, as a pattern of two Buttons and HottyShortcuts,
   not a component (journal 2026-10-10.26, profile §6.24, instruction 24):
   y and n press, ← → move (`hottyFocus`), Enter picks, the focused one
@@ -266,14 +275,14 @@ built on it).
   merge shortcuts of one label and leave out keys a text field takes; on
   a host a focused Button is filled with the focus colour (every Button).
   For the maintainer's look: the host's focus fill, a blank row before
-  Buttons after Text (huh has one), a HottyConfirm after all.
+  Buttons after Text (huh has one). No HottyConfirm component (the
+  maintainer, 2026-10-11): it stays a pattern.
 - [x] **KIT-27** — Schema validation is optional (journal 2026-10-10.22):
   `a2ui.Validator`, nil by default, and `a2ui/schema` with A2UI's
   (`schema.NewProcessor`), which the conformance suites and the story
   package (the storybook, `-stream`) use. A program that is its own agent
   leaves jsonschema and x/text out: the docs-like probe, 11.4 MB → 9.7 MB
-  js/wasm, 2.89 MB → 2.46 MB gzipped. Splitting the renditions by
-  component (a registry) waits for the maintainer.
+  js/wasm, 2.89 MB → 2.46 MB gzipped. Splitting further is KIT-SIZE.
 - [x] **KIT-13c** — Toast and tooltip, story `hotty/toast` (journal
   2026-10-10.10, awaiting the maintainer's look).
   - `hottyToast({message, kind, timeout, id, actionLabel, action,

@@ -92,7 +92,7 @@ func (c *Controller) TurnPage(id string, at int) error {
 	err := c.setProp(e, "page", float64(at+1))
 	c.Rebuild()
 	if n := c.V.Node(id); err == nil && n != nil && n.Props["onChange"] != nil {
-		err = c.S.Tree.Invoke(n, "onChange", true)
+		err = c.invoke(n, "onChange", true)
 		c.Rebuild()
 	}
 	return err

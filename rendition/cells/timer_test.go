@@ -41,6 +41,7 @@ func TestTimerRows(t *testing.T) {
 	}
 	want := "Timer and stopwatch\n\n" +
 		"Lap 0s\n" +
+		"/lapMs: 0 ms\n" +
 		"Focus 25:00\n" +
 		"Tea 10s\n" +
 		" Start   Stop   Reset\n\n" +

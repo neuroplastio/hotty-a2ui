@@ -325,7 +325,7 @@ func (c *Controller) dropOn(t *Element, v any) error {
 		err = c.S.Write(c.S.Context(n.Scope).Path(p), v)
 	}
 	if a, ok := spec["action"].(map[string]any); ok {
-		if err2 := c.S.Dispatch(a, n.Scope, n.ComponentID, true); err == nil {
+		if err2 := c.dispatch(a, n.Scope, n.ComponentID, true); err == nil {
 			err = err2
 		}
 	}
@@ -551,9 +551,9 @@ func (c *Controller) move(src *Element, item int, dst *Element, parent, ins int)
 	}
 	if a, n := c.onMove(by), c.V.Node(by.ID); a != nil && n != nil {
 		if by.Kind == Stack {
-			keep(c.S.Dispatch(a, n.Scope, n.ComponentID, true))
+			keep(c.dispatch(a, n.Scope, n.ComponentID, true))
 		} else {
-			keep(c.S.Tree.Invoke(n, "onMove", true))
+			keep(c.invoke(n, "onMove", true))
 		}
 	}
 	c.Rebuild()

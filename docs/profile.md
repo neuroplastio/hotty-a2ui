@@ -1924,6 +1924,7 @@ means by its name; one view kind draws both (`view.Timer`).
 | `interval` | the step its time shows in, in milliseconds: 1000 by default (whole seconds, as bubbles' default), 100 for tenths. A stopwatch's time is rounded down to it, a timer's time left up, so that a timer shows 0 just as it runs out, as bubbles' does (its first second shows its whole duration) |
 | `format` | `duration` (the default) writes the time as Go and so bubbles do, `4m30s`, `9.5s`, `300ms`, `0s`; `clock` as a clock, `4:30`, `0:09.5`, `1:02:03`, minutes and seconds, the hours from an hour, and as many digits after the point as the interval has, to milliseconds (`view.FormatTimer`) |
 | `onTimeout` | a HottyTimer's Action, which runs once when it gets to 0 (an event, or a function such as `hottyToast`) |
+| `elapsed` | a HottyStopwatch's DynamicNumber, bound to a path: where its time is written, in whole milliseconds (below). It is written, not read |
 
 **The time is the renderer's.** A2UI has no time (vault a2ui-limits L6),
 so the time a timer has counted is the surface's state, as a toast's is,
@@ -1937,6 +1938,16 @@ which a program makes at once, after each key, click or message. Every
 timer of the surface counts, whether the view shows it or not: one in a
 tab not shown runs out on time. A timer that goes from the surface loses
 its time; one that comes back starts again.
+
+**A stopwatch's time in the data model.** An action's context reads the
+data model, so a lap or a submit that wants a stopwatch's time binds its
+`elapsed` to a path and reads that path. The time counted, as the last
+draw counted it (the time the user sees, to the millisecond), is written
+there before any action of the surface runs (`view.Controller.invoke`
+and `dispatch`, which every action the view runs goes through), when it
+stops counting, and when it is reset (0). It is not written at a draw
+while it counts, which would rewrite the model ten times a second. The
+path is written, not read: an agent's write to it doesn't set the time.
 
 **When a HottyTimer runs out**, at the first draw at or after its end, it
 shows 0 and stops: its `running` is set false, written to the data model

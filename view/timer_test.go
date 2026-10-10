@@ -186,6 +186,53 @@ func TestTimerFunctions(t *testing.T) {
 	}
 }
 
+// A HottyStopwatch's time is written where its elapsed is bound, in whole
+// milliseconds, as the last draw counted it: before an action runs, so a
+// lap's context reads the time the user sees, when it stops, and when it
+// is reset; not at a draw while it counts. One not bound writes nothing.
+func TestStopwatchElapsed(t *testing.T) {
+	call := func(fn string) string {
+		return `{"functionCall":{"@call":"` + fn + `",` + h + `,"args":{"id":"lap"}}}`
+	}
+	_, c, got, t0 := timerRun(t, `{}`, `
+	 {"id":"root","component":"Column","children":["lap","plain","mark","stop","reset"]},
+	 {"id":"lap","component":"HottyStopwatch",`+h+`,"interval":100,"elapsed":{"@path":"/ms"}},
+	 {"id":"plain","component":"HottyStopwatch",`+h+`},
+	 {"id":"mark","component":"Button","child":"t","action":{"event":{"name":"lap","context":{"ms":{"@path":"/ms"}}}}},
+	 {"id":"stop","component":"Button","child":"t","action":`+call("hottyStopTimer")+`},
+	 {"id":"reset","component":"Button","child":"t","action":`+call("hottyResetTimer")+`},
+	 {"id":"t","component":"Text","text":"Go"}`)
+	at := func(s float64) time.Time { return t0.Add(time.Duration(s * float64(time.Second))) }
+	press := func(id string) {
+		t.Helper()
+		if err := c.Activate(c.FindComponent(id, a2ui.RootScope)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ms := func() any { v, _, _ := c.S.Data.Get("/ms"); return v }
+	c.TickTimers(at(0))
+	c.TickTimers(at(1.25))
+	if v := ms(); v != nil {
+		t.Errorf("written at a draw while it counts: %v", v)
+	}
+	press("mark")
+	if len(*got) != 1 || (*got)[0].Context["ms"] != 1250.0 {
+		t.Fatalf("the lap's context: %+v, want ms 1250", *got)
+	}
+	press("stop")
+	c.TickTimers(at(2.5))
+	if v := ms(); v != 2500.0 {
+		t.Errorf("stopped at the draw at 2.5s: %v, want 2500", v)
+	}
+	press("reset")
+	if v := ms(); v != 0.0 {
+		t.Errorf("reset: %v, want 0", v)
+	}
+	if v, ok, _ := c.S.Data.Get("/plain"); ok {
+		t.Errorf("a stopwatch with no elapsed wrote %v", v)
+	}
+}
+
 // A timer the view does not show, in a tab not shown, counts all the same,
 // runs out on time, and the agent's hottyResetTimer finds it; one whose
 // duration is a path that holds nothing does not count, nor run out; a
