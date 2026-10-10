@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-09
+Last updated: 2026-10-10
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** a look at KIT-LOOK (journal 2026-10-09.4):
@@ -10,7 +10,8 @@ fields drawn as huh draws them; at KIT-02c and KIT-03c (journal
 at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 (journal 2026-10-09.11): the scroll view; at KIT-05c (journal
 2026-10-09.12): code and its colours; and at KIT-06c (journal
-2026-10-09.13): the diff. Phase 1 is a go
+2026-10-09.13): the diff; and at the icons (journal 2026-10-10.1,
+story `fallback/icons`). Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
 
@@ -66,6 +67,9 @@ As of 2026-10-09, from the hotty agent:
 
 ### Legs
 
+- [x] **KIT-ICON** — Icons on a host are Material Symbols, Sharp, filled,
+  as inline SVG in the text's colour, and basic's `{svgPath}` draws (gov
+  R-4; journal 2026-10-10.1). `HottyIcon` and the whole pack come later.
 - [ ] **KIT-SEL** — The select keeps its arrows by binding them to
   `program` on its button (`data-keys`, SPEC §10.2 "Keys for the program",
   hotty 3c9b169; hotty-go 1dc9bea), instead of handing over with `a=blur`

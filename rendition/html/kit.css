@@ -183,7 +183,10 @@
   text-align: center;
   cursor: pointer;
 }
-.k-btn > * { display: inline-block; }
+/* A Button's label is one child: a Text or an Icon, or a Row of them,
+   which stays a row (an icon beside its text, not above it). */
+.k-btn > :not(.k-stack) { display: inline-block; }
+.k-btn > .k-stack { display: inline-flex; }
 .k-primary:enabled { background: var(--k-accent); color: var(--k-on-accent); }
 .k-borderless { background: transparent; min-height: 0; padding: 0.125rem var(--k-2); font-weight: 500; }
 .k-btn:disabled { opacity: 0.45; cursor: default; }

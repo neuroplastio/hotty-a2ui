@@ -20,6 +20,11 @@ func init() {
 				Fit: b.Enum(n, "fit", "fill"), Variant: b.Enum(n, "variant", "mediumFeature")}
 		},
 		"Icon": func(b *Builder, n *a2ui.Node) *Element {
+			// name is a name, or {svgPath}, either of them bound or not.
+			if m, ok := b.Raw(n, "name").(map[string]any); ok {
+				d, _ := m["svgPath"].(string)
+				return &Element{Kind: Icon, Path: d}
+			}
 			return &Element{Kind: Icon, Name: b.String(n, "name")}
 		},
 		"Video": func(b *Builder, n *a2ui.Node) *Element {

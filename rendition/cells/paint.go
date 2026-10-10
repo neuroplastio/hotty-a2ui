@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/icons"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -103,7 +104,7 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 	case view.Image:
 		cv.write(x, y, w, fit(line(imageText(e), style{role: Muted}), w))
 	case view.Icon:
-		cv.write(x, y, w, glyphs(view.IconGlyph(e.Name), style{}))
+		cv.write(x, y, w, glyphs(icons.Glyph(e.Name), style{}))
 	case view.Media:
 		st := style{attr: Underline, link: e.URL}
 		if l.r.focused(e.ID) {

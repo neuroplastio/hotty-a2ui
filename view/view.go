@@ -144,11 +144,13 @@ type Element struct {
 	Markdown string `json:"markdown,omitempty"`
 	Variant  string `json:"variant,omitempty"`
 
-	// Image and Media: where it is, what it shows. Icon: Name.
+	// Image and Media: where it is, what it shows. Icon: Name, one of
+	// the basic catalog's, or else Path, an svgPath's path data.
 	URL  string `json:"url,omitempty"`
 	Alt  string `json:"alt,omitempty"`
 	Fit  string `json:"fit,omitempty"`
 	Name string `json:"name,omitempty"`
+	Path string `json:"path,omitempty"`
 
 	// Controls.
 	Label       string `json:"label,omitempty"`

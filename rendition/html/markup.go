@@ -169,12 +169,7 @@ func (m *markup) element(e *view.Element) *node {
 	case view.Image:
 		n = el("img", "id", id, "class", "k-img k-v-"+e.Variant+" k-fit-"+e.Fit, "src", e.URL, "alt", e.Alt)
 	case view.Icon:
-		g, emoji := iconText(e.Name)
-		class := "k-icon"
-		if emoji {
-			class += " k-emoji"
-		}
-		n = el("span", "id", id, "class", class, "role", "img", "aria-label", e.Name).add(txt(g))
+		n = icon(e, id)
 	case view.Media:
 		// A link, not a hyperlink: it takes the keyboard as it does in
 		// cells, and its click is the program's, which opens it.

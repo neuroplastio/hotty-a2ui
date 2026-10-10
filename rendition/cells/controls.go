@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/icons"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -154,7 +155,7 @@ func controlWidth(e *view.Element) int {
 	case view.Image:
 		return Width(imageText(e))
 	case view.Icon:
-		return Width(view.IconGlyph(e.Name))
+		return Width(icons.Glyph(e.Name))
 	case view.Media:
 		return Width("▶ " + e.Alt)
 	case view.Placeholder:
@@ -255,7 +256,7 @@ func buttonLabel(e *view.Element) string {
 				parts = append(parts, strings.ReplaceAll(s, "\n", " "))
 			}
 		case view.Icon:
-			parts = append(parts, view.IconGlyph(e.Name))
+			parts = append(parts, icons.Glyph(e.Name))
 		}
 		for _, c := range e.Children {
 			walk(c)

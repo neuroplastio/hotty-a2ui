@@ -1,32 +1,29 @@
 package html
 
-import "github.com/neuroplastio/hotty-a2ui/view"
+import (
+	"strconv"
 
-// iconEmoji are the icons a host draws as colour emoji, where the emoji
-// says the name plainly. The rest keep the one-character glyph every
-// rendition draws (view.Icons): a name not here is the glyph too.
-var iconEmoji = map[string]string{
-	"accountCircle": "👤", "add": "➕", "arrowBack": "⬅️", "arrowForward": "➡️",
-	"attachFile": "📎", "calendarToday": "📅", "call": "📞", "camera": "📷",
-	"check": "✅", "close": "❌", "delete": "🗑️", "download": "⬇️",
-	"edit": "✏️", "error": "❗", "event": "📅", "fastForward": "⏩",
-	"favorite": "❤️", "favoriteOff": "🤍", "folder": "📁", "help": "❓",
-	"home": "🏠", "info": "ℹ️", "locationOn": "📍", "lock": "🔒",
-	"lockOpen": "🔓", "mail": "✉️", "notifications": "🔔", "notificationsOff": "🔕",
-	"pause": "⏸️", "payment": "💳", "person": "🙂", "phone": "📱",
-	"photo": "🖼️", "play": "▶️", "print": "🖨️", "refresh": "🔄",
-	"rewind": "⏪", "search": "🔍", "send": "📤", "settings": "⚙️",
-	"share": "🔗", "shoppingCart": "🛒", "skipNext": "⏭️", "skipPrevious": "⏮️",
-	"star": "⭐", "stop": "⏹️", "upload": "⬆️", "visibility": "👁️",
-	"visibilityOff": "🙈", "volumeDown": "🔉", "volumeMute": "🔇", "volumeOff": "🔇",
-	"volumeUp": "🔊", "warning": "⚠️",
-}
+	"github.com/neuroplastio/hotty-a2ui/icons"
+	"github.com/neuroplastio/hotty-a2ui/view"
+)
 
-// iconText is an Icon as the host shows it: its emoji, else the glyph;
-// emoji says which.
-func iconText(name string) (g string, emoji bool) {
-	if g, ok := iconEmoji[name]; ok {
-		return g, true
+// icon is an Icon as a host draws it (gov R-4): its shape, one of the 59
+// or an svgPath, as an inline <svg> 1em square, filled with the text's
+// colour; else, for a name the kit has no shape for or a path it doesn't
+// accept, the glyph cells draw. The svg is the kit's own, so an svgPath is
+// only ever the d of its one path.
+func icon(e *view.Element, id string) *node {
+	ic, ok := icons.Basic(e.Name)
+	label := e.Name
+	if e.Path != "" {
+		ic, ok = icons.Path(e.Path)
+		label = "icon"
 	}
-	return view.IconGlyph(name), false
+	n := el("span", "id", id, "class", "k-icon", "role", "img", "aria-label", label)
+	if !ok {
+		return n.add(txt(icons.Glyph(e.Name)))
+	}
+	box := strconv.Itoa(ic.Box)
+	return n.add(el("svg", "viewBox", "0 0 "+box+" "+box, "width", "1em", "height", "1em", "aria-hidden", "true").
+		add(el("path", "fill", "currentColor", "d", ic.Path)))
 }

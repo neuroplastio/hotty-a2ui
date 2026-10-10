@@ -4,7 +4,7 @@ GOFMT       ?= mise x -- gofmt
 # staticcheck 2026.2.1, the first that knows Go 1.26.
 STATICCHECK ?= honnef.co/go/tools/cmd/staticcheck@v0.8.1
 
-.PHONY: check fmt tidy vet lint test ref shot a2ui lexers gif clean
+.PHONY: check fmt tidy vet lint test ref shot a2ui lexers icons gif clean
 
 check: fmt tidy vet lint test ref   ## the gate
 
@@ -39,6 +39,9 @@ a2ui:   ## third_party/a2ui at REV, a full A2UI commit (scripts/a2ui.sh)
 
 lexers:   ## highlight/lexers from the chroma go.mod requires (scripts/lexers.sh)
 	sh scripts/lexers.sh
+
+icons:   ## icons/basic.go from the Iconify package icons/REV pins (cmd/iconsgen); VERSION=… pins another
+	$(GO) run ./cmd/iconsgen $(if $(VERSION),-version $(VERSION))
 
 # The README's GIF: the storybook in xterm.js, driven with Playwright from
 # a checkout of neuroplastio/xterm-addon-hotty (ADDON, built: npm run build),

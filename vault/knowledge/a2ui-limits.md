@@ -119,6 +119,18 @@ set the boundary:
 composed Table or Tree may contain. A renderer reports `UNALLOWED_PARENT` and
 `UNALLOWED_CHILD`.
 
+**L12. An Icon is one of 59 names, or one filled path.** Basic's `name` is
+an enum or `{svgPath}` (added 2026-10-10, gov R-4).
+- **Names:** A2UI's renderers map the 59 to the Material Symbols font by
+  snake_case and four overrides. In Iconify's data, which the kit draws
+  from, two of them are the font's other names for a glyph: `payment` is
+  `credit_card` and `phone` is `call` (cmd/iconsgen).
+- **svgPath:** one path in a 24 box, filled, nonzero. A stroke icon must be
+  outlined first. SwiftUI drops arcs, and Flutter (genui) has no `svgPath`.
+- **Beyond the 59:** any other name needs a component of the hotty catalog
+  (`HottyIcon`, later), since basic's `name` is an enum and a basic
+  component isn't forked.
+
 ## Per component
 
 | Ticket | What it needs from A2UI | Fit |

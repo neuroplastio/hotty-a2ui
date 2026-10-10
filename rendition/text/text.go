@@ -10,6 +10,7 @@ import (
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/diff"
+	"github.com/neuroplastio/hotty-a2ui/icons"
 	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
@@ -71,7 +72,7 @@ func element(e *view.Element) []string {
 	case view.Image:
 		return []string{"[image: " + fallback(e.Alt, e.URL) + "]"}
 	case view.Icon:
-		return []string{view.IconGlyph(e.Name)}
+		return []string{icons.Glyph(e.Name)}
 	case view.Media:
 		return []string{"▶ " + e.Alt + ": " + e.URL}
 	case view.Divider:

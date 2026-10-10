@@ -81,10 +81,10 @@ so that an error comes and goes as a text delta.
 | Card | `div`, a raised fill and a rounded border |
 | Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9). A word breaks only when it fills a line alone. A Text that is one number (`$850,000,000.00`, a grid's cell) may also break after its group separators, a zero-width space after each, so a narrow column breaks it between groups, not between any two digits. An ordered list item's number is written out, a `span.k-n` the sheet sets in the indent with a gap, ending at the same place for `9.` and `10.`, because Blitz draws a list's own numbers flush against the text and has no counters to draw them otherwise |
 | Image | `img`, sized by its variant in `rem` |
-| Icon | `span` with a colour emoji where one says the name plainly, else the glyph cells draw |
+| Icon | `span role=img`, holding an inline `svg` 1em square whose one `path` is filled with `currentColor`, so it takes the text's colour, the theme's or a Button's. One of the 59 names is its Material Symbols shape (Sharp, filled; `favoriteOff` and `starOff` unfilled), generated into `icons/` by `make icons` (gov R-4). An `svgPath` is drawn as A2UI's reference renderers draw it, in a 24 box, and only when it is path data and nothing else, at most 8 KB (`icons.Path`). The kit writes the `svg` itself, so a path is only ever an attribute. A name with no shape, or a path it doesn't accept, is the glyph cells draw |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
-| Button | `button type=button`, `disabled` while its checks fail. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing |
+| Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing |
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input` |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a caret, whose list opens in a surface of its own (below); else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9) |
@@ -328,7 +328,7 @@ How the containers lay their children out:
 | --- | --- |
 | Text | the Markdown's blocks (`view.Markdown`), one after another with no blank lines; see below |
 | Image | `[image: alt]`, or `[image]` with no description, in `muted` |
-| Icon | its glyph (`view.IconGlyph`, width 1; `◇` for an unknown name) |
+| Icon | its glyph (`icons.Glyph`, width 1; `◇` for an unknown name and for an `svgPath`) |
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
 | Divider, Card, Tabs | §3.3 |
 | Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. A vertical List's Button is its row: ` label `, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |

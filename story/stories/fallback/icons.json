@@ -1,0 +1,1535 @@
+{
+  "name": "Icons",
+  "description": "An Icon is its Material Symbols shape on a host, in the text's colour, and a one-cell glyph in cells and text. An svgPath is its path on a host and ◇ in cells.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "icons",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "icons",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "intro",
+              "grid_row0",
+              "grid_row1",
+              "grid_row2",
+              "grid_row3",
+              "grid_row4",
+              "grid_row5",
+              "grid_row6",
+              "grid_row7",
+              "grid_row8",
+              "grid_row9",
+              "grid_row10",
+              "grid_row11",
+              "grid_row12",
+              "grid_row13",
+              "grid_row14",
+              "path_row",
+              "buttons"
+            ]
+          },
+          {
+            "id": "intro",
+            "component": "Text",
+            "variant": "caption",
+            "text": "The basic catalog's 59 icons by name, then an svgPath (A2UI's own fixture, Material's home), then icons in Buttons."
+          },
+          {
+            "id": "grid_accountCircle",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_accountCircle_icon",
+              "grid_accountCircle_name"
+            ]
+          },
+          {
+            "id": "grid_accountCircle_icon",
+            "component": "Icon",
+            "name": "accountCircle"
+          },
+          {
+            "id": "grid_accountCircle_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "accountCircle"
+          },
+          {
+            "id": "grid_add",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_add_icon",
+              "grid_add_name"
+            ]
+          },
+          {
+            "id": "grid_add_icon",
+            "component": "Icon",
+            "name": "add"
+          },
+          {
+            "id": "grid_add_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "add"
+          },
+          {
+            "id": "grid_arrowBack",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_arrowBack_icon",
+              "grid_arrowBack_name"
+            ]
+          },
+          {
+            "id": "grid_arrowBack_icon",
+            "component": "Icon",
+            "name": "arrowBack"
+          },
+          {
+            "id": "grid_arrowBack_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "arrowBack"
+          },
+          {
+            "id": "grid_arrowForward",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_arrowForward_icon",
+              "grid_arrowForward_name"
+            ]
+          },
+          {
+            "id": "grid_arrowForward_icon",
+            "component": "Icon",
+            "name": "arrowForward"
+          },
+          {
+            "id": "grid_arrowForward_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "arrowForward"
+          },
+          {
+            "id": "grid_row0",
+            "component": "Row",
+            "children": [
+              "grid_accountCircle",
+              "grid_add",
+              "grid_arrowBack",
+              "grid_arrowForward"
+            ]
+          },
+          {
+            "id": "grid_attachFile",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_attachFile_icon",
+              "grid_attachFile_name"
+            ]
+          },
+          {
+            "id": "grid_attachFile_icon",
+            "component": "Icon",
+            "name": "attachFile"
+          },
+          {
+            "id": "grid_attachFile_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "attachFile"
+          },
+          {
+            "id": "grid_calendarToday",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_calendarToday_icon",
+              "grid_calendarToday_name"
+            ]
+          },
+          {
+            "id": "grid_calendarToday_icon",
+            "component": "Icon",
+            "name": "calendarToday"
+          },
+          {
+            "id": "grid_calendarToday_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "calendarToday"
+          },
+          {
+            "id": "grid_call",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_call_icon",
+              "grid_call_name"
+            ]
+          },
+          {
+            "id": "grid_call_icon",
+            "component": "Icon",
+            "name": "call"
+          },
+          {
+            "id": "grid_call_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "call"
+          },
+          {
+            "id": "grid_camera",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_camera_icon",
+              "grid_camera_name"
+            ]
+          },
+          {
+            "id": "grid_camera_icon",
+            "component": "Icon",
+            "name": "camera"
+          },
+          {
+            "id": "grid_camera_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "camera"
+          },
+          {
+            "id": "grid_row1",
+            "component": "Row",
+            "children": [
+              "grid_attachFile",
+              "grid_calendarToday",
+              "grid_call",
+              "grid_camera"
+            ]
+          },
+          {
+            "id": "grid_check",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_check_icon",
+              "grid_check_name"
+            ]
+          },
+          {
+            "id": "grid_check_icon",
+            "component": "Icon",
+            "name": "check"
+          },
+          {
+            "id": "grid_check_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "check"
+          },
+          {
+            "id": "grid_close",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_close_icon",
+              "grid_close_name"
+            ]
+          },
+          {
+            "id": "grid_close_icon",
+            "component": "Icon",
+            "name": "close"
+          },
+          {
+            "id": "grid_close_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "close"
+          },
+          {
+            "id": "grid_delete",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_delete_icon",
+              "grid_delete_name"
+            ]
+          },
+          {
+            "id": "grid_delete_icon",
+            "component": "Icon",
+            "name": "delete"
+          },
+          {
+            "id": "grid_delete_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "delete"
+          },
+          {
+            "id": "grid_download",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_download_icon",
+              "grid_download_name"
+            ]
+          },
+          {
+            "id": "grid_download_icon",
+            "component": "Icon",
+            "name": "download"
+          },
+          {
+            "id": "grid_download_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "download"
+          },
+          {
+            "id": "grid_row2",
+            "component": "Row",
+            "children": [
+              "grid_check",
+              "grid_close",
+              "grid_delete",
+              "grid_download"
+            ]
+          },
+          {
+            "id": "grid_edit",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_edit_icon",
+              "grid_edit_name"
+            ]
+          },
+          {
+            "id": "grid_edit_icon",
+            "component": "Icon",
+            "name": "edit"
+          },
+          {
+            "id": "grid_edit_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "edit"
+          },
+          {
+            "id": "grid_event",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_event_icon",
+              "grid_event_name"
+            ]
+          },
+          {
+            "id": "grid_event_icon",
+            "component": "Icon",
+            "name": "event"
+          },
+          {
+            "id": "grid_event_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "event"
+          },
+          {
+            "id": "grid_error",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_error_icon",
+              "grid_error_name"
+            ]
+          },
+          {
+            "id": "grid_error_icon",
+            "component": "Icon",
+            "name": "error"
+          },
+          {
+            "id": "grid_error_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "error"
+          },
+          {
+            "id": "grid_fastForward",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_fastForward_icon",
+              "grid_fastForward_name"
+            ]
+          },
+          {
+            "id": "grid_fastForward_icon",
+            "component": "Icon",
+            "name": "fastForward"
+          },
+          {
+            "id": "grid_fastForward_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "fastForward"
+          },
+          {
+            "id": "grid_row3",
+            "component": "Row",
+            "children": [
+              "grid_edit",
+              "grid_event",
+              "grid_error",
+              "grid_fastForward"
+            ]
+          },
+          {
+            "id": "grid_favorite",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_favorite_icon",
+              "grid_favorite_name"
+            ]
+          },
+          {
+            "id": "grid_favorite_icon",
+            "component": "Icon",
+            "name": "favorite"
+          },
+          {
+            "id": "grid_favorite_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "favorite"
+          },
+          {
+            "id": "grid_favoriteOff",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_favoriteOff_icon",
+              "grid_favoriteOff_name"
+            ]
+          },
+          {
+            "id": "grid_favoriteOff_icon",
+            "component": "Icon",
+            "name": "favoriteOff"
+          },
+          {
+            "id": "grid_favoriteOff_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "favoriteOff"
+          },
+          {
+            "id": "grid_folder",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_folder_icon",
+              "grid_folder_name"
+            ]
+          },
+          {
+            "id": "grid_folder_icon",
+            "component": "Icon",
+            "name": "folder"
+          },
+          {
+            "id": "grid_folder_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "folder"
+          },
+          {
+            "id": "grid_help",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_help_icon",
+              "grid_help_name"
+            ]
+          },
+          {
+            "id": "grid_help_icon",
+            "component": "Icon",
+            "name": "help"
+          },
+          {
+            "id": "grid_help_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "help"
+          },
+          {
+            "id": "grid_row4",
+            "component": "Row",
+            "children": [
+              "grid_favorite",
+              "grid_favoriteOff",
+              "grid_folder",
+              "grid_help"
+            ]
+          },
+          {
+            "id": "grid_home",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_home_icon",
+              "grid_home_name"
+            ]
+          },
+          {
+            "id": "grid_home_icon",
+            "component": "Icon",
+            "name": "home"
+          },
+          {
+            "id": "grid_home_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "home"
+          },
+          {
+            "id": "grid_info",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_info_icon",
+              "grid_info_name"
+            ]
+          },
+          {
+            "id": "grid_info_icon",
+            "component": "Icon",
+            "name": "info"
+          },
+          {
+            "id": "grid_info_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "info"
+          },
+          {
+            "id": "grid_locationOn",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_locationOn_icon",
+              "grid_locationOn_name"
+            ]
+          },
+          {
+            "id": "grid_locationOn_icon",
+            "component": "Icon",
+            "name": "locationOn"
+          },
+          {
+            "id": "grid_locationOn_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "locationOn"
+          },
+          {
+            "id": "grid_lock",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_lock_icon",
+              "grid_lock_name"
+            ]
+          },
+          {
+            "id": "grid_lock_icon",
+            "component": "Icon",
+            "name": "lock"
+          },
+          {
+            "id": "grid_lock_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "lock"
+          },
+          {
+            "id": "grid_row5",
+            "component": "Row",
+            "children": [
+              "grid_home",
+              "grid_info",
+              "grid_locationOn",
+              "grid_lock"
+            ]
+          },
+          {
+            "id": "grid_lockOpen",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_lockOpen_icon",
+              "grid_lockOpen_name"
+            ]
+          },
+          {
+            "id": "grid_lockOpen_icon",
+            "component": "Icon",
+            "name": "lockOpen"
+          },
+          {
+            "id": "grid_lockOpen_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "lockOpen"
+          },
+          {
+            "id": "grid_mail",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_mail_icon",
+              "grid_mail_name"
+            ]
+          },
+          {
+            "id": "grid_mail_icon",
+            "component": "Icon",
+            "name": "mail"
+          },
+          {
+            "id": "grid_mail_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "mail"
+          },
+          {
+            "id": "grid_menu",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_menu_icon",
+              "grid_menu_name"
+            ]
+          },
+          {
+            "id": "grid_menu_icon",
+            "component": "Icon",
+            "name": "menu"
+          },
+          {
+            "id": "grid_menu_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "menu"
+          },
+          {
+            "id": "grid_moreVert",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_moreVert_icon",
+              "grid_moreVert_name"
+            ]
+          },
+          {
+            "id": "grid_moreVert_icon",
+            "component": "Icon",
+            "name": "moreVert"
+          },
+          {
+            "id": "grid_moreVert_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "moreVert"
+          },
+          {
+            "id": "grid_row6",
+            "component": "Row",
+            "children": [
+              "grid_lockOpen",
+              "grid_mail",
+              "grid_menu",
+              "grid_moreVert"
+            ]
+          },
+          {
+            "id": "grid_moreHoriz",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_moreHoriz_icon",
+              "grid_moreHoriz_name"
+            ]
+          },
+          {
+            "id": "grid_moreHoriz_icon",
+            "component": "Icon",
+            "name": "moreHoriz"
+          },
+          {
+            "id": "grid_moreHoriz_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "moreHoriz"
+          },
+          {
+            "id": "grid_notificationsOff",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_notificationsOff_icon",
+              "grid_notificationsOff_name"
+            ]
+          },
+          {
+            "id": "grid_notificationsOff_icon",
+            "component": "Icon",
+            "name": "notificationsOff"
+          },
+          {
+            "id": "grid_notificationsOff_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "notificationsOff"
+          },
+          {
+            "id": "grid_notifications",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_notifications_icon",
+              "grid_notifications_name"
+            ]
+          },
+          {
+            "id": "grid_notifications_icon",
+            "component": "Icon",
+            "name": "notifications"
+          },
+          {
+            "id": "grid_notifications_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "notifications"
+          },
+          {
+            "id": "grid_pause",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_pause_icon",
+              "grid_pause_name"
+            ]
+          },
+          {
+            "id": "grid_pause_icon",
+            "component": "Icon",
+            "name": "pause"
+          },
+          {
+            "id": "grid_pause_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "pause"
+          },
+          {
+            "id": "grid_row7",
+            "component": "Row",
+            "children": [
+              "grid_moreHoriz",
+              "grid_notificationsOff",
+              "grid_notifications",
+              "grid_pause"
+            ]
+          },
+          {
+            "id": "grid_payment",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_payment_icon",
+              "grid_payment_name"
+            ]
+          },
+          {
+            "id": "grid_payment_icon",
+            "component": "Icon",
+            "name": "payment"
+          },
+          {
+            "id": "grid_payment_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "payment"
+          },
+          {
+            "id": "grid_person",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_person_icon",
+              "grid_person_name"
+            ]
+          },
+          {
+            "id": "grid_person_icon",
+            "component": "Icon",
+            "name": "person"
+          },
+          {
+            "id": "grid_person_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "person"
+          },
+          {
+            "id": "grid_phone",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_phone_icon",
+              "grid_phone_name"
+            ]
+          },
+          {
+            "id": "grid_phone_icon",
+            "component": "Icon",
+            "name": "phone"
+          },
+          {
+            "id": "grid_phone_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "phone"
+          },
+          {
+            "id": "grid_photo",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_photo_icon",
+              "grid_photo_name"
+            ]
+          },
+          {
+            "id": "grid_photo_icon",
+            "component": "Icon",
+            "name": "photo"
+          },
+          {
+            "id": "grid_photo_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "photo"
+          },
+          {
+            "id": "grid_row8",
+            "component": "Row",
+            "children": [
+              "grid_payment",
+              "grid_person",
+              "grid_phone",
+              "grid_photo"
+            ]
+          },
+          {
+            "id": "grid_play",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_play_icon",
+              "grid_play_name"
+            ]
+          },
+          {
+            "id": "grid_play_icon",
+            "component": "Icon",
+            "name": "play"
+          },
+          {
+            "id": "grid_play_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "play"
+          },
+          {
+            "id": "grid_print",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_print_icon",
+              "grid_print_name"
+            ]
+          },
+          {
+            "id": "grid_print_icon",
+            "component": "Icon",
+            "name": "print"
+          },
+          {
+            "id": "grid_print_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "print"
+          },
+          {
+            "id": "grid_refresh",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_refresh_icon",
+              "grid_refresh_name"
+            ]
+          },
+          {
+            "id": "grid_refresh_icon",
+            "component": "Icon",
+            "name": "refresh"
+          },
+          {
+            "id": "grid_refresh_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "refresh"
+          },
+          {
+            "id": "grid_rewind",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_rewind_icon",
+              "grid_rewind_name"
+            ]
+          },
+          {
+            "id": "grid_rewind_icon",
+            "component": "Icon",
+            "name": "rewind"
+          },
+          {
+            "id": "grid_rewind_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "rewind"
+          },
+          {
+            "id": "grid_row9",
+            "component": "Row",
+            "children": [
+              "grid_play",
+              "grid_print",
+              "grid_refresh",
+              "grid_rewind"
+            ]
+          },
+          {
+            "id": "grid_search",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_search_icon",
+              "grid_search_name"
+            ]
+          },
+          {
+            "id": "grid_search_icon",
+            "component": "Icon",
+            "name": "search"
+          },
+          {
+            "id": "grid_search_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "search"
+          },
+          {
+            "id": "grid_send",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_send_icon",
+              "grid_send_name"
+            ]
+          },
+          {
+            "id": "grid_send_icon",
+            "component": "Icon",
+            "name": "send"
+          },
+          {
+            "id": "grid_send_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "send"
+          },
+          {
+            "id": "grid_settings",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_settings_icon",
+              "grid_settings_name"
+            ]
+          },
+          {
+            "id": "grid_settings_icon",
+            "component": "Icon",
+            "name": "settings"
+          },
+          {
+            "id": "grid_settings_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "settings"
+          },
+          {
+            "id": "grid_share",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_share_icon",
+              "grid_share_name"
+            ]
+          },
+          {
+            "id": "grid_share_icon",
+            "component": "Icon",
+            "name": "share"
+          },
+          {
+            "id": "grid_share_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "share"
+          },
+          {
+            "id": "grid_row10",
+            "component": "Row",
+            "children": [
+              "grid_search",
+              "grid_send",
+              "grid_settings",
+              "grid_share"
+            ]
+          },
+          {
+            "id": "grid_shoppingCart",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_shoppingCart_icon",
+              "grid_shoppingCart_name"
+            ]
+          },
+          {
+            "id": "grid_shoppingCart_icon",
+            "component": "Icon",
+            "name": "shoppingCart"
+          },
+          {
+            "id": "grid_shoppingCart_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "shoppingCart"
+          },
+          {
+            "id": "grid_skipNext",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_skipNext_icon",
+              "grid_skipNext_name"
+            ]
+          },
+          {
+            "id": "grid_skipNext_icon",
+            "component": "Icon",
+            "name": "skipNext"
+          },
+          {
+            "id": "grid_skipNext_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "skipNext"
+          },
+          {
+            "id": "grid_skipPrevious",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_skipPrevious_icon",
+              "grid_skipPrevious_name"
+            ]
+          },
+          {
+            "id": "grid_skipPrevious_icon",
+            "component": "Icon",
+            "name": "skipPrevious"
+          },
+          {
+            "id": "grid_skipPrevious_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "skipPrevious"
+          },
+          {
+            "id": "grid_star",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_star_icon",
+              "grid_star_name"
+            ]
+          },
+          {
+            "id": "grid_star_icon",
+            "component": "Icon",
+            "name": "star"
+          },
+          {
+            "id": "grid_star_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "star"
+          },
+          {
+            "id": "grid_row11",
+            "component": "Row",
+            "children": [
+              "grid_shoppingCart",
+              "grid_skipNext",
+              "grid_skipPrevious",
+              "grid_star"
+            ]
+          },
+          {
+            "id": "grid_starHalf",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_starHalf_icon",
+              "grid_starHalf_name"
+            ]
+          },
+          {
+            "id": "grid_starHalf_icon",
+            "component": "Icon",
+            "name": "starHalf"
+          },
+          {
+            "id": "grid_starHalf_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "starHalf"
+          },
+          {
+            "id": "grid_starOff",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_starOff_icon",
+              "grid_starOff_name"
+            ]
+          },
+          {
+            "id": "grid_starOff_icon",
+            "component": "Icon",
+            "name": "starOff"
+          },
+          {
+            "id": "grid_starOff_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "starOff"
+          },
+          {
+            "id": "grid_stop",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_stop_icon",
+              "grid_stop_name"
+            ]
+          },
+          {
+            "id": "grid_stop_icon",
+            "component": "Icon",
+            "name": "stop"
+          },
+          {
+            "id": "grid_stop_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "stop"
+          },
+          {
+            "id": "grid_upload",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_upload_icon",
+              "grid_upload_name"
+            ]
+          },
+          {
+            "id": "grid_upload_icon",
+            "component": "Icon",
+            "name": "upload"
+          },
+          {
+            "id": "grid_upload_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "upload"
+          },
+          {
+            "id": "grid_row12",
+            "component": "Row",
+            "children": [
+              "grid_starHalf",
+              "grid_starOff",
+              "grid_stop",
+              "grid_upload"
+            ]
+          },
+          {
+            "id": "grid_visibility",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_visibility_icon",
+              "grid_visibility_name"
+            ]
+          },
+          {
+            "id": "grid_visibility_icon",
+            "component": "Icon",
+            "name": "visibility"
+          },
+          {
+            "id": "grid_visibility_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "visibility"
+          },
+          {
+            "id": "grid_visibilityOff",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_visibilityOff_icon",
+              "grid_visibilityOff_name"
+            ]
+          },
+          {
+            "id": "grid_visibilityOff_icon",
+            "component": "Icon",
+            "name": "visibilityOff"
+          },
+          {
+            "id": "grid_visibilityOff_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "visibilityOff"
+          },
+          {
+            "id": "grid_volumeDown",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_volumeDown_icon",
+              "grid_volumeDown_name"
+            ]
+          },
+          {
+            "id": "grid_volumeDown_icon",
+            "component": "Icon",
+            "name": "volumeDown"
+          },
+          {
+            "id": "grid_volumeDown_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "volumeDown"
+          },
+          {
+            "id": "grid_volumeMute",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_volumeMute_icon",
+              "grid_volumeMute_name"
+            ]
+          },
+          {
+            "id": "grid_volumeMute_icon",
+            "component": "Icon",
+            "name": "volumeMute"
+          },
+          {
+            "id": "grid_volumeMute_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "volumeMute"
+          },
+          {
+            "id": "grid_row13",
+            "component": "Row",
+            "children": [
+              "grid_visibility",
+              "grid_visibilityOff",
+              "grid_volumeDown",
+              "grid_volumeMute"
+            ]
+          },
+          {
+            "id": "grid_volumeOff",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_volumeOff_icon",
+              "grid_volumeOff_name"
+            ]
+          },
+          {
+            "id": "grid_volumeOff_icon",
+            "component": "Icon",
+            "name": "volumeOff"
+          },
+          {
+            "id": "grid_volumeOff_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "volumeOff"
+          },
+          {
+            "id": "grid_volumeUp",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_volumeUp_icon",
+              "grid_volumeUp_name"
+            ]
+          },
+          {
+            "id": "grid_volumeUp_icon",
+            "component": "Icon",
+            "name": "volumeUp"
+          },
+          {
+            "id": "grid_volumeUp_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "volumeUp"
+          },
+          {
+            "id": "grid_warning",
+            "component": "Row",
+            "weight": 1,
+            "align": "center",
+            "children": [
+              "grid_warning_icon",
+              "grid_warning_name"
+            ]
+          },
+          {
+            "id": "grid_warning_icon",
+            "component": "Icon",
+            "name": "warning"
+          },
+          {
+            "id": "grid_warning_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "warning"
+          },
+          {
+            "id": "grid_row14_pad3",
+            "component": "Text",
+            "weight": 1,
+            "text": ""
+          },
+          {
+            "id": "grid_row14",
+            "component": "Row",
+            "children": [
+              "grid_volumeOff",
+              "grid_volumeUp",
+              "grid_warning",
+              "grid_row14_pad3"
+            ]
+          },
+          {
+            "id": "path_row",
+            "component": "Row",
+            "align": "center",
+            "children": [
+              "path_icon",
+              "path_name"
+            ]
+          },
+          {
+            "id": "path_icon",
+            "component": "Icon",
+            "name": {
+              "svgPath": "M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z"
+            }
+          },
+          {
+            "id": "path_name",
+            "component": "Text",
+            "variant": "caption",
+            "text": "svgPath: M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z"
+          },
+          {
+            "id": "buttons",
+            "component": "Row",
+            "children": [
+              "send",
+              "later"
+            ]
+          },
+          {
+            "id": "send",
+            "component": "Button",
+            "variant": "primary",
+            "child": "send_row",
+            "action": {
+              "event": {
+                "name": "send"
+              }
+            }
+          },
+          {
+            "id": "send_row",
+            "component": "Row",
+            "align": "center",
+            "children": [
+              "send_icon",
+              "send_text"
+            ]
+          },
+          {
+            "id": "send_icon",
+            "component": "Icon",
+            "name": "send"
+          },
+          {
+            "id": "send_text",
+            "component": "Text",
+            "text": "Send"
+          },
+          {
+            "id": "later",
+            "component": "Button",
+            "child": "later_row",
+            "action": {
+              "event": {
+                "name": "later"
+              }
+            }
+          },
+          {
+            "id": "later_row",
+            "component": "Row",
+            "align": "center",
+            "children": [
+              "later_icon",
+              "later_text"
+            ]
+          },
+          {
+            "id": "later_icon",
+            "component": "Icon",
+            "name": "calendarToday"
+          },
+          {
+            "id": "later_text",
+            "component": "Text",
+            "text": "Later"
+          }
+        ]
+      }
+    }
+  ]
+}

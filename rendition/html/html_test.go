@@ -18,6 +18,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	hottycat "github.com/neuroplastio/hotty-a2ui/catalog/hotty"
+	"github.com/neuroplastio/hotty-a2ui/icons"
 	"github.com/neuroplastio/hotty-a2ui/story"
 	thirdparty "github.com/neuroplastio/hotty-a2ui/third_party"
 	"github.com/neuroplastio/hotty-a2ui/view"
@@ -558,6 +559,64 @@ func TestWeights(t *testing.T) {
 			t.Errorf("%s: class %q, style %q", id, class, style)
 		}
 	}
+}
+
+// TestIcons: an Icon on a host is its shape as an inline svg, 1em square
+// and filled with the text's colour (gov R-4): one of the 59 by name, or an
+// svgPath, bound or not. A path that is more than path data, and a name
+// with no shape, are the glyph cells draw. A changed binding is a delta.
+func TestIcons(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"d":"M0 0h24v24H0z","n":"rocket"}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Row","children":["home","lit","bound","named"]},
+ {"id":"home","component":"Icon","name":"home"},
+ {"id":"lit","component":"Icon","name":{"svgPath":"M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z"}},
+ {"id":"bound","component":"Icon","name":{"svgPath":{"@path":"/d"}}},
+ {"id":"named","component":"Icon","name":{"@path":"/n"}}]}}]`), &msgs))
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	svg := func(d string) string {
+		return `<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="currentColor" d="` + d + `"></path></svg>`
+	}
+	home, _ := icons.Basic("home")
+	look := func(when string, want map[string][2]string) {
+		t.Helper()
+		doc := s.HTML()
+		for id, w := range want {
+			open := `<span id="` + id + `" class="k-icon" role="img" aria-label="` + w[0] + `">`
+			i := strings.Index(doc, open)
+			if i < 0 {
+				t.Errorf("%s: no %s", when, open)
+				continue
+			}
+			inner := doc[i+len(open):]
+			inner = inner[:strings.Index(inner, "</span>")]
+			if inner != w[1] {
+				t.Errorf("%s: %s holds %s, want %s", when, id, inner, w[1])
+			}
+		}
+	}
+	look("at first", map[string][2]string{
+		"home":  {"home", svg(home.Path)},
+		"lit":   {"icon", svg("M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z")},
+		"bound": {"icon", svg("M0 0h24v24H0z")},
+		"named": {"rocket", icons.Unknown},
+	})
+	var set []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/d","value":"M0 0\"/><script>alert(1)</script><path d=\"M0 0"}},
+{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/n","value":"star"}}]`), &set))
+	x.process(set...)
+	star, _ := icons.Basic("star")
+	look("after the data changed", map[string][2]string{
+		"bound": {"icon", icons.Unknown},
+		"named": {"star", svg(star.Path)},
+	})
+	if strings.Contains(s.HTML(), "<script") {
+		t.Error("an svgPath became markup")
+	}
+	x.check(x.rs["s"])
 }
 
 // TestSelect: a select is a button, and a click opens its list in the
