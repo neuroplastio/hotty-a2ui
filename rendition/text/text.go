@@ -104,6 +104,13 @@ func element(e *view.Element) []string {
 			box = "[x] "
 		}
 		return errLine([]string{box + e.Label})
+	case view.Switch:
+		// What it says, as a field's value is: "Wi-Fi: on".
+		s := field(e.Label, map[bool]string{true: "on", false: "off"}[e.On()])
+		if e.Disabled {
+			s += " (disabled)"
+		}
+		return errLine([]string{s})
 	case view.Choice:
 		picked, _ := e.Value.([]string)
 		var labels []string

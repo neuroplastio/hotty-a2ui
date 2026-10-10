@@ -33,6 +33,7 @@ swap_vert
 sync_problem
 table
 terminal
+toggle_on
 touch_app
 vertical_split
 web

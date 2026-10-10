@@ -34,6 +34,10 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyBlur"}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyFocus"}}}`, false},
 		{`{"id":"f","component":"HottyForm","child":"col"}`, false},
+		{`{"id":"w","component":"HottySwitch","label":"Wi-Fi","value":{"@path":"/wifi"}}`, true},
+		{`{"id":"w","component":"HottySwitch","value":true,"disabled":{"@path":"/airplane"},"checks":[{"condition":{"@path":"/wifi"},"message":"On, please"}]}`, true},
+		{`{"id":"w","component":"HottySwitch","label":"Wi-Fi"}`, false},
+		{`{"id":"w","component":"HottySwitch","value":"yes"}`, false},
 	} {
 		var d map[string]any
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {

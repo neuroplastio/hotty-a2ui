@@ -11,8 +11,9 @@ at KIT-08c (journal 2026-10-09.10): the key hints; at KIT-07c
 (journal 2026-10-09.11): the scroll view; at KIT-05c (journal
 2026-10-09.12): code and its colours; and at KIT-06c (journal
 2026-10-09.13): the diff; at the icons (journal 2026-10-10.1,
-story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; and at
-KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs.
+story `basic/icons`); at KIT-09c (journal 2026-10-10.2): the tree; at
+KIT-BOOK (journal 2026-10-10.4): the storybook's nav and tabs; and at
+KIT-22c (journal 2026-10-10.5): the switch.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -27,8 +28,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-22c** — Toggle: `HottySwitch`, an iPhone-like on/off switch
-  for a boolean (the maintainer, 2026-10-10).
 - [ ] **KIT-10c** — Chart: sparkline, braille line chart and bars, using
   hotty-go's chart, braille and series.
 - [ ] **KIT-11c** — Suggestions: ghost text and a list under the field.
@@ -156,6 +155,17 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-22c** — `HottySwitch`, an on/off switch for a setting, held
+  against huh's Confirm, inline (journal 2026-10-10.5, awaiting the
+  maintainer's look).
+  - A `label`, a bound `value` (a boolean), `checks` and `disabled`;
+    these take literals or paths, not basic's functions (L1).
+  - Cells: `━━●` in the accent when on, `●──` muted when off, in a
+    field's frame; faint when disabled.
+  - Space, Enter or a click flips it, Enter in a HottyForm too; a
+    disabled one is skipped by Tab.
+  - On a host a `role=switch` button, a pill with a knob, Material's
+    ringed off state. The knob's slide is KIT-22h.
 - [x] **KIT-09c** — `HottyTree` in cells, held against bubbles' tree
   (journal 2026-10-10.2, awaiting the maintainer's look).
   - Nodes of a label, an icon (a host's), a value and children, literal

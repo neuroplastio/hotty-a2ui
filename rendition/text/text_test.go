@@ -92,6 +92,32 @@ func TestTree(t *testing.T) {
 	}
 }
 
+// TestSwitch: a switch reads as a field does, "Label: on" or "off",
+// "(disabled)" after a disabled one, its error on the next line.
+func TestSwitch(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	h := `"catalogId":"` + hotty.ID + `"`
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"tfa":false}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["wifi","lock","bare","tfa"]},
+	 {"id":"wifi","component":"HottySwitch",` + h + `,"label":"Wi-Fi","value":true},
+	 {"id":"lock","component":"HottySwitch",` + h + `,"label":"Locked","value":false,"disabled":true},
+	 {"id":"bare","component":"HottySwitch",` + h + `,"value":true},
+	 {"id":"tfa","component":"HottySwitch",` + h + `,"label":"Two-factor","value":{"@path":"/tfa"},
+	  "checks":[{"condition":{"@path":"/tfa"},"message":"Required"}]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	c.St.Touched["tfa"] = true
+	c.Rebuild()
+	got := text.Render(c.V)
+	want := "Wi-Fi: on\nLocked: off (disabled)\non\nTwo-factor: off\n✗ Required\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
 // TestScrollView: a scroll view reads as all of its content, whatever its
 // height: its lines, or its child.
 func TestScrollView(t *testing.T) {

@@ -165,6 +165,10 @@ func (c *Controller) elementHints(e *Element, keys string) (short []Hint, groups
 		return short, fieldHints(hotty.Resolve(long, append([]string{keys}, c.V.KeyChain(e.ID)...)...), long, enter)
 	case CheckBox:
 		short = []Hint{{"space", "toggle"}}
+	case Switch:
+		// A switch is a button on a host, which Enter clicks too (SPEC
+		// §10.2): it flips, in a HottyForm as anywhere.
+		short = []Hint{{"space/enter", "toggle"}}
 	case Option:
 		short = []Hint{{"space", "pick"}}
 	case Choice:

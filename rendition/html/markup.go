@@ -271,6 +271,18 @@ func (m *markup) element(e *view.Element) *node {
 	case view.CheckBox:
 		n = el("input", "id", id, "type", "checkbox").flag("checked", e.Value == true)
 		outer = m.field(e, "k-check", n, label(e))
+	case view.Switch:
+		// One button holding the pill and the label, so that a click on
+		// either flips it; a host clicks it on Space and Enter too (SPEC
+		// §10.2). On or off is aria-checked, one attribute's delta, which
+		// the sheet draws; the knob's slide is vault KIT-22h.
+		n = el("button", "id", id, "type", "button", "class", "k-switch", "role", "switch",
+			"aria-checked", boolString(e.On())).flag("disabled", e.Disabled).add(
+			el("span", "class", "k-switch-track", "aria-hidden", "true").add(el("span", "class", "k-switch-knob")))
+		if e.Label != "" {
+			n.add(el("span", "id", partID(e.ID, partLabel), "class", "k-switch-label").add(texts(e.Label)...))
+		}
+		outer = m.field(e, "k-field", n)
 	case view.DateTime:
 		// A text field, as in cells: a value in ISO 8601, its form the
 		// placeholder. Hosts draw date and time inputs unevenly (Blitz

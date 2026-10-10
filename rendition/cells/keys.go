@@ -125,7 +125,9 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 		return false, nil
 	}
 	switch e.Kind {
-	case view.Button, view.Tab, view.Option:
+	// A HottySwitch is a button on a host: Enter flips it too, in a
+	// HottyForm as anywhere.
+	case view.Button, view.Tab, view.Option, view.Switch:
 	case view.Media:
 		if e.URL == "" {
 			return false, nil

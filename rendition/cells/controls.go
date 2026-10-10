@@ -29,7 +29,7 @@ func isField(e *view.Element) bool {
 		return false
 	}
 	switch e.Kind {
-	case view.TextField, view.DateTime, view.CheckBox, view.Choice, view.Slider:
+	case view.TextField, view.DateTime, view.CheckBox, view.Switch, view.Choice, view.Slider:
 		return true
 	}
 	return false
@@ -55,8 +55,8 @@ func isControlElement(e *view.Element) bool {
 
 // hasTitle reports whether an element has a title row of its own: a text
 // field, a DateTime, a Choice or a Progress with a label, a Table, its
-// header, and a HottyList, its status line. A CheckBox's, a Slider's and a Spinner's labels are on their one
-// row.
+// header, and a HottyList, its status line. A CheckBox's, a HottySwitch's,
+// a Slider's and a Spinner's labels are on their one row.
 func hasTitle(e *view.Element) bool {
 	switch e.Kind {
 	case view.Table, view.RichList:
@@ -114,6 +114,8 @@ func controlWidth(e *view.Element) int {
 		return gutter + max(Width(e.Label), n)
 	case view.CheckBox:
 		return gutter + width(boxFace(false, e.Label, style{}))
+	case view.Switch:
+		return gutter + width(switchFace(e, false))
 	case view.Choice:
 		if isSelect(e) {
 			return gutter + max(Width(e.Label), width(selectValue(e, noWrap)))
@@ -286,6 +288,34 @@ func boxFace(on bool, label string, st style) []glyph {
 	gs := glyphs(box, st)
 	if label != "" {
 		gs = concat(gs, line(" "+label, style{}))
+	}
+	return gs
+}
+
+// switchFace is a HottySwitch as drawn past its gutter: a track with its
+// knob at the end, "━━●" in the accent when it is on and "●──" in muted
+// when it is off, so that the knob's end and the track's weight say which
+// without colour; then a space and its label, in the accent while it has
+// the keyboard. A disabled one is muted and faint throughout.
+func switchFace(e *view.Element, focused bool) []glyph {
+	track, label := style{role: Muted}, style{}
+	switch {
+	case e.Disabled:
+		track = style{role: Muted, attr: Faint}
+		label = track
+	case focused:
+		label = style{role: Accent}
+	}
+	face := "●──"
+	if e.On() {
+		face = "━━●"
+		if !e.Disabled {
+			track.role = Accent
+		}
+	}
+	gs := glyphs(face, track)
+	if e.Label != "" {
+		gs = concat(gs, line(" "+e.Label, label))
 	}
 	return gs
 }

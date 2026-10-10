@@ -441,3 +441,39 @@
     - key: j
     - key: Enter
     - expect: {focused: tree, actions: [openFile, openFile], context: {file: rendition/html/kit.css}}
+
+- name: Space, Enter and a click flip a HottySwitch, Enter in a HottyForm too without submitting it; a disabled one neither flips nor takes the keyboard
+  story: hotty/switch
+  steps:
+    - expect: {focused: wifi}
+    - key: Space
+    - expect: {focused: wifi, data: {/wifi: false}}
+    - key: Enter
+    - expect: {focused: wifi, data: {/wifi: true}}
+    - key: Tab
+    - key: Tab
+    - expect: {focused: hotspot}
+    - focus: airplane
+    - key: Space
+    - expect: {data: {/airplane: true}}
+    - key: Tab
+    - key: Tab
+    - key: Tab
+    - expect: {focused: dark}
+    - click: bluetooth
+    - expect: {focused: bluetooth, data: {/bluetooth: true}}
+    - click: hotspot
+    - expect: {focused: null, data: {/hotspot: false}}
+    - focus: two_factor
+    - key: Enter
+    - expect: {focused: two_factor, actions: [], data: {/twoFactor: true}}
+    - key: Enter
+    - expect: {actions: [], data: {/twoFactor: false}}
+    - focus: email
+    - key: Enter
+    - expect: {focused: email, actions: []}
+    - focus: two_factor
+    - key: Space
+    - focus: email
+    - key: Enter
+    - expect: {actions: [saveAccount], context: {email: ada@example.com, twoFactor: true, digest: true}}

@@ -84,9 +84,9 @@ func (c *Controller) FormOf(id string) *Element {
 }
 
 // Activate is a click on an element, or Enter or Space on it (SPEC
-// §10.2): a Button runs its action, a CheckBox or an Option toggles, a
-// Tab is shown, a link opens. Inside a Modal's trigger it then opens the
-// Modal.
+// §10.2): a Button runs its action, a CheckBox, a Switch or an Option
+// toggles (a disabled Switch does nothing), a Tab is shown, a link opens.
+// Inside a Modal's trigger it then opens the Modal.
 func (c *Controller) Activate(id string) error {
 	e := c.V.Find(id)
 	if e == nil {
@@ -102,8 +102,11 @@ func (c *Controller) Activate(id string) error {
 		}
 		err = c.S.Tree.Invoke(c.V.Node(id), "action", true)
 	case CheckBox:
-		v, _ := e.Value.(bool)
-		err = c.set(e, !v)
+		err = c.set(e, !e.On())
+	case Switch:
+		if !e.Disabled {
+			err = c.set(e, !e.On())
+		}
 	case Tab:
 		tabs, i := parentAndIndex(id)
 		c.St.Tabs[tabs] = i
@@ -161,9 +164,9 @@ func (c *Controller) CloseModal() {
 }
 
 // SetValue is the user's edit of a control: a TextField's or a
-// DateTime's string, a CheckBox's bool, a Slider's number (clamped to its
-// range, on its steps), a Choice's value or values. A bound value goes to
-// the data model; another stays the renderer's.
+// DateTime's string, a CheckBox's or a Switch's bool, a Slider's number
+// (clamped to its range, on its steps), a Choice's value or values. A
+// bound value goes to the data model; another stays the renderer's.
 func (c *Controller) SetValue(id string, v any) error {
 	e := c.V.Find(id)
 	if e == nil {

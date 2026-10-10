@@ -18,6 +18,10 @@ Rules* 3). Mixing is per component: a surface has one default catalog, and
 every component of another catalog carries its `catalogId`.
 - Effect: an agent writes `catalogId` on every hotty component, as the stories
   do now.
+- Effect: a hotty component's dynamic props and checks can call only the
+  hotty catalog's functions, not basic's (`not`, `or`, `required`). A
+  HottySwitch's `disabled` and its checks' conditions are literals or paths
+  (KIT-22c).
 - Fix: a composite catalog, generated from basic's definitions verbatim plus
   ours, for an agent to use as the surface default. Upstream's own samples do
   this (`basic_with_mcp_catalog.json`, Gemini Enterprise's composite). It's
@@ -156,6 +160,7 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 | KIT-18 Terminal | `command` (a registered id), `lines` or a stream | Fits. L4, **L10** |
 | KIT-19 Big text | `text`, `font` | Fits |
 | KIT-20 QR code | `value` | Fits |
+| KIT-22 Toggle | `label`, a bound `value` (DynamicBoolean), `checks`, `disabled` | Fits. L1 |
 
 The prop names above are sketches. Each phase-1 leg settles its component's
 props, under `Hotty` names ([catalog-naming](catalog-naming.md)).

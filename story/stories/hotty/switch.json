@@ -1,0 +1,222 @@
+{
+  "name": "Switch",
+  "kind": "component",
+  "component": "HottySwitch",
+  "icon": "toggle_on",
+  "description": "On/off switches for settings that take effect at once, as a phone's have them: the knob at the right and the track in the accent while on, at the left and muted while off. Wi-Fi has the keyboard at the start. Space, Enter or a click flips a switch, and its value is written to the data model. Personal hotspot is disabled while Airplane mode is on (its disabled is bound to it), and Location services always is: they show faint, don't flip and take no keyboard. Dark appearance has no label of its own, a Text beside it, as a settings row has. In the HottyForm, Enter on a switch flips it, as on a Button, and Enter in Email saves, once Two-factor sign-in is on: until then its check fails and shows.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "switch",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true,
+        "dataModel": {
+          "airplane": false,
+          "wifi": true,
+          "bluetooth": false,
+          "hotspot": false,
+          "dark": true,
+          "email": "ada@example.com",
+          "twoFactor": false,
+          "digest": true
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "switch",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "airplane",
+              "wifi",
+              "bluetooth",
+              "hotspot",
+              "location",
+              "dark_row",
+              "rule",
+              "form",
+              "help"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Settings"
+          },
+          {
+            "id": "airplane",
+            "component": "HottySwitch",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Airplane mode",
+            "value": {
+              "@path": "/airplane"
+            }
+          },
+          {
+            "id": "wifi",
+            "component": "HottySwitch",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Wi-Fi",
+            "value": {
+              "@path": "/wifi"
+            },
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "autofocus": true
+                }
+              }
+            }
+          },
+          {
+            "id": "bluetooth",
+            "component": "HottySwitch",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Bluetooth",
+            "value": {
+              "@path": "/bluetooth"
+            }
+          },
+          {
+            "id": "hotspot",
+            "component": "HottySwitch",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Personal hotspot",
+            "value": {
+              "@path": "/hotspot"
+            },
+            "disabled": {
+              "@path": "/airplane"
+            }
+          },
+          {
+            "id": "location",
+            "component": "HottySwitch",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Location services",
+            "value": true,
+            "disabled": true
+          },
+          {
+            "id": "dark_row",
+            "component": "Row",
+            "children": [
+              "dark_text",
+              "dark"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "dark_text",
+            "component": "Text",
+            "text": "Dark appearance"
+          },
+          {
+            "id": "dark",
+            "component": "HottySwitch",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "value": {
+              "@path": "/dark"
+            },
+            "accessibility": {
+              "label": "Dark appearance"
+            }
+          },
+          {
+            "id": "rule",
+            "component": "Divider"
+          },
+          {
+            "id": "form",
+            "component": "HottyForm",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "child": "form_fields",
+            "onSubmit": {
+              "event": {
+                "name": "saveAccount",
+                "context": {
+                  "email": {
+                    "@path": "/email"
+                  },
+                  "twoFactor": {
+                    "@path": "/twoFactor"
+                  },
+                  "digest": {
+                    "@path": "/digest"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "form_fields",
+            "component": "Column",
+            "children": [
+              "form_title",
+              "email",
+              "two_factor",
+              "digest",
+              "form_note"
+            ]
+          },
+          {
+            "id": "form_title",
+            "component": "Text",
+            "text": "#### Account"
+          },
+          {
+            "id": "email",
+            "component": "TextField",
+            "label": "Email",
+            "value": {
+              "@path": "/email"
+            }
+          },
+          {
+            "id": "two_factor",
+            "component": "HottySwitch",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Two-factor sign-in",
+            "value": {
+              "@path": "/twoFactor"
+            },
+            "checks": [
+              {
+                "condition": {
+                  "@path": "/twoFactor"
+                },
+                "message": "Your organisation requires it"
+              }
+            ]
+          },
+          {
+            "id": "digest",
+            "component": "HottySwitch",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "label": "Weekly digest by email",
+            "value": {
+              "@path": "/digest"
+            }
+          },
+          {
+            "id": "form_note",
+            "component": "Text",
+            "text": "Enter in Email saves; on a switch, it flips it.",
+            "variant": "caption"
+          },
+          {
+            "id": "help",
+            "component": "HottyKeyHints",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -39,6 +39,9 @@ const (
 	TextField Kind = "textfield"
 	// CheckBox edits a boolean.
 	CheckBox Kind = "checkbox"
+	// Switch edits a boolean as an on/off switch (HottySwitch): Label,
+	// Value (a bool), Disabled while it cannot be flipped.
+	Switch Kind = "switch"
 	// Choice picks one or more of Options. One of a single choice shown
 	// as checkboxes is a list to pick from (a select); otherwise each
 	// option is a child, which toggles.
@@ -165,13 +168,14 @@ type Element struct {
 	// Controls.
 	Label       string `json:"label,omitempty"`
 	Placeholder string `json:"placeholder,omitempty"`
-	// Value is a TextField's or a DateTime's string, a CheckBox's bool,
-	// a Choice's []string, a Slider's float64.
+	// Value is a TextField's or a DateTime's string, a CheckBox's or a
+	// Switch's bool, a Choice's []string, a Slider's float64.
 	Value any `json:"value,omitempty"`
 	// Error is the message of the first check that fails, once the user
 	// has touched the control or tried to submit.
 	Error string `json:"error,omitempty"`
-	// Disabled: a Button or a Form whose checks fail does nothing.
+	// Disabled: a Button or a Form whose checks fail does nothing, and
+	// neither does a Switch its disabled prop holds.
 	Disabled bool           `json:"disabled,omitempty"`
 	Options  []ChoiceOption `json:"options,omitempty"`
 	Multiple bool           `json:"multiple,omitempty"`
@@ -288,10 +292,10 @@ type A11y struct {
 
 // Focusable reports whether the element takes the keyboard (SPEC §10.1):
 // a control, a Tabs' title, a Choice's option, a link, a Modal whose
-// trigger is not a control. A disabled Button does not.
+// trigger is not a control. A disabled Button or Switch does not.
 func (e *Element) Focusable() bool {
 	switch e.Kind {
-	case Button:
+	case Button, Switch:
 		return !e.Disabled
 	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree:
 		return true

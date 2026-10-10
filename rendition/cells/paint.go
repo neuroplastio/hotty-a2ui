@@ -146,7 +146,7 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		n := cv.write(x, y, w, face)
 		l.r.boxes[e.ID] = box{x, y, n, 1}
 		l.r.hits = append(l.r.hits, hit{x: x, y: y, w: n, h: 1, id: e.ID, opt: -1, disabled: e.Disabled})
-	case view.TextField, view.DateTime, view.CheckBox, view.Choice, view.Slider:
+	case view.TextField, view.DateTime, view.CheckBox, view.Switch, view.Choice, view.Slider:
 		if w <= gutter {
 			return
 		}
@@ -159,6 +159,14 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 			n := l.paintBox(cv, e.ID, on, e.Label, fx, y, fw)
 			l.r.boxes[e.ID] = box{fx, y, n, 1}
 			l.r.hits = append(l.r.hits, hit{x: x, y: y, w: gutter + n, h: 1, id: e.ID, opt: -1})
+			l.paintError(cv, e, fx, y+1, fw)
+		case view.Switch:
+			// The switch and its label take the click, as a host's button
+			// holding both does; a disabled one, as a disabled Button,
+			// takes it without the keyboard, and does not flip.
+			n := cv.write(fx, y, fw, fit(switchFace(e, l.r.focused(e.ID)), fw))
+			l.r.boxes[e.ID] = box{fx, y, n, 1}
+			l.r.hits = append(l.r.hits, hit{x: x, y: y, w: gutter + n, h: 1, id: e.ID, opt: -1, disabled: e.Disabled})
 			l.paintError(cv, e, fx, y+1, fw)
 		case view.Choice:
 			l.paintChoice(cv, e, fx, y, fw)

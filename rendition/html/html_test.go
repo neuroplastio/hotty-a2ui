@@ -1234,6 +1234,71 @@ func TestTreeScrollsOnHost(t *testing.T) {
 	x.check(r)
 }
 
+// A HottySwitch on a host is one button, role=switch, holding its pill and
+// its label: a click on either, Space and Enter flip it, by one attribute's
+// delta, and Enter on it in a HottyForm does not submit. A disabled one is
+// a disabled button, and a click on it flips nothing.
+func TestSwitchOnHost(t *testing.T) {
+	x := newHarness(t)
+	h := `"catalogId":"` + hottycat.ID + `"`
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"wifi":true,"push":false}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyForm",`+h+`,"child":"col","onSubmit":{"event":{"name":"save"}}},
+ {"id":"col","component":"Column","children":["wifi","push","lock"]},
+ {"id":"wifi","component":"HottySwitch",`+h+`,"label":"Wi-Fi","value":{"@path":"/wifi"}},
+ {"id":"push","component":"HottySwitch",`+h+`,"value":{"@path":"/push"},"accessibility":{"label":"Push"}},
+ {"id":"lock","component":"HottySwitch",`+h+`,"label":"Locked","value":true,"disabled":true}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	for _, want := range [][3]string{{"wifi", "type", "button"}, {"wifi", "role", "switch"}, {"wifi", "aria-checked", "true"},
+		{"push", "aria-checked", "false"}, {"push", "aria-label", "Push"}, {"lock", "aria-checked", "true"}} {
+		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
+			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
+		}
+	}
+	if _, ok := s.Attr("lock", "disabled"); !ok {
+		t.Error("the disabled switch is not a disabled button")
+	}
+	if got := s.TextOf(partID("wifi", partLabel)); got != "Wi-Fi" {
+		t.Errorf("Wi-Fi's label is %q", got)
+	}
+	must(t, x.h.Click(r.name, partID("wifi", partLabel)))
+	x.pump()
+	if got := r.C.S.Data.Value("/wifi"); got != false || r.C.St.Focus != "wifi" || s.Focused() != "wifi" {
+		t.Fatalf("a click on Wi-Fi's label: /wifi %v, the program's focus %q, the host's %q", got, r.C.St.Focus, s.Focused())
+	}
+	if v, _ := s.Attr("wifi", "aria-checked"); v != "false" {
+		t.Errorf("after the click, aria-checked is %q", v)
+	}
+	for _, k := range []string{"Space", "Enter"} {
+		was := r.C.S.Data.Value("/wifi")
+		if !x.h.Key(k) {
+			t.Fatalf("the host did not take %s on the switch", k)
+		}
+		x.pump()
+		if got := r.C.S.Data.Value("/wifi"); got == was {
+			t.Errorf("%s left /wifi %v", k, got)
+		}
+	}
+	if len(x.actions) != 0 {
+		t.Errorf("Enter on a switch in a HottyForm submitted it: %+v", x.actions)
+	}
+	must(t, r.C.Activate("push"))
+	if d := r.Update(); len(d) != 1 || !strings.Contains(d[0], "aria-checked") {
+		t.Errorf("a flip is %d deltas: %q", len(d), d)
+	} else {
+		x.send(d...)
+	}
+	must(t, x.h.Click(r.name, "lock"))
+	x.pump()
+	if v, _ := s.Attr("lock", "aria-checked"); v != "true" || r.C.V.Find("lock").On() != true {
+		t.Errorf("a click on the disabled switch flipped it")
+	}
+	x.check(r)
+}
+
 // A HottyKeyHints on a host is the line cells draws, a kbd for each key;
 // it follows the element the program knows has the keyboard, and ?, which
 // reaches the program from a box, shows the full view's groups as columns.

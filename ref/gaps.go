@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/glamour/v2"
+	"charm.land/huh/v2"
 	"charm.land/lipgloss/v2"
 )
 
@@ -44,6 +46,9 @@ func init() {
 	})
 	register("tree", "hotty/tree", "bubbles: tree (KIT-09)", func() tea.Model {
 		return screen{newTree()}
+	})
+	register("switch", "hotty/switch", "huh: Confirm, inline, as an on/off setting (KIT-22)", func() tea.Model {
+		return screen{newSwitches()}
 	})
 }
 
@@ -274,6 +279,40 @@ func (m *treeRef) Update(msg tea.Msg) tea.Cmd {
 }
 
 func (m *treeRef) View() string { return m.t.View() }
+
+// switch: Bubble Tea has no on/off switch. Its nearest is huh's Confirm, a
+// boolean field toggled with ←/→ (h/l), y and n: here inline, a row each,
+// "On" and "Off" its buttons, with the story's settings and values, and its
+// account form, whose two-factor Confirm must be on. huh has no disabled
+// field, so the story's disabled switches are plain ones here.
+func newSwitches() *form {
+	v := struct {
+		airplane, wifi, bluetooth, hotspot, location, dark bool
+		email                                              string
+		twoFactor, digest                                  bool
+	}{wifi: true, location: true, dark: true, email: "ada@example.com", digest: true}
+	setting := func(title string, value *bool) *huh.Confirm {
+		return huh.NewConfirm().Title(title + " ").Affirmative("On").Negative("Off").Inline(true).Value(value)
+	}
+	return &form{huh.NewForm(huh.NewGroup(
+		huh.NewNote().Title("Settings"),
+		setting("Airplane mode", &v.airplane),
+		setting("Wi-Fi", &v.wifi),
+		setting("Bluetooth", &v.bluetooth),
+		setting("Personal hotspot", &v.hotspot),
+		setting("Location services", &v.location),
+		setting("Dark appearance", &v.dark),
+		huh.NewNote().Title("Account"),
+		huh.NewInput().Title("Email").Value(&v.email),
+		setting("Two-factor sign-in", &v.twoFactor).Validate(func(on bool) error {
+			if !on {
+				return errors.New("Your organisation requires it")
+			}
+			return nil
+		}),
+		setting("Weekly digest by email", &v.digest),
+	)).WithShowHelp(true)}
+}
 
 // viewport: two of bubbles' viewports, the story's build log at its end
 // and its document (the Text's Markdown, as is: bubbles has no renderer

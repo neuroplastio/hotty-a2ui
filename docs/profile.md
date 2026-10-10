@@ -101,6 +101,7 @@ so that an error comes and goes as a text delta.
 | HottyCode | `div` in the mono face, filled with `--k-tonal` as a Text's code block is, a flex row (`k-cl`) for each line: its number, right-aligned as wide as the widest (`--k-ln`), in `--k-muted` and `aria-hidden`; its mark's sign, when the code has marks; then its code (`k-src`), a span for each token that is not plain, of class `k-t-` and its kind, which the sheet colours with the roles cells uses (§3.4). A marked row has `k-m-` and its kind: a highlighted one is filled with `--k-selection`, the others with a sixth of their role's colour (`color-mix`). Lines wrap, `pre-wrap`; with `wrap` false they do not, and the box scrolls sideways, which the host does itself (SPEC.md §5.3), every row as wide as the widest so that a tint reaches the end. A Text's fenced code block is goldmark's `pre` and `code`, its tokens in the same spans |
 | HottyDiff | `div` in the mono face, filled with `--k-tonal` as a HottyCode's; with hunks, `tabindex=0 role=listbox`, whose `data-keys` gives the program ArrowUp, ArrowDown, Home, End, k, j, g and G (a HottyScrollView around it binds the letters to scroll actions, SPEC.md §10.2). For each file with a name (or of several), a row (`k-diff-file`): its name, bold, then what the change adds and removes, `+N` in `--k-success` and `-M` in `--k-error`, or new, deleted or binary. A run of unchanged lines left out is a muted row, `⋯ N unchanged lines` (`k-fold`). Each hunk is a `div tabindex=-1 role=option data-on=click` (`k-hunk`), whose id is the diff's, `~b` and the hunk's index: its header in info and its section muted (`k-hh`), then its lines. Unified, a line is a flex row (`k-dl`): its old number and its new (`--k-lo` and `--k-ln` wide, `aria-hidden`), its sign, then its code, its tokens in a HottyCode's spans. Split, the hunk is a grid of two equal columns, the old side and the new (`k-ds`), paired as cells pairs them, a rule between them and the header across both. A removed line (`k-d-del`) is filled with a sixth of `--k-error`, an added one (`k-d-add`) with a sixth of `--k-success`, and its changed words (`k-w`) more. The selected hunk (`k-sel`, `aria-selected`) has a rail on its left and its header reversed, muted, and in `--k-focus` while the diff has the keyboard (`k-on`). It then has the host's focus itself, so that the host scrolls it into view (SPEC.md §5.3) as cells keeps it in sight. A split diff stays split at any width, its sides wrapping: the markup does not know the width, and a host has no container queries |
 | HottyTree | `div tabindex=0 role=tree`, as a HottyList's box, holding the nodes the view shows (the same rows as cells, §3.4), each a `div role=treeitem data-on=click` whose id is the tree's and `~q` and the node's index, with `aria-level`, `aria-expanded` on a branch and `aria-selected`. A row is a flex row indented `--k-5` a level (`--k-level`): its fold (`k-node-fold`, a column wide), `▸` or `▾` in `--k-muted` before a branch and blank before a leaf, so that a level's labels line up; its icon, as an Icon draws it, or a blank one as wide where another node has an icon; then its label, the filter's matches in `span.k-match`, and a closed branch's count (`k-node-count`, as cells', §3.4) in `--k-muted`. The selected node is marked as a HottyList's selected item: filled with `--k-tonal`, a 3px bar at its start in `--k-border`, and in `--k-focus` with its text while the tree has the keyboard (`k-on`). Its `data-keys` are a HottyList's; its letters and Enter reach the program anyway, a focused box using no keys. Each row is `--k-node-h` (2rem) tall. With a `height`, the box is that many rows tall and holds every node that shows, and the host scrolls it (SPEC.md §5.3), with the wheel and a thin scrollbar; the selected node is `tabindex=-1` and has the host's focus while the tree has the keyboard, so that the host scrolls it into view as the selection moves, as a HottyDiff's selected hunk does. Guides are cells' (§3.4): a host has the room to indent instead. Its empty text shows when no node does |
+| HottySwitch | `button type=button role=switch` with `aria-checked`, `disabled` while it is, holding its pill (`k-switch-track`, `aria-hidden`) and its label (`~l`), so that a click on either flips it, as do Space and Enter, which a host clicks a button with (SPEC.md §10.2); then its error. On or off is that one attribute, so a flip is one delta. Off, the pill is filled with `--k-tonal` and ringed in `--k-muted`, its knob `--k-muted` at its start; on, it is `--k-accent`, its knob `--k-on-accent` at its end, so that the two differ by more than a shade where the accent is the foreground (no theme), as Material's switch does. The ring, and a focus ring of `--k-focus` around the pill while it has the host's focus, are shadows, which draw where a thin rounded border may not. The knob does not slide: Blitz runs no transitions, and a slide by deltas is vault KIT-22h |
 | HottySpinner | `span role=status`: the frame of its set the clock is at (§3.4) while it spins (blank while it does not), `aria-hidden`, in the mono face and as wide as the set's widest frame in cells (in `ch`), then the label, which so stays put as in cells. The frame's id is the Spinner's and `~f`, so that a tick is one text's delta |
 
 **Updates are deltas.** The document goes once. After it, the renderer
@@ -118,7 +119,7 @@ renderer's own state: a tab shown, a Modal opened.
 | event | does |
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's |
-| `click` | a Button runs its action; a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
+| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
 | `submit` | the HottyForm submits (§6.2) |
 | `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it |
 | `focus`, `blur` | the surface has the keyboard, or not |
@@ -227,6 +228,7 @@ Natural widths:
 | Button | the label + 4 (`[ ` and ` ]`); borderless, the label; a List's, the label + 2 |
 | TextField, DateTime | 2 for the gutter, plus the label's width or 22 (the prompt and an HTML input's size of 20), whichever is wider; a longText, the label's or 20 |
 | CheckBox | 2 for the gutter, 3 for the box, plus 1 and the label when it has one |
+| HottySwitch | 2 for the gutter, 3 for the switch, plus 1 and the label when it has one |
 | a select | 2 for the gutter, plus the label's width or the widest option's label and ` ▾`, whichever is wider |
 | a Choice's options | 2 for the gutter, plus the label's width or the widest option row (`> [ ] label`), whichever is wider; chips, all the options in one row two columns apart |
 | Slider | 2 for the gutter, the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
@@ -341,6 +343,7 @@ How the containers lay their children out:
 | Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. A vertical List's Button is its row: ` label `, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
 | TextField, DateTime | in the field's box past the gutter: a title row, then the value (§3.5), then the error |
 | CheckBox | past the gutter, `[•] label` or `[ ] label`, then the error |
+| HottySwitch | past the gutter, its track with the knob at one end, then a space and its label, on one row: `━━●` in `accent` while it is on, `●──` in `muted` while it is off, so that without colour the knob's end and the track's weight still say which; then the error. Its label is in `accent` while it has the keyboard. A disabled one is `muted` and faint throughout, its knob still at its end. The switch and its label take a click |
 | a select (one value, `checkbox` display) | past the gutter, a title row, then the picked option's label, or `…` in `muted` when none is picked, and ` ▾` in `muted`. While its list is open (§3.7), the options follow one a row: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
 | a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options: one a row, `[•] label` or `[ ] label` after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect); chips two columns apart, wrapping, `( label )` and `(● label)` when picked. Then the error. |
 | Slider | past the gutter, `label ━━━━●──── 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `●` at round((value − min) / (max − min) × (track − 1)), and after it the track is `─` in `border`. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
@@ -384,14 +387,15 @@ storybook's `Book.Tick` and `storybook -bare` do, on Bubble Tea's
 `tea.Every`. So two renditions of one surface made at once show the same
 frame, and a test sets the clock (`Rendition.Clock`, in both).
 
-**Fields** are the text fields, DateTime, CheckBox, Choice and Slider:
-the controls huh calls fields, drawn as huh draws them.
+**Fields** are the text fields, DateTime, CheckBox, HottySwitch, Choice
+and Slider: the controls huh calls fields, drawn as huh draws them.
 - **The gutter.** A field's first two columns are its gutter. While the
   field has the keyboard (for a Choice's options, one of them), the
   gutter is `┃ ` in `accent` down the field's rows; otherwise it is blank.
 - **The title.** A text field, a DateTime or a Choice with a label has a
   title row: the label, bold, in `accent` while the field has the
-  keyboard. A CheckBox's and a Slider's labels are on their one row.
+  keyboard. A CheckBox's, a HottySwitch's and a Slider's labels are on
+  their one row.
 
 **Focus** (the element with the keyboard). Each focused element is in
 `accent`, with a glyph or an attribute so that the focus still shows
@@ -400,6 +404,7 @@ without colour:
 - A Button, a chip, a Tabs' title, a Media link and a Modal trigger that
   is not a control are reversed whole.
 - A CheckBox's box is in `accent`; a box option's row starts with `> `.
+- A HottySwitch's label is in `accent`.
 - A Slider's track is in `accent` up to the knob, and the knob is
   reversed.
 - A text field's prompt is in `accent`, and its cursor cell is reversed.
@@ -429,7 +434,8 @@ without colour:
 
 Cells name NEIO-4's roles (`fg`, `bg`, `muted`, `accent`, `selection`,
 `surface`, `border`, `success`, `warning`, `error`, `info`), never colours.
-`accent` goes only on focus. Every state that has a colour also has a glyph
+`accent` goes only on focus, and on a HottySwitch that is on, as a
+switch's colour says so. Every state that has a colour also has a glyph
 or an attribute: `✗`, `!` and `…`, reverse for focus, faint for disabled
 and for placeholders.
 
@@ -566,7 +572,9 @@ In the output:
   those (SPEC.md §10.2, *Scrolling keys*) gives the letters to the program,
   which cannot scroll the box, so they do nothing there.
 - **Space and Enter** activate a Button, a Tabs' title, a chip, a Media
-  link, or a Modal trigger that is not a control.
+  link, or a Modal trigger that is not a control, and flip a HottySwitch:
+  it is a button on a host, which Enter clicks, so in a HottyForm too
+  Enter flips it and does not submit.
 - **A CheckBox, and an option shown as a box,** is a checkbox on a host,
   and takes keys as one (SPEC §10.2): Space toggles it, and Enter submits
   its HottyForm, or does nothing outside one, as huh's Enter moves on.
@@ -599,7 +607,7 @@ In the output:
   - anything else is activated.
 - **A disabled Button** does not take the keyboard, but the click still
   activates it, as in rendition/html; the controller decides what that
-  does.
+  does. Nor does a disabled HottySwitch, which the click leaves as it is.
 - **A click on nothing that takes focus** gives the keyboard back.
 - **A click outside an open Modal's panel** closes the Modal.
 
@@ -640,6 +648,8 @@ reference is `rendition/text`.
   character, and an empty one its placeholder in parentheses.
 - A CheckBox is `[x] Label` or `[ ] Label`; a ChoicePicker `Label: ` and
   the labels picked; a Slider `Label: value (min–max)`.
+- A HottySwitch is `Label: on` or `Label: off` (`on` or `off` alone
+  without a label), followed by `(disabled)` while it is.
 - A Button is `[ label ]`, followed by `(disabled)` while its checks fail.
 - A HottyProgress is `Label: 42%`, or `Label: …` without a value; a
   HottySpinner is `Label: …` while it spins, else its label alone.
@@ -874,7 +884,8 @@ so the agent places it once and never updates it. The renderer builds it
    while its filter is typed, `enter apply filter`, `esc cancel`), a
    HottyTable's the same without the filter, a HottyDiff's `↑/k prev
    hunk`, `↓/j next hunk`, `enter choose`, a field's `enter submit` in
-   a HottyForm, a CheckBox's `space toggle`, a Button's `enter press`, a
+   a HottyForm, a CheckBox's `space toggle`, a HottySwitch's
+   `space/enter toggle`, a Button's `enter press`, a
    Slider's `←/→ adjust`, a select's `enter open`, a HottyScrollView's
    `↑/k up`, `↓/j down`, `f/pgdn page down`, `b/pgup page up`; and
    `esc close` while a Modal is open.
@@ -1062,6 +1073,29 @@ a host the icon goes before the title or the label (§2), hidden from a
 screen reader, which the label tells; cells and text leave it out, as
 few icons have a glyph a column wide, as a HottyTree's (§6.14). Other
 renderers ignore it, as they do autofocus (§6.4) and keys (§6.5).
+
+### 6.17 HottySwitch
+
+An on/off switch for one setting, as a phone's settings have them: a
+boolean as a CheckBox's is, with its `label`, its `value` (a
+DynamicBoolean, best bound, so that the user's flips are written to the
+data model) and its `checks`, whose error shows as a field's does (§6.2).
+Use it for a setting that takes effect at once, and a CheckBox for a
+choice that a form sends later, as Apple's and Material's guidance has
+it.
+
+Space, Enter or a click flips it (§3.7). On a host it is a button (§2),
+which the host clicks on Space and Enter, so Enter flips it in a
+HottyForm too, as it presses a Button there, rather than submitting the
+form as Enter on a CheckBox does; Enter in a text field still submits.
+`disabled` (a DynamicBoolean) keeps it from flipping and from the
+keyboard, Tab passing over it; bound, it disables the switch while
+another setting rules it out. Without a `label`, give
+`accessibility.label`, which names the switch on a host.
+
+A component of the hotty catalog takes only that catalog's functions
+(vault a2ui-limits L1), so its `disabled` and its checks' conditions are
+literals or paths, not basic's `not` or `or`.
 
 ## 7. Fallbacks
 
