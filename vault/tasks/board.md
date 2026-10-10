@@ -17,7 +17,9 @@ KIT-22c (journal 2026-10-10.5): the switch; at KIT-10c (journal
 2026-10-10.6): the charts; at KIT-SLIDE (journal 2026-10-10.7): the
 sliders, and its four open points; at KIT-23c (journal 2026-10-10.8):
 drag and drop in cells, and its three proposals; at KIT-11c (journal
-2026-10-10.9): suggestions in cells, and its seven proposals.
+2026-10-10.9): suggestions in cells, and its seven proposals; at KIT-13c
+(journal 2026-10-10.10, shot `make shot NAME=toast`): toasts and
+tooltips, and its proposals.
 Phase 1 is a go
 (2026-10-09). New names
 follow [catalog-naming](../knowledge/catalog-naming.md).
@@ -33,8 +35,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 ## Phase 1 — Cells parity
 
 - [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
-- [ ] **KIT-13c** — Toast and tooltip (tooltip from
-  `accessibility.description`).
 - [ ] **KIT-14c** — Timer and stopwatch, with `onTimeout`.
 - [ ] **KIT-15c** — Paginator.
 - [ ] **KIT-16c** — Confirm, or a story showing it as a pattern of Buttons.
@@ -133,6 +133,9 @@ As of 2026-10-09, from the hotty agent:
 - [ ] **KIT-12h** — Selection and copy: the host's own. Blocked: the
   clipboard is parked by the maintainer.
 - [ ] **KIT-13h** — Toast and tooltip, each as a surface at a higher z.
+  The baseline (KIT-13c) is a region cut at the surface's edges and the
+  tooltip in the key hints by SPEC §9.4's hover; a tooltip beside its
+  element needs the element's area, which hover does not give.
 - [ ] **KIT-14h** — Timer and stopwatch in display type.
 - [ ] **KIT-15h** — Paginator.
 - [ ] **KIT-16h** — Confirm.
@@ -167,6 +170,21 @@ As of 2026-10-09, from the hotty agent:
 
 ## Done
 
+- [x] **KIT-13c** — Toast and tooltip, story `hotty/toast` (journal
+  2026-10-10.10, awaiting the maintainer's look).
+  - `hottyToast({message, kind, timeout, id, actionLabel, action,
+    surfaceId})` and `hottyDismissToast({id})`, renderer functions for a
+    Button and the agent (instruction 23, profile §6.23); an id replaces
+    in place; the action is an event whose context is read as it shows.
+  - Cells: rounded boxes stacked at the top right, a column in, the
+    newest first, the border and mark (`ⓘ ✓ ! ✗`) in the kind's role;
+    time on the clock, held under the pointer or the keyboard.
+  - Tooltip: `accessibility.description`, a row over the HottyKeyHints'
+    keys, for the element under the pointer (mode 1003; SPEC §9.4
+    `hover` on a host) or with the keyboard.
+  - Host: a region over the surface and the layer, alerts and statuses.
+    Text: a line a toast. Vectors in both renditions. The surface at a
+    higher z is KIT-13h.
 - [x] **KIT-11c** — Suggestions in cells, as bubbles' text input has them
   (journal 2026-10-10.9, awaiting the maintainer's look). Story
   `hotty/suggest`.
