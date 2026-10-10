@@ -196,7 +196,22 @@ func (c *Controller) ownHints(e *Element, keys string) (short []Hint, groups [][
 		if enter && !long {
 			short = []Hint{{"enter", "submit"}}
 		}
-		return short, fieldHints(hotty.Resolve(long, append([]string{keys}, c.V.KeyChain(e.ID)...)...), long, enter)
+		groups = fieldHints(hotty.Resolve(long, append([]string{keys}, c.V.KeyChain(e.ID)...)...), long, enter)
+		if len(e.Shown) > 0 {
+			// Its suggestions' keys (SuggestKey), in huh's word for Tab's;
+			// Enter picks the one highlighted, else submits as ever.
+			submit := short
+			short = []Hint{{"tab", "complete"}, {"↑/↓", "suggestions"}}
+			if e.Selected >= 0 {
+				short = append(short, Hint{"enter", "pick"})
+			} else {
+				short = append(short, submit...)
+			}
+			sug := []Hint{{"tab/→", "complete"}, {"↓/ctrl+n", "next suggestion"}, {"↑/ctrl+p", "prev suggestion"},
+				{"enter", "pick"}, {"esc", "close suggestions"}}
+			groups = append([][]Hint{sug}, groups...)
+		}
+		return short, groups
 	case CheckBox:
 		short = []Hint{{"space", "toggle"}}
 	case Switch:

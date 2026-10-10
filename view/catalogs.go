@@ -82,8 +82,12 @@ func init() {
 				Children: b.Children(n.Props["child"])}
 		},
 		"TextField": func(b *Builder, n *a2ui.Node) *Element {
-			return &Element{Kind: TextField, Label: b.String(n, "label"), Value: a2ui.ToString(nilString(b.Value(n, "value"))),
+			e := &Element{Kind: TextField, Label: b.String(n, "label"), Value: a2ui.ToString(nilString(b.Value(n, "value"))),
 				Placeholder: b.String(n, "placeholder"), Variant: b.Enum(n, "variant", "shortText"), Error: b.FieldError(n)}
+			// Suggestions come with io_neuroplast_hotty.suggestions (profile
+			// §6.22): TextField is basic's, so it takes no prop.
+			b.suggestions(n, e)
+			return e
 		},
 		"CheckBox": func(b *Builder, n *a2ui.Node) *Element {
 			return &Element{Kind: CheckBox, Label: b.String(n, "label"), Value: a2ui.Truthy(b.Value(n, "value")), Error: b.FieldError(n)}

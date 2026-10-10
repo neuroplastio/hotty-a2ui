@@ -168,7 +168,7 @@ func (c *Controller) CloseModal() {
 // (clamped to its range, on its steps), a RangeSlider's knob's (as a
 // Slider's, and stopped where it meets the other knob), a Choice's value
 // or values. A bound value goes to the data model; another stays the
-// renderer's.
+// renderer's. A text field's new value then runs its suggestions' onInput.
 func (c *Controller) SetValue(id string, v any) error {
 	e := c.V.Find(id)
 	if e == nil {
@@ -200,6 +200,12 @@ func (c *Controller) SetValue(id string, v any) error {
 	}
 	err := c.set(e, v)
 	c.Rebuild()
+	// A text field with suggestions tells the agent what was typed, so that
+	// it may rewrite them (profile §6.22).
+	if s, ok := v.(string); ok && err == nil && e.Suggestions != nil && s != e.Value {
+		err = c.suggestInput(id)
+		c.Rebuild()
+	}
 	return err
 }
 

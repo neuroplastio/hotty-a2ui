@@ -215,7 +215,8 @@ type Element struct {
 
 	// Tabs: which tab is shown. Tab and Option: whether it is the one
 	// shown, or picked. Modal: whether its content is shown. Spinner:
-	// whether it spins.
+	// whether it spins. A TextField with suggestions: Selected is the
+	// highlighted one's place in Shown, -1 for none.
 	Selected int  `json:"selected,omitempty"`
 	Active   bool `json:"active,omitempty"`
 	Open     bool `json:"open,omitempty"`
@@ -245,6 +246,13 @@ type Element struct {
 	Query   Query   `json:"query,omitzero"`
 	Shown   []int   `json:"shown,omitempty"`
 	Matched [][]int `json:"matched,omitempty"`
+
+	// TextField: its suggestions (io_neuroplast_hotty.suggestions, profile
+	// §6.22), the agent's options, non-nil when it has the extension. Its
+	// Shown are those its value leaves, by index, while its list is open;
+	// Selected, Height and Top the highlighted one, and the rows the list
+	// shows at most from Top (Builder.suggestions).
+	Suggestions []string `json:"suggestions,omitempty"`
 
 	// ScrollView: its lines, when it has no child; whether they wrap; the
 	// first column shown, when they do not; and whether it follows the

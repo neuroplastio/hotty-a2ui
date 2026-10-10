@@ -27,8 +27,9 @@ type State struct {
 	Touched   map[string]bool
 	Submitted map[string]bool
 	// Scroll is the first row each Table with a height shows, the first
-	// item of the page each HottyList with a height shows, and the first
-	// row each HottyScrollView shows, by id.
+	// item of the page each HottyList with a height shows, the first
+	// row each HottyScrollView shows, and the first suggestion each text
+	// field's list shows, by id.
 	Scroll map[string]int
 	// Left is the first column each HottyScrollView of lines that do not
 	// wrap shows; Tail whether it follows the tail, once the user or the
@@ -51,12 +52,17 @@ type State struct {
 	// Moved are the items the user moved in each HottyList, HottyTable and
 	// HottyTree whose items are not bound, by its id (Builder.List).
 	Moved map[string]Moved
+	// Suggest is each text field's suggestions as the user worked them
+	// (io_neuroplast_hotty.suggestions), by its id: the one highlighted,
+	// or the list closed. The first its list shows is in Scroll.
+	Suggest map[string]Suggest
 }
 
 // NewState is a surface's state before the user does anything.
 func NewState() *State {
 	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}, Query: map[string]Query{},
-		Left: map[string]int{}, Tail: map[string]bool{}, Open: map[string][]string{}, Revealed: map[string]string{}, Moved: map[string]Moved{}}
+		Left: map[string]int{}, Tail: map[string]bool{}, Open: map[string][]string{}, Revealed: map[string]string{}, Moved: map[string]Moved{},
+		Suggest: map[string]Suggest{}}
 }
 
 // Mapper makes an element of a node, children included; nil when the
