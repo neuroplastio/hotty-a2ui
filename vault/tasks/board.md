@@ -201,8 +201,8 @@ built on it).
   top of its HottyScrollView; a host gets `a=focus`), any other href is
   written to `link` and `onLink` runs. HottyTree nodes take an `href`.
   On a page they are `<a href>` (2026-10-11.3). Story `hotty/markdown`.
-  Open (for the feedback loop): IMPORTANT in the accent, no gap after an
-  alert before a list on a host, no fill for code in a HottyScrollView,
+  Open (for the feedback loop): IMPORTANT in the accent, no fill for
+  code in a HottyScrollView,
   nothing marking the document focused after a jump. The two hottytest
   findings were hottytest bugs, fixed in hotty-go a4025c0. That commit
   also carries HOTTY 0.2's handshake, so the kit's hotty-go pin moves with
