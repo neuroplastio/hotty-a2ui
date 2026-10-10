@@ -93,11 +93,23 @@ type Builder struct {
 	St    *State
 	out   *Surface
 	forms []string
+	// page: the view is a page's (BuildPage).
+	page bool
 }
 
 // Build makes the view of a surface as it is resolved now.
-func Build(s *a2ui.Surface, st *State) *Surface {
-	b := &Builder{S: s, St: st, out: &Surface{ID: s.ID, nodes: map[string]*a2ui.Node{}}}
+func Build(s *a2ui.Surface, st *State) *Surface { return build(s, st, false) }
+
+// BuildPage makes the view of a surface for a web page with no program
+// behind it (rendition/html's page mode, profile §2.1): as Build, but a
+// Tabs holds every tab, each title with its own content as its Children,
+// where Build gives a Tabs the shown tab's content alone, after the
+// titles. It notes in st what Build notes (where a Table or a HottyTree
+// is scrolled to), the tabs not shown included.
+func BuildPage(s *a2ui.Surface, st *State) *Surface { return build(s, st, true) }
+
+func build(s *a2ui.Surface, st *State, page bool) *Surface {
+	b := &Builder{S: s, St: st, out: &Surface{ID: s.ID, nodes: map[string]*a2ui.Node{}}, page: page}
 	if s.Tree.Root != nil {
 		b.out.Root = b.Node(s.Tree.Root)
 	}

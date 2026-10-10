@@ -9,6 +9,8 @@
 //	                                  what an agent streams on stdin
 //	storybook -text 36_modal | cat    a story as plain text
 //	storybook -html 36_modal          a story as the document a host gets
+//	storybook -page 24_recipe-card hotty/tree > page.html
+//	                                  stories as an ordinary web page (page mode)
 //	storybook -theme nord             in a theme (storybook -list names them)
 //	storybook -bare hotty/keys        a story's surfaces alone, in cells
 //	storybook -list                   the stories' names
@@ -42,6 +44,7 @@ func main() {
 	list := flag.Bool("list", false, "list the stories")
 	plain := flag.Bool("text", false, "print plain text, with no terminal (as when stdout is not one)")
 	doc := flag.Bool("html", false, "print each surface as the HTML document a HOTTY host gets")
+	page := flag.Bool("page", false, "print a web page of the stories' surfaces (or -stream's), in page mode: the kit's stylesheet once, then each surface")
 	themeName := flag.String("theme", "", "paint in this `theme`: "+themeNames())
 	stream := flag.String("stream", "", "read A2UI from `file` (- for stdin) instead of a story")
 	rend := flag.String("rendition", "", "start in this `rendition`: surfaces, cells, text or side (surfaces beside cells)")
@@ -71,6 +74,13 @@ func main() {
 	}
 	if *doc {
 		if err := printHTML(os.Stdout, args, th); err != nil {
+			fmt.Fprintln(os.Stderr, "storybook:", err)
+			os.Exit(1)
+		}
+		return
+	}
+	if *page {
+		if err := printPage(os.Stdout, args, *stream, th); err != nil {
 			fmt.Fprintln(os.Stderr, "storybook:", err)
 			os.Exit(1)
 		}

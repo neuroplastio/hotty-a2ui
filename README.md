@@ -77,6 +77,7 @@ storybook -theme dracula                         # in a theme
 storybook -text basic/36_modal                   # as plain text
 agent | storybook -stream - -out actions.jsonl   # what an agent streams, and the user's actions back
 storybook -html basic/06_music-player            # the document a HOTTY host gets
+storybook -page basic/24_recipe-card > page.html # stories as an ordinary web page (page mode)
 storybook -bare hotty/keys                       # a story's surfaces alone, in cells
 ```
 
@@ -121,7 +122,7 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 | [`view/`](view) | the renderer's model of a surface: its nodes made into a few kinds of element, with the renderer's own state (focus, the tab shown, the modal open), and the controller the user's acts go through |
 | [`highlight/`](highlight) | code as lines of tokens of a few kinds, which the renditions colour by role: chroma's lexers for the languages agents write most ([`lexers/`](highlight/lexers), `make lexers`), and all of chroma's with [`highlight/all`](highlight/all) |
 | [`diff/`](diff) | a change as files of hunks, from a patch or from two texts, each line highlighted and its changed words marked |
-| [`rendition/html/`](rendition/html) | surfaces on a HOTTY host: a document, then deltas, and the host's events back as the user's acts |
+| [`rendition/html/`](rendition/html) | surfaces on a HOTTY host: a document, then deltas, and the host's events back as the user's acts; and in an ordinary web page, with no program behind it (page mode, profile §2.1) |
 | [`rendition/cells/`](rendition/cells) | cells in a terminal that is not a host, laid out by the profile's rules (§3), with keys and clicks as SPEC §10 has them |
 | [`rendition/text/`](rendition/text) | plain text for a pipe |
 | [`rendition/theme/`](rendition/theme) | the themes both renditions paint with: colours by role, and the shapes on a host |

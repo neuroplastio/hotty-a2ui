@@ -102,6 +102,33 @@ func TestControls(t *testing.T) {
 	}
 }
 
+// TestBuildPageTabs: a page's view (BuildPage) holds every tab of a Tabs,
+// each title with its own content, where Build holds the shown one's after
+// the titles.
+func TestBuildPageTabs(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	if err := p.ProcessJSON([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Tabs","tabs":[{"title":"A","child":"ta"},{"title":"B","child":"tb"}]},
+	 {"id":"ta","component":"Text","text":"in A"},{"id":"tb","component":"Text","text":"in B"}]}}]`)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	if kids := c.V.Root.Children; len(kids) != 3 || kids[2].ID != "ta" || len(kids[1].Children) != 0 {
+		t.Fatalf("Build: %d children, the last %q", len(kids), kids[len(kids)-1].ID)
+	}
+	v := view.BuildPage(c.S, c.St)
+	kids := v.Root.Children
+	if len(kids) != 2 {
+		t.Fatalf("BuildPage: %d children, want the two titles", len(kids))
+	}
+	for i, want := range []string{"ta", "tb"} {
+		if tab := kids[i]; tab.Kind != view.Tab || len(tab.Children) != 1 || tab.Children[0].ID != want {
+			t.Errorf("tab %d: %s holding %v, want %s", i, tab.Kind, tab.Children, want)
+		}
+	}
+}
+
 // TestSliderSnaps: a Slider's value is on its steps and reads as the step
 // does: two steps of 0.05 down from 0.45 is 0.35, not 0.35000000000000003.
 func TestSliderSnaps(t *testing.T) {

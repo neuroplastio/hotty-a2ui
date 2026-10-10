@@ -7,6 +7,10 @@
 // with Tab, toggling a checkbox. The rendition hears the outcome (input,
 // change, click, submit), which keeps the data model current as the user
 // types, as A2UI's own renderers do.
+//
+// Page mode puts the same markup in an ordinary web page, with no program
+// behind it: the stylesheet once a page (PageCSS), and a surface as a
+// fragment of its body (Rendition.Page).
 package html
 
 import (

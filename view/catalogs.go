@@ -192,9 +192,12 @@ func mapTabs(b *Builder, n *a2ui.Node) *Element {
 		if i < len(icons) {
 			tab.Name = icons[i]
 		}
+		if b.page {
+			tab.Children = b.Children(m["child"])
+		}
 		e.Children = append(e.Children, tab)
 	}
-	if sel < len(tabs) {
+	if !b.page && sel < len(tabs) {
 		m, _ := tabs[sel].(map[string]any)
 		e.Children = append(e.Children, b.Children(m["child"])...)
 	}

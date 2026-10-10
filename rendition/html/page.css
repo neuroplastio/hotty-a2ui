@@ -1,0 +1,62 @@
+/* hotty-a2ui page mode (profile §2.1): surfaces in an ordinary web page,
+   read with no program behind them. After kit.css (PageCSS).
+
+   The palette is the page's, by the host's names (SPEC §8), set on any
+   element around its surfaces: --hotty-bg and --hotty-fg, --hotty-accent
+   (links and focus), --hotty-ansi-8 (borders), and --hotty-ansi-9, -2, -3
+   and -6 (error, success, warning, info). The kit's own variables follow
+   them here, on the surface, so that a page may set them on <html>, on a
+   theme's class, or on a box around one surface. What it leaves out is the
+   kit's default: the page's own canvas and text, and a blue accent and
+   signal colours light or dark as the page's color-scheme says. A theme
+   (rendition/theme) set on the surface wins. The type is the page's. */
+.k-surface.k-page {
+  --k-bg: var(--hotty-bg, Canvas);
+  --k-fg: var(--hotty-fg, CanvasText);
+  --k-border: var(--hotty-ansi-8, GrayText);
+  --k-accent: var(--hotty-fg, CanvasText);
+  --k-on-accent: var(--hotty-bg, Canvas);
+  --k-link: var(--hotty-accent, light-dark(#0969da, #4493f8));
+  --k-focus: var(--hotty-accent, light-dark(#0969da, #4493f8));
+  --k-error: var(--hotty-ansi-9, light-dark(#cf222e, #f85149));
+  --k-warning: var(--hotty-ansi-3, light-dark(#9a6700, #d29922));
+  --k-success: var(--hotty-ansi-2, light-dark(#1a7f37, #3fb950));
+  min-height: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+}
+/* A surface in a theme's colours (Rendition.SetTheme) is a box of them. */
+.k-surface.k-page.k-themed { padding: var(--k-4); border-radius: var(--k-r-card); background: var(--k-bg); }
+
+/* Tabs: every tab a section under its title, drawn as a tab bar of one
+   tab, the tab shown's look. */
+.k-page .k-tabs { row-gap: var(--k-5); }
+.k-tab-title { color: var(--k-fg); border-bottom-color: var(--k-accent); font-weight: 600; cursor: default; }
+
+/* A HottyTree: lists that nest as its nodes do, each node the host's row.
+   A branch is a details element whose summary is its row, which the
+   browser opens and closes: its fold and its count are drawn here, from
+   whether it is open. */
+.k-tree-list { list-style: none; margin: 0; padding: 0; }
+.k-page .k-node { cursor: default; }
+.k-page summary.k-node { cursor: pointer; list-style: none; }
+.k-page summary.k-node::-webkit-details-marker { display: none; }
+.k-page summary > .k-node-fold::before { content: "▸"; }
+.k-page details[open] > summary > .k-node-fold::before { content: "▾"; }
+.k-page details[open] > summary > .k-node-count { display: none; }
+.k-page summary.k-node:focus-visible { outline: 2px solid var(--k-focus); outline-offset: -2px; }
+.k-page a.k-node-label { flex: 1 1 auto; color: inherit; text-decoration: none; }
+.k-page a.k-node-label:hover { text-decoration: underline; }
+
+/* Controls show their state and take nothing: no program would hear
+   them. A text field is readonly, so its text can still be selected. */
+.k-page :is(button, .k-check, .k-opt) { pointer-events: none; }
+
+/* An indeterminate HottyProgress sweeps by itself, as on the program's
+   clock on a host (a quarter of the track, 5 s across). */
+@keyframes k-sweep { from { left: -25%; } to { left: 100%; } }
+.k-page .k-progress-fill.k-indeterminate { animation: k-sweep 5s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .k-page .k-progress-fill.k-indeterminate { animation: none; }
+}

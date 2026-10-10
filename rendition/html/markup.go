@@ -44,6 +44,9 @@ type markup struct {
 	// keyboard is the element with the keyboard, "" while the surface
 	// has none.
 	keyboard string
+	// page: the markup is for a web page with no program behind it
+	// (Rendition.Page, page.go).
+	page bool
 }
 
 // animate notes that the markup changes again after d.
@@ -157,6 +160,11 @@ func (m *markup) element(e *view.Element) *node {
 	if e == nil {
 		return nil
 	}
+	if m.page {
+		if e = onPage(e); e == nil {
+			return nil
+		}
+	}
 	id := domID(e.ID)
 	// outer is what the element adds to its parent; n is the element
 	// itself, which its id and its accessibility go on.
@@ -234,6 +242,10 @@ func (m *markup) element(e *view.Element) *node {
 	case view.RichList:
 		n = richList(e)
 	case view.Tree:
+		if m.page {
+			n = m.pageTree(e)
+			break
+		}
 		n = m.tree(e)
 	case view.Chart:
 		n = chartView(e)
@@ -244,6 +256,10 @@ func (m *markup) element(e *view.Element) *node {
 	case view.ScrollView:
 		n = m.scrollView(e)
 	case view.Paginator:
+		if m.page {
+			n = m.pagePaginator(e)
+			break
+		}
 		n = m.paginator(e)
 	case view.Listing:
 		n = m.code(e)
@@ -418,6 +434,10 @@ func (m *markup) element(e *view.Element) *node {
 		}
 		outer = m.field(e, "k-field", head, n)
 	case view.Tabs:
+		if m.page {
+			n = m.pageTabs(e)
+			break
+		}
 		bar := el("div", "id", partID(e.ID, partTabs), "class", "k-tablist", "role", "tablist")
 		panel := el("div", "id", partID(e.ID, partPanel), "class", "k-tabpanel k-stack k-col", "role", "tabpanel")
 		for _, c := range e.Children {
@@ -437,7 +457,9 @@ func (m *markup) element(e *view.Element) *node {
 		}
 		n.set("aria-haspopup", "dialog").set("aria-expanded", boolString(e.Open)).add(m.all(e.Children)...)
 	case view.Form:
-		if m.forms > 0 {
+		// A page's is a group too: with no program, a submit would leave
+		// the page.
+		if m.forms > 0 || m.page {
 			n = el("div", "id", id, "class", "k-form", "role", "form")
 			m.forms++
 			n.add(m.all(e.Children)...)

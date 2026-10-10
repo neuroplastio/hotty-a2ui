@@ -64,9 +64,11 @@ const (
 	// DateTime edits a date, a time, or both (ISO 8601).
 	DateTime Kind = "datetime"
 	// Tabs shows its Tab children as a bar, and after them the content
-	// of the tab Selected.
+	// of the tab Selected; in a page's view (BuildPage), its Tab children
+	// alone, each holding its own content.
 	Tabs Kind = "tabs"
-	// Tab is one of a Tabs' titles: Label, Active when it is shown.
+	// Tab is one of a Tabs' titles: Label, Active when it is shown; in a
+	// page's view, its tab's content as its Children.
 	Tab Kind = "tab"
 	// Modal shows its first child, the trigger; the second, its content,
 	// over the surface while Open.

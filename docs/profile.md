@@ -20,7 +20,8 @@ One A2UI surface has three renditions, and a renderer chooses one as SDK.md
 §2.5 does:
 
 - **Surfaces**, on a HOTTY host: the surface is one HOTTY surface, an HTML
-  document, changed by deltas (§2).
+  document, changed by deltas (§2). Its markup also goes into an ordinary
+  web page, with no program behind it (§2.1).
 - **Cells**, on a terminal that is not a host: the renderer lays the surface
   out in cells and paints it, identically in every implementation (§3).
 - **Text**, with no terminal: what the surface says, as plain text (§4).
@@ -167,6 +168,78 @@ takes that element as focused. Typing (`input`) and a control's `change`,
 which comes at once, say so too. A text field's `change` is its commit as
 the host's focus leaves it, often for where the renderer just moved the
 keyboard, so it says nothing about where the keyboard is.
+
+### 2.1 Pages
+
+The same markup also goes into an ordinary web page, not a terminal: page
+mode, for a docs site's plain page (gov NEIO-14), which readers without
+JavaScript and crawlers read. No program is behind it, so nothing on it
+may need one to be read: what only a host's events and keys make work is
+left out, and what a program would show a piece at a time shows whole.
+The reference is `rendition/html`'s `PageCSS` and `Rendition.Page`, on a
+view built for a page (`view.BuildPage`); `storybook -page` writes
+stories, or a stream, as one such page.
+
+**The stylesheet goes in once** a page, however many surfaces it shows.
+`PageCSS()` is the kit's sheet, then page mode's rules, for a `<style>` in
+the page's head or a file it links. `Page()` is a surface's markup alone,
+a fragment for the page's body: no head, no sheet. The rendition's name
+is its top element's id (`k-surface k-page`) and prefixes every id in it
+and every attribute that names one (`for`, `aria-labelledby`,
+`aria-describedby`): `<name>~~<id>`, `~~` being no element's own (§2), so
+that two surfaces of the same components share no id.
+
+**The colours are the page's.** It sets the host's palette (SPEC.md §8's
+names) on `<html>`, a theme's class, or any element around its surfaces;
+the kit's variables follow it on the surface itself, so a box around one
+surface may set its own. What the page leaves out is the kit's default,
+light or dark as the page's `color-scheme` says (`light dark` follows
+the reader):
+
+| the page sets | the kit's | what it colours | default |
+| --- | --- | --- | --- |
+| `--hotty-bg` | `--k-bg`, `--k-on-accent` | what the fills mix into; text on a primary Button | `Canvas`, the page's own |
+| `--hotty-fg` | `--k-fg`, `--k-accent` | text; a primary Button, a tab's underline (NEIO-4) | `CanvasText` |
+| `--hotty-accent` | `--k-link`, `--k-focus` | links, focus | `#0969da` light, `#4493f8` dark |
+| `--hotty-ansi-8` | `--k-border` | rules, a selection's bar | `GrayText` |
+| `--hotty-ansi-9`, `-3`, `-2` | `--k-error`, `--k-warning`, `--k-success` | errors, signals, a diff | `#cf222e`, `#9a6700`, `#1a7f37` light; `#f85149`, `#d29922`, `#3fb950` dark |
+| `--hotty-ansi-6` | info | a Progress, code's keywords | the link colour |
+
+`--k-muted`, the fills and the rules are made from these, as on a host. A
+theme set on the rendition (`SetTheme`) wins, and its surface is a box of
+its colours, padded and rounded (`k-themed`). The type is the page's: the
+surface inherits its font, and spaces in `rem`. A page's own rules for
+bare elements (`a`, `ul`, `h1`) reach into its surfaces; it scopes them.
+
+**What a page shows**, component by component; anything not listed is as
+on a host:
+
+| component | on a page |
+| --- | --- |
+| Tabs | every tab, in order, each a `section` named by its title (`aria-labelledby`): the title drawn as a tab bar of one tab, the tab shown's look, then its content, as GitHub shows the same Markdown. A host's tabs, one at a time, are a program's |
+| HottyTree | every node a row, the host's row (fold, icon, label, a closed branch's count), in `ul`s (`role=list`) that nest as the nodes do. A branch is a `details`, open or closed as given (`expanded`, and the branches the selection is in), whose `summary` is its row: the browser opens and closes it with no program, and the sheet draws its fold, `▸` or `▾`, and its count while it is closed. The selected node is marked as on a host, its label `aria-current`. A node with an `href` has an `<a>` for its label, `aria-current=page` when selected (vault KIT-26 adds the `href`). A filter is a program's: a page draws every node |
+| Text, Video, AudioPlayer | links are `<a href>`: one that leaves the site (`http`, `https`, `//host`) opens in a new tab (`target=_blank rel=noopener`), any other (a path, a fragment, a query, `mailto:`, `tel:`) in the same one, and one to any other scheme loses its `href`. The host's `target=_blank` (§2) goes. One function decides this for every link on a page |
+| TextField, DateTimeInput | the value, `readonly`: it can be selected and copied, not changed. Suggestions' `datalist` goes |
+| CheckBox, HottySwitch, Slider, HottyRangeSlider, ChoicePicker, Button | as on a host, their state shown (a select's picked option, closed; a chip pressed or not), taking no click (`pointer-events: none`, a checkbox's label too) and out of the Tab order (`tabindex=-1`): no program would hear them |
+| HottyForm | a `div role=form`: a submit would leave the page |
+| Modal | closed: its trigger alone |
+| HottyTable | every row, not a window of them; the selected one marked, `aria-current` |
+| HottyList | its title, its status line and every item; no filter, no dots |
+| HottyPaginator | its child with every page's items, one after another, and no dots; a bare one, whose pages are the agent's, says which page shows, as on a host |
+| HottyKeyHints, toasts | left out: no key reaches a program, and no notice comes |
+| HottyProgress | an indeterminate one sweeps by a CSS animation, 5 s across as on the clock (§3.4); still under `prefers-reduced-motion` |
+| HottySpinner, HottyTimer, HottyStopwatch | the frame and the time the rendition's clock was at, still |
+
+Everywhere, the host's `data-on`, `data-keys` and `data-steps` go, and so
+do what only a program's keyboard makes true: a box's `tabindex`, the
+`grid`, `listbox` and `option` roles of boxes a program selects in (their
+selected row `aria-current`), an open list's `aria-controls`,
+`aria-activedescendant`, `aria-haspopup` and `aria-expanded`.
+
+A page host, the addon's surface code (DOM, events, deltas) without the
+terminal, would make the same HTML live from a WebAssembly program
+running the kit: progressive enhancement, which nothing on the page needs
+to be read. It is not part of this.
 
 ## 3. Cells
 
