@@ -580,3 +580,55 @@
     - press: {on: price, at: 0}
     - release: {at: 0}
     - expect: {focused: price/knob/0, data: {/price/start: 0, /price/end: 30}}
+
+# Moves (profile §6.21): Alt with the arrows moves the item the keyboard is
+# on a place, in a list whose items move; the items are written, the item
+# stays selected, the move is written and onMove runs. On a host the
+# element gives these keys to the program (data-keys ...=program).
+- name: Alt+ArrowUp and Alt+ArrowDown move a reorderable HottyList's selected item a place, and stay at the ends
+  story: hotty/drag-todo
+  steps:
+    - focus: list
+    - key: Alt+ArrowDown
+    - expect: {focused: list, actions: [moved], data: {/todos/0/value: plumber, /todos/1/value: milk, /selected: milk}, context: {move: {item: milk, from: {index: 0, path: /todos}, to: {index: 1, path: /todos}}}}
+    - key: Alt+ArrowUp
+    - expect: {actions: [moved, moved], data: {/todos/0/value: milk, /todos/1/value: plumber}}
+    - key: Alt+ArrowUp
+    - expect: {focused: list, actions: [moved, moved], data: {/todos/0/value: milk}}
+    - key: ArrowDown
+    - key: Alt+ArrowDown
+    - expect: {actions: [moved, moved, moved], data: {/todos/1/value: ferns, /todos/2/value: plumber, /selected: plumber}}
+
+- name: Alt+ArrowDown moves a reorderable HottyTable's selected row, and ArrowDown then goes on from it
+  story: hotty/drag-backlog
+  steps:
+    - focus: table
+    - key: Alt+ArrowDown
+    - key: Alt+ArrowDown
+    - expect: {focused: table, actions: [reprioritized, reprioritized], data: {/backlog/2/key: KIT-31, /backlog/0/key: KIT-27, /selected: KIT-31}}
+    - key: ArrowDown
+    - expect: {data: {/selected: KIT-22}}
+
+- name: In a HottyTree, Alt+ArrowLeft moves a node out of its branch, after it, and Alt+ArrowRight into the node above, as its last child, an empty folder too
+  story: hotty/drag-files
+  steps:
+    - focus: tree
+    - expect: {data: {/selected: main.go}}
+    - key: Alt+ArrowLeft
+    - expect: {focused: tree, actions: [moved], data: {/files/2/value: main.go, /files/1/children/0/value: util, /selected: main.go}, context: {move: {item: main.go, from: {index: 0, parent: src, path: /files}, to: {index: 2, parent: null, path: /files}}}}
+    - key: Alt+ArrowRight
+    - expect: {actions: [moved, moved], data: {/files/1/children/1/value: main.go, /files/2/value: archive}}
+    - key: End
+    - key: Alt+ArrowRight
+    - expect: {actions: [moved, moved, moved], data: {/files/2/children/0/value: README.md, /selected: README.md}}
+    - key: Alt+ArrowUp
+    - expect: {actions: [moved, moved, moved], data: {/files/2/children/0/value: README.md}}
+
+- name: Alt+ArrowDown on a card moves it a place in its List, with the extension's reorder, and the keyboard goes with it
+  story: hotty/drag-kanban
+  steps:
+    - focus: "card[/board/todo/0]"
+    - key: Alt+ArrowDown
+    - expect: {focused: "card[/board/todo/1]", actions: [moved], data: {/board/todo/0/id: c2, /board/todo/1/id: c1}, context: {move: {item: {id: c1, title: Draft the release notes}, from: {index: 0, path: /board/todo}, to: {index: 1, path: /board/todo}}}}
+    - key: Enter
+    - expect: {focused: "card[/board/todo/1]", actions: [moved, open], context: {card: c1}}

@@ -448,10 +448,9 @@ func (m *markup) element(e *view.Element) *node {
 		n = el("div", "id", id, "class", "k-stack k-col").add(m.all(e.Children)...)
 	}
 	accessible(n, e)
-	if e.Keys != "" {
+	if keys := strings.TrimSpace(moveKeys(e) + " " + e.Keys); keys != "" {
 		// After the keys the element binds itself, which its own override
 		// key by key, as a later binding does (SPEC §10.2).
-		keys := e.Keys
 		if own, ok := n.attr("data-keys"); ok {
 			keys = own + " " + keys
 		}
@@ -712,4 +711,22 @@ func sizer(e *view.Element, j int) *node {
 		n.add(el("div").add(texts(v)...))
 	}
 	return n
+}
+
+// moveKeys are the keys an element whose items move gives the program
+// besides its own (profile §6.21): Alt+ArrowUp and Alt+ArrowDown move the
+// selected item, or a List's item the keyboard is in, a place; in a
+// HottyTree Alt+ArrowLeft and Alt+ArrowRight move it out of its branch
+// and into the node above. A browser scrolls with none of them, so they
+// would reach the program anyway; bound, they reach it whatever a host
+// does with them.
+func moveKeys(e *view.Element) string {
+	if !e.Movable {
+		return ""
+	}
+	keys := "Alt+ArrowUp=program Alt+ArrowDown=program"
+	if e.Kind == view.Tree {
+		keys += " Alt+ArrowLeft=program Alt+ArrowRight=program"
+	}
+	return keys
 }

@@ -498,6 +498,13 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 			return nil, true, err
 		}
 	}
+	// Alt with the arrows moves the item the keyboard is on, in a list
+	// whose items move (moveKeys, profile §6.21).
+	if c.St.Keyboard {
+		if ok, err := c.MoveKey(c.St.Focus, key); ok {
+			return nil, true, err
+		}
+	}
 	// A focused HottyList is a box on the host too: it moves, turns pages
 	// and filters by the keys (view.Controller.ListKey). Its filter takes
 	// Escape before an open Modal does.
