@@ -619,6 +619,36 @@ func TestIcons(t *testing.T) {
 	x.check(x.rs["s"])
 }
 
+// TestHottyIcon: a HottyIcon is drawn as an Icon: by Material's name for
+// one of the 59, a registered name, or a path, stroked when it has a
+// strokeWidth; a name without a shape is the unknown glyph.
+func TestHottyIcon(t *testing.T) {
+	icons.Register("account_tree", icons.Icon{Box: 24, Path: "M1 1h2v2H1z"})
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Row","children":["ac","tree","line","none"]},
+ {"id":"ac","component":"HottyIcon","catalogId":"`+hottycat.ID+`","name":"account_circle"},
+ {"id":"tree","component":"HottyIcon","catalogId":"`+hottycat.ID+`","name":"account_tree"},
+ {"id":"line","component":"HottyIcon","catalogId":"`+hottycat.ID+`","name":{"svgPath":"M4 12h16","strokeWidth":2}},
+ {"id":"none","component":"HottyIcon","catalogId":"`+hottycat.ID+`","name":"no_such_icon"}]}}]`), &msgs))
+	x.process(msgs...)
+	doc := x.h.Surface(x.rs["s"].name).HTML()
+	ac, _ := icons.Basic("accountCircle")
+	for _, want := range []string{
+		`aria-label="account_circle"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="currentColor" d="` + ac.Path + `">`,
+		`aria-label="account_tree"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="currentColor" d="M1 1h2v2H1z">`,
+		`<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 12h16">`,
+		`aria-label="no_such_icon">` + icons.Unknown + `</span>`,
+	} {
+		if !strings.Contains(doc, want) {
+			t.Errorf("no %s in\n%s", want, doc)
+		}
+	}
+	x.check(x.rs["s"])
+}
+
 // TestSelect: a select is a button, and a click opens its list in the
 // layer with the picked option highlighted. While it is open the program
 // has the keyboard: a host would scroll with the arrows (SPEC §5.3). The

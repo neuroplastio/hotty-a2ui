@@ -1,0 +1,10 @@
+# The Material Symbols names the storybook draws beyond the 59, for
+# HottyIcon (make icons writes icons_gen.go from this list).
+account_tree
+code
+description
+keyboard
+palette
+rocket_launch
+terminal
+widgets

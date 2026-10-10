@@ -1,0 +1,211 @@
+{
+  "name": "HottyIcon",
+  "description": "Icons beyond the basic Icon's 59, by their Material Symbols names as Google Fonts writes them, Sharp and filled as the 59 are; one of the 59 by Material's name; a path of the agent's own, stroked; and a name the storybook has no shape for, which shows the mark cells draw for it. On a host each is an inline svg as tall as its text, in its colour; in cells, its glyph.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "icon",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "icon",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "r_account_tree",
+              "r_terminal",
+              "r_code",
+              "r_rocket_launch",
+              "r_palette",
+              "r_account_circle",
+              "r_ring",
+              "r_unknown",
+              "note"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## HottyIcon"
+          },
+          {
+            "id": "r_account_tree",
+            "component": "Row",
+            "children": [
+              "i_account_tree",
+              "t_account_tree"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "i_account_tree",
+            "component": "HottyIcon",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "name": "account_tree"
+          },
+          {
+            "id": "t_account_tree",
+            "component": "Text",
+            "text": "account_tree"
+          },
+          {
+            "id": "r_terminal",
+            "component": "Row",
+            "children": [
+              "i_terminal",
+              "t_terminal"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "i_terminal",
+            "component": "HottyIcon",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "name": "terminal"
+          },
+          {
+            "id": "t_terminal",
+            "component": "Text",
+            "text": "terminal"
+          },
+          {
+            "id": "r_code",
+            "component": "Row",
+            "children": [
+              "i_code",
+              "t_code"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "i_code",
+            "component": "HottyIcon",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "name": "code"
+          },
+          {
+            "id": "t_code",
+            "component": "Text",
+            "text": "code"
+          },
+          {
+            "id": "r_rocket_launch",
+            "component": "Row",
+            "children": [
+              "i_rocket_launch",
+              "t_rocket_launch"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "i_rocket_launch",
+            "component": "HottyIcon",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "name": "rocket_launch"
+          },
+          {
+            "id": "t_rocket_launch",
+            "component": "Text",
+            "text": "rocket_launch"
+          },
+          {
+            "id": "r_palette",
+            "component": "Row",
+            "children": [
+              "i_palette",
+              "t_palette"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "i_palette",
+            "component": "HottyIcon",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "name": "palette"
+          },
+          {
+            "id": "t_palette",
+            "component": "Text",
+            "text": "palette"
+          },
+          {
+            "id": "r_account_circle",
+            "component": "Row",
+            "children": [
+              "i_account_circle",
+              "t_account_circle"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "i_account_circle",
+            "component": "HottyIcon",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "name": "account_circle"
+          },
+          {
+            "id": "t_account_circle",
+            "component": "Text",
+            "text": "account_circle, one of the 59 by Material's name"
+          },
+          {
+            "id": "r_ring",
+            "component": "Row",
+            "children": [
+              "i_ring",
+              "t_ring"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "i_ring",
+            "component": "HottyIcon",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "name": {
+              "svgPath": "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M8 12.5l2.5 2.5L16 9.5",
+              "strokeWidth": 2
+            }
+          },
+          {
+            "id": "t_ring",
+            "component": "Text",
+            "text": "an svgPath of its own, stroked 2 wide"
+          },
+          {
+            "id": "r_unknown",
+            "component": "Row",
+            "children": [
+              "i_unknown",
+              "t_unknown"
+            ],
+            "align": "center"
+          },
+          {
+            "id": "i_unknown",
+            "component": "HottyIcon",
+            "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+            "name": "no_such_icon"
+          },
+          {
+            "id": "t_unknown",
+            "component": "Text",
+            "text": "no_such_icon, which this program has no shape for"
+          },
+          {
+            "id": "note",
+            "component": "Text",
+            "variant": "caption",
+            "text": "The storybook carries the Material Symbols it draws, from storybook/icons.txt; cells draw a glyph."
+          }
+        ]
+      }
+    }
+  ]
+}

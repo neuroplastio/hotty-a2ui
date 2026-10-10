@@ -102,4 +102,31 @@ func TestGlyph(t *testing.T) {
 	if Glyph("home") != "⌂" || Glyph("rocket") != Unknown || Glyph("") != Unknown {
 		t.Error(Glyph("home"), Glyph("rocket"), Glyph(""))
 	}
+	if Glyph("account_circle") != "◉" || Glyph("play_arrow") != "▶" {
+		t.Error("Material's names of the 59 have no glyph:", Glyph("account_circle"), Glyph("play_arrow"))
+	}
+}
+
+// TestNamed: Material's names are the 59's, but for the two unfilled ones,
+// and the names a program registers.
+func TestNamed(t *testing.T) {
+	for m, b := range map[string]string{"account_circle": "accountCircle", "play_arrow": "play", "fast_rewind": "rewind",
+		"credit_card": "payment", "payment": "payment", "phone": "phone", "call": "call", "home": "home"} {
+		got, ok := Named(m)
+		want, _ := Basic(b)
+		if !ok || got != want {
+			t.Errorf("Named(%q) = %v %v, want %s's", m, got, ok, b)
+		}
+	}
+	for _, n := range []string{"favorite_off", "star_off", "accountCircle", "rocket_launch"} {
+		if _, ok := Named(n); ok {
+			t.Errorf("Named(%q) has a shape", n)
+		}
+	}
+	rocket := Icon{Box: 24, Path: "M0 0h24v24H0z"}
+	Register("rocket_launch", rocket)
+	defer delete(registered, "rocket_launch")
+	if got, ok := Named("rocket_launch"); !ok || got != rocket {
+		t.Errorf("a registered name: %v %v", got, ok)
+	}
 }

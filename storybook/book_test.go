@@ -3,6 +3,7 @@ package storybook
 import (
 	"encoding/json"
 	"maps"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/neuroplastio/hotty-go/hottytea"
 	"github.com/neuroplastio/hotty-go/hottytest"
 
+	"github.com/neuroplastio/hotty-a2ui/icons"
 	"github.com/neuroplastio/hotty-a2ui/rendition/html"
 	"github.com/neuroplastio/hotty-a2ui/story"
 )
@@ -511,5 +513,23 @@ func TestTickDrawsTheNextFrame(t *testing.T) {
 			t.Fatal("the tick drew the same frame")
 		}
 		before = after
+	}
+}
+
+// TestIconsRegistered: every name icons.txt lists has its shape, so
+// icons_gen.go is current (make icons).
+func TestIconsRegistered(t *testing.T) {
+	b, err := os.ReadFile("icons.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for line := range strings.Lines(string(b)) {
+		name, _, _ := strings.Cut(line, "#")
+		if name = strings.TrimSpace(name); name == "" {
+			continue
+		}
+		if _, ok := icons.Named(name); !ok {
+			t.Errorf("%s has no shape: make icons", name)
+		}
 	}
 }

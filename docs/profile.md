@@ -81,7 +81,7 @@ so that an error comes and goes as a text delta.
 | Card | `div`, a raised fill and a rounded border |
 | Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9). A word breaks only when it fills a line alone. A Text that is one number (`$850,000,000.00`, a grid's cell) may also break after its group separators, a zero-width space after each, so a narrow column breaks it between groups, not between any two digits. An ordered list item's number is written out, a `span.k-n` the sheet sets in the indent with a gap, ending at the same place for `9.` and `10.`, because Blitz draws a list's own numbers flush against the text and has no counters to draw them otherwise |
 | Image | `img`, sized by its variant in `rem` |
-| Icon | `span role=img`, holding an inline `svg` 1em square whose one `path` is filled with `currentColor`, so it takes the text's colour, the theme's or a Button's. One of the 59 names is its Material Symbols shape (Sharp, filled; `favoriteOff` and `starOff` unfilled), generated into `icons/` by `make icons` (gov R-4). An `svgPath` is drawn as A2UI's reference renderers draw it, in a 24 box, and only when it is path data and nothing else, at most 8 KB (`icons.Path`). The kit writes the `svg` itself, so a path is only ever an attribute. A name with no shape, or a path it doesn't accept, is the glyph cells draw |
+| Icon | `span role=img`, holding an inline `svg` 1em square whose one `path` is filled with `currentColor`, so it takes the text's colour, the theme's or a Button's. One of the 59 names is its Material Symbols shape (Sharp, filled; `favoriteOff` and `starOff` unfilled), generated into `icons/` by `make icons` (gov R-4). An `svgPath` is drawn as A2UI's reference renderers draw it, in a 24 box, and only when it is path data and nothing else, at most 8 KB (`icons.Path`). The kit writes the `svg` itself, so a path is only ever an attribute. A name with no shape, or a path it doesn't accept, is the glyph cells draw. A HottyIcon is drawn the same way (§6.15); its path, with a `strokeWidth`, is stroked with `currentColor` that wide, with round caps and joins, and not filled |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
 | Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing |
@@ -239,7 +239,7 @@ Natural widths:
 | HottyCode | its gutter (§3.4) and its widest line |
 | HottyDiff | 1 for the rail, then its gutter (§3.4) and its widest line; split, twice a side's gutter and that line, and 3; or a file's row, a hunk's header or a fold, if one is wider |
 | HottyTree | 2 for the bar, plus its widest node, whether it shows or not, so that it keeps its width as branches open and close: its guides (4 a level below the roots), its fold (2), its label and, on a branch, a space and its count; or its empty text |
-| Image, Icon, Media, Placeholder | what they paint (§3.4) |
+| Image, Icon, HottyIcon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
 | Row | its children's, plus one column between each two |
@@ -335,7 +335,7 @@ How the containers lay their children out:
 | --- | --- |
 | Text | the Markdown's blocks (`view.Markdown`), one after another with no blank lines; see below |
 | Image | `[image: alt]`, or `[image]` with no description, in `muted` |
-| Icon | its glyph (`icons.Glyph`, width 1; `◇` for an unknown name and for an `svgPath`) |
+| Icon, HottyIcon | its glyph (`icons.Glyph`, width 1, by the basic name or Material's for one of the 59; `◇` for any other name and for an `svgPath`) |
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
 | Divider, Card, Tabs | §3.3 |
 | Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. A vertical List's Button is its row: ` label `, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
@@ -665,7 +665,8 @@ reference is `rendition/text`.
 - Tabs are their titles, the one shown in brackets, then its content.
 - A HottyKeyHints says nothing: a pipe takes no keys.
 - An error is `✗ message`, on the line after its control.
-- Image, Icon, Video, AudioPlayer and placeholders are as §7 has them.
+- Image, Icon, Video, AudioPlayer and placeholders are as §7 has them; a
+  HottyIcon is an Icon's glyph.
 - An open Modal's content follows the surface, after a line `───`.
 - A component with `accessibility.hidden` says nothing.
 
@@ -983,7 +984,8 @@ model, where every change to it would be sent again.
 Nodes in a hierarchy, one selected at a time, as a file tree or an
 outline shows them: lipgloss's tree in cells (§3.4), a host's tree view
 on a host (§2). `items` are objects with a `label`, an optional `icon`
-(an Icon's name, which a host draws), a `value` and `children`, more such
+(a name as a HottyIcon takes, §6.15, which a host draws), a `value` and
+`children`, more such
 objects; literal, or best bound to the data model, so that the agent
 changes them with `updateDataModel`. A node is identified by its `value`,
 as text, or by its place without one (`0.2.1`, its index at each level
@@ -1013,6 +1015,31 @@ opens or closes it. Its keys are §3.7's. `height` is the rows it shows,
 moved as the selection moves (§3.4); without one, it is as tall as the
 nodes that show. `emptyText` shows when none does (`Nothing here.` by
 default).
+
+### 6.15 HottyIcon
+
+An icon the basic Icon's 59 names lack, by its Material Symbols name,
+Sharp and filled as the 59 are (gov R-4), or a path of the agent's own,
+filled or stroked. `name` is Material's name in snake_case, as Google
+Fonts writes it (`account_tree`, `terminal`), which models know; the 59
+are there too by Material's names (`account_circle`, `play_arrow`,
+`credit_card`), but for `favoriteOff` and `starOff`, which Material's
+filled `favorite` and `star` aren't. Or `name` is `{svgPath, strokeWidth}`:
+an `svgPath` as the basic Icon takes one (§2, Icon), stroked `strokeWidth`
+wide instead of filled when it has one, as outline packs such as Lucide
+draw (2).
+
+Material's whole style is 4,033 icons, 347 KB gzipped, so a program
+carries only the names it draws: `make icons` writes them into a package
+of its from a list (`cmd/iconsgen -set dir`, `dir/icons.txt`), which
+registers them (`icons.Register`); the storybook's are
+`storybook/icons.txt`. A name the program hasn't registered draws as one
+it has no shape for: `◇`. A package of the whole style, which a program
+imports to take any name, is gov R-4's `icons/materialsymbols/`, still to
+come.
+
+It is as tall as the text around it and takes its colour, and takes no
+focus. In cells and text it is its glyph (§3.4), as an Icon is.
 
 ## 7. Fallbacks
 

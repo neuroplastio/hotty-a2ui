@@ -128,8 +128,9 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 - **svgPath:** one path in a 24 box, filled, nonzero. A stroke icon must be
   outlined first. SwiftUI drops arcs, and Flutter (genui) has no `svgPath`.
 - **Beyond the 59:** any other name needs a component of the hotty catalog
-  (`HottyIcon`, later), since basic's `name` is an enum and a basic
-  component isn't forked.
+  (`HottyIcon`, profile §6.15, journal 2026-10-10.3), since basic's `name`
+  is an enum and a basic component isn't forked. Its `svgPath` takes a
+  `strokeWidth`, so a stroke icon needn't be outlined.
 
 ## Per component
 

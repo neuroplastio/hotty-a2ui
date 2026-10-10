@@ -55,7 +55,7 @@ func tree(e *view.Element) *node {
 		row.add(el("span", "class", "k-node-fold", "aria-hidden", "true").add(txt(fold)))
 		switch {
 		case n.Icon != "":
-			row.add(shape(n.Icon, "", ""))
+			row.add(shape(n.Icon, "", 0, ""))
 		case icons:
 			row.add(el("span", "class", "k-icon k-icon-blank", "aria-hidden", "true"))
 		}

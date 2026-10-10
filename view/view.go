@@ -151,12 +151,15 @@ type Element struct {
 	Variant  string `json:"variant,omitempty"`
 
 	// Image and Media: where it is, what it shows. Icon: Name, one of
-	// the basic catalog's, or else Path, an svgPath's path data.
-	URL  string `json:"url,omitempty"`
-	Alt  string `json:"alt,omitempty"`
-	Fit  string `json:"fit,omitempty"`
-	Name string `json:"name,omitempty"`
-	Path string `json:"path,omitempty"`
+	// the basic catalog's or (HottyIcon) a Material Symbols name, or else
+	// Path, an svgPath's path data, stroked Stroke wide when that is more
+	// than 0.
+	URL    string  `json:"url,omitempty"`
+	Alt    string  `json:"alt,omitempty"`
+	Fit    string  `json:"fit,omitempty"`
+	Name   string  `json:"name,omitempty"`
+	Path   string  `json:"path,omitempty"`
+	Stroke float64 `json:"stroke,omitempty"`
 
 	// Controls.
 	Label       string `json:"label,omitempty"`

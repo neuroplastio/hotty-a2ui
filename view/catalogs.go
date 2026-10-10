@@ -143,6 +143,14 @@ func init() {
 	Register(hotty.ID, "HottyCode", mapCode)
 	Register(hotty.ID, "HottyDiff", mapDiff)
 	Register(hotty.ID, "HottyTree", mapTree)
+	Register(hotty.ID, "HottyIcon", func(b *Builder, n *a2ui.Node) *Element {
+		// As Icon's name: a name, or {svgPath, strokeWidth}.
+		if m, ok := b.Raw(n, "name").(map[string]any); ok {
+			d, _ := m["svgPath"].(string)
+			return &Element{Kind: Icon, Path: d, Stroke: a2ui.ToNumber(m["strokeWidth"])}
+		}
+		return &Element{Kind: Icon, Name: b.String(n, "name")}
+	})
 	Register(hotty.ID, "HottyShortcut", func(b *Builder, n *a2ui.Node) *Element {
 		b.AddShortcut(Shortcut{ID: n.Key, Key: b.String(n, "key"), Press: b.String(n, "press"), Label: b.String(n, "label")})
 		b.out.nodes[n.Key] = n

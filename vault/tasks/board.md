@@ -71,7 +71,12 @@ As of 2026-10-09, from the hotty agent:
 
 - [x] **KIT-ICON** — Icons on a host are Material Symbols, Sharp, filled,
   as inline SVG in the text's colour, and basic's `{svgPath}` draws (gov
-  R-4; journal 2026-10-10.1). `HottyIcon` and the whole pack come later.
+  R-4; journal 2026-10-10.1). The whole pack (`icons/materialsymbols/`)
+  comes later.
+- [x] **KIT-HICON** — `HottyIcon`: any Material Symbols name a program
+  registers (`make icons` from its `icons.txt`; the storybook's 8), the
+  59 by Material's names, and an `svgPath` with a `strokeWidth` (journal
+  2026-10-10.3). HottyTree's node icons take the same names.
 - [ ] **KIT-SEL** — The select keeps its arrows by binding them to
   `program` on its button (`data-keys`, SPEC §10.2 "Keys for the program",
   hotty 3c9b169; hotty-go 1dc9bea), instead of handing over with `a=blur`
