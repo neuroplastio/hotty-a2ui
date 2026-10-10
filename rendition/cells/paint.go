@@ -438,8 +438,8 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 // paintSlider paints "label ━━━━■⎯⎯⎯⎯ 50": the track fills the room the
 // label and the value leave, the knob where the value is, a square, as a
 // HottySwitch's: it sits on the line's middle, where a circle sits low in
-// some fonts. The rest of the track is the font's ⎯, as a HottySwitch's
-// thin line is, so that it meets the knob at the font's height.
+// some fonts. The rest of the track is ⎯, as a HottySwitch's thin line
+// is, which a font draws, as it does the knob, where ─ is the terminal's.
 func (l *layout) paintSlider(cv *canvas, e *view.Element, x, y, w int) {
 	v, _ := e.Value.(float64)
 	vw := sliderValueWidth(e)

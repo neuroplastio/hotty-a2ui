@@ -315,9 +315,10 @@ func switchFace(e *view.Element, focused bool) []glyph {
 	case focused:
 		label = style{role: Accent}
 	}
-	// The thin line is the font's ⎯, as the knob is the font's: a
-	// terminal draws ─ itself, in the middle of the cell, where the
-	// font's square need not be.
+	// The thin line is ⎯, not ─: a terminal draws ─ itself, in the
+	// middle of the cell, where the font's square need not be. ⎯ is
+	// drawn by a font, a symbol font where the text's lacks it (Meslo
+	// does), and met the square in the maintainer's terminal.
 	face := "□⎯⎯"
 	if e.On() {
 		face = "▬▬■"
