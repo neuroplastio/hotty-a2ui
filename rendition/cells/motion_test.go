@@ -66,6 +66,16 @@ func TestProgress(t *testing.T) {
 	if got := (Cell{Role: Info, To: Accent, Mix: 51}).style(&theme.Default); got != "36" {
 		t.Errorf("mix without the theme's colours: %q, want info's ANSI 36", got)
 	}
+	// Once the terminal said its colours, its theme blends them too; a
+	// cell that blends nothing keeps the terminal's own, by number.
+	term := theme.Default
+	term.Term.ANSI[6], term.Term.ANSI[12] = "#000000", "#ffffff"
+	if got := (Cell{Role: Info, To: Accent, Mix: 51}).style(&term); got != "38;2;51;51;51" {
+		t.Errorf("mix in the terminal's colours: %q", got)
+	}
+	if got := (Cell{Role: Info, To: Accent}).style(&term); got != "36" {
+		t.Errorf("no mix, the terminal's colours known: %q, want info's ANSI 36", got)
+	}
 }
 
 // A Progress without a value is a quarter of its bar, sliding across with

@@ -16,6 +16,10 @@ type Theme struct {
 	Success, Warning, Error, Info             string
 	// Shape is how round things are on a host; cells draws no shapes.
 	Shape Shape
+	// Term is the terminal's own colours, as far as it has said them
+	// (Terminal): what cells works out a blend or a tint from for a role
+	// the theme leaves to the terminal. A host ignores it.
+	Term Terminal
 }
 
 // Shape is corner radii, as CSS lengths; "" keeps the kit's own (rounded,

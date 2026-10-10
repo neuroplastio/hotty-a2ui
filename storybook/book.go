@@ -107,6 +107,9 @@ type Book struct {
 	at    hottytea.Rect // where the last View put the Book on the screen
 	mode  hottytea.Mode
 	theme theme.Theme // the colours the cells and the kit paint with
+	// term is what the terminal said of its own colours (TerminalColours),
+	// which cells tint and blend from where the theme leaves a role to it.
+	term theme.Terminal
 	// steps: the host says where in a dragged element the pointer is
 	// (html.Rendition.SetSteps).
 	steps bool
@@ -187,6 +190,9 @@ func New(o Options) *Book {
 // with the Session's next Flush. quit reports Control+C, Control+Q, or q
 // while no pane has the keyboard.
 func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
+	if TerminalColours(msg, &b.term) {
+		return false
+	}
 	switch msg := msg.(type) {
 	case hottytea.ReadyMsg:
 		b.steps, b.hovers = msg.Caps.Steps, msg.Caps.Hovers()
@@ -1045,7 +1051,9 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if b.o.Plain {
 		return scr.ANSI(false), want
 	}
-	return scr.Themed(b.theme), want
+	th := b.theme
+	th.Term = b.term
+	return scr.Themed(th), want
 }
 
 // barHeight is panel's height on the preview, its header and tab bar: the

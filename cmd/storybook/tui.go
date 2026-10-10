@@ -10,6 +10,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/neuroplastio/hotty-go/hottytea"
 
+	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/storybook"
 )
 
@@ -52,7 +53,12 @@ func newModel(o storybook.Options) *model {
 	return &model{s: hottytea.New(), b: storybook.New(o)}
 }
 
-func (m *model) Init() tea.Cmd { return tea.Batch(m.s.Detect(), tea.Raw(shiftCaptureOn)) }
+// Init finds out whether the terminal is a HOTTY host, and asks it for its
+// colours, which the cells tint and blend from once it answers (profile
+// §3.6; the Book takes the answers).
+func (m *model) Init() tea.Cmd {
+	return tea.Batch(m.s.Detect(), tea.Raw(shiftCaptureOn), tea.Raw(cells.TerminalQuery()))
+}
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	msg, px := m.px.update(msg)

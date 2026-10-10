@@ -46,8 +46,64 @@ var ansi16 = [...]string{
 }
 
 // ansi256 is an ANSI-16 foreground's colour as an index of the 256, for
-// an underline's colour (SGR 58), which has no 16-colour form.
+// an underline's colour (SGR 58), which has no 16-colour form. It is also
+// the number the terminal's palette knows the colour by (OSC 4).
 var ansi256 = map[string]string{"90": "8", "94": "12", "32": "2", "33": "3", "31": "1", "36": "6"}
+
+// Where a theme leaves the roles to the terminal, the selection and the
+// surface have no number in its palette: they are worked out from the
+// colours it said (profile §3.6). selectionMix is how far a selection is
+// from the background toward the accent; surfaceMix, a surface toward the
+// text.
+const (
+	selectionMix = 51 // 20%
+	surfaceMix   = 24 // 9%
+)
+
+// TerminalQuery asks the terminal for the colours cells works out blends
+// and tints from where the theme leaves the roles to it: its text's (OSC
+// 10), its background's (OSC 11) and the floor's (OSC 4, by number). A
+// program writes it once, at the start, and gives the answers to
+// theme.Terminal (Hear, Hex) and the Terminal to the theme it paints
+// with (theme.Theme.Term). Nothing waits on them: until they come, and
+// on a terminal that never answers, cells draws at the floor.
+func TerminalQuery() string {
+	b := strings.Builder{}
+	b.WriteString("\x1b]10;?\x1b\\\x1b]11;?\x1b\\")
+	seen := map[string]bool{}
+	for _, sgr := range ansi16 {
+		if n, ok := ansi256[sgr]; ok && !seen[n] {
+			seen[n] = true
+			b.WriteString("\x1b]4;" + n + ";?\x1b\\")
+		}
+	}
+	return b.String()
+}
+
+// colour is a role's colour as "#rrggbb", for a blend or a tint: the
+// theme's, else what the terminal said (theme.Theme.Term), else "".
+func colour(th *theme.Theme, r Role) string {
+	if hex := th.Colour(roleNames[r]); hex != "" {
+		return hex
+	}
+	t := th.Term
+	switch r {
+	case Fg:
+		return t.Fg
+	case Bg:
+		return t.Bg
+	case Selection:
+		return mix(colour(th, Bg), colour(th, Accent), selectionMix)
+	case Surface:
+		return mix(colour(th, Bg), colour(th, Fg), surfaceMix)
+	}
+	if int(r) < len(ansi16) {
+		if n, err := strconv.Atoi(ansi256[ansi16[r]]); err == nil && n < len(t.ANSI) {
+			return t.ANSI[n]
+		}
+	}
+	return ""
+}
 
 // Attr is a cell's attributes, a set of flags: what NO_COLOR keeps.
 type Attr uint8
@@ -80,23 +136,22 @@ type Cell struct {
 	// Link is the URL the cell links to (OSC 8), or "".
 	Link string
 	// To and Mix blend the cell's colour toward another role's: Mix/255 of
-	// the way from Role's to To's, where the theme has both as "#rrggbb"
-	// (a Progress bar's gradient); else Role's. Mix 0 is Role's alone.
+	// the way from Role's to To's, where both are known as "#rrggbb", the
+	// theme's or the terminal's (a Progress bar's gradient); else Role's.
+	// Mix 0 is Role's alone.
 	To  Role
 	Mix uint8
 	// Back and BackMix tint the cell's background: BackMix/255 of the way
-	// from the theme's background to Back's colour (a marked line of
-	// code), where the theme has both as "#rrggbb"; BackMix 0 is no tint,
-	// and so is a theme that keeps the terminal's background.
+	// from the background to Back's colour (a marked line of code), where
+	// both are known, the theme's or the terminal's; BackMix 0 is no tint.
 	Back    Role
 	BackMix uint8
-	// Where there is no tint (a theme that keeps the terminal's
-	// background, NO_COLOR), a cell with BackMix shows its Back another
-	// way, as git's diff-highlight does a changed line: in Back's colour
-	// with BackFg, and with BackAttr's attributes (its changed words
-	// reversed).
-	BackFg   bool
+	// Where there is no tint (a terminal that has not said its colours),
+	// a cell with BackMix shows its Back by BackAttr's attributes instead
+	// (a changed word underlined), and under NO_COLOR by MonoAttr's where
+	// it has some (that word reversed), as nothing else reads there.
 	BackAttr Attr
+	MonoAttr Attr
 	// Line colours the cell's underline in a role's colour (SGR 58) when
 	// LineSet, so that a drag's line is in the accent under text in its
 	// own colour.
@@ -180,7 +235,7 @@ func (f *Frame) render(th *theme.Theme) string {
 			b.WriteByte('\n')
 		}
 		end := len(row)
-		for end > 0 && row[end-1].Text == " " && row[end-1].Attr == 0 && row[end-1].Link == "" && (th == nil || th.Bg == "") {
+		for end > 0 && row[end-1].bare(th) {
 			end--
 		}
 		style, link := "", ""
@@ -212,13 +267,24 @@ func (f *Frame) render(th *theme.Theme) string {
 	return b.String()
 }
 
+// bare reports whether a row may leave the cell out at its end: a blank
+// with nothing that shows, no background under it.
+func (c Cell) bare(th *theme.Theme) bool {
+	if c.Text != " " || c.Attr != 0 || c.Link != "" {
+		return false
+	}
+	return th == nil || th.Bg == "" && !(c.BackMix > 0 && c.tinted(th))
+}
+
 // style is a cell's SGR parameters; th nil is no colour at all.
 func (c Cell) style(th *theme.Theme) string {
-	attr, role := c.Attr, c.Role
-	if c.BackMix > 0 && !c.tinted(th) {
-		attr |= c.BackAttr
-		if c.BackFg {
-			role = c.Back
+	attr := c.Attr
+	tinted := c.BackMix > 0 && c.tinted(th)
+	if c.BackMix > 0 && !tinted {
+		if th == nil && c.MonoAttr != 0 {
+			attr |= c.MonoAttr
+		} else {
+			attr |= c.BackAttr
 		}
 	}
 	var p []string
@@ -230,12 +296,11 @@ func (c Cell) style(th *theme.Theme) string {
 	if th == nil {
 		return strings.Join(p, ";")
 	}
-	if role != c.Role {
-		c.Role, c.Mix = role, 0
-	}
 	hex := th.Colour(roleNames[c.Role])
 	if c.Mix > 0 {
-		hex = blend(hex, th.Colour(roleNames[c.To]), c.Mix)
+		if m := mix(colour(th, c.Role), colour(th, c.To), c.Mix); m != "" {
+			hex = m
+		}
 	}
 	if hex != "" {
 		p = append(p, truecolour("38", hex))
@@ -249,24 +314,26 @@ func (c Cell) style(th *theme.Theme) string {
 			p = append(p, "58;5;"+n)
 		}
 	}
-	if th.Bg != "" {
-		bg := th.Bg
-		if c.BackMix > 0 {
-			bg = blend(th.Bg, th.Colour(roleNames[c.Back]), c.BackMix)
-		}
-		p = append(p, truecolour("48", bg))
+	// A theme's background goes under every cell; a terminal's, which it
+	// paints itself, only where a tint changes it.
+	switch {
+	case tinted:
+		p = append(p, truecolour("48", mix(colour(th, Bg), colour(th, c.Back), c.BackMix)))
+	case th.Bg != "":
+		p = append(p, truecolour("48", th.Bg))
 	}
 	return strings.Join(p, ";")
 }
 
-// tinted reports whether the cell's background can be tinted (BackMix) in
-// a theme: one whose background and Back's colour are both "#rrggbb".
+// tinted reports whether the cell's background can be tinted (BackMix):
+// whether the background and Back's colour are both known, the theme's
+// or the terminal's.
 func (c Cell) tinted(th *theme.Theme) bool {
 	if th == nil {
 		return false
 	}
-	_, okBg := rgb(th.Bg)
-	_, okBack := rgb(th.Colour(roleNames[c.Back]))
+	_, okBg := rgb(colour(th, Bg))
+	_, okBack := rgb(colour(th, c.Back))
 	return okBg && okBack
 }
 
@@ -289,13 +356,13 @@ func rgb(hex string) (uint32, bool) {
 	return uint32(v), err == nil
 }
 
-// blend is the colour m/255 of the way from a to b, channel by channel;
-// a when either is not a "#rrggbb".
-func blend(a, b string, m uint8) string {
+// mix is the colour m/255 of the way from a to b, channel by channel; ""
+// when either is not a "#rrggbb".
+func mix(a, b string, m uint8) string {
 	x, okA := rgb(a)
 	y, okB := rgb(b)
 	if !okA || !okB {
-		return a
+		return ""
 	}
 	ch := func(shift uint) uint32 {
 		p, q := int(x>>shift&0xff), int(y>>shift&0xff)

@@ -91,19 +91,20 @@ func TestDiffDraws(t *testing.T) {
 }
 
 // A changed line's row is tinted toward its role to its end, where the
-// theme can tint; its changed words more so. With the terminal's own
-// colours, the line's text takes its role's colour instead, and its words
-// are reversed, as git's diff-highlight does.
+// background and the role's colour are known, the theme's or the
+// terminal's (theme.Terminal); its changed words more so; its tokens keep
+// their colours. Where nothing tints, the sign says it alone, and its
+// changed words are underlined, or reversed under NO_COLOR.
 func TestDiffTint(t *testing.T) {
 	r, _, _ := diffing(t, texts("", "x := errors.New(e)\n", "x := fmt.Errorf(e)\n", `"lineNumbers":false`))
 	f := r.Draw(30)
 	if c := f.Cells[1][29]; c.Back != Error || c.BackMix != lineTint {
 		t.Errorf("the removed row's last cell: %v %d", c.Back, c.BackMix)
 	}
-	if c := f.Cells[1][3]; c.Back != Error || c.BackMix != lineTint || !c.BackFg || c.BackAttr != 0 {
+	if c := f.Cells[1][3]; c.Back != Error || c.BackMix != lineTint || c.BackAttr != 0 {
 		t.Errorf("an unchanged word of the removed line (%q): %+v", c.Text, c)
 	}
-	if c := f.Cells[1][8]; c.Text != "e" || c.BackMix != wordTint || c.BackAttr != Reverse {
+	if c := f.Cells[1][8]; c.Text != "e" || c.BackMix != wordTint || c.BackAttr != Underline || c.MonoAttr != Reverse {
 		t.Errorf("errors, changed: %+v", c)
 	}
 	if c := f.Cells[2][8]; c.Text != "f" || c.Back != Success || c.BackMix != wordTint {
@@ -117,13 +118,35 @@ func TestDiffTint(t *testing.T) {
 		t.Errorf("tints, themed: %q", out)
 	}
 	if out := f.Themed(theme.Default); strings.Contains(out, "48;") {
-		t.Errorf("the terminal's background is tinted: %q", out)
+		t.Errorf("the terminal's background is tinted, its colours unknown: %q", out)
 	}
-	if st := f.Cells[1][3].style(&theme.Default); st != ansi16[Error] {
-		t.Errorf("an unchanged word, the terminal's: %q, want %q", st, ansi16[Error])
+	if st := f.Cells[1][3].style(&theme.Default); st != "" {
+		t.Errorf("an unchanged word, the terminal's: %q, want its token's colour", st)
 	}
-	if st := f.Cells[1][8].style(&theme.Default); st != "7;"+ansi16[Error] {
-		t.Errorf("a changed word, the terminal's: %q", st)
+	if st := f.Cells[1][8].style(&theme.Default); st != "4" {
+		t.Errorf("a changed word, the terminal's: %q, want underlined", st)
+	}
+	if st := f.Cells[1][8].style(nil); st != "7" {
+		t.Errorf("a changed word under NO_COLOR: %q, want reversed", st)
+	}
+
+	// The terminal said its colours: the same tints, in its theme, and
+	// still no background where nothing changed.
+	term := theme.Default
+	term.Term.Bg, term.Term.Fg = "#000000", "#ffffff"
+	term.Term.ANSI[1], term.Term.ANSI[2] = "#ff0000", "#00ff00"
+	out := f.Themed(term)
+	if !strings.Contains(out, "48;2;42;0;0") || !strings.Contains(out, "48;2;0;42;0") || strings.Contains(out, "[7m") || strings.Contains(out, ";4;") {
+		t.Errorf("tints, the terminal's colours: %q", out)
+	}
+	if first, _, _ := strings.Cut(out, "\n"); strings.Contains(first, "48;") {
+		t.Errorf("the header is on a background: %q", first)
+	}
+	if st := f.Cells[1][3].style(&term); st != "48;2;42;0;0" {
+		t.Errorf("an unchanged word, the terminal's colours: %q", st)
+	}
+	if st := f.Cells[1][29].style(&term); st != "48;2;42;0;0" || f.Cells[1][29].bare(&term) {
+		t.Errorf("the tinted row's end is left out: %q", st)
 	}
 }
 

@@ -12,10 +12,11 @@ import (
 // marks the selected hunk.
 
 // How far a changed line's background is tinted toward its role (a sixth,
-// as a marked line of code is), and its changed words' (a third).
+// as a marked line of code is), and its changed words' (about a quarter:
+// enough to stand out from the line, soft enough to read through).
 const (
 	lineTint = 42
-	wordTint = 85
+	wordTint = 68
 )
 
 // splitSep is the columns between a split diff's two sides, " │ ";
@@ -46,15 +47,17 @@ func opRole(op diff.Op) (r Role, ok bool) {
 }
 
 // tint is a style tinted toward a line's role, as wide as the row: its
-// background where the theme can tint it, its colour where not (BackFg).
+// background, under the tokens' own colours. Where nothing can tint it,
+// the line's sign says it alone, and a changed word is underlined, or
+// reversed under NO_COLOR.
 func tint(st style, op diff.Op, word bool) style {
 	r, ok := opRole(op)
 	if !ok {
 		return st
 	}
-	st.back, st.backMix, st.backFg = r, lineTint, true
+	st.back, st.backMix = r, lineTint
 	if word {
-		st.backMix, st.backAttr = wordTint, Reverse
+		st.backMix, st.backAttr, st.monoAttr = wordTint, Underline, Reverse
 	}
 	return st
 }
@@ -326,13 +329,11 @@ func (l *layout) unifiedRows(e *view.Element, h diff.Hunk, w int) [][]glyph {
 }
 
 // retint tints a gutter's cells with its line's background, keeping their
-// colours where the theme cannot tint (no BackFg): the numbers stay muted.
+// colours: the numbers stay muted.
 func retint(gs []glyph, op diff.Op) []glyph {
 	out := make([]glyph, len(gs))
 	for i, g := range gs {
-		st := tint(g.style, op, false)
-		st.backFg = false
-		g.style = st
+		g.style = tint(g.style, op, false)
 		out[i] = g
 	}
 	return out

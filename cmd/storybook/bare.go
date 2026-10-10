@@ -70,11 +70,19 @@ func runBare(st *story.Story, th theme.Theme) error {
 	return err
 }
 
-func (m *bareModel) Init() tea.Cmd { return tea.Raw(shiftCaptureOn) }
+// Init asks the terminal for its colours, which the cells tint and blend
+// from once it answers (profile §3.6).
+func (m *bareModel) Init() tea.Cmd {
+	return tea.Batch(tea.Raw(shiftCaptureOn), tea.Raw(cells.TerminalQuery()))
+}
 
 func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	msg, px := m.px.update(msg)
 	if msg == nil {
+		return m, px
+	}
+	if storybook.TerminalColours(msg, &m.th.Term) {
+		m.draw()
 		return m, px
 	}
 	switch msg := msg.(type) {
