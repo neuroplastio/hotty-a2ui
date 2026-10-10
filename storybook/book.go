@@ -110,6 +110,10 @@ type Book struct {
 	// steps: the host says where in a dragged element the pointer is
 	// (html.Rendition.SetSteps).
 	steps bool
+	// hovers: the host says where the pointer is (SPEC §9.4), which the
+	// Book asks for on the story's surfaces, for their toasts and
+	// tooltips (html.Rendition's hover).
+	hovers bool
 
 	ch     *chrome
 	list   []entry
@@ -185,7 +189,7 @@ func New(o Options) *Book {
 func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	switch msg := msg.(type) {
 	case hottytea.ReadyMsg:
-		b.steps = msg.Caps.Steps
+		b.steps, b.hovers = msg.Caps.Steps, msg.Caps.Hovers()
 		b.ready(msg.Mode)
 	case tickMsg:
 		b.ticking = false
@@ -669,6 +673,32 @@ func (b *Book) Pointer(x, y int) string {
 	return ""
 }
 
+// Hover is the pointer at a cell of the screen with no button down: the
+// cells pane drawn last there hears where it is (cells.Rendition.Hover),
+// and the others that it is not on them. It reports whether the View
+// changes: a toast's time waits under the pointer, and a description
+// under it shows in the HottyKeyHints.
+func (b *Book) Hover(x, y int) (changed bool) {
+	x, y = x-b.at.X, y-b.at.Y
+	var on *pane
+	for _, p := range slices.Backward(b.order) {
+		if p.kind == asCells && x >= p.rect.X && x < p.rect.X+p.rect.W && y >= p.rect.Y && y < p.rect.Y+p.rect.H {
+			on = p
+			break
+		}
+	}
+	for _, p := range b.order {
+		switch {
+		case p.kind != asCells:
+		case p == on:
+			changed = p.cells.Hover(x-p.rect.X, y-p.rect.Y+p.top) || changed
+		default:
+			changed = p.cells.Hover(-1, -1) || changed
+		}
+	}
+	return changed
+}
+
 // took is a cells pane after a click or a release in it: it has the
 // keyboard when its surface does.
 func (b *Book) took(p *pane) {
@@ -992,7 +1022,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			at.X, at.Y = at.X+r.X, at.Y+r.Y
 			// Kept: one out of sight (hidden) is hidden, and comes back as
 			// it was; the Book deletes the ones it drops.
-			s := hottytea.Surface{Name: p.name, Rect: at, Doc: p.html.Doc, Scroll: hotty.ScrollVertical, Keep: true}
+			s := hottytea.Surface{Name: p.name, Rect: at, Doc: p.html.Doc, Scroll: hotty.ScrollVertical, Keep: true, Hover: b.hovers}
 			if fits {
 				s.Scroll, s.Fit = 0, true
 			}

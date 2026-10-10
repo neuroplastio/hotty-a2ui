@@ -108,12 +108,23 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.MouseMotionMsg:
 		if msg.Button == tea.MouseNone {
-			// Hover: only the pointer's shape changes, nothing to draw.
-			shape := ""
-			if p, row := m.at(msg.Y); p != nil {
-				shape = p.r.Pointer(msg.X, row)
+			// Hover: the pointer's shape changes, and the frame only when
+			// it went onto or off a toast or a description (Hover).
+			shape, changed := "", false
+			at, row := m.at(msg.Y)
+			for _, p := range m.panes {
+				if p == at {
+					shape = p.r.Pointer(msg.X, row)
+					changed = p.r.Hover(msg.X, row) || changed
+				} else {
+					changed = p.r.Hover(-1, -1) || changed
+				}
 			}
-			return m, tea.Batch(px, m.ptr.set(shape))
+			if !changed {
+				return m, tea.Batch(px, m.ptr.set(shape))
+			}
+			m.draw()
+			return m, tea.Batch(px, m.ptr.set(shape), m.tick())
 		}
 		for _, p := range m.panes {
 			if p.press && msg.Button == tea.MouseLeft {
