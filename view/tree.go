@@ -334,6 +334,36 @@ func (c *Controller) ClickNode(id string, i int) error {
 	return c.SelectNode(id, i)
 }
 
+// FoldAll opens every branch of a HottyTree (open), or closes them all,
+// as hottyExpandAll and hottyCollapseAll do. Closing them selects the root
+// the selection is in, as closing the branch it is in would.
+func (c *Controller) FoldAll(id string, open bool) error {
+	e := c.V.Find(id)
+	if e == nil || e.Kind != Tree {
+		return nil
+	}
+	ids := []string{}
+	if open {
+		for i, n := range e.Nodes {
+			if n.Branch() {
+				ids = append(ids, e.RowIDs[i])
+			}
+		}
+	}
+	err := c.setProp(e, "expanded", ids)
+	if sel := e.SelectedRow(); !open && sel >= 0 && e.Nodes[sel].Parent >= 0 {
+		root := sel
+		for e.Nodes[root].Parent >= 0 {
+			root = e.Nodes[root].Parent
+		}
+		if err2 := c.set(e, e.RowIDs[root]); err == nil {
+			err = err2
+		}
+	}
+	c.Rebuild()
+	return err
+}
+
 // openIDs are the ids of a HottyTree's open nodes, in order, with node
 // add, and without node drop and those inside it (which the selection can
 // no longer open); -1 for neither.

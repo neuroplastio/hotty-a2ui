@@ -44,3 +44,26 @@ func TestStories(t *testing.T) {
 		t.Error("Find")
 	}
 }
+
+// TestTreeButtons: the tree story's buttons call hottyExpandAll and
+// hottyCollapseAll, which the run implements.
+func TestTreeButtons(t *testing.T) {
+	run, err := Start(Find("hotty/tree"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := run.Surfaces()[0].C
+	if err := c.Activate("expand"); err != nil {
+		t.Fatal(err)
+	}
+	open, _ := c.S.Data.Value("/expanded").([]any)
+	if len(open) < 20 {
+		t.Errorf("expand all opened %d branches", len(open))
+	}
+	if err := c.Activate("collapse"); err != nil {
+		t.Fatal(err)
+	}
+	if open, _ := c.S.Data.Value("/expanded").([]any); len(open) != 0 || c.S.Data.Value("/selected") != "rendition" {
+		t.Errorf("collapse all: open %v, selected %v", open, c.S.Data.Value("/selected"))
+	}
+}

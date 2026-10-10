@@ -13,8 +13,12 @@ func init() {
 		"account_tree": "M15 21v-3h-4V8H9v3H2V3h7v3h6V3h7v8h-7V8h-2v8h2v-3h7v8z",
 		// code-sharp
 		"code": "m8 18l-6-6l6-6l1.425 1.425l-4.6 4.6L9.4 16.6zm8 0l-1.425-1.425l4.6-4.6L14.6 7.4L16 6l6 6z",
+		// data-object-sharp
+		"data_object": "M14 20v-2h4v-5.675h2v-.65h-2V6h-4V4h6v5.85h2v4.3h-2V20zM4 20v-5.85H2v-4.3h2V4h6v2H6v5.675H4v.65h2V18h4v2z",
 		// description-sharp
 		"description": "M8 18h8v-2H8zm0-4h8v-2H8zm-4 8V2h10l6 6v14zm9-13h5l-5-5z",
+		// gavel-sharp
+		"gavel": "M4 21v-2h12v2zm5.65-4.85L4 10.5l2.1-2.15L11.8 14zM16 9.8l-5.65-5.7L12.5 2l5.65 5.65zM20.6 20L7.55 6.95l1.4-1.4L22 18.6z",
 		// keyboard-sharp
 		"keyboard": "M2 19V5h20v14zm6-3h8v-2H8zm-3-3h2v-2H5zm3 0h2v-2H8zm3 0h2v-2h-2zm3 0h2v-2h-2zm3 0h2v-2h-2zM5 10h2V8H5zm3 0h2V8H8zm3 0h2V8h-2zm3 0h2V8h-2zm3 0h2V8h-2z",
 		// palette-sharp

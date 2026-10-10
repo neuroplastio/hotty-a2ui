@@ -132,11 +132,12 @@ type Run struct {
 
 // NewRun is a run with nothing fed yet. Its processor has the catalogs
 // the kit renders, basic and hotty, and hotty's hottyFocus and hottyBlur
-// move the keyboard in the run's views, and hottyScrollTo scrolls them.
+// move the keyboard in the run's views, hottyScrollTo scrolls them, and
+// hottyExpandAll and hottyCollapseAll fold their trees.
 func NewRun() *Run {
 	r := &Run{}
 	h := hotty.Catalog()
-	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo})
+	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo, FoldAll: r.foldAll})
 	r.P = a2ui.NewProcessor(basic.Catalog(), h)
 	r.P.Send = func(o a2ui.Outbound) {
 		b, _ := json.Marshal(o)
@@ -261,6 +262,21 @@ func (r *Run) scrollTo(s *a2ui.Surface, scope a2ui.Scope, id, to string) error {
 		}
 	}
 	return fmt.Errorf("no component '%s' to scroll", id)
+}
+
+// foldAll opens or closes every branch of a HottyTree of the caller's
+// surface, or for the agent's call, of any surface: the instance in the
+// caller's scope.
+func (r *Run) foldAll(s *a2ui.Surface, scope a2ui.Scope, id string, open bool) error {
+	for _, x := range r.surfaces {
+		if s != nil && x.S != s {
+			continue
+		}
+		if el := x.C.FindComponent(id, scope); el != "" {
+			return x.C.FoldAll(el, open)
+		}
+	}
+	return fmt.Errorf("no component '%s' to fold", id)
 }
 
 // blur takes the keyboard from the caller's surface, or for the agent's

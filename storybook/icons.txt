@@ -2,7 +2,9 @@
 # HottyIcon (make icons writes icons_gen.go from this list).
 account_tree
 code
+data_object
 description
+gavel
 keyboard
 palette
 rocket_launch

@@ -1,9 +1,10 @@
 // Package hotty is HOTTY's catalog for A2UI (NEIO-11): what a terminal
 // adds to the basic catalog. HottyShortcut binds a key, HottyForm submits
-// its fields, hottyFocus and hottyBlur move the keyboard, and
-// hottyScrollTo scrolls a HottyScrollView, for the renderer and the agent
-// alike. Its names start with Hotty (components) and
-// hotty (functions), so that none can be one A2UI adds later.
+// its fields, hottyFocus and hottyBlur move the keyboard, hottyScrollTo
+// scrolls a HottyScrollView, and hottyExpandAll and hottyCollapseAll fold
+// a HottyTree, for the renderer and the agent alike. Its names start with
+// Hotty (components) and hotty (functions), so that none can be one A2UI
+// adds later.
 package hotty
 
 import (
@@ -22,8 +23,7 @@ var doc []byte
 func Doc() []byte { return doc }
 
 // Catalog reads the catalog. Its functions have no implementation here:
-// hottyFocus, hottyBlur and hottyScrollTo are the renderer's, which gives
-// them (Implement).
+// they are the renderer's, which gives them (Implement).
 func Catalog() *a2ui.Catalog {
 	c, err := a2ui.ParseCatalog(doc)
 	if err != nil {
@@ -34,17 +34,19 @@ func Catalog() *a2ui.Catalog {
 
 // Renderer is what the catalog's functions do, the renderer's: Focus
 // moves the keyboard to a component, Blur takes it back, ScrollTo scrolls
-// a HottyScrollView ("start" or "end"). s is the surface of the call, nil
+// a HottyScrollView ("start" or "end"), FoldAll opens every branch of a
+// HottyTree (open) or closes them all. s is the surface of the call, nil
 // when the agent called it (callRendererFunction names no surface); scope
 // is the caller's, which picks a template's instance.
 type Renderer struct {
 	Focus    func(s *a2ui.Surface, scope a2ui.Scope, id string) error
 	Blur     func(s *a2ui.Surface) error
 	ScrollTo func(s *a2ui.Surface, scope a2ui.Scope, id, to string) error
+	FoldAll  func(s *a2ui.Surface, scope a2ui.Scope, id string, open bool) error
 }
 
-// Implement gives a catalog's hottyFocus, hottyBlur and hottyScrollTo their
-// implementation: the renderer's.
+// Implement gives a catalog's functions their implementation: the
+// renderer's.
 func Implement(c *a2ui.Catalog, r Renderer) {
 	if f := c.Functions["hottyFocus"]; f != nil {
 		f.Impl = func(ctx *a2ui.Context, args map[string]any) (any, error) {
@@ -60,6 +62,14 @@ func Implement(c *a2ui.Catalog, r Renderer) {
 			id, _ := args["id"].(string)
 			to, _ := args["to"].(string)
 			return nil, r.ScrollTo(ctx.Surface, ctx.Scope, id, to)
+		}
+	}
+	for name, open := range map[string]bool{"hottyExpandAll": true, "hottyCollapseAll": false} {
+		if f := c.Functions[name]; f != nil && r.FoldAll != nil {
+			f.Impl = func(ctx *a2ui.Context, args map[string]any) (any, error) {
+				id, _ := args["id"].(string)
+				return nil, r.FoldAll(ctx.Surface, ctx.Scope, id, open)
+			}
 		}
 	}
 }

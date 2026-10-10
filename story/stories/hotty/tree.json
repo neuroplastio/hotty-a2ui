@@ -1,6 +1,6 @@
 {
   "name": "HottyTree",
-  "description": "A repository's files. The arrows, j and k move the selection, which is written to /selected; the right arrow and l open a folder, then go into it, the left arrow and h close it, then go up; what is open is written to /expanded. A click selects a node and opens or closes a folder. Typing in Filter shows the files whose names hold its characters, in order, with the folders they're in, every folder open. Enter, or a second click on the selected file, sends openFile with it; Enter on a folder opens or closes it.",
+  "description": "This repository's files, 204 of them. The arrows, j and k move the selection, which is written to /selected; the right arrow and l open a folder, then go into it, the left arrow and h close it, then go up; what is open is written to /expanded. A click selects a node and opens or closes a folder. Expand all and Collapse all call hottyExpandAll and hottyCollapseAll. Typing in Filter shows the files whose names hold its characters, in order, with the folders they're in, every folder open. Enter, or a second click on the selected file, sends openFile with it; Enter on a folder opens or closes it.",
   "messages": [
     {
       "version": "v1.0",
@@ -15,18 +15,68 @@
               "value": "a2ui",
               "children": [
                 {
+                  "label": "catalog.go",
+                  "icon": "code",
+                  "value": "a2ui/catalog.go"
+                },
+                {
                   "label": "data.go",
-                  "icon": "description",
+                  "icon": "code",
                   "value": "a2ui/data.go"
                 },
                 {
+                  "label": "eval.go",
+                  "icon": "code",
+                  "value": "a2ui/eval.go"
+                },
+                {
+                  "label": "expr.go",
+                  "icon": "code",
+                  "value": "a2ui/expr.go"
+                },
+                {
+                  "label": "messages.go",
+                  "icon": "code",
+                  "value": "a2ui/messages.go"
+                },
+                {
+                  "label": "pointer.go",
+                  "icon": "code",
+                  "value": "a2ui/pointer.go"
+                },
+                {
+                  "label": "pointer_test.go",
+                  "icon": "code",
+                  "value": "a2ui/pointer_test.go"
+                },
+                {
                   "label": "processor.go",
-                  "icon": "description",
+                  "icon": "code",
                   "value": "a2ui/processor.go"
                 },
                 {
+                  "label": "processor_test.go",
+                  "icon": "code",
+                  "value": "a2ui/processor_test.go"
+                },
+                {
+                  "label": "resolver.go",
+                  "icon": "code",
+                  "value": "a2ui/resolver.go"
+                },
+                {
+                  "label": "rpc.go",
+                  "icon": "code",
+                  "value": "a2ui/rpc.go"
+                },
+                {
+                  "label": "schema.go",
+                  "icon": "code",
+                  "value": "a2ui/schema.go"
+                },
+                {
                   "label": "surface.go",
-                  "icon": "description",
+                  "icon": "code",
                   "value": "a2ui/surface.go"
                 }
               ]
@@ -42,9 +92,19 @@
                   "value": "catalog/basic",
                   "children": [
                     {
-                      "label": "catalog.json",
-                      "icon": "description",
-                      "value": "catalog/basic/catalog.json"
+                      "label": "basic.go",
+                      "icon": "code",
+                      "value": "catalog/basic/basic.go"
+                    },
+                    {
+                      "label": "basic_test.go",
+                      "icon": "code",
+                      "value": "catalog/basic/basic_test.go"
+                    },
+                    {
+                      "label": "locale.go",
+                      "icon": "code",
+                      "value": "catalog/basic/locale.go"
                     }
                   ]
                 },
@@ -54,16 +114,146 @@
                   "value": "catalog/hotty",
                   "children": [
                     {
-                      "label": "catalog.go",
-                      "icon": "description",
-                      "value": "catalog/hotty/catalog.go"
+                      "label": "catalog.json",
+                      "icon": "data_object",
+                      "value": "catalog/hotty/catalog.json"
                     },
                     {
-                      "label": "catalog.json",
-                      "icon": "description",
-                      "value": "catalog/hotty/catalog.json"
+                      "label": "hotty.go",
+                      "icon": "code",
+                      "value": "catalog/hotty/hotty.go"
+                    },
+                    {
+                      "label": "hotty_test.go",
+                      "icon": "code",
+                      "value": "catalog/hotty/hotty_test.go"
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "label": "cmd",
+              "icon": "folder",
+              "value": "cmd",
+              "children": [
+                {
+                  "label": "iconsgen",
+                  "icon": "folder",
+                  "value": "cmd/iconsgen",
+                  "children": [
+                    {
+                      "label": "main.go",
+                      "icon": "code",
+                      "value": "cmd/iconsgen/main.go"
+                    }
+                  ]
+                },
+                {
+                  "label": "storybook",
+                  "icon": "folder",
+                  "value": "cmd/storybook",
+                  "children": [
+                    {
+                      "label": "bare.go",
+                      "icon": "code",
+                      "value": "cmd/storybook/bare.go"
+                    },
+                    {
+                      "label": "bare_test.go",
+                      "icon": "code",
+                      "value": "cmd/storybook/bare_test.go"
+                    },
+                    {
+                      "label": "main.go",
+                      "icon": "code",
+                      "value": "cmd/storybook/main.go"
+                    },
+                    {
+                      "label": "tui.go",
+                      "icon": "code",
+                      "value": "cmd/storybook/tui.go"
+                    },
+                    {
+                      "label": "tui_test.go",
+                      "icon": "code",
+                      "value": "cmd/storybook/tui_test.go"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "conformance",
+              "icon": "folder",
+              "value": "conformance",
+              "children": [
+                {
+                  "label": "actions_test.go",
+                  "icon": "code",
+                  "value": "conformance/actions_test.go"
+                },
+                {
+                  "label": "catalog_test.go",
+                  "icon": "code",
+                  "value": "conformance/catalog_test.go"
+                },
+                {
+                  "label": "data_model_test.go",
+                  "icon": "code",
+                  "value": "conformance/data_model_test.go"
+                },
+                {
+                  "label": "examples_test.go",
+                  "icon": "code",
+                  "value": "conformance/examples_test.go"
+                },
+                {
+                  "label": "expressions_test.go",
+                  "icon": "code",
+                  "value": "conformance/expressions_test.go"
+                },
+                {
+                  "label": "functions_test.go",
+                  "icon": "code",
+                  "value": "conformance/functions_test.go"
+                },
+                {
+                  "label": "harness_test.go",
+                  "icon": "code",
+                  "value": "conformance/harness_test.go"
+                },
+                {
+                  "label": "node_resolution_test.go",
+                  "icon": "code",
+                  "value": "conformance/node_resolution_test.go"
+                },
+                {
+                  "label": "processor_test.go",
+                  "icon": "code",
+                  "value": "conformance/processor_test.go"
+                },
+                {
+                  "label": "rpc_test.go",
+                  "icon": "code",
+                  "value": "conformance/rpc_test.go"
+                }
+              ]
+            },
+            {
+              "label": "diff",
+              "icon": "folder",
+              "value": "diff",
+              "children": [
+                {
+                  "label": "diff.go",
+                  "icon": "code",
+                  "value": "diff/diff.go"
+                },
+                {
+                  "label": "diff_test.go",
+                  "icon": "code",
+                  "value": "diff/diff_test.go"
                 }
               ]
             },
@@ -76,11 +266,104 @@
                   "label": "profile.md",
                   "icon": "description",
                   "value": "docs/profile.md"
+                }
+              ]
+            },
+            {
+              "label": "highlight",
+              "icon": "folder",
+              "value": "highlight",
+              "children": [
+                {
+                  "label": "all",
+                  "icon": "folder",
+                  "value": "highlight/all",
+                  "children": [
+                    {
+                      "label": "all.go",
+                      "icon": "code",
+                      "value": "highlight/all/all.go"
+                    }
+                  ]
                 },
                 {
-                  "label": "storybook.md",
+                  "label": "highlight.go",
+                  "icon": "code",
+                  "value": "highlight/highlight.go"
+                },
+                {
+                  "label": "highlight_test.go",
+                  "icon": "code",
+                  "value": "highlight/highlight_test.go"
+                },
+                {
+                  "label": "lexers.go",
+                  "icon": "code",
+                  "value": "highlight/lexers.go"
+                }
+              ]
+            },
+            {
+              "label": "icons",
+              "icon": "folder",
+              "value": "icons",
+              "children": [
+                {
+                  "label": "basic.go",
+                  "icon": "code",
+                  "value": "icons/basic.go"
+                },
+                {
+                  "label": "COPYING",
+                  "icon": "gavel",
+                  "value": "icons/COPYING"
+                },
+                {
+                  "label": "icons.go",
+                  "icon": "code",
+                  "value": "icons/icons.go"
+                },
+                {
+                  "label": "icons_test.go",
+                  "icon": "code",
+                  "value": "icons/icons_test.go"
+                },
+                {
+                  "label": "REV",
                   "icon": "description",
-                  "value": "docs/storybook.md"
+                  "value": "icons/REV"
+                }
+              ]
+            },
+            {
+              "label": "ref",
+              "icon": "folder",
+              "value": "ref",
+              "children": [
+                {
+                  "label": "form.go",
+                  "icon": "code",
+                  "value": "ref/form.go"
+                },
+                {
+                  "label": "gaps.go",
+                  "icon": "code",
+                  "value": "ref/gaps.go"
+                },
+                {
+                  "label": "go.mod",
+                  "icon": "data_object",
+                  "value": "ref/go.mod"
+                },
+                {
+                  "label": "go.sum",
+                  "icon": "data_object",
+                  "value": "ref/go.sum"
+                },
+                {
+                  "label": "main.go",
+                  "icon": "code",
+                  "value": "ref/main.go"
                 }
               ]
             },
@@ -95,19 +378,225 @@
                   "value": "rendition/cells",
                   "children": [
                     {
+                      "label": "internal",
+                      "icon": "folder",
+                      "value": "rendition/cells/internal",
+                      "children": [
+                        {
+                          "label": "gen",
+                          "icon": "folder",
+                          "value": "rendition/cells/internal/gen",
+                          "children": [
+                            {
+                              "label": "main.go",
+                              "icon": "code",
+                              "value": "rendition/cells/internal/gen/main.go"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "testdata",
+                      "icon": "folder",
+                      "value": "rendition/cells/testdata",
+                      "children": [
+                        {
+                          "label": "00_row-layout.40.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/00_row-layout.40.golden"
+                        },
+                        {
+                          "label": "00_row-layout.60.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/00_row-layout.60.golden"
+                        },
+                        {
+                          "label": "00_simple-login-form.40.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/00_simple-login-form.40.golden"
+                        },
+                        {
+                          "label": "00_simple-login-form.60.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/00_simple-login-form.60.golden"
+                        },
+                        {
+                          "label": "07_task-card.40.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/07_task-card.40.golden"
+                        },
+                        {
+                          "label": "07_task-card.60.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/07_task-card.60.golden"
+                        },
+                        {
+                          "label": "34_child-list-template.40.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/34_child-list-template.40.golden"
+                        },
+                        {
+                          "label": "34_child-list-template.60.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/34_child-list-template.60.golden"
+                        },
+                        {
+                          "label": "36_modal.40.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/36_modal.40.golden"
+                        },
+                        {
+                          "label": "36_modal.60.golden",
+                          "icon": "description",
+                          "value": "rendition/cells/testdata/36_modal.60.golden"
+                        }
+                      ]
+                    },
+                    {
+                      "label": "canvas.go",
+                      "icon": "code",
+                      "value": "rendition/cells/canvas.go"
+                    },
+                    {
                       "label": "cells.go",
-                      "icon": "description",
+                      "icon": "code",
                       "value": "rendition/cells/cells.go"
                     },
                     {
+                      "label": "cells_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/cells_test.go"
+                    },
+                    {
+                      "label": "code.go",
+                      "icon": "code",
+                      "value": "rendition/cells/code.go"
+                    },
+                    {
+                      "label": "code_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/code_test.go"
+                    },
+                    {
+                      "label": "controls.go",
+                      "icon": "code",
+                      "value": "rendition/cells/controls.go"
+                    },
+                    {
+                      "label": "diff.go",
+                      "icon": "code",
+                      "value": "rendition/cells/diff.go"
+                    },
+                    {
+                      "label": "diff_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/diff_test.go"
+                    },
+                    {
+                      "label": "field.go",
+                      "icon": "code",
+                      "value": "rendition/cells/field.go"
+                    },
+                    {
+                      "label": "frame.go",
+                      "icon": "code",
+                      "value": "rendition/cells/frame.go"
+                    },
+                    {
+                      "label": "hints.go",
+                      "icon": "code",
+                      "value": "rendition/cells/hints.go"
+                    },
+                    {
+                      "label": "hints_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/hints_test.go"
+                    },
+                    {
                       "label": "keys.go",
-                      "icon": "description",
+                      "icon": "code",
                       "value": "rendition/cells/keys.go"
                     },
                     {
+                      "label": "keys_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/keys_test.go"
+                    },
+                    {
+                      "label": "layout.go",
+                      "icon": "code",
+                      "value": "rendition/cells/layout.go"
+                    },
+                    {
+                      "label": "list.go",
+                      "icon": "code",
+                      "value": "rendition/cells/list.go"
+                    },
+                    {
+                      "label": "list_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/list_test.go"
+                    },
+                    {
+                      "label": "motion_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/motion_test.go"
+                    },
+                    {
+                      "label": "paint.go",
+                      "icon": "code",
+                      "value": "rendition/cells/paint.go"
+                    },
+                    {
+                      "label": "scroll.go",
+                      "icon": "code",
+                      "value": "rendition/cells/scroll.go"
+                    },
+                    {
+                      "label": "scroll_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/scroll_test.go"
+                    },
+                    {
+                      "label": "table.go",
+                      "icon": "code",
+                      "value": "rendition/cells/table.go"
+                    },
+                    {
+                      "label": "table_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/table_test.go"
+                    },
+                    {
+                      "label": "text.go",
+                      "icon": "code",
+                      "value": "rendition/cells/text.go"
+                    },
+                    {
                       "label": "tree.go",
-                      "icon": "description",
+                      "icon": "code",
                       "value": "rendition/cells/tree.go"
+                    },
+                    {
+                      "label": "tree_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/tree_test.go"
+                    },
+                    {
+                      "label": "width.go",
+                      "icon": "code",
+                      "value": "rendition/cells/width.go"
+                    },
+                    {
+                      "label": "width_test.go",
+                      "icon": "code",
+                      "value": "rendition/cells/width_test.go"
+                    },
+                    {
+                      "label": "widths_gen.go",
+                      "icon": "code",
+                      "value": "rendition/cells/widths_gen.go"
                     }
                   ]
                 },
@@ -117,18 +606,88 @@
                   "value": "rendition/html",
                   "children": [
                     {
+                      "label": "code.go",
+                      "icon": "code",
+                      "value": "rendition/html/code.go"
+                    },
+                    {
+                      "label": "diff.go",
+                      "icon": "code",
+                      "value": "rendition/html/diff.go"
+                    },
+                    {
+                      "label": "emoji.go",
+                      "icon": "code",
+                      "value": "rendition/html/emoji.go"
+                    },
+                    {
+                      "label": "hints.go",
+                      "icon": "code",
+                      "value": "rendition/html/hints.go"
+                    },
+                    {
                       "label": "html.go",
-                      "icon": "description",
+                      "icon": "code",
                       "value": "rendition/html/html.go"
                     },
                     {
+                      "label": "html_test.go",
+                      "icon": "code",
+                      "value": "rendition/html/html_test.go"
+                    },
+                    {
+                      "label": "hunks.go",
+                      "icon": "code",
+                      "value": "rendition/html/hunks.go"
+                    },
+                    {
+                      "label": "icons.go",
+                      "icon": "code",
+                      "value": "rendition/html/icons.go"
+                    },
+                    {
+                      "label": "id.go",
+                      "icon": "code",
+                      "value": "rendition/html/id.go"
+                    },
+                    {
                       "label": "kit.css",
-                      "icon": "description",
+                      "icon": "palette",
                       "value": "rendition/html/kit.css"
                     },
                     {
+                      "label": "list.go",
+                      "icon": "code",
+                      "value": "rendition/html/list.go"
+                    },
+                    {
+                      "label": "markup.go",
+                      "icon": "code",
+                      "value": "rendition/html/markup.go"
+                    },
+                    {
+                      "label": "node.go",
+                      "icon": "code",
+                      "value": "rendition/html/node.go"
+                    },
+                    {
+                      "label": "number.go",
+                      "icon": "code",
+                      "value": "rendition/html/number.go"
+                    },
+                    {
+                      "label": "number_test.go",
+                      "icon": "code",
+                      "value": "rendition/html/number_test.go"
+                    },
+                    {
+                      "label": "scroll.go",
+                      "icon": "code",
+                      "value": "rendition/html/scroll.go"
+                    },
+                    {
                       "label": "tree.go",
-                      "icon": "description",
+                      "icon": "code",
                       "value": "rendition/html/tree.go"
                     }
                   ]
@@ -140,10 +699,445 @@
                   "children": [
                     {
                       "label": "text.go",
-                      "icon": "description",
+                      "icon": "code",
                       "value": "rendition/text/text.go"
+                    },
+                    {
+                      "label": "text_test.go",
+                      "icon": "code",
+                      "value": "rendition/text/text_test.go"
                     }
                   ]
+                },
+                {
+                  "label": "theme",
+                  "icon": "folder",
+                  "value": "rendition/theme",
+                  "children": [
+                    {
+                      "label": "theme.go",
+                      "icon": "code",
+                      "value": "rendition/theme/theme.go"
+                    },
+                    {
+                      "label": "theme_test.go",
+                      "icon": "code",
+                      "value": "rendition/theme/theme_test.go"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "scripts",
+              "icon": "folder",
+              "value": "scripts",
+              "children": [
+                {
+                  "label": "a2ui.sh",
+                  "icon": "terminal",
+                  "value": "scripts/a2ui.sh"
+                },
+                {
+                  "label": "golexer.go",
+                  "icon": "code",
+                  "value": "scripts/golexer.go"
+                },
+                {
+                  "label": "lexers.sh",
+                  "icon": "terminal",
+                  "value": "scripts/lexers.sh"
+                },
+                {
+                  "label": "ref-shot.sh",
+                  "icon": "terminal",
+                  "value": "scripts/ref-shot.sh"
+                },
+                {
+                  "label": "storybook-gif.mjs",
+                  "icon": "code",
+                  "value": "scripts/storybook-gif.mjs"
+                }
+              ]
+            },
+            {
+              "label": "story",
+              "icon": "folder",
+              "value": "story",
+              "children": [
+                {
+                  "label": "stories",
+                  "icon": "folder",
+                  "value": "story/stories",
+                  "children": [
+                    {
+                      "label": "basic",
+                      "icon": "folder",
+                      "value": "story/stories/basic",
+                      "children": [
+                        {
+                          "label": "icons.json",
+                          "icon": "data_object",
+                          "value": "story/stories/basic/icons.json"
+                        }
+                      ]
+                    },
+                    {
+                      "label": "fallback",
+                      "icon": "folder",
+                      "value": "story/stories/fallback",
+                      "children": [
+                        {
+                          "label": "cyclic.json",
+                          "icon": "data_object",
+                          "value": "story/stories/fallback/cyclic.json"
+                        },
+                        {
+                          "label": "image.json",
+                          "icon": "data_object",
+                          "value": "story/stories/fallback/image.json"
+                        },
+                        {
+                          "label": "media.json",
+                          "icon": "data_object",
+                          "value": "story/stories/fallback/media.json"
+                        },
+                        {
+                          "label": "pending.json",
+                          "icon": "data_object",
+                          "value": "story/stories/fallback/pending.json"
+                        }
+                      ]
+                    },
+                    {
+                      "label": "hotty",
+                      "icon": "folder",
+                      "value": "story/stories/hotty",
+                      "children": [
+                        {
+                          "label": "code.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/code.json"
+                        },
+                        {
+                          "label": "diff.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/diff.json"
+                        },
+                        {
+                          "label": "focus-blur.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/focus-blur.json"
+                        },
+                        {
+                          "label": "form.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/form.json"
+                        },
+                        {
+                          "label": "icon.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/icon.json"
+                        },
+                        {
+                          "label": "keyhints.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/keyhints.json"
+                        },
+                        {
+                          "label": "keys.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/keys.json"
+                        },
+                        {
+                          "label": "list.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/list.json"
+                        },
+                        {
+                          "label": "progress.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/progress.json"
+                        },
+                        {
+                          "label": "scroll.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/scroll.json"
+                        },
+                        {
+                          "label": "shortcut-action.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/shortcut-action.json"
+                        },
+                        {
+                          "label": "shortcut-press.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/shortcut-press.json"
+                        },
+                        {
+                          "label": "spinner.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/spinner.json"
+                        },
+                        {
+                          "label": "table.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/table.json"
+                        },
+                        {
+                          "label": "tree.json",
+                          "icon": "data_object",
+                          "value": "story/stories/hotty/tree.json"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "story.go",
+                  "icon": "code",
+                  "value": "story/story.go"
+                },
+                {
+                  "label": "story_test.go",
+                  "icon": "code",
+                  "value": "story/story_test.go"
+                }
+              ]
+            },
+            {
+              "label": "storybook",
+              "icon": "folder",
+              "value": "storybook",
+              "children": [
+                {
+                  "label": "book.go",
+                  "icon": "code",
+                  "value": "storybook/book.go"
+                },
+                {
+                  "label": "book_test.go",
+                  "icon": "code",
+                  "value": "storybook/book_test.go"
+                },
+                {
+                  "label": "chrome.go",
+                  "icon": "code",
+                  "value": "storybook/chrome.go"
+                },
+                {
+                  "label": "icons.txt",
+                  "icon": "description",
+                  "value": "storybook/icons.txt"
+                },
+                {
+                  "label": "icons_gen.go",
+                  "icon": "code",
+                  "value": "storybook/icons_gen.go"
+                },
+                {
+                  "label": "pretty.go",
+                  "icon": "code",
+                  "value": "storybook/pretty.go"
+                },
+                {
+                  "label": "pretty_test.go",
+                  "icon": "code",
+                  "value": "storybook/pretty_test.go"
+                },
+                {
+                  "label": "screen.go",
+                  "icon": "code",
+                  "value": "storybook/screen.go"
+                }
+              ]
+            },
+            {
+              "label": "vault",
+              "icon": "folder",
+              "value": "vault",
+              "children": [
+                {
+                  "label": "feedback",
+                  "icon": "folder",
+                  "value": "vault/feedback",
+                  "children": [
+                    {
+                      "label": "README.md",
+                      "icon": "description",
+                      "value": "vault/feedback/README.md"
+                    }
+                  ]
+                },
+                {
+                  "label": "journal",
+                  "icon": "folder",
+                  "value": "vault/journal",
+                  "children": [
+                    {
+                      "label": "2026-10-09.1.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.1.md"
+                    },
+                    {
+                      "label": "2026-10-09.10.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.10.md"
+                    },
+                    {
+                      "label": "2026-10-09.11.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.11.md"
+                    },
+                    {
+                      "label": "2026-10-09.12.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.12.md"
+                    },
+                    {
+                      "label": "2026-10-09.13.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.13.md"
+                    },
+                    {
+                      "label": "2026-10-09.2.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.2.md"
+                    },
+                    {
+                      "label": "2026-10-09.3.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.3.md"
+                    },
+                    {
+                      "label": "2026-10-09.4.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.4.md"
+                    },
+                    {
+                      "label": "2026-10-09.5.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.5.md"
+                    },
+                    {
+                      "label": "2026-10-09.6.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.6.md"
+                    },
+                    {
+                      "label": "2026-10-09.7.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.7.md"
+                    },
+                    {
+                      "label": "2026-10-09.8.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.8.md"
+                    },
+                    {
+                      "label": "2026-10-09.9.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-09.9.md"
+                    },
+                    {
+                      "label": "2026-10-10.1.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-10.1.md"
+                    },
+                    {
+                      "label": "2026-10-10.2.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-10.2.md"
+                    },
+                    {
+                      "label": "2026-10-10.3.md",
+                      "icon": "description",
+                      "value": "vault/journal/2026-10-10.3.md"
+                    }
+                  ]
+                },
+                {
+                  "label": "knowledge",
+                  "icon": "folder",
+                  "value": "vault/knowledge",
+                  "children": [
+                    {
+                      "label": "a2ui-limits.md",
+                      "icon": "description",
+                      "value": "vault/knowledge/a2ui-limits.md"
+                    },
+                    {
+                      "label": "catalog-naming.md",
+                      "icon": "description",
+                      "value": "vault/knowledge/catalog-naming.md"
+                    },
+                    {
+                      "label": "gap-analysis.md",
+                      "icon": "description",
+                      "value": "vault/knowledge/gap-analysis.md"
+                    },
+                    {
+                      "label": "host-motion.md",
+                      "icon": "description",
+                      "value": "vault/knowledge/host-motion.md"
+                    }
+                  ]
+                },
+                {
+                  "label": "questions",
+                  "icon": "folder",
+                  "value": "vault/questions",
+                  "children": [
+                    {
+                      "label": "README.md",
+                      "icon": "description",
+                      "value": "vault/questions/README.md"
+                    }
+                  ]
+                },
+                {
+                  "label": "tasks",
+                  "icon": "folder",
+                  "value": "vault/tasks",
+                  "children": [
+                    {
+                      "label": "board.md",
+                      "icon": "description",
+                      "value": "vault/tasks/board.md"
+                    }
+                  ]
+                },
+                {
+                  "label": "README.md",
+                  "icon": "description",
+                  "value": "vault/README.md"
+                },
+                {
+                  "label": "roadmap.md",
+                  "icon": "description",
+                  "value": "vault/roadmap.md"
+                }
+              ]
+            },
+            {
+              "label": "vectors",
+              "icon": "folder",
+              "value": "vectors",
+              "children": [
+                {
+                  "label": "doc.go",
+                  "icon": "code",
+                  "value": "vectors/doc.go"
+                },
+                {
+                  "label": "keys.yaml",
+                  "icon": "data_object",
+                  "value": "vectors/keys.yaml"
+                },
+                {
+                  "label": "keys_test.go",
+                  "icon": "code",
+                  "value": "vectors/keys_test.go"
                 }
               ]
             },
@@ -154,30 +1148,140 @@
               "children": [
                 {
                   "label": "act.go",
-                  "icon": "description",
+                  "icon": "code",
                   "value": "view/act.go"
                 },
                 {
+                  "label": "build.go",
+                  "icon": "code",
+                  "value": "view/build.go"
+                },
+                {
+                  "label": "catalogs.go",
+                  "icon": "code",
+                  "value": "view/catalogs.go"
+                },
+                {
+                  "label": "code.go",
+                  "icon": "code",
+                  "value": "view/code.go"
+                },
+                {
+                  "label": "code_test.go",
+                  "icon": "code",
+                  "value": "view/code_test.go"
+                },
+                {
+                  "label": "diff.go",
+                  "icon": "code",
+                  "value": "view/diff.go"
+                },
+                {
+                  "label": "diff_test.go",
+                  "icon": "code",
+                  "value": "view/diff_test.go"
+                },
+                {
+                  "label": "hints.go",
+                  "icon": "code",
+                  "value": "view/hints.go"
+                },
+                {
+                  "label": "hints_test.go",
+                  "icon": "code",
+                  "value": "view/hints_test.go"
+                },
+                {
+                  "label": "list.go",
+                  "icon": "code",
+                  "value": "view/list.go"
+                },
+                {
+                  "label": "list_test.go",
+                  "icon": "code",
+                  "value": "view/list_test.go"
+                },
+                {
+                  "label": "markdown.go",
+                  "icon": "code",
+                  "value": "view/markdown.go"
+                },
+                {
+                  "label": "markdown_test.go",
+                  "icon": "code",
+                  "value": "view/markdown_test.go"
+                },
+                {
+                  "label": "scroll.go",
+                  "icon": "code",
+                  "value": "view/scroll.go"
+                },
+                {
+                  "label": "scroll_test.go",
+                  "icon": "code",
+                  "value": "view/scroll_test.go"
+                },
+                {
+                  "label": "spinner.go",
+                  "icon": "code",
+                  "value": "view/spinner.go"
+                },
+                {
                   "label": "tree.go",
-                  "icon": "description",
+                  "icon": "code",
                   "value": "view/tree.go"
                 },
                 {
+                  "label": "tree_test.go",
+                  "icon": "code",
+                  "value": "view/tree_test.go"
+                },
+                {
                   "label": "view.go",
-                  "icon": "description",
+                  "icon": "code",
                   "value": "view/view.go"
+                },
+                {
+                  "label": "view_test.go",
+                  "icon": "code",
+                  "value": "view/view_test.go"
                 }
               ]
             },
             {
-              "label": "go.mod",
+              "label": ".gitignore",
               "icon": "description",
+              "value": ".gitignore"
+            },
+            {
+              "label": "AGENTS.md",
+              "icon": "description",
+              "value": "AGENTS.md"
+            },
+            {
+              "label": "go.mod",
+              "icon": "data_object",
               "value": "go.mod"
             },
             {
+              "label": "go.sum",
+              "icon": "data_object",
+              "value": "go.sum"
+            },
+            {
+              "label": "LICENSE",
+              "icon": "gavel",
+              "value": "LICENSE"
+            },
+            {
               "label": "Makefile",
-              "icon": "description",
+              "icon": "terminal",
               "value": "Makefile"
+            },
+            {
+              "label": "mise.toml",
+              "icon": "data_object",
+              "value": "mise.toml"
             },
             {
               "label": "README.md",
@@ -202,11 +1306,21 @@
             "id": "root",
             "component": "Column",
             "children": [
-              "filter",
+              "top",
               "tree",
               "selected",
               "help"
             ]
+          },
+          {
+            "id": "top",
+            "component": "Row",
+            "children": [
+              "filter",
+              "expand",
+              "collapse"
+            ],
+            "align": "end"
           },
           {
             "id": "filter",
@@ -214,7 +1328,46 @@
             "label": "Filter",
             "value": {
               "@path": "/filter"
+            },
+            "weight": 1
+          },
+          {
+            "id": "expand",
+            "component": "Button",
+            "child": "expand_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyExpandAll",
+                "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+                "args": {
+                  "id": "tree"
+                }
+              }
             }
+          },
+          {
+            "id": "expand_t",
+            "component": "Text",
+            "text": "Expand all"
+          },
+          {
+            "id": "collapse",
+            "component": "Button",
+            "child": "collapse_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyCollapseAll",
+                "catalogId": "https://neuroplast.io/hotty/a2ui/v1/catalog.json",
+                "args": {
+                  "id": "tree"
+                }
+              }
+            }
+          },
+          {
+            "id": "collapse_t",
+            "component": "Text",
+            "text": "Collapse all"
           },
           {
             "id": "tree",

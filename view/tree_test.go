@@ -206,3 +206,31 @@ func TestTreeLocalFolding(t *testing.T) {
 		t.Errorf("open %v", c.St.Open["plain"])
 	}
 }
+
+// FoldAll opens every branch, or closes them all and selects the root the
+// selection was in.
+func TestTreeFoldAll(t *testing.T) {
+	c, _ := files(t, "")
+	if err := c.S.Write("/sel", "src/view/tree.go"); err != nil {
+		t.Fatal(err)
+	}
+	c.Rebuild()
+	if err := c.FoldAll("t", true); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := c.S.Data.Value("/open").([]any); !slices.Equal(got, []any{"src", "src/view", "docs"}) {
+		t.Errorf("expanded all: %v", got)
+	}
+	if err := c.FoldAll("t", false); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := c.S.Data.Value("/open").([]any); len(got) != 0 || c.S.Data.Value("/sel") != "src" {
+		t.Errorf("collapsed all: open %v, selected %v", got, c.S.Data.Value("/sel"))
+	}
+	if got := shownLabels(c.V.Find("t")); !slices.Equal(got, []string{"src", "docs", "README.md"}) {
+		t.Errorf("collapsed all, shown %v", got)
+	}
+	if err := c.FoldAll("plain", true); err != nil || !slices.Equal(c.St.Open["plain"], []string{"0", "1"}) {
+		t.Errorf("plain, expanded all: %v %v", err, c.St.Open["plain"])
+	}
+}

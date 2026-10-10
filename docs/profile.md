@@ -1013,9 +1013,17 @@ HottyList's, the filter is the data model's, as the field holding it is.
 Enter, or a click on the selected leaf, runs `onActivate`, whose context
 reads the selection from where `selected` is bound; on a branch, Enter
 opens or closes it. Its keys are §3.7's. `height` is the rows it shows,
-moved as the selection moves (§3.4); without one, it is as tall as the
-nodes that show. `emptyText` shows when none does (`Nothing here.` by
-default).
+moved as the selection moves and by the wheel (§3.4); without one, it is
+as tall as the nodes that show. `emptyText` shows when none does
+(`Nothing here.` by default).
+
+`hottyExpandAll({id})` and `hottyCollapseAll({id})`, renderer functions
+the agent or a Button may call (`allowedCallers: rendererOrAgent`), open
+every branch or close them all, the id resolved as `hottyFocus`'s is
+(§6.3). They write `expanded` where it is bound, every branch's id or an
+empty list, and the renderer's folding where it is not. Closing them all
+selects the root the selection is in, as closing the branch it is in
+would.
 
 ### 6.15 HottyIcon
 
