@@ -73,6 +73,9 @@ they're built.
 | KIT-21 | **3D and audio** | OpenTUI three.js and audio | Parked | Not for a terminal UI kit. AudioPlayer is already a labelled link. Media is gov R-2's research | — |
 | KIT-22 | **Toggle** (`HottySwitch`) | iOS's switch, Material's Switch; the maintainer asked for it (2026-10-10) | Medium | A boolean as CheckBox's (label, bound value, checks), drawn as a track with a knob at its end: `accent` when on, `muted` when off. Space, Enter or a click flips it | A pill with a knob, `role=switch` and `aria-checked`. The knob slides by deltas, since Blitz runs no CSS transitions (host-motion) |
 | KIT-23 | **Drag and drop**: reorder and move as first-class behaviour of a list, a table, a tree and a templated List | iOS and SortableJS (live), Finder and VS Code (a line); the maintainer asked for it (2026-10-10) | High | The terminal's mouse reports with the button held, plus keys: Alt+arrows, Ctrl+X then Ctrl+V | SPEC §9.1 drags, with gaps G1 (where in the target) and G2 (a drop-only target); the design is [drag-and-drop](drag-and-drop.md) |
+| KIT-24 | **Page mode**: a surface in an ordinary web page | gov NEIO-14 (the docs sites, 2026-10-10), GitHub's Markdown pages | Medium | — (a rendition of its own: static HTML, the stylesheet once a page, the page's theme as the palette, readable without a program) | A page host later: the addon's surface code without the terminal, for a wasm program |
+| KIT-25 | **Long-form Markdown** | gov NEIO-14, GitHub's Markdown, web's docs pilot (`textview`) | Medium | Headings, fenced code as HottyCode, GFM tables, images by alt text, alerts, component markers with fallbacks | The same in HTML, headings with GitHub's IDs |
+| KIT-26 | **Links that go in place** | gov NEIO-14 (nav, contents, pager) | Medium | A link the program handles, a HottyTree leaf among them | An event the program handles; a same-tab `href` on a plain page |
 
 ## What "parity" means here
 

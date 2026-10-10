@@ -140,6 +140,53 @@ As of 2026-10-09, from the hotty agent:
   where the item lands. Blocked on G1 (where in the target) and G2 (a
   target that isn't draggable), with hotty since 2026-10-10.
 
+## For the docs (gov NEIO-14)
+
+Asked by web on 2026-10-10, on the maintainer's go-ahead: every project's
+docs site draws its components with the kit, as a plain web page, as HOTTY
+surfaces (xterm.js with the addon) and in cells (NEIO-14, a draft, *On the
+kit*; web's pilot is its branch `docs-pilot`). None of these blocks the
+docs: until the kit has a piece, the docs module draws it and switches when
+it lands. The docs also wait on KIT-09h, KIT-05h, KIT-01h and KIT-18c/18h,
+and want Terminal to play an asciicast: screencasts, and one-frame HOTTY
+snapshots through hotty-go's `hottyvt` (web's `shared/screencast` player is
+built on it).
+
+- [ ] **KIT-24** — A page mode: a surface rendered into an ordinary web
+  page, not a terminal.
+  - The kit's stylesheet goes in once per page; the host palette
+    (`--hotty-*`, SPEC §8) comes from the page's theme.
+  - The HTML works with no program behind it, for crawlers and readers
+    without JavaScript: links are real `<a href>`, a tree's branches are
+    open or closed as given, and Tabs show every panel as a section under
+    its title, as GitHub shows the same Markdown.
+  - Optional, later: a page host, the addon's surface code (DOM, events,
+    deltas) without the terminal, so that a wasm program running the kit
+    makes the same HTML live. Progressive enhancement, never needed to
+    read.
+- [ ] **KIT-25c**, **KIT-25h** — Long-form Markdown in every rendition;
+  A2UI's Text promises "simple Markdown".
+  - Headings carry GitHub's IDs, built from the heading's text (goldmark
+    builds them from its source line, so `## See [docs](url)` differs).
+  - Fenced code as HottyCode (chroma), GFM tables, images (cells show the
+    alt text), GitHub alerts (`> [!NOTE]`).
+  - Component markers: `<!-- docs:<name> key=value -->` on a line of its
+    own makes the next block a component's fallback, and
+    `<!-- docs:x -->` … `<!-- /docs:x -->` wraps a region. A renderer
+    that doesn't know the component shows the fallback.
+  - Its shape, an option of Text under `io_neuroplast_hotty` or a Hotty
+    component, is to decide. The cells start is the pilot's
+    `internal/textview/render.go` (wrap, lists, code, tables, quotes).
+    Once it lands, the docs' terminal viewers become kit surfaces: a
+    HottyTree beside a page.
+- [ ] **KIT-26c**, **KIT-26h** — Links that go to a page in place: the
+  nav's leaves, the page's contents, the pager, "Edit this page". On a
+  plain page a same-tab `href`; on a host and in cells, an event the
+  program handles (the docs viewer shows the page and updates the address
+  bar). Today Text's links open in the terminal (`target=_blank`, SPEC
+  §9). HottyTree's leaves can be such links. Check that SPEC's events
+  cover the host's side before asking hotty for anything.
+
 ## Later
 
 - [ ] **KIT-CAT** — A composite catalog: basic's definitions verbatim plus
