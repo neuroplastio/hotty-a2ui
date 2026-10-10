@@ -434,7 +434,7 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	if isSelect(e) {
 		vx, vw := ux+inset, min(max(uw-inset, 0), inputWidth(e))
 		cv.write(vx, row, vw, selectValue(e, vw))
-		underline(cv, vx, row, vw)
+		underline(cv, vx, row, vw, focused)
 		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + 1, id: e.ID, opt: -1})
 		row++
 		if l.r.listOpen(e) {

@@ -421,8 +421,10 @@ draws them.
 - **The gutter.** A field's first two columns are its gutter. While the
   field has the keyboard (for a Choice's options, one of them), the
   gutter is `┃ ` in `accent` down the field's rows; otherwise it is blank.
-- **The label** is in `muted`, in `accent` while the field has the
-  keyboard. A one-line text field's, a DateTime's and a select's is on its
+- **The label** is in the text's colour faded 30% toward the background
+  (`fg` alone where the terminal has not said its colours, §3.6), a step
+  under the value but not `muted`'s grey, which read as too grey (the
+  maintainer, round 4); in `accent` while the field has the keyboard. A one-line text field's, a DateTime's and a select's is on its
   input's row, before it (§3.5). A longText's and a Choice's options'
   label is a title row above them, as a GUI form's label over a textarea
   or a group. A CheckBox's, a HottySwitch's, a Slider's and a
@@ -479,15 +481,15 @@ without colour:
   room for an email address; a DateTime's, its value's form or its
   value, whichever is wider, and a column for the caret; a select's, its
   widest option, a space and `▾` (§3.4). It takes less where the field's
-  box is narrower, and scrolls. The underline's colour is the accent
-  toned halfway to the background, with the keyboard or without it, so
-  that it is there without drawing the eye from the text (the
-  maintainer, round 3); the gutter and the label say which field has the
-  keyboard. It is SGR 58, as a drag's line in §3.4, so the value keeps
-  its own colour; a terminal without SGR 58 draws the line in the text's.
-  Where the accent's or the background's colour is unknown (the terminal
-  has not said them, §3.6), the line is in `border`. There is no prompt:
-  the underline says where to type. A longText is not underlined: its rows carry `┃` in the
+  box is narrower, and scrolls. The underline's colour is `border` at
+  half its contrast with the background, and `accent` at half while the
+  field has the keyboard, so that it is there without drawing the eye
+  from the text (the maintainer, rounds 3 and 4). It is SGR 58, as a
+  drag's line in §3.4, so the value keeps its own colour; a terminal
+  without SGR 58 draws the line in the text's. Where the colour or the
+  background's is unknown (the terminal has not said them, §3.6), the
+  line is in `border` or `accent` itself. There is no prompt: the
+  underline says where to type. A longText is not underlined: its rows carry `┃` in the
   gutter, in `border`, as bubbles' textarea does. The placeholder shows
   while the value is empty, in `muted` and faint. A DateTime's
   placeholder is the form its value takes: `YYYY-MM-DD`, `HH:MM` or
@@ -506,7 +508,8 @@ without colour:
   ```
 
   where `Ada` and the columns after it, to the field's edge here, are
-  Name's input, and Email's from the same column, both underlined.
+  Name's input, underlined in the toned `accent`, and Email's from the
+  same column, underlined in the toned `border`.
 - **obscured** shows `•` for each cluster.
 - **longText** shows its hard lines, at least 3 rows and at most 8, with no
   soft wrap.

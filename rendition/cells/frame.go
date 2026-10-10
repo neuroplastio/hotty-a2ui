@@ -175,7 +175,7 @@ type Cell struct {
 	// own colour. LineMix tones it: LineMix/255 of the way from the
 	// background to Line's colour, where both are known, the theme's or
 	// the terminal's (a field's underline, there without drawing the eye);
-	// where they are not, a toned line is in border, the floor's quiet one.
+	// where they are not, Line's own.
 	Line    Role
 	LineSet bool
 	LineMix uint8
@@ -369,17 +369,15 @@ func (c Cell) style(th *theme.Theme) string {
 // LineMix): the theme's colour, else the 256-colour index of the ANSI one;
 // "" where Line has neither (the text's colour).
 func (c Cell) lineColour(th *theme.Theme) string {
-	line := c.Line
 	if c.LineMix > 0 {
 		if m := mix(colour(th, Bg), colour(th, c.Line), c.LineMix); m != "" {
 			return truecolour("58", m)
 		}
-		line = Border
 	}
-	if hex := th.Colour(roleNames[line]); hex != "" {
+	if hex := th.Colour(roleNames[c.Line]); hex != "" {
 		return truecolour("58", hex)
 	}
-	if n, ok := ansi256[ansi16[line]]; ok {
+	if n, ok := ansi256[ansi16[c.Line]]; ok {
 		return "58;5;" + n
 	}
 	return ""

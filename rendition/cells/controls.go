@@ -444,28 +444,38 @@ func selectValue(e *view.Element, w int) []glyph {
 	return concat(value, repeat(" ", w-width(value)-1, style{}), arrow)
 }
 
-// titleStyle is a field's label: muted, in the accent while the field has
-// the keyboard, as a GUI form's label over its input.
+// labelFade is how far a field's label is from the text's colour toward
+// the background: a step under the value, not muted's grey, which read as
+// too grey (the maintainer, round 4).
+const labelFade = 77 // 30%
+
+// titleStyle is a field's label: the text's colour faded by labelFade
+// (where the terminal's colours are unknown, the text's own), in the
+// accent while the field has the keyboard, as a GUI form's label over its
+// input.
 func titleStyle(focused bool) style {
 	if focused {
 		return style{role: Accent}
 	}
-	return style{role: Muted}
+	return style{role: Fg, to: Bg, mix: labelFade}
 }
 
 // fieldLineMix is how far a field's underline is from the background
-// toward the accent: the accent, toned down, so that it is there without
-// drawing the eye from the text (the maintainer, round 3).
+// toward its colour: half the contrast, so that it is there without
+// drawing the eye from the text (the maintainer, rounds 3 and 4).
 const fieldLineMix = 128 // 50%
 
 // underline rules a one-line field's input, x to x+w, as a GUI form's
-// input is outlined: the line in the accent toned toward the background,
-// with the keyboard or without it, the gutter and the label saying which
-// field has it (SGR 58; a terminal without it draws the line in the text's
-// colour).
-func underline(cv *canvas, x, y, w int) {
+// input is outlined: the line in border, in the accent while the field has
+// the keyboard, each at half its contrast with the background (SGR 58; a
+// terminal without it draws the line in the text's colour).
+func underline(cv *canvas, x, y, w int, focused bool) {
+	rule := Border
+	if focused {
+		rule = Accent
+	}
 	cv.restyle(x, y, w, 1, func(c *Cell) {
-		c.Attr, c.Line, c.LineSet, c.LineMix = c.Attr|Underline, Accent, true, fieldLineMix
+		c.Attr, c.Line, c.LineSet, c.LineMix = c.Attr|Underline, rule, true, fieldLineMix
 	})
 }
 

@@ -290,31 +290,49 @@ func TestFieldInput(t *testing.T) {
 	}
 }
 
-// TestFieldUnderline: a one-line field's underline is the accent toned
-// toward the background, with the keyboard or without it; where the
-// terminal has not said its colours, the floor's quiet line, border.
+// TestFieldUnderline: a one-line field's underline is border at half its
+// contrast with the background, the accent at half while the field has
+// the keyboard; where the terminal has not said its colours, each its own.
+// Its label is the text's colour faded toward the background.
 func TestFieldUnderline(t *testing.T) {
 	c, _, _ := form(t)
 	r := New(c)
 	for _, focus := range []bool{false, true} {
+		want := Border
 		if focus {
 			c.Focus(c.V.Focusables()[0])
+			want = Accent
 		}
 		f := r.Draw(60)
 		cell := f.Cells[0][nameAt]
-		if cell.Attr&Underline == 0 || !cell.LineSet || cell.Line != Accent || cell.LineMix != fieldLineMix {
-			t.Fatalf("focused %v: %+v, want the accent toned by %d", focus, cell, fieldLineMix)
+		if cell.Attr&Underline == 0 || !cell.LineSet || cell.Line != want || cell.LineMix != fieldLineMix {
+			t.Fatalf("focused %v: %+v, want %v toned by %d", focus, cell, want, fieldLineMix)
+		}
+		if !focus {
+			if l := f.Cells[0][gutter]; l.Role != Fg || l.To != Bg || l.Mix != labelFade {
+				t.Errorf("the label: %+v, want the text faded by %d", l, labelFade)
+			}
 		}
 	}
 	term := theme.Default
 	term.Term = theme.Terminal{Bg: "#000000"}
-	term.Term.ANSI[12] = "#ffffff"
-	line := Cell{Text: "a", Width: 1, Attr: Underline, Line: Accent, LineSet: true, LineMix: fieldLineMix}
-	if got := line.style(&term); got != "4;58;2;128;128;128" {
-		t.Errorf("the terminal's colours said: %q", got)
+	term.Term.ANSI[8], term.Term.ANSI[12] = "#808080", "#ffffff"
+	line := func(r Role) Cell {
+		return Cell{Text: "a", Width: 1, Attr: Underline, Line: r, LineSet: true, LineMix: fieldLineMix}
 	}
-	if got := line.style(&theme.Default); got != "4;58;5;8" {
-		t.Errorf("the terminal's colours unknown: %q, want border's", got)
+	for _, at := range []struct {
+		role       Role
+		said, none string
+	}{
+		{Border, "4;58;2;64;64;64", "4;58;5;8"},
+		{Accent, "4;58;2;128;128;128", "4;58;5;12"},
+	} {
+		if got := line(at.role).style(&term); got != at.said {
+			t.Errorf("%v, the terminal's colours said: %q, want %q", at.role, got, at.said)
+		}
+		if got := line(at.role).style(&theme.Default); got != at.none {
+			t.Errorf("%v, the terminal's colours unknown: %q, want %q", at.role, got, at.none)
+		}
 	}
 }
 
