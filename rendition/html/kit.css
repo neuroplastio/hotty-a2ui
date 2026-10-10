@@ -364,6 +364,24 @@ textarea.k-input { min-height: 5.5rem; }
   cursor: pointer;
 }
 .k-slide output { min-width: 2.5rem; text-align: right; font-variant-numeric: tabular-nums; color: var(--k-muted); }
+/* A HottyRangeSlider: a track whose fill runs between two knobs, each a
+   button and a Tab stop, the one with the keyboard ringed by an outline,
+   which Blitz draws round (a spread shadow's corners it draws square). */
+.k-thumb {
+  position: absolute;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin: -0.5rem 0 0 -0.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--k-accent);
+  cursor: pointer;
+}
+.k-thumb:focus { outline: 2px solid var(--k-focus); outline-offset: 2px; }
+.k-field.k-off { opacity: 0.45; }
+.k-off :is(.k-track, .k-thumb) { cursor: default; }
 
 .k-tablist { display: flex; column-gap: var(--k-1); border-bottom: 1px solid var(--k-line); }
 .k-tab {

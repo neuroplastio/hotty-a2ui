@@ -307,11 +307,17 @@ func (m *markup) element(e *view.Element) *node {
 			pct = math.Max(0, math.Min(100, (f-e.Min)/(e.Max-e.Min)*100))
 		}
 		at := strconv.FormatFloat(pct, 'f', 2, 64) + "%"
+		// The fill runs from the start to the knob, or from the knob to the
+		// end (io_neuroplast_hotty.fill).
+		fill := "width: " + at
+		if e.Fill == "end" {
+			fill = "left: " + at + "; width: " + strconv.FormatFloat(100-pct, 'f', 2, 64) + "%"
+		}
 		n = el("button", "id", id, "type", "button", "class", "k-track", "role", "slider",
 			"aria-valuemin", a2ui.NumberString(e.Min), "aria-valuemax", a2ui.NumberString(e.Max),
 			"aria-valuenow", a2ui.NumberString(f)).add(
 			el("span", "class", "k-rail"),
-			el("span", "class", "k-fill", "style", "width: "+at),
+			el("span", "class", "k-fill", "style", fill),
 			el("span", "class", "k-knob", "style", "left: "+at),
 		)
 		// The track is cut into notches, one a value, each centred on
@@ -332,16 +338,30 @@ func (m *markup) element(e *view.Element) *node {
 			n.set("data-steps", strconv.Itoa(k-1))
 			notch = "click"
 		}
-		for i := range k {
-			lo := math.Max(0, (float64(i)-0.5)/float64(k-1))
-			hi := math.Min(1, (float64(i)+0.5)/float64(k-1))
-			n.add(el("span", "id", partID(e.ID, partNotch+strconv.Itoa(i)), "class", "k-notch", "data-on", notch,
-				"style", "left: "+strconv.FormatFloat(lo*100, 'f', 3, 64)+"%; width: "+strconv.FormatFloat((hi-lo)*100, 'f', 3, 64)+"%"))
-		}
+		n.add(notchSpans(e, notch)...)
 		less := el("button", "id", partID(e.ID, partLess), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "less").add(txt("−"))
 		more := el("button", "id", partID(e.ID, partMore), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "more").add(txt("+"))
 		out := el("output", "id", partID(e.ID, partOutput), "for", id, "style", "min-width: "+strconv.Itoa(e.SliderWidth())+"ch").add(txt(a2ui.NumberString(f)))
 		outer = m.field(e, "k-field", label(e), el("div", "id", partID(e.ID, partRange), "class", "k-slide").add(less, n, more, out))
+	case view.RangeSlider:
+		n = m.rangeSlider(e)
+		var head *node
+		if e.Label != "" {
+			head = el("div", "id", partID(e.ID, partLabel), "class", "k-label").add(texts(e.Label)...)
+			n.set("aria-labelledby", partID(e.ID, partLabel))
+		}
+		ks := ""
+		for _, k := range e.Children {
+			ks = strings.TrimSpace(ks + " " + domID(k.ID))
+		}
+		out := el("output", "id", partID(e.ID, partOutput), "for", ks, "style", "min-width: "+strconv.Itoa(e.RangeWidth())+"ch").add(txt(e.RangeText()))
+		// A disabled one is faint throughout, its label and value too, as
+		// a disabled HottySwitch is.
+		class := "k-field"
+		if e.Disabled {
+			class += " k-off"
+		}
+		outer = m.field(e, class, head, el("div", "id", partID(e.ID, partRange), "class", "k-slide").add(n, out))
 	case view.Choice:
 		picked, _ := e.Value.([]string)
 		if len(e.Children) == 0 {
@@ -528,7 +548,7 @@ func wraps(e *view.Element) bool {
 	field, inline := false, true
 	for _, k := range e.Children {
 		switch k.Kind {
-		case view.TextField, view.DateTime, view.Slider:
+		case view.TextField, view.DateTime, view.Slider, view.RangeSlider:
 			field = true
 		case view.Choice:
 			field = field || len(k.Children) == 0

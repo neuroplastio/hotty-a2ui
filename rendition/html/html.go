@@ -52,11 +52,16 @@ type Rendition struct {
 	// fit: the program sizes the surface to its document (SetFit).
 	fit bool
 	// steps: the host says where in a dragged element the pointer is
-	// (SetSteps). drag is the Slider whose track such a drag is on, and
-	// dragged the one whose drag just ended: the click after it is the
-	// drag's.
+	// (SetSteps). drag is the Slider whose track such a drag is on, or the
+	// HottyRangeSlider a drag is on (with steps or not), knob the knob it
+	// moves (-1 until its first move picks one), and dragged the one whose
+	// drag just ended: the click after it is the drag's.
 	steps         bool
 	drag, dragged string
+	knob          int
+	// pressed: a drag just started on a HottyRangeSlider's track, which
+	// takes no focus, so that the host's blur follows (rangeDrag).
+	pressed bool
 	// Away is set while the keyboard is in another rendition of the same
 	// surface (cells beside it): the host's surface gives it up, and its
 	// blur leaves the controller's keyboard where it is.
@@ -208,6 +213,15 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		return nil
 	}
 	c := r.C
+	pressed := r.pressed
+	if ev.Kind != hotty.EventChange {
+		r.pressed = false
+	}
+	if ev.Kind != hotty.EventClick {
+		// The click a drag ends with comes right after its dragend; after
+		// anything else (the blur of a new press), a click is a tap.
+		r.dragged = ""
+	}
 	switch ev.Kind {
 	case hotty.EventFocus:
 		c.St.Keyboard, r.host.on = true, true
@@ -227,6 +241,13 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		if r.openList() != nil && !r.host.on {
 			// The blur an open list asked for (Update): the controller
 			// keeps the keyboard, and the program works the list.
+			return nil
+		}
+		if pressed && c.St.Keyboard {
+			// The blur of the press that started a drag on a
+			// HottyRangeSlider's track (rangeDrag): the knob it moves keeps
+			// the keyboard, which Update gives the host back.
+			r.host.on = false
 			return nil
 		}
 		r.list = nil
@@ -257,6 +278,9 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		r.list = nil
 		c.CloseModal()
 		return nil
+	}
+	if done, err := r.rangeDrag(ev); done {
+		return err
 	}
 	if done, err := r.slideSteps(ev); done {
 		return err
@@ -315,6 +339,16 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			// A tap on the track, or the click a drag ends with where it
 			// began (SPEC §9.1).
 			return r.notch(e, part)
+		}
+		if e.Kind == view.RangeSlider {
+			// A tap on the track: the nearer knob goes there and takes the
+			// keyboard, which the tap gave the terminal (Update gives it
+			// back).
+			if v, ok := notchAt(e, part); ok {
+				_, err := c.PressKnob(id, v)
+				return err
+			}
+			return nil
 		}
 		if part != "" {
 			return nil
@@ -386,7 +420,10 @@ func (r *Rendition) slideSteps(ev hotty.Event) (done bool, err error) {
 			return false, nil
 		}
 		if ev.Kind == hotty.EventDragEnd {
-			r.drag, r.dragged = "", id
+			r.drag = ""
+			if releasedOn(ev, id) {
+				r.dragged = id
+			}
 		}
 		e := r.C.V.Find(id)
 		if x, has := stepX(ev); has && e != nil && e.Kind == view.Slider {
@@ -399,6 +436,15 @@ func (r *Rendition) slideSteps(ev hotty.Event) (done bool, err error) {
 		}
 	}
 	return false, nil
+}
+
+// releasedOn reports that a dragend let go on the element with view id
+// id, a part of it included: only then may the click a drag ends with
+// follow (SPEC §9.1), which is the drag's. Let go elsewhere, the next
+// click is a tap of its own.
+func releasedOn(ev hotty.Event, id string) bool {
+	t, _, ok := viewID(ev.Target)
+	return ok && t == id
 }
 
 // stepX is a drag's step along its element, if the host said one (SPEC
@@ -491,8 +537,8 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 		}
 	}
 	// A focused Slider is a button on the host, which leaves arrows, Home
-	// and End to the program (SPEC §10.2).
-	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Slider {
+	// and End to the program (SPEC §10.2); so is a HottyRangeSlider's knob.
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && (e.Kind == view.Slider || e.Kind == view.Knob) {
 		switch key {
 		case "ArrowLeft", "ArrowDown":
 			return nil, true, c.StepSlider(e.ID, -1, "")
