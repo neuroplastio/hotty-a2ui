@@ -230,12 +230,13 @@
   cursor: pointer;
 }
 .k-chip[aria-pressed=true] { background: var(--k-accent); color: var(--k-on-accent); border-color: var(--k-accent); }
-/* A select is a field-like button with its value and a caret; its list
-   opens in the layer, under it (markup.go listbox). */
+/* A select is a field-like button with its value and a chevron, Material's
+   keyboard_arrow_down, up while its list is open; the list opens in the
+   layer, under it (markup.go listbox). */
 .k-select { display: flex; align-items: center; column-gap: var(--k-2); text-align: start; cursor: pointer; }
 .k-select > .k-value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .k-none { color: var(--k-muted); }
-.k-caret { color: var(--k-muted); font-size: 0.875em; }
+.k-chevron { color: var(--k-muted); font-size: 1.25em; }
 .k-check, .k-opt { display: flex; align-items: center; column-gap: var(--k-2); }
 .k-check input, .k-opt input { width: 1.125rem; height: 1.125rem; margin: 0; accent-color: var(--k-focus); cursor: pointer; }
 /* A checkbox's or an option's label toggles it, so it points as a button does. */

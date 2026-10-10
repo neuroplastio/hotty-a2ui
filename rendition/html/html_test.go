@@ -684,8 +684,9 @@ func TestIconsBeside(t *testing.T) {
 	x.check(x.rs["s"])
 }
 
-// TestSelect: a select is a button, and a click opens its list in the
-// layer with the picked option highlighted. While it is open the program
+// TestSelect: a select is a button with a chevron, which points up while
+// its list is open, and a click opens its list in the layer with the
+// picked option highlighted. While it is open the program
 // has the keyboard: a host would scroll with the arrows (SPEC §5.3). The
 // arrows and letters move the highlight, Enter picks it, Escape closes
 // the list without picking, and a click picks an option or, outside the
@@ -744,10 +745,25 @@ func TestSelect(t *testing.T) {
 		}
 	}
 
+	chevron := func() string {
+		for _, n := range []string{"keyboard_arrow_down", "keyboard_arrow_up"} {
+			if strings.Contains(s.HTML(), `k-chevron" role="img" aria-label="`+n+`"`) {
+				return n
+			}
+		}
+		return ""
+	}
+	if got := chevron(); got != "keyboard_arrow_down" {
+		t.Errorf("closed, the chevron is %q", got)
+	}
+
 	must(t, x.h.Click(r.name, "size"))
 	x.pump()
 	if !open() || hi() != partID("size", partOption+"1") {
 		t.Fatalf("a click: open %v, highlight %q", open(), hi())
+	}
+	if got := chevron(); got != "keyboard_arrow_up" {
+		t.Errorf("open, the chevron is %q", got)
 	}
 	if s.Focused() != "" || !r.C.St.Keyboard {
 		t.Errorf("open, the host's keyboard is on %q, the controller's %v", s.Focused(), r.C.St.Keyboard)
@@ -762,6 +778,9 @@ func TestSelect(t *testing.T) {
 		t.Errorf("s and Enter picked %v", size())
 	}
 	closed("after Enter")
+	if got := chevron(); got != "keyboard_arrow_down" {
+		t.Errorf("closed again, the chevron is %q", got)
+	}
 	x.check(r)
 
 	key("ArrowDown")

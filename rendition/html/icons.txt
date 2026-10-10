@@ -1,0 +1,6 @@
+# The Material Symbols names the HTML rendition draws itself, beyond the
+# 59: a select's chevron, closed and open (make icons writes icons_gen.go
+# from this list). Not expand_more and expand_less, the same shapes:
+# Iconify hides expand_less.
+keyboard_arrow_down
+keyboard_arrow_up

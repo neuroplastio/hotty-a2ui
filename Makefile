@@ -40,8 +40,8 @@ a2ui:   ## third_party/a2ui at REV, a full A2UI commit (scripts/a2ui.sh)
 lexers:   ## highlight/lexers from the chroma go.mod requires (scripts/lexers.sh)
 	sh scripts/lexers.sh
 
-icons:   ## icons/basic.go and storybook/icons_gen.go from the Iconify package icons/REV pins (cmd/iconsgen); VERSION=… pins another
-	$(GO) run ./cmd/iconsgen -set storybook $(if $(VERSION),-version $(VERSION))
+icons:   ## icons/basic.go, storybook/icons_gen.go and rendition/html/icons_gen.go from the Iconify package icons/REV pins (cmd/iconsgen); VERSION=… pins another
+	$(GO) run ./cmd/iconsgen -set storybook -set rendition/html $(if $(VERSION),-version $(VERSION))
 
 # The README's GIF: the storybook in xterm.js, driven with Playwright from
 # a checkout of neuroplastio/xterm-addon-hotty (ADDON, built: npm run build),

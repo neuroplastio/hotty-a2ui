@@ -362,8 +362,14 @@ func (m *markup) element(e *view.Element) *node {
 				value.set("class", "k-value k-none").add(txt("…"))
 			}
 			open := m.list != nil && m.list.id == e.ID
+			// Its chevron points down, and up while the list is open.
+			chevron := beside("keyboard_arrow_down")
+			if open {
+				chevron = beside("keyboard_arrow_up")
+			}
+			chevron.set("class", "k-icon k-chevron")
 			n = el("button", "id", id, "type", "button", "class", "k-input k-select", "aria-haspopup", "listbox",
-				"aria-expanded", boolString(open)).add(ic, value, el("span", "class", "k-caret", "aria-hidden", "true").add(txt("▾")))
+				"aria-expanded", boolString(open)).add(ic, value, chevron)
 			if open {
 				n.set("aria-controls", partID(e.ID, partList))
 			}
