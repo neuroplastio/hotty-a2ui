@@ -161,6 +161,10 @@ type Cell struct {
 	// it has some (that word reversed), as nothing else reads there.
 	BackAttr Attr
 	MonoAttr Attr
+	// BackShade shows Back, where there is no tint but the terminal has
+	// colours, as the terminal's bright black under the cell (SGR 100): a
+	// Button's fill, which an attribute would not read as.
+	BackShade bool
 	// Line colours the cell's underline in a role's colour (SGR 58) when
 	// LineSet, so that a drag's line is in the accent under text in its
 	// own colour.
@@ -295,7 +299,10 @@ func (c Cell) bare(th *theme.Theme) bool {
 	if c.Text != " " || c.Attr != 0 || c.Link != "" {
 		return false
 	}
-	return th == nil || th.Bg == "" && !(c.BackMix > 0 && c.tinted(th))
+	if th == nil {
+		return c.BackMix == 0 || c.MonoAttr == 0
+	}
+	return th.Bg == "" && !(c.BackMix > 0 && (c.tinted(th) || c.BackShade))
 }
 
 // style is a cell's SGR parameters; th nil is no colour at all.
@@ -343,6 +350,8 @@ func (c Cell) style(th *theme.Theme) string {
 	switch {
 	case tinted:
 		p = append(p, truecolour("48", mix(colour(th, Bg), colour(th, c.Back), c.BackMix)))
+	case c.BackMix > 0 && c.BackShade:
+		p = append(p, "100")
 	case th.Bg != "":
 		p = append(p, truecolour("48", th.Bg))
 	}

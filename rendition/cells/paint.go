@@ -135,6 +135,14 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		case e.Variant == "primary", e.Item && e.Variant != "borderless":
 			st.attr |= Bold
 		}
+		if !e.Item && e.Variant != "borderless" && st.attr&Reverse == 0 {
+			// A disabled one's label is the text's colour, faint: muted
+			// would vanish on the fill at the floor, both bright black.
+			if e.Disabled {
+				st.role = Fg
+			}
+			st = buttonFill(st, e.Disabled)
+		}
 		face := buttonFace(e, st)
 		if width(face) > w {
 			face = fitButton(e, st, w)
@@ -315,13 +323,30 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 	}
 }
 
+// buttonTint is how far a Button's fill is from the background toward the
+// text: a grey a step or two off it, as huh's buttons are; a disabled
+// one's half that, under its faint text.
+const buttonTint = 48
+
+// buttonFill fills a Button that has not the keyboard (profile §3.4): its
+// background tinted toward the text, or where nothing can be tinted the
+// terminal's bright black (SGR 100), which is huh's grey; under NO_COLOR
+// it is underlined, the reverse being the focus's.
+func buttonFill(st style, disabled bool) style {
+	st.back, st.backMix, st.backShade, st.monoAttr = Fg, buttonTint, true, Underline
+	if disabled {
+		st.backMix = buttonTint / 2
+	}
+	return st
+}
+
 // fitButton is a Button's face cut to w: the label loses columns first.
 func fitButton(e *view.Element, st style, w int) []glyph {
 	label := line(buttonLabel(e), st)
-	if e.Variant == "borderless" || e.Item || w < 5 {
+	if e.Variant == "borderless" || e.Item || w < 3 {
 		return fit(buttonFace(e, st), w)
 	}
-	return concat(glyphs("[ ", st), fit(label, w-4), glyphs(" ]", st))
+	return concat(glyphs(" ", st), fit(label, w-2), glyphs(" ", st))
 }
 
 // paintTabBar paints a Tabs' titles, two columns apart, wrapping, and a

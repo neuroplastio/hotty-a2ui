@@ -252,17 +252,15 @@ func labelled(e *view.Element, n int) int {
 	return max(Width(e.Label), n)
 }
 
-// buttonFace is a Button as drawn: "[ label ]", the label alone when
-// borderless, and " label " as a List's item, whatever its variant.
+// buttonFace is a Button as drawn: " label ", a column of padding either
+// side on its fill (paint's buttonFill), and so a List's item, unfilled,
+// whatever its variant; the label alone when borderless.
 func buttonFace(e *view.Element, st style) []glyph {
 	label := line(buttonLabel(e), st)
-	if e.Item {
-		return concat(glyphs(" ", st), label, glyphs(" ", st))
-	}
-	if e.Variant == "borderless" {
+	if e.Variant == "borderless" && !e.Item {
 		return label
 	}
-	return concat(glyphs("[ ", st), label, glyphs(" ]", st))
+	return concat(glyphs(" ", st), label, glyphs(" ", st))
 }
 
 // buttonLabel is a Button's content as one line: its Texts' plain text and

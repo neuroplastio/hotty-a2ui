@@ -231,7 +231,7 @@ Natural widths:
 | element | natural width |
 | --- | --- |
 | Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0 |
-| Button | the label + 4 (`[ ` and ` ]`); borderless, the label; a List's, the label + 2 |
+| Button | the label + 2, a column of padding each side, a List's too; borderless, the label |
 | TextField, DateTime | 2 for the gutter, plus the label's width or 22 (an HTML input's size of 20 and its inset either side, §3.5), whichever is wider; with the labels inline (§3.5), the label, a space and 22; a longText, the label's or 20 |
 | CheckBox | 2 for the gutter, 3 for the box, plus 1 and the label when it has one |
 | HottySwitch | 2 for the gutter, 3 for the switch, plus 1 and the label when it has one |
@@ -360,7 +360,7 @@ How the containers lay their children out:
 | Icon, HottyIcon | its glyph (`icons.Glyph`, width 1, by the basic name or Material's for one of the 59; `◇` for any other name and for an `svgPath`) |
 | Video, AudioPlayer | `▶ Video`, or `▶ ` and its description, underlined and linked to its URL (OSC 8) |
 | Divider, Card, Tabs | §3.3 |
-| Button | `[ label ]` on one row. The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold; borderless drops the brackets and is underlined; disabled is `muted` and faint. A vertical List's Button is its row: ` label `, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
+| Button | ` label ` on one row, a column of padding each side, filled as huh's buttons are: a grey a step or two off the background, a tint 48/255 of the way from `bg` to `fg` (§3.6). The label is the plain text of the Button's Texts and the glyphs of its Icons, a space apart. Primary is bold, and otherwise as the others, since `accent` is focus's. While it has the keyboard it is reversed in `accent`, unfilled. Disabled, its label is `fg` and faint on half the fill (24/255): `muted` would vanish at the floor, where the fill is `muted`'s bright black too. Borderless, it is its label alone, underlined and unfilled. Under NO_COLOR, where nothing fills, it is underlined, padding too, so that it still reads as a control, and a Row's column between two keeps them apart; brackets would make it wider there than in colour, and every output mode draws one layout. A vertical List's Button is its row: ` label `, unfilled, its style (focus's reverse, say) across the List; bold unless borderless, and never underlined. |
 | TextField, DateTime | in the field's box past the gutter: a title row, then the value row (§3.5), or with the labels inline the label and the value on one row; then the error. A text field's suggestions go over what is under it (§3.5) |
 | CheckBox | past the gutter, `[•] label` or `[ ] label`, its box reversed in `accent` while it has the keyboard; then the error |
 | HottySwitch | past the gutter, its track with the knob at one end, then a space and its label, on one row: `▬▬■` in `accent` while it is on, a bar into a filled knob, and `□⎯⎯` in `muted` while it is off, a hollow knob on a thin line (`⎯`, not `─`: a terminal draws `─` itself at the cell's middle, where the font's square need not sit, and a font draws `⎯`, often a symbol font by fallback, since few coding fonts have it; a Slider's thin track is the same), so that without colour the knob's end, its fill and the track's weight still say which; then the error. Its label is in `accent` while it has the keyboard. A disabled one is `muted` and faint throughout, its knob still at its end. The switch and its label take a click |
@@ -432,7 +432,8 @@ draws them.
 without colour:
 - A field shows its gutter's bar, and its title is in `accent`.
 - A Button, a Tabs' title, a Media link and a Modal trigger that is not
-  a control are reversed whole.
+  a control are reversed whole; a Button's fill gives way to the reverse,
+  its padding reversed too.
 - A CheckBox's box is reversed in `accent`; an option's row starts with
   `> ` in `accent`, its box or circle in `accent`.
 - A HottySwitch's label is in `accent`.
@@ -613,7 +614,10 @@ too, under their tokens' own colours, and a surface's fill is a tint all
 the way to `surface`: a HottyScrollView's box (§3.4), which is not filled
 where it cannot be. Where nothing can be tinted, a changed line's sign
 says it alone, and its changed words are underlined; under NO_COLOR they
-are reversed, as git's diff-highlight shows them.
+are reversed, as git's diff-highlight shows them. A Button's fill (§3.4)
+is a tint toward `fg`; where nothing can be tinted it is the terminal's
+bright black as the background (SGR 100), which is what huh's grey is
+there, under the terminal's text; under NO_COLOR, an underline.
 
 **Known colours.** A role's colour is known where the theme colours it,
 or, where the theme leaves it to the terminal, once the terminal has said

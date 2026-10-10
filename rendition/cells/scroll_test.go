@@ -219,7 +219,7 @@ func TestScrollChild(t *testing.T) {
 	}
 	col := `{"id":"col","component":"Column","children":[` + strings.Join(ids, ",") + `]}`
 	r, c, actions := scrolling(t, `"child":"col","height":3`, `[]`, append([]string{col}, buttons...)...)
-	if got := r.Draw(20).Plain(); got != fmt.Sprintf(" %-18s┃\n %-18s┃\n %-18s│", "[ B1 ]", "[ B2 ]", "[ B3 ]") {
+	if got := r.Draw(20).Plain(); got != fmt.Sprintf(" %-18s┃\n %-18s┃\n %-18s│", " B1 ", " B2 ", " B3 ") {
 		t.Fatalf("got\n%s", r.Draw(20).Plain())
 	}
 	if _, _, _, _, ok := r.Box("b4"); ok {
@@ -228,7 +228,7 @@ func TestScrollChild(t *testing.T) {
 	must(t, r.Click(2, 1))
 	c.Focus("root")
 	keys(t, r, "G")
-	if got := first(r.Draw(20)); !strings.HasPrefix(got, " [ B4 ]") {
+	if got := first(r.Draw(20)); !strings.HasPrefix(got, "  B4 ") {
 		t.Fatalf("at the end: %q", got)
 	}
 	must(t, r.Click(2, 2))

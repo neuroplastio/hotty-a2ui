@@ -11,6 +11,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	"github.com/neuroplastio/hotty-a2ui/catalog/hotty"
+	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -396,11 +397,11 @@ func TestClick(t *testing.T) {
 		t.Fatalf("click on the box: %v %v %s", err, data()["agree"], c.St.Focus)
 	}
 	f = r.Draw(40)
-	if err := r.Click(2, row("[ Go ]")); err != nil || !slices.Equal(*actions, []string{"go"}) {
+	if err := r.Click(2, row(" Go")); err != nil || !slices.Equal(*actions, []string{"go"}) {
 		t.Fatalf("click on the Button: %v %v", err, *actions)
 	}
 	f = r.Draw(40)
-	if err := r.Click(30, row("[ Go ]")); err != nil || c.St.Keyboard {
+	if err := r.Click(30, row(" Go")); err != nil || c.St.Keyboard {
 		t.Fatal("a click on nothing kept the keyboard")
 	}
 	_ = c.SetValue("name", "Ada")
@@ -439,7 +440,7 @@ func TestBox(t *testing.T) {
 	}
 	f := r.Draw(40)
 	col, row, w, h, ok := r.Box("go")
-	if !ok || w != 6 || h != 1 || !strings.HasPrefix(strings.Split(f.Plain(), "\n")[row][col:], "[ Go ]") {
+	if !ok || w != 4 || h != 1 || strings.Split(f.Plain(), "\n")[row][col:] != " Go" {
 		t.Errorf("go: %d,%d %dx%d %v", col, row, w, h, ok)
 	}
 	if col, row, w, h, ok := r.Box("name"); !ok || col != 0 || row != 0 || w != 40 || h != 2 {
@@ -447,6 +448,61 @@ func TestBox(t *testing.T) {
 	}
 	if _, _, _, _, ok := r.Box("nothing"); ok {
 		t.Error("a box for an id not drawn")
+	}
+}
+
+// A Button is " label " on a fill a grey off the background, a tint of it
+// toward the text; the terminal's bright black where nothing tints;
+// underlined under NO_COLOR. With the keyboard it is reversed in the
+// accent, unfilled; disabled, its label is the text's, faint, on half the
+// fill; borderless, it is its label underlined, unfilled.
+func TestButtonFill(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	f := r.Draw(40)
+	col, row, _, _, _ := r.Box("go")
+	for _, x := range []int{col, col + 1, col + 3} {
+		if g := f.Cells[row][x]; g.Back != Fg || g.BackMix != buttonTint || !g.BackShade || g.MonoAttr != Underline || g.Attr != 0 {
+			t.Fatalf("unfocused, column %d: %+v", x-col, g)
+		}
+	}
+	g := f.Cells[row][col+1]
+	th := theme.Theme{Name: "t", Bg: "#000000", Fg: "#ffffff"}
+	if st := g.style(&th); !strings.Contains(st, "48;2;48;48;48") {
+		t.Errorf("themed: %q", st)
+	}
+	term := theme.Default
+	term.Term.Bg, term.Term.Fg = "#000000", "#ffffff"
+	if st := g.style(&term); st != "48;2;48;48;48" {
+		t.Errorf("the terminal's colours: %q", st)
+	}
+	if st := g.style(&theme.Default); st != "100" {
+		t.Errorf("the floor: %q, want the bright black background", st)
+	}
+	if st := g.style(nil); st != "4" {
+		t.Errorf("NO_COLOR: %q, want underlined", st)
+	}
+
+	c.Focus("go")
+	if g := r.Draw(40).Cells[row][col+1]; g.Role != Accent || g.Attr != Reverse || g.BackMix != 0 {
+		t.Errorf("focused: %+v", g)
+	}
+
+	r = coding(t, `{"id":"b","component":"Button","child":"bt","action":{"event":{"name":"b"}},"checks":[{"condition":{"@path":"/off"},"message":"No"}]}`,
+		`{"id":"bt","component":"Text","text":"Off"}`,
+		`{"id":"l","component":"Button","variant":"borderless","child":"lt","action":{"event":{"name":"l"}}}`,
+		`{"id":"lt","component":"Text","text":"Link"}`)
+	f = r.Draw(20)
+	col, row, _, _, _ = r.Box("b")
+	if g := f.Cells[row][col+1]; g.Role != Fg || g.Attr != Faint || g.BackMix != buttonTint/2 || !g.BackShade {
+		t.Errorf("disabled: %+v", g)
+	}
+	if st := f.Cells[row][col+1].style(&theme.Default); st != "2;100" {
+		t.Errorf("disabled at the floor: %q, want faint on the bright black", st)
+	}
+	col, row, w, _, _ := r.Box("l")
+	if g := f.Cells[row][col]; w != 4 || g.Attr != Underline || g.BackMix != 0 {
+		t.Errorf("borderless: %d wide, %+v", w, g)
 	}
 }
 

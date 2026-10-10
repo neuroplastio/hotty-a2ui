@@ -24,9 +24,11 @@ type style struct {
 	fill    bool
 	back    Role
 	backMix uint8
-	// backAttr and monoAttr show back where it cannot tint (Cell.BackAttr).
-	backAttr Attr
-	monoAttr Attr
+	// backAttr, monoAttr and backShade show back where it cannot tint
+	// (Cell.BackAttr, Cell.BackShade).
+	backAttr  Attr
+	monoAttr  Attr
+	backShade bool
 }
 
 // glyphs splits s into styled grapheme clusters: a tab is a space, a line
@@ -158,11 +160,11 @@ func (cv *canvas) set(x, y int, g glyph) {
 	}
 	cv.unwide(x, y)
 	row[x] = Cell{Text: g.text, Width: g.width, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix, Fill: g.fill,
-		Back: g.back, BackMix: g.backMix, BackAttr: g.backAttr, MonoAttr: g.monoAttr}
+		Back: g.back, BackMix: g.backMix, BackAttr: g.backAttr, MonoAttr: g.monoAttr, BackShade: g.backShade}
 	if g.width == 2 {
 		cv.unwide(x+1, y)
 		row[x+1] = Cell{Width: 0, Role: g.role, Attr: g.attr, Link: g.link, To: g.to, Mix: g.mix, Fill: g.fill,
-			Back: g.back, BackMix: g.backMix, BackAttr: g.backAttr, MonoAttr: g.monoAttr}
+			Back: g.back, BackMix: g.backMix, BackAttr: g.backAttr, MonoAttr: g.monoAttr, BackShade: g.backShade}
 	}
 }
 
