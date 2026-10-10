@@ -215,11 +215,13 @@ func (cv *canvas) restyle(x, y, w, h int, fn func(c *Cell)) {
 }
 
 // box paints a rounded box in the border role.
-func (cv *canvas) box(x, y, w, h int) {
+func (cv *canvas) box(x, y, w, h int) { cv.boxIn(x, y, w, h, style{role: Border}) }
+
+// boxIn paints a rounded box in a style: a toast's, in its kind's colour.
+func (cv *canvas) boxIn(x, y, w, h int, b style) {
 	if w < 2 || h < 2 {
 		return
 	}
-	b := style{role: Border}
 	cv.write(x, y, w, concat(glyphs("╭", b), repeat("─", w-2, b), glyphs("╮", b)))
 	for j := y + 1; j < y+h-1; j++ {
 		cv.set(x, j, glyph{text: "│", width: 1, style: b})

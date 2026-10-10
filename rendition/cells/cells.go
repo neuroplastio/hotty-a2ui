@@ -49,6 +49,10 @@ type Rendition struct {
 	blinkFrom   time.Time     // when its caret last showed anew: it took the keyboard, a key, a press
 	press       *press        // a press that may start a drag and drop (drag.go)
 	anim        time.Duration // how soon the last Draw changes again (Animating)
+	// hover is the element whose description the pointer shows (Hover),
+	// quiet the one a key or a click hid it on, until the pointer leaves
+	// it; held is the toast the pointer is on, whose time waits.
+	hover, quiet, held string
 
 	// Clock is the time a Draw paints at: a Spinner's frame, an
 	// indeterminate Progress's place. New sets time.Now.
@@ -115,9 +119,12 @@ func (r *Rendition) ListOpen() bool { return r.list != "" && r.focused(r.list) }
 
 // Draw lays the surface out cols wide, as many rows as it takes, and
 // paints it (profile §3). The open Modal's content is a rounded panel over
-// it, centered; the frame grows when the panel is taller.
+// it, centered; the toasts stack over both at the top right corner, after
+// their time is counted on the rendition's clock (view.Controller
+// .TickToasts). The frame grows when the panel or the stack is taller.
 func (r *Rendition) Draw(cols int) *Frame {
 	cols = max(cols, 1)
+	toasts := r.c.TickToasts(r.Clock(), r.heldToast)
 	if !r.focused(r.list) {
 		r.list = ""
 	}
@@ -142,9 +149,12 @@ func (r *Rendition) Draw(cols int) *Frame {
 		ph = l.height(v.Overlay, pw-4) + 2
 		rows = max(rows, ph)
 	}
+	stack, tw := r.toastStack(cols)
+	rows = max(rows, toastsHeight(stack))
 	f := newFrame(cols, rows)
 	cv := &canvas{f: f}
 	r.hits, r.panel, r.boxes, r.reveal, r.anim = nil, nil, map[string]box{}, map[string]box{}, 0
+	r.animate(toasts)
 	r.scrolls, r.scrollOrder = map[string]scrolled{}, nil
 	if root != nil {
 		l.paint(cv, root, 0, 0, cols, rootH)
@@ -160,6 +170,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 		l.paint(cv, v.Overlay, px+2, py+1, pw-4, ph-2)
 	}
 	l.paintDrag(cv)
+	r.paintToasts(cv, stack, tw)
 	return f
 }
 
@@ -195,8 +206,9 @@ func (r *Rendition) Sight(id string) (col, row, w, h int, ok bool) {
 // the Release, which a drag does not do.
 func (r *Rendition) Click(col, row int) error {
 	r.press = nil
+	r.hush()
 	h := r.hitAt(col, row)
-	if (r.panel == nil || r.panel.contains(col, row)) && !r.holds(h) {
+	if (r.panel == nil || r.panel.contains(col, row)) && !r.holds(h) && !r.onToast(h) {
 		if id, item, at, ok := r.grab(col, row, h); ok {
 			p := &press{id: id, item: item, at: at}
 			r.press = p
@@ -269,6 +281,20 @@ func (r *Rendition) holds(h *hit) bool {
 
 func (r *Rendition) click(col, row int) error {
 	c := r.c
+	if h := r.hitAt(col, row); r.onToast(h) {
+		// A toast dismisses, and its action is picked: a click on the
+		// toast is on nothing that takes focus, and gives the keyboard
+		// back; a click on its action gives it the action, which then
+		// goes with the toast (view.Controller.DismissToast).
+		e := c.V.Find(h.id)
+		r.list = ""
+		if e.Kind == view.ToastAction {
+			c.Focus(e.ID)
+		} else {
+			c.Focus("")
+		}
+		return c.Activate(e.ID)
+	}
 	if r.panel != nil && !r.panel.contains(col, row) {
 		r.list = ""
 		c.CloseModal()

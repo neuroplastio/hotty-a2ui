@@ -87,9 +87,32 @@ func fullHints(groups [][]view.Hint, w int) [][]glyph {
 	return rows
 }
 
-// keyHints is what a HottyKeyHints shows at w columns: the full view's
-// rows while it is open, else the short line.
+// tipStyle is a tooltip's: the text's own colour, italic, so that it reads
+// over the hints' muted keys and apart from the surface's text.
+var tipStyle = style{attr: Italic}
+
+// keyHints is what a HottyKeyHints shows at w columns: on a surface with
+// descriptions, a row for the tooltip (tipRow); then the full view's rows
+// while it is open, else the short line.
 func (r *Rendition) keyHints(e *view.Element, w int) [][]glyph {
+	rows := r.hintRows(e, w)
+	if r.c.V.Described() {
+		rows = append([][]glyph{r.tipRow(w)}, rows...)
+	}
+	return rows
+}
+
+// tipRow is the tooltip, as a status line shows one (profile §6.23): the
+// description of the element the pointer is on (Hover), else of the one
+// with the keyboard, cut to w with "…"; blank when neither has one, so
+// that nothing moves as the keyboard does.
+func (r *Rendition) tipRow(w int) []glyph {
+	return fit(line(r.c.Tooltip(r.hover), tipStyle), w)
+}
+
+// hintRows are a HottyKeyHints' keys: the full view's rows while it is
+// open, else the short line.
+func (r *Rendition) hintRows(e *view.Element, w int) [][]glyph {
 	short, full := r.c.KeyHints(r.keys, false)
 	if e.Open {
 		if rows := fullHints(full, w); len(rows) > 0 {
@@ -100,10 +123,12 @@ func (r *Rendition) keyHints(e *view.Element, w int) [][]glyph {
 	return [][]glyph{shortHints(short, w)}
 }
 
-// hintsWidth is a HottyKeyHints' natural width: its widest row, uncut.
+// hintsWidth is a HottyKeyHints' natural width: its widest row of keys,
+// uncut. The tooltip is cut to what they take, so that the layout does not
+// move as it changes.
 func (r *Rendition) hintsWidth(e *view.Element) int {
 	n := 0
-	for _, row := range r.keyHints(e, 1<<20) {
+	for _, row := range r.hintRows(e, 1<<20) {
 		n = max(n, width(row))
 	}
 	return n

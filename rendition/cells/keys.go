@@ -26,6 +26,7 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	mods, name := splitKey(key)
 	c := r.c
 	r.wake()
+	r.hush()
 	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
 	if key == "Escape" && r.cancelDrag() {
 		return true, nil
@@ -70,6 +71,11 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	if key == "Escape" && c.St.Modal != "" {
 		r.list = ""
 		c.CloseModal()
+		return true, nil
+	}
+	// Then it dismisses the newest toast, as it does one whose action has
+	// the keyboard (elementKey).
+	if key == "Escape" && c.DismissNewest() {
 		return true, nil
 	}
 	return false, nil
@@ -141,6 +147,12 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	// A HottySwitch is a button on a host: Enter flips it too, in a
 	// HottyForm as anywhere.
 	case view.Button, view.Tab, view.Option, view.Switch:
+	case view.ToastAction:
+		// A button too; Escape, which reaches the program from it on a
+		// host, dismisses its toast.
+		if name == "Escape" {
+			return r.c.DismissNewest(), nil
+		}
 	case view.Media:
 		if e.URL == "" {
 			return false, nil
