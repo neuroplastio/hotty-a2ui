@@ -3,20 +3,21 @@
 Last updated: 2026-10-11
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** the look questions below, kept for one
-feedback loop (blind review rounds, as rounds 3–6) once the legs in flight
-land, the maintainer said 2026-10-11. Nothing from the
-review rounds: round 5
-settled the fields' look, round 6 the unfocused selections
-([round 6](../feedback/2026-10-10-review-round-6.md)). Round 1 left out, still to look at: the
+**Waiting on the maintainer:** round 8, round 7's changes before and
+after (journal 2026-10-11.4, [round 7](../feedback/2026-10-11-review-round-7.md)):
+the big text's shadow, the markdown page without its box, the
+question's blank row. Round 7 settled the timer's clock format, plain
+dots, page mode's live controls and the kit's big letters and
+paginator. Every pair asks one question about the one difference its
+sides show. Still to look at from earlier rounds: round 1 left out the
 icons (journal 2026-10-10.1, story `basic/icons`); KIT-BOOK (2026-10-10.4):
 the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
 (2026-10-10.7): the sliders, and its four open points; KIT-23c
 (2026-10-10.8): drag and drop in cells, and its three proposals; and the
 proposals of KIT-11c (2026-10-10.9) and KIT-13c (2026-10-10.10).
-KIT-24's two look questions (2026-10-10.29): live-looking controls that
-take no input, and GitHub's colours as the default palette. (Its other
-two, a heading level for tab titles and the page's origin, the docs
+KIT-24's look question left (2026-10-10.29): GitHub's colours as the
+default palette. (Live-looking controls, round 7 kept: "should look
+usable". A heading level for tab titles and the page's origin, the docs
 answered: `PageOptions`, 2026-10-11.1.)
 Phase 1 is a go
 (2026-10-09). New names
@@ -41,6 +42,10 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   frames made at build time with hotty-go's `hottyvt`. That format (web
   docs-pilot `internal/view`: a Cast, then one Frame per change, each with
   its rows and title) is there to reuse (docs, 2026-10-11).
+- [ ] **KIT-DEF** — A cue for the default button, low priority (the
+  maintainer, round 7): which Button Enter presses, Windows XP style, a
+  small symmetric mark, not an underline, and not the picked look that
+  huh gives it before you reach it.
 
 ## Phase 2 — The HOTTY layer
 
