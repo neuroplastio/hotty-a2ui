@@ -46,7 +46,7 @@ func toasts(v *view.Surface, css string) *node {
 // say leaves the tooltip the keyboard's.
 func (r *Rendition) hovered(ev hotty.Event) {
 	r.hover, r.held = "", ""
-	if h, ok := ev.Hover(); ok && !h.Out {
+	if h := ev.Hover; h != nil && !h.Out {
 		if id, _, ok := viewID(ev.Target); ok {
 			switch e := r.C.V.Find(id); {
 			case e == nil:

@@ -885,9 +885,8 @@
     - click: page/link/2
     - expect: {focused: page, actions: [open]}
 
-- name: "Tab from a heading a #fragment went to goes on from there, as a browser does (cells; hottytest starts over from the first)"
+- name: "Tab from a heading a #fragment went to goes on from there, as a browser does"
   story: hotty/markdown
-  renditions: [cells]
   steps:
     - focus: page/link/1
     - key: Enter

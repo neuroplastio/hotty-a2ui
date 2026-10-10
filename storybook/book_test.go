@@ -220,9 +220,8 @@ func TestPickStaysPut(t *testing.T) {
 	eventually(t, "pick as high as its fit, nav under it", func() bool {
 		fit := 0
 		for _, ev := range h.Events() {
-			var d struct{ R int }
-			if ev.Surface == "sb-pick" && ev.Kind == hotty.EventFit && json.Unmarshal(ev.Detail, &d) == nil {
-				fit = d.R
+			if ev.Surface == "sb-pick" && ev.Kind == hotty.EventFit {
+				fit = ev.FitRows
 			}
 		}
 		rows := h.Surface("sb-pick").Placement().Rows
@@ -403,9 +402,8 @@ func TestTabsAndSidebarOnHost(t *testing.T) {
 	eventually(t, "the story under panel's bar, as high as its fit", func() bool {
 		fit := 0
 		for _, ev := range h.Events() {
-			var d struct{ R int }
-			if ev.Surface == "sb-panel" && ev.Kind == hotty.EventFit && json.Unmarshal(ev.Detail, &d) == nil {
-				fit = d.R
+			if ev.Surface == "sb-panel" && ev.Kind == hotty.EventFit {
+				fit = ev.FitRows
 			}
 		}
 		p, s := h.Surface("sb-panel"), story()

@@ -190,7 +190,7 @@ func TestExamplesStream(t *testing.T) {
 			}
 			docs := 0
 			for _, m := range x.h.Commands() {
-				if m.Get("a") == "doc" {
+				if hotty.Get(m.Control, "a") == "doc" {
 					docs++
 				}
 			}
@@ -317,7 +317,7 @@ func TestControlsOnHost(t *testing.T) {
 	}
 	x.check(r)
 	for _, m := range x.h.Commands()[1:] {
-		if a := m.Get("a"); a == "doc" {
+		if a := hotty.Get(m.Control, "a"); a == "doc" {
 			t.Error("a document was sent again")
 		}
 	}
@@ -1534,7 +1534,7 @@ func TestScrollViewOnHost(t *testing.T) {
 	x.check(r)
 	var ops []string
 	for _, m := range x.h.Commands()[before:] {
-		ops = append(ops, m.Get("op"))
+		ops = append(ops, hotty.Get(m.Control, "op"))
 	}
 	if !slices.Equal(ops, []string{string(hotty.OpAppend)}) {
 		t.Errorf("a line arrived as %q", ops)

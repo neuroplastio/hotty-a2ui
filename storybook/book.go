@@ -188,7 +188,7 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	}
 	switch msg := msg.(type) {
 	case hottytea.ReadyMsg:
-		b.steps, b.hovers = msg.Caps.Steps, msg.Caps.Hovers()
+		b.steps, b.hovers = msg.Caps.Steps, hotty.Hovers(msg.Caps)
 		b.ready(msg.Mode)
 	case tickMsg:
 		b.ticking = false
@@ -196,7 +196,7 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 		b.event(msg.Event)
 	case hottytea.ErrorMsg:
 		if b.mine(msg.Reply.Surface) {
-			b.status = "✗ the host: " + msg.Reply.Err().Error()
+			b.status = "✗ the host: " + hotty.Err(msg.Reply).Error()
 		}
 	case tea.KeyPressMsg:
 		if k := hottytea.KeyName(msg.Key()); k != "" {
@@ -755,17 +755,14 @@ func WheelDelta(msg tea.MouseWheelMsg) (dx, dy int) {
 // event is what the user did in a surface on the host: one of a pane's,
 // or the open list's of one (html.Popover).
 func (b *Book) event(ev hotty.Event) {
-	var d struct {
-		R int `json:"r"`
-	}
-	fit := ev.Kind == hotty.EventFit && json.Unmarshal(ev.Detail, &d) == nil && d.R > 0
+	fit := ev.Kind == hotty.EventFit && ev.FitRows > 0
 	p := b.panes[ev.Surface]
 	if p == nil {
 		if name, ok := strings.CutSuffix(ev.Surface, "-list"); ok {
 			if p = b.panes[name]; p != nil && p.html != nil {
 				b.fail(p.html.Event(ev))
 				if fit {
-					p.popRows = d.R
+					p.popRows = ev.FitRows
 				}
 			}
 		}
@@ -783,9 +780,9 @@ func (b *Book) event(ev hotty.Event) {
 		switch {
 		case !fit:
 		case p.name == b.o.Prefix+pickID:
-			b.pickRows = d.R
+			b.pickRows = ev.FitRows
 		case p.name == b.o.Prefix+panelID && b.ch.tab() == 0:
-			b.barRows = d.R
+			b.barRows = ev.FitRows
 		}
 	case hotty.EventFocus:
 		if f := b.focus; f != nil && f != p && f.kind == asCells && f.s != p.s {

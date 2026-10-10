@@ -421,15 +421,14 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		}
 		switch e.Kind {
 		case view.CheckBox:
-			on, _ := ev.Checked()
-			return c.SetValue(id, on)
+			return c.SetValue(id, ev.Checked != nil && *ev.Checked)
 		case view.Option:
-			if on, _ := ev.Checked(); on != e.Active {
+			if on := ev.Checked != nil && *ev.Checked; on != e.Active {
 				return c.Activate(id)
 			}
 			return nil
 		}
-		return c.SetValue(id, ev.Value())
+		return c.SetValue(id, ev.Value)
 	case hotty.EventSubmit:
 		if e.Kind == view.Form {
 			return c.Submit(id)
@@ -500,8 +499,10 @@ func releasedOn(ev hotty.Event, id string) bool {
 // stepX is a drag's step along its element, if the host said one (SPEC
 // §9.1, data-steps).
 func stepX(ev hotty.Event) (int, bool) {
-	d, ok := ev.Drag()
-	return d.X, ok && d.HasX
+	if d := ev.Drag; d != nil && d.HasX {
+		return d.X, true
+	}
+	return 0, false
 }
 
 // notch sets a Slider to the value of its notch part names ("k3").
@@ -730,8 +731,10 @@ func (r *Rendition) clickSelect(e *view.Element, part string, ev hotty.Event) er
 			r.list = nil
 			return nil
 		}
-		at, placed := ev.Area()
-		r.list = &list{id: e.ID, at: at, placed: placed, hi: max(pickedIndex(e), 0)}
+		r.list = &list{id: e.ID, hi: max(pickedIndex(e), 0)}
+		if ev.Area != nil {
+			r.list.at, r.list.placed = *ev.Area, true
+		}
 		return nil
 	}
 	if len(part) < 2 || part[0] != partOption[0] {
