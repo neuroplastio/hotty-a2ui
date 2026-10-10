@@ -126,6 +126,14 @@ const (
 	// (HottySparkline): Series, Height, Window as a Chart's; Min and Max,
 	// the values at its bottom and its top.
 	Sparkline Kind = "sparkline"
+	// Toast is a notice over the surface, in a corner, for a while
+	// (hottyToast, Surface.Toasts): Label, its message; Variant, its kind
+	// (info, success, warning, error); Name, its id; its ToastAction, when
+	// it has one.
+	Toast Kind = "toast"
+	// ToastAction is a toast's action, a Tab stop: Label, what it does;
+	// Name, the toast's id.
+	ToastAction Kind = "toastaction"
 	// Placeholder stands for a node that cannot be drawn: one still to
 	// come (Pending), of a type no catalog here has (Unknown), or one
 	// that contains itself (Cyclic). A component never fails its
@@ -347,7 +355,7 @@ func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button, Switch, Knob:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree, ToastAction:
 		return true
 	case DiffView:
 		return len(e.RowIDs) > 0
@@ -379,6 +387,8 @@ type Surface struct {
 	// Overlay is the content of the open Modal, drawn over the surface;
 	// nil when none is open.
 	Overlay *Element `json:"overlay,omitempty"`
+	// Toasts are the toasts shown over it, the newest first (hottyToast).
+	Toasts []*Element `json:"toasts,omitempty"`
 
 	nodes map[string]*a2ui.Node
 }
@@ -398,8 +408,8 @@ func (s *Surface) Find(id string) *Element {
 	return found
 }
 
-// Walk visits the elements in tree order, the overlay's last, while fn
-// returns true.
+// Walk visits the elements in tree order, then the overlay's, then the
+// toasts', while fn returns true.
 func (s *Surface) Walk(fn func(*Element) bool) {
 	var walk func(e *Element) bool
 	walk = func(e *Element) bool {
@@ -416,8 +426,13 @@ func (s *Surface) Walk(fn func(*Element) bool) {
 		}
 		return true
 	}
-	if walk(s.Root) {
-		walk(s.Overlay)
+	if !walk(s.Root) || !walk(s.Overlay) {
+		return
+	}
+	for _, t := range s.Toasts {
+		if !walk(t) {
+			return
+		}
 	}
 }
 
@@ -458,7 +473,8 @@ func (s *Surface) KeyChain(id string) []string {
 
 // Focusables lists the ids of the elements that take the keyboard, in
 // tree order: what Tab moves through. While a Modal is open, only its
-// content's.
+// content's. The toasts' actions come last, the newest first, as the
+// toasts follow the surface in a host's document.
 func (s *Surface) Focusables() []string {
 	var out []string
 	add := func(e *Element) bool {
@@ -468,7 +484,7 @@ func (s *Surface) Focusables() []string {
 		return true
 	}
 	if s.Overlay != nil {
-		o := &Surface{Root: s.Overlay}
+		o := &Surface{Root: s.Overlay, Toasts: s.Toasts}
 		o.Walk(add)
 		return out
 	}

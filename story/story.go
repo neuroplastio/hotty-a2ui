@@ -149,12 +149,14 @@ type Run struct {
 
 // NewRun is a run with nothing fed yet. Its processor has the catalogs
 // the kit renders, basic and hotty, and hotty's hottyFocus and hottyBlur
-// move the keyboard in the run's views, hottyScrollTo scrolls them, and
-// hottyExpandAll and hottyCollapseAll fold their trees.
+// move the keyboard in the run's views, hottyScrollTo scrolls them,
+// hottyExpandAll and hottyCollapseAll fold their trees, and hottyToast and
+// hottyDismissToast show and take away their toasts.
 func NewRun() *Run {
 	r := &Run{}
 	h := hotty.Catalog()
-	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo, FoldAll: r.foldAll})
+	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo, FoldAll: r.foldAll,
+		Toast: r.toast, DismissToast: r.dismissToast})
 	r.P = a2ui.NewProcessor(basic.Catalog(), h)
 	r.P.Send = func(o a2ui.Outbound) {
 		b, _ := json.Marshal(o)
@@ -294,6 +296,50 @@ func (r *Run) foldAll(s *a2ui.Surface, scope a2ui.Scope, id string, open bool) e
 		}
 	}
 	return fmt.Errorf("no component '%s' to fold", id)
+}
+
+// toast shows a toast (hottyToast): on the surface its surfaceId names,
+// else the caller's, or for the agent's call the surface that has the
+// keyboard, else the first. The agent's arguments come as it sent them,
+// and are read in that surface's data model now, as a component's were
+// read in its scope.
+func (r *Run) toast(s *a2ui.Surface, args map[string]any) error {
+	var to *Surface
+	id, named := args["surfaceId"].(string)
+	for _, x := range r.surfaces {
+		switch {
+		case named && x.S.ID == id, !named && x.S == s:
+			to = x
+		case !named && s == nil && to == nil && x.C.St.Keyboard:
+			to = x
+		}
+	}
+	if to == nil && !named && s == nil && len(r.surfaces) > 0 {
+		to = r.surfaces[0]
+	}
+	if to == nil {
+		return fmt.Errorf("no surface '%s' to show a toast on", id)
+	}
+	if s == nil {
+		v, err := to.S.Context(a2ui.RootScope).Resolve(args)
+		if err != nil {
+			return err
+		}
+		args, _ = v.(map[string]any)
+	}
+	_, err := to.C.ShowToast(args)
+	return err
+}
+
+// dismissToast takes a toast away (hottyDismissToast), from the caller's
+// surface, or for the agent's call, from whichever has it.
+func (r *Run) dismissToast(s *a2ui.Surface, id string) error {
+	for _, x := range r.surfaces {
+		if s == nil || x.S == s {
+			x.C.DismissToast(id)
+		}
+	}
+	return nil
 }
 
 // blur takes the keyboard from the caller's surface, or for the agent's

@@ -228,6 +228,11 @@ func (c *Controller) ownHints(e *Element, keys string) (short []Hint, groups [][
 	case Button:
 		short = []Hint{{"enter", "press"}}
 		return short, [][]Hint{short}
+	case ToastAction:
+		// A host clicks the button on Enter and Space; Escape reaches the
+		// program, which dismisses the toast.
+		short = []Hint{{"enter", strings.ToLower(e.Label)}, {"esc", "dismiss"}}
+		return short, [][]Hint{short}
 	case Tab:
 		short = []Hint{{"enter", "show"}}
 	case Media, Modal:

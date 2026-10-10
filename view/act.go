@@ -69,6 +69,11 @@ func (c *Controller) Ancestors(id string) []*Element {
 	if walk(c.V.Root) || walk(c.V.Overlay) {
 		return path
 	}
+	for _, t := range c.V.Toasts {
+		if walk(t) {
+			return path
+		}
+	}
 	return nil
 }
 
@@ -85,7 +90,8 @@ func (c *Controller) FormOf(id string) *Element {
 
 // Activate is a click on an element, or Enter or Space on it (SPEC
 // §10.2): a Button runs its action, a CheckBox, a Switch or an Option
-// toggles (a disabled Switch does nothing), a Tab is shown, a link opens.
+// toggles (a disabled Switch does nothing), a Tab is shown, a link opens;
+// a toast goes, and its action sends its event before it goes (PickToast).
 // Inside a Modal's trigger it then opens the Modal.
 func (c *Controller) Activate(id string) error {
 	e := c.V.Find(id)
@@ -130,6 +136,12 @@ func (c *Controller) Activate(id string) error {
 		}
 	case Tree:
 		err = c.activateTree(e)
+	case Toast:
+		c.DismissToast(e.Name)
+		return nil
+	case ToastAction:
+		c.PickToast(e.Name)
+		return nil
 	case Table, RichList, DiffView:
 		// Its selected row (a HottyDiff's hunk) is acted on: onActivate,
 		// whose context reads the row from where selected is bound (an

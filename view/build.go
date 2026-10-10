@@ -56,6 +56,10 @@ type State struct {
 	// (io_neuroplast_hotty.suggestions), by its id: the one highlighted,
 	// or the list closed. The first its list shows is in Scroll.
 	Suggest map[string]Suggest
+	// Toasts are the toasts shown over the surface, the oldest first
+	// (hottyToast); ToastSeq numbers those whose caller named none.
+	Toasts   []*ToastState
+	ToastSeq int
 }
 
 // NewState is a surface's state before the user does anything.
@@ -100,6 +104,7 @@ func Build(s *a2ui.Surface, st *State) *Surface {
 	for i, sc := range b.out.Shortcuts {
 		b.out.Shortcuts[i].Press = b.pressTarget(sc.Press)
 	}
+	b.out.Toasts = mapToasts(st)
 	return b.out
 }
 

@@ -1,0 +1,483 @@
+{
+  "name": "Toasts and tooltips",
+  "kind": "behaviour",
+  "component": "hottyToast, hottyDismissToast, accessibility.description",
+  "icon": "notifications",
+  "description": "Toasts, in the top right corner over the surface, the newest at the top: the agent showed four of them with callRendererFunction as the story opened, one of each kind. Info, success and warning go after their time (8, 5 and 10 seconds); the error stays until it is dismissed, and its Retry sends an event. The buttons show more with hottyToast: Delete's has Undo, whose context was read as it showed; Upload and Finish share an id, so the second takes the first's place; Pin one stays until Unpin calls hottyDismissToast. A click on a toast or Escape dismisses it, and its time waits while the pointer or the keyboard is on it; its action is the last Tab stop. The icons, the field and the switch have an accessibility.description: the tooltip, which the HottyKeyHints shows above the keys for the element with the keyboard, or under the pointer in cells.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "toast",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "sendDataModel": true,
+        "dataModel": {
+          "draft": "d-17",
+          "email": "ada@example.com",
+          "notify": true
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "toast",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "intro",
+              "kinds",
+              "more",
+              "rule",
+              "tools_title",
+              "tools",
+              "email",
+              "notify",
+              "help"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Toasts and tooltips"
+          },
+          {
+            "id": "intro",
+            "component": "Text",
+            "text": "The buttons show toasts. A click on a toast, or Escape, dismisses it."
+          },
+          {
+            "id": "kinds",
+            "component": "Row",
+            "children": [
+              "info",
+              "success",
+              "warning",
+              "error"
+            ]
+          },
+          {
+            "id": "info",
+            "component": "Button",
+            "child": "info_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Indexing 1,204 files",
+                  "kind": "info"
+                }
+              }
+            }
+          },
+          {
+            "id": "info_t",
+            "component": "Text",
+            "text": "Info"
+          },
+          {
+            "id": "success",
+            "component": "Button",
+            "child": "success_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Build passed",
+                  "kind": "success"
+                }
+              }
+            }
+          },
+          {
+            "id": "success_t",
+            "component": "Text",
+            "text": "Success"
+          },
+          {
+            "id": "warning",
+            "component": "Button",
+            "child": "warning_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "3 tests were skipped",
+                  "kind": "warning"
+                }
+              }
+            }
+          },
+          {
+            "id": "warning_t",
+            "component": "Text",
+            "text": "Warning"
+          },
+          {
+            "id": "error",
+            "component": "Button",
+            "child": "error_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Build failed: 2 errors",
+                  "kind": "error",
+                  "timeout": 10000
+                }
+              }
+            }
+          },
+          {
+            "id": "error_t",
+            "component": "Text",
+            "text": "Error"
+          },
+          {
+            "id": "more",
+            "component": "Row",
+            "children": [
+              "delete",
+              "upload",
+              "uploaded",
+              "stay",
+              "unstay"
+            ]
+          },
+          {
+            "id": "delete",
+            "component": "Button",
+            "child": "delete_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Draft deleted",
+                  "kind": "success",
+                  "actionLabel": "Undo",
+                  "action": {
+                    "event": {
+                      "name": "undoDelete",
+                      "context": {
+                        "draft": {
+                          "@path": "/draft"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "delete_t",
+            "component": "Text",
+            "text": "Delete"
+          },
+          {
+            "id": "upload",
+            "component": "Button",
+            "child": "upload_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Uploading 3 of 10 files",
+                  "id": "upload",
+                  "timeout": 0
+                }
+              }
+            }
+          },
+          {
+            "id": "upload_t",
+            "component": "Text",
+            "text": "Upload"
+          },
+          {
+            "id": "uploaded",
+            "component": "Button",
+            "child": "uploaded_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Uploaded 10 files",
+                  "kind": "success",
+                  "id": "upload"
+                }
+              }
+            }
+          },
+          {
+            "id": "uploaded_t",
+            "component": "Text",
+            "text": "Finish"
+          },
+          {
+            "id": "stay",
+            "component": "Button",
+            "child": "stay_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Pinned until dismissed",
+                  "id": "pinned",
+                  "timeout": 0
+                }
+              }
+            }
+          },
+          {
+            "id": "stay_t",
+            "component": "Text",
+            "text": "Pin one"
+          },
+          {
+            "id": "unstay",
+            "component": "Button",
+            "child": "unstay_t",
+            "action": {
+              "functionCall": {
+                "@call": "hottyDismissToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "id": "pinned"
+                }
+              }
+            }
+          },
+          {
+            "id": "unstay_t",
+            "component": "Text",
+            "text": "Unpin"
+          },
+          {
+            "id": "rule",
+            "component": "Divider"
+          },
+          {
+            "id": "tools_title",
+            "component": "Text",
+            "text": "Hover over the icons, or Tab to them: what each does shows above the keys."
+          },
+          {
+            "id": "tools",
+            "component": "Row",
+            "children": [
+              "mute",
+              "star",
+              "archive",
+              "trash"
+            ]
+          },
+          {
+            "id": "mute",
+            "component": "Button",
+            "variant": "borderless",
+            "child": "mute_i",
+            "accessibility": {
+              "label": "Mute",
+              "description": "Silences notifications about this conversation"
+            },
+            "action": {
+              "event": {
+                "name": "mute"
+              }
+            }
+          },
+          {
+            "id": "mute_i",
+            "component": "Icon",
+            "name": "notificationsOff"
+          },
+          {
+            "id": "star",
+            "component": "Button",
+            "variant": "borderless",
+            "child": "star_i",
+            "accessibility": {
+              "label": "Star",
+              "description": "Keeps the conversation at the top of the list"
+            },
+            "action": {
+              "event": {
+                "name": "star"
+              }
+            }
+          },
+          {
+            "id": "star_i",
+            "component": "Icon",
+            "name": "star"
+          },
+          {
+            "id": "archive",
+            "component": "Button",
+            "variant": "borderless",
+            "child": "archive_i",
+            "accessibility": {
+              "label": "Archive",
+              "description": "Moves the conversation out of the inbox"
+            },
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Conversation archived",
+                  "kind": "success",
+                  "actionLabel": "Undo",
+                  "action": {
+                    "event": {
+                      "name": "unarchive",
+                      "context": {
+                        "id": "c42"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "archive_i",
+            "component": "Icon",
+            "name": "folder"
+          },
+          {
+            "id": "trash",
+            "component": "Button",
+            "variant": "borderless",
+            "child": "trash_i",
+            "accessibility": {
+              "label": "Delete",
+              "description": "Deletes the conversation for everyone, for good"
+            },
+            "action": {
+              "functionCall": {
+                "@call": "hottyToast",
+                "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                "args": {
+                  "message": "Deleting needs the owner's rights",
+                  "kind": "warning"
+                }
+              }
+            }
+          },
+          {
+            "id": "trash_i",
+            "component": "Icon",
+            "name": "delete"
+          },
+          {
+            "id": "email",
+            "component": "TextField",
+            "label": "Email",
+            "value": {
+              "@path": "/email"
+            },
+            "accessibility": {
+              "description": "Where receipts go; nobody else sees it"
+            }
+          },
+          {
+            "id": "notify",
+            "component": "HottySwitch",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "label": "Notifications",
+            "value": {
+              "@path": "/notify"
+            },
+            "accessibility": {
+              "description": "Toasts for builds and deploys while you work"
+            }
+          },
+          {
+            "id": "help",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          }
+        ]
+      }
+    },
+    {
+      "version": "v1.0",
+      "callRendererFunction": {
+        "functionCallId": "toast-1",
+        "callFunction": {
+          "@call": "hottyToast",
+          "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+          "args": {
+            "message": "Could not reach the server",
+            "kind": "error",
+            "id": "offline",
+            "timeout": 0,
+            "actionLabel": "Retry",
+            "action": {
+              "event": {
+                "name": "retry"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "callRendererFunction": {
+        "functionCallId": "toast-2",
+        "callFunction": {
+          "@call": "hottyToast",
+          "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+          "args": {
+            "message": "Disk almost full: 2 GB left",
+            "kind": "warning",
+            "timeout": 10000
+          }
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "callRendererFunction": {
+        "functionCallId": "toast-3",
+        "callFunction": {
+          "@call": "hottyToast",
+          "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+          "args": {
+            "message": "Draft saved",
+            "kind": "success"
+          }
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "callRendererFunction": {
+        "functionCallId": "toast-4",
+        "callFunction": {
+          "@call": "hottyToast",
+          "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+          "args": {
+            "message": "Indexing 1,204 files",
+            "kind": "info",
+            "timeout": 8000
+          }
+        }
+      }
+    }
+  ]
+}
