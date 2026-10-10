@@ -268,13 +268,8 @@ func (c *Controller) FollowLink(id string) error {
 	if e == nil || e.Kind != Link {
 		return nil
 	}
-	if frag, ok := strings.CutPrefix(e.URL, "#"); ok {
-		if d, h := c.V.Heading(frag); d != nil {
-			c.St.Focus, c.St.Keyboard = d.ID, true
-			c.St.Jump = Jump{Doc: d.ID, Heading: h, Seq: c.St.Jump.Seq + 1}
-			c.Rebuild()
-			return nil
-		}
+	if frag, ok := strings.CutPrefix(e.URL, "#"); ok && c.GoTo(frag) {
+		return nil
 	}
 	docID, _ := parentAndIndex(id)
 	doc := c.V.Find(docID)
@@ -284,11 +279,35 @@ func (c *Controller) FollowLink(id string) error {
 	err := c.setProp(doc, "link", e.URL)
 	c.Rebuild()
 	if n := c.V.Node(docID); err == nil && n != nil && n.Props["onLink"] != nil {
-		err = c.S.Tree.Invoke(n, "onLink", true)
+		err = c.invoke(n, "onLink", true)
 		c.Rebuild()
 	}
 	return err
 }
+
+// GoTo goes to the heading a #fragment names, as a link in place to it
+// does (FollowLink): the heading's document takes the keyboard, a
+// rendition brings the heading into sight once (State.Jump), and Tab goes
+// on from it. frag is the fragment, its "#" optional, matched as a link's
+// is (Surface.Heading). It is for a program's own contents ("On this
+// page") and a #fragment in the address a page opens at; false when no
+// heading on the surface has that anchor.
+func (c *Controller) GoTo(frag string) bool {
+	d, h := c.V.Heading(strings.TrimPrefix(frag, "#"))
+	if d == nil {
+		return false
+	}
+	c.St.Focus, c.St.Keyboard = d.ID, true
+	c.St.Jump = Jump{Doc: d.ID, Heading: h, Seq: c.St.Jump.Seq + 1}
+	c.Rebuild()
+	return true
+}
+
+// HeadingID is the id of a HottyMarkdown's heading, its document's id,
+// "~#" and the heading's anchor (Element.Anchors): where cells keeps its
+// rows (Rendition.Box) and, encoded as every id is, the heading's element
+// id on a host.
+func HeadingID(doc, anchor string) string { return doc + "~#" + anchor }
 
 // afterJump is where in ids, the surface's Focusables, the first element
 // after the heading the keyboard is on comes, while it is on one a link in

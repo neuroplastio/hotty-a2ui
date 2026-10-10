@@ -2,6 +2,9 @@ package view_test
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -314,6 +317,30 @@ func TestFormatTimer(t *testing.T) {
 	} {
 		if got := view.TimerStep(interval); got != want {
 			t.Errorf("TimerStep(%v) is %v, want %v", interval, got, want)
+		}
+	}
+}
+
+// Every action the view runs goes through Controller.invoke or dispatch,
+// which write the stopwatches' time first (syncElapsed): no other file of
+// the view calls the core's Invoke or Dispatch itself.
+func TestActionsGoThroughInvoke(t *testing.T) {
+	files, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		if strings.HasSuffix(f, "_test.go") || f == "timer.go" {
+			continue
+		}
+		b, err := os.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i, line := range strings.Split(string(b), "\n") {
+			if strings.Contains(line, "S.Tree.Invoke(") || strings.Contains(line, "S.Dispatch(") {
+				t.Errorf("%s:%d runs an action past invoke and dispatch: %s", f, i+1, strings.TrimSpace(line))
+			}
 		}
 	}
 }

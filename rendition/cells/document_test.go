@@ -170,3 +170,39 @@ func TestDocumentLinks(t *testing.T) {
 		t.Errorf("after more.md: link %v, actions %d, focus %q", v, len(*actions), c.St.Focus)
 	}
 }
+
+// Every heading's rows are a box, by view.HeadingID, for a program's own
+// contents; in a HottyScrollView where it is, though out of sight, so
+// that the program can tell which heading is above the window. GoTo
+// jumps to a heading as a link in place to it does, and is false for a
+// fragment no heading has.
+func TestDocumentHeadingBoxes(t *testing.T) {
+	r, _, _ := docs(t, false)
+	f := r.Draw(60)
+	for _, a := range []string{"title", "usage"} {
+		_, row, w, h, ok := r.Box(view.HeadingID("doc", a))
+		if !ok || h != 1 || w != 60 {
+			t.Fatalf("%s: box ok %v, %d×%d", a, ok, w, h)
+		}
+		if got := strings.ToLower(rowText(f, row)); !strings.Contains(got, a) {
+			t.Errorf("%s's box is row %d: %q", a, row, got)
+		}
+	}
+	r, c, _ := docs(t, true)
+	r.Draw(60)
+	_, before, _, _, ok := r.Box(view.HeadingID("doc", "usage"))
+	if !ok || before < 5 {
+		t.Fatalf("usage, below a 5-row window: box ok %v, row %d", ok, before)
+	}
+	if c.GoTo("#nowhere") {
+		t.Error("went to a heading no one has")
+	}
+	if !c.GoTo("usage") || c.St.Focus != "doc" || !c.St.Keyboard {
+		t.Fatalf("GoTo usage: focus %q, keyboard %v", c.St.Focus, c.St.Keyboard)
+	}
+	f = r.Draw(60)
+	_, row, _, _, _ := r.Box(view.HeadingID("doc", "usage"))
+	if row != 0 || !strings.Contains(rowText(f, 0), "Usage") {
+		t.Errorf("after GoTo, usage is at row %d; the top row is %q", row, rowText(f, 0))
+	}
+}

@@ -203,9 +203,12 @@ built on it).
   On a page they are `<a href>` (2026-10-11.3). Story `hotty/markdown`.
   Open (for the feedback loop): IMPORTANT in the accent, no gap after an
   alert before a list on a host, no fill for code in a HottyScrollView,
-  nothing marking the document focused after a jump; hottytest's Space
-  and Enter on a click span and its Tab after a jump (hotty-go questions,
-  journal 2026-10-10.28).
+  nothing marking the document focused after a jump. The two hottytest
+  findings were hottytest bugs, fixed in hotty-go a4025c0. That commit
+  also carries HOTTY 0.2's handshake, so the kit's hotty-go pin moves with
+  gov's P-3 order, not ahead of it; then the cells-only key vector can run
+  on hottytest. Since 2026-10-11, for the docs' own contents: every
+  heading's box in cells (`view.HeadingID`) and `Controller.GoTo`.
 - [x] **KIT-20c** — `HottyQRCode` (journal 2026-10-10.31, profile §6.29,
   instruction 29): `value`, `errorCorrection` (a minimum, raised when the
   version holds more for free), `label`. Package `qr/` on rsc.io/qr's

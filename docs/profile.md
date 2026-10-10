@@ -2164,6 +2164,18 @@ a host as far as the surface scrolls, and no further; the kit asks for
 no SPEC change (an `area` with `focus`, or a scroll the program asks
 for, would close it).
 
+A program's own contents ("On this page"), which marks the section in
+sight and brings a heading to the top, has two handles. In cells, each
+heading's rows are a box (`Rendition.Box`) by `view.HeadingID`: the
+document's id, `~#` and the heading's anchor, the id a host gives the
+heading's element, encoded as every id is. In a HottyScrollView a
+heading's box is where the heading is, in sight or not, so above the
+window means scrolled past. `view.Controller.GoTo(fragment)` goes to a
+heading as a link in place to it does: its document takes the keyboard,
+the renditions bring the heading into sight once, and Tab goes on from
+it. It also serves a `#fragment` in the address a page opens at, and it
+is false when no heading has that anchor.
+
 Its keys and its hints: a link in place's hint is `enter open` (§6.10).
 `link` and `onLink` are optional: without `onLink`, a link to another page
 is only written. The tree's nodes may carry an `href` for a docs site's

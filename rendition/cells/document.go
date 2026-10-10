@@ -219,8 +219,10 @@ func (r *Rendition) docTable(e *view.Element, b view.DocBlock, w int) [][]glyph 
 
 // paintDocument paints a HottyMarkdown's lines at (x, y), w wide and h
 // tall: a rule across what its frames leave; each link in place's run of
-// cells a hit, its box its first; and, while it has the keyboard after a
-// link in place went to one of its headings, that heading's rows its
+// cells a hit, its box its first; each heading's rows its box, by
+// view.HeadingID, for a program's own contents (which heading is in
+// sight, scrolling one to the top); and, while it has the keyboard after
+// a link in place went to one of its headings, that heading's rows its
 // sight (reveal).
 func (l *layout) paintDocument(cv *canvas, e *view.Element, x, y, w, h int) {
 	r := l.r
@@ -229,6 +231,7 @@ func (l *layout) paintDocument(cv *canvas, e *view.Element, x, y, w, h int) {
 		target = e.Target()
 	}
 	var sight *box
+	heads := map[int]*box{}
 	seen := map[string]bool{}
 	for i, t := range l.lines(e, w) {
 		if i >= h {
@@ -255,12 +258,24 @@ func (l *layout) paintDocument(cv *canvas, e *view.Element, x, y, w, h int) {
 			}
 			at, j = at+n, k
 		}
+		if t.head > 0 {
+			if b := heads[t.head-1]; b == nil {
+				heads[t.head-1] = &box{x, y + i, w, 1}
+			} else {
+				b.h = y + i - b.y + 1
+			}
+		}
 		if target >= 0 && t.head == target+1 {
 			if sight == nil {
 				sight = &box{x, y + i, w, 1}
 			} else {
 				sight.h = y + i - sight.y + 1
 			}
+		}
+	}
+	for k, b := range heads {
+		if k < len(e.Anchors) {
+			r.boxes[view.HeadingID(e.ID, e.Anchors[k])] = *b
 		}
 	}
 	if sight != nil {
