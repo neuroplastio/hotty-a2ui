@@ -265,11 +265,15 @@ textarea.k-input { min-height: 5.5rem; }
 /* A Slider: − track + value. The track is one button, its rail, fill and
    knob drawn inside it. */
 .k-slide { display: flex; align-items: center; column-gap: var(--k-2); }
+/* The track takes a finger's size (2.75rem, a touch target) above and
+   below its rail, in its margins: the row stays 1.5rem high, and the
+   notches, as tall as the track, take taps across it all. */
 .k-track {
   position: relative;
   flex: 1 1 auto;
   min-width: 6rem;
-  height: 1.5rem;
+  height: 2.75rem;
+  margin: -0.625rem 0;
   padding: 0;
   border: 0;
   border-radius: 999px;
