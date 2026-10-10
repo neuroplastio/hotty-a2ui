@@ -104,17 +104,21 @@ func (a *app) surface() []map[string]any {
 		msg("createSurface", obj("surfaceId", surfaceID, "catalogId", basicCatalog, "dataModel", data)),
 		msg("updateComponents", obj("surfaceId", surfaceID, "components", append(fields,
 			obj("id", "root", "component", "Row", "children", []any{"side", "main"}),
-			obj("id", "side", "component", "Column", "children", []any{"title", "files", "help", "save_key"}, "weight", 1),
-			obj("id", "main", "component", "Column", "children", []any{"pic", "brief", "boxes", "act"}, "weight", 3),
+			// The list unweighted: as wide as its widest picture's name,
+			// whichever picture shows, so the picture has the rest. It
+			// shows every picture (no height), as a page would only be as
+			// wide as its own names.
+			obj("id", "side", "component", "Column", "children", []any{"files", "save_key"}),
+			obj("id", "main", "component", "Column", "children", []any{"title", "pic", "brief", "boxes", "act"}, "weight", 1),
 			obj("id", "boxes", "component", "Row", "children", boxes),
 			// The picture weighted alone in a Row: as wide as the column, as
 			// tall as the picture is at that width, no taller than the
 			// surface (profile §2).
 			obj("id", "pic", "component", "Row", "children", []any{"shot"}),
 			obj("id", "files", "component", "HottyList", "catalogId", cat, "title", "Pictures",
-				"items", bind("/files"), "selected", bind("/cur"), "filterable", true, "height", 8,
+				"items", bind("/files"), "selected", bind("/cur"), "filterable", true,
 				"onActivate", obj("functionCall", obj("@call", "hottyFocus", "catalogId", cat, "args", obj("id", "note0")))),
-			obj("id", "act", "component", "Row", "children", []any{"save", "status"}, "align", "center"),
+			obj("id", "act", "component", "Row", "children", []any{"save", "status", "help"}, "align", "center"),
 			obj("id", "save", "component", "Button", "child", "save_t", "variant", "primary",
 				"action", obj("event", obj("name", "save", "context", obj("file", bind("/cur"))))),
 			obj("id", "save_t", "component", "Text", "text", "Save"),
@@ -146,8 +150,8 @@ func (a *app) noteData(name string) map[string]any {
 	return d
 }
 
-// files is the list's items: each picture, under it the first line of
-// its notes.
+// files is the list's items: each picture, under it which boxes it has
+// notes in.
 func (a *app) files() []any {
 	var items []any
 	for _, sh := range a.shots {

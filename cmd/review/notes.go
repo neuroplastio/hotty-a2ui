@@ -85,22 +85,15 @@ func (n *notes) set(name, box, text string) {
 	n.text[name][box] = text
 }
 
-// summary is a line for the list: a picture's notes, the first line of
-// each, after its box's label.
+// summary is a line for the list, short so that it never widens it: the
+// labels of the boxes a picture has notes in, or "noted" with one box;
+// nothing without notes.
 func (n *notes) summary(name string) string {
-	var parts []string
-	for _, box := range n.boxes(name) {
-		l, _, _ := strings.Cut(n.text[name][box], "\n")
-		if box != "" {
-			l = box + ": " + l
-		}
-		parts = append(parts, l)
+	bs := n.boxes(name)
+	if len(bs) == 1 && bs[0] == "" {
+		return "noted"
 	}
-	s := strings.Join(parts, " · ")
-	if r := []rune(s); len(r) > 48 {
-		s = string(r[:47]) + "…"
-	}
-	return s
+	return strings.Join(bs, " · ")
 }
 
 // boxes are the boxes a picture has notes in: the one box's first, then

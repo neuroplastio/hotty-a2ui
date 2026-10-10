@@ -116,7 +116,7 @@ func TestReview(t *testing.T) {
 		t.Fatal(err)
 	}
 	eventually(t, "the note saved", func() bool { return read() == "# Feedback\n\n## a.png\n\nToo dark.\n" })
-	eventually(t, "the list says it", func() bool { return strings.Contains(s.TextOf("files"), "✎ Too dark.") })
+	eventually(t, "the list says it", func() bool { return strings.Contains(s.TextOf("files"), "✎ noted") })
 
 	if err := h.Click(surfaceID, "files~i1"); err != nil {
 		t.Fatal(err)
@@ -166,8 +166,11 @@ func TestNotes(t *testing.T) {
 		m.get("y.png", "A") != "Three." || m.get("y.png", "B") != "Four." {
 		t.Fatalf("read back %q %q", m.order, m.text)
 	}
-	if got := m.summary("y.png"); got != "A: Three. · B: Four." {
+	if got := m.summary("y.png"); got != "A · B" {
 		t.Fatalf("y.png's summary: %q", got)
+	}
+	if got := m.summary("x.png"); got != "noted" {
+		t.Fatalf("x.png's summary: %q", got)
 	}
 	m.set("x.png", "", "")
 	if strings.Join(m.order, " ") != "y.png" {
