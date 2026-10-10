@@ -45,6 +45,9 @@ func init() {
 	register("code", "hotty/code", "glamour: code blocks (KIT-05)", func() tea.Model {
 		return screen{&codeRef{}}
 	})
+	register("markdown", "hotty/markdown", "glamour: a Markdown document (KIT-25)", func() tea.Model {
+		return screen{&markdownRef{}}
+	})
 	register("tree", "hotty/tree", "bubbles: tree (KIT-09)", func() tea.Model {
 		return screen{newTree()}
 	})
@@ -607,4 +610,59 @@ func (m *pagersRef) View() string {
 		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
 	}))
 	return b.String()
+}
+
+// markdown: the story's HottyMarkdown as glamour renders a document, which
+// is how a README reads in a Charm app (glow): its headings, its quotes,
+// its code and its tables. The story is read from the repository's root.
+type markdownRef struct{ out string }
+
+func (m *markdownRef) Init() tea.Cmd { return nil }
+
+func (m *markdownRef) Update(msg tea.Msg) tea.Cmd {
+	if ws, ok := msg.(tea.WindowSizeMsg); ok {
+		r, err := glamour.NewTermRenderer(glamour.WithStandardStyle("dark"), glamour.WithWordWrap(ws.Width))
+		if err != nil {
+			m.out = err.Error()
+			return nil
+		}
+		if m.out, err = r.Render(storyMarkdown()); err != nil {
+			m.out = err.Error()
+		}
+	}
+	return nil
+}
+
+func (m *markdownRef) View() string { return m.out }
+
+// storyMarkdown is the Markdown of the story hotty/markdown's HottyMarkdown.
+func storyMarkdown() string {
+	b, err := os.ReadFile("story/stories/hotty/markdown.json")
+	if err != nil {
+		return "ref markdown runs from the repository's root: " + err.Error()
+	}
+	var s struct {
+		Messages []struct {
+			UpdateComponents *struct {
+				Components []struct {
+					Component string
+					Text      any
+				}
+			}
+		}
+	}
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err.Error()
+	}
+	for _, msg := range s.Messages {
+		if msg.UpdateComponents == nil {
+			continue
+		}
+		for _, c := range msg.UpdateComponents.Components {
+			if t, ok := c.Text.(string); ok && c.Component == "HottyMarkdown" {
+				return t
+			}
+		}
+	}
+	return "no HottyMarkdown with a literal text in hotty/markdown"
 }
