@@ -146,12 +146,19 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 	for _, t := range theme.All {
 		themeOpts = append(themeOpts, [3]string{t.Name, t.Name, themeIcon(t)})
 	}
-	pick = append(pick,
-		obj("id", "root", "component", "Column", "children", []any{"view"}),
-		obj("id", "view", "component", "Column", "children", map[bool][]any{true: {"rend_r", "keys_p_r", "theme_p_r", "find"}, false: {"rend", "keys_p", "theme_p", "find"}}[native]),
+	// Made before the append below: picker appends its row to pick, and
+	// Go leaves open whether pick is read there before the calls or after
+	// them. TinyGo reads it before, and the rows were lost on the site.
+	pickers := []map[string]any{
 		picker("rend", "Rendition", "/rendition", rendOpts),
 		picker("theme_p", "Theme", "/theme", themeOpts),
 		picker("keys_p", "Keys", "/keys", [][3]string{{keysDefault, "Default", "keyboard"}, {keysTerminal, "Terminal", "terminal"}}),
+	}
+	pick = append(pick,
+		obj("id", "root", "component", "Column", "children", []any{"view"}),
+		obj("id", "view", "component", "Column", "children", map[bool][]any{true: {"rend_r", "keys_p_r", "theme_p_r", "find"}, false: {"rend", "keys_p", "theme_p", "find"}}[native]))
+	pick = append(pick, pickers...)
+	pick = append(pick,
 		// The filter is nav's (Book.settle hands it over): here it stays
 		// in sight while nav scrolls.
 		// On a host its caption lines it up with the selects; in cells its
