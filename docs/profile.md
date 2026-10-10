@@ -35,9 +35,10 @@ surface is shown keeps it.
 On a host, an A2UI surface is one HOTTY surface. The reference is
 `rendition/html`.
 
-**The document.** It holds the kit's stylesheet and two elements: the
-surface (`~s`), and the layer an open Modal shows in (`~o`), empty while
-none is open. The document asks the network for images over HTTPS only
+**The document.** It holds the kit's stylesheet and three elements: the
+surface (`~s`); the layer an open Modal shows in (`~o`), empty while
+none is open; and the toasts' region (`~t`, §6.23), over both, empty
+while there are none. The document asks the network for images over HTTPS only
 (`<meta name="hotty-network" content="img-src https:">`); the host's own
 policy decides (SPEC.md §7.2).
 
@@ -96,7 +97,8 @@ so that an error comes and goes as a text delta.
 | HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track sweeps across it with the clock (§3.4): the element's `--k-at` is where it starts, so that a tick is one attribute's delta |
 | HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h. A `reorderable` one's `data-keys` also give the program Alt+ArrowUp and Alt+ArrowDown, which move the selected row (§6.21); a drag is vault KIT-23h |
 | HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`. Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type and the item under the pointer are vault KIT-04h. A `reorderable` one's `data-keys` give Alt+ArrowUp and Alt+ArrowDown too (§6.21) |
-| HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a HottyDiff's, a HottyTree's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h |
+| HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a HottyDiff's, a HottyTree's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h. On a surface with a component that has an `accessibility.description`, a row (`~z`, `k-hints-tip`) comes first: the tooltip (§6.23), the description of the element the host says the pointer is over, else of the element with the keyboard, in the text's colour and italics, cut with an ellipsis; empty, a line high, when neither has one |
+| a toast (`hottyToast`, §6.23) | in the toasts' region (`~t`, `div role=region aria-label=Notifications`), fixed at the surface's top right corner, a column `min(22rem, 100% − 1rem)` wide, the newest at the top: a `div data-on=click` whose id is `hottyToast:` and the toast's id, `role=alert` for a warning or an error, which a screen reader reads at once, `role=status` for news and a success, read when it is idle. It holds the kind's mark, the basic catalog's icon (`info`, `check`, `warning`, `error`) in the kind's colour (`--k-info`, `--k-success`, `--k-warning`, `--k-error`), `aria-hidden`; the message; and its action, a borderless `button` whose id is the toast's and `/action/0`. It is filled with a tenth of its kind's colour over `--k-surface`, ringed with it, rounded and shadowed. The region is cut at the surface's edges: a toast as a surface of its own at a higher z (SPEC.md §5.2) is vault KIT-13h |
 | HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there. Its `data-keys` binds the keys bubbles' viewport scrolls with to the host's scroll actions (SPEC.md §10.2, *Scrolling keys*), so that they scroll it as in cells (§3.7): j and k, f, b, Space and Shift+Space, u and d (Control+u, Control+d), g and G, and h and l while its lines are cut. A Button in it keeps Space and a field in it types the letters, since a key an element uses stays its own and a field leaves scroll actions out. Following the tail on a host is vault KIT-07h |
 | HottyCode | `div` in the mono face, filled with `--k-tonal` as a Text's code block is, a flex row (`k-cl`) for each line: its number, right-aligned as wide as the widest (`--k-ln`), in `--k-muted` and `aria-hidden`; its mark's sign, when the code has marks; then its code (`k-src`), a span for each token that is not plain, of class `k-t-` and its kind, which the sheet colours with the roles cells uses (§3.4). A marked row has `k-m-` and its kind: a highlighted one is filled with `--k-selection`, the others with a sixth of their role's colour (`color-mix`). Lines wrap, `pre-wrap`; with `wrap` false they do not, and the box scrolls sideways, which the host does itself (SPEC.md §5.3), every row as wide as the widest so that a tint reaches the end. A Text's fenced code block is goldmark's `pre` and `code`, its tokens in the same spans |
 | HottyDiff | `div` in the mono face, filled with `--k-tonal` as a HottyCode's; with hunks, `tabindex=0 role=listbox`, whose `data-keys` gives the program ArrowUp, ArrowDown, Home, End, k, j, g and G (a HottyScrollView around it binds the letters to scroll actions, SPEC.md §10.2). For each file with a name (or of several), a row (`k-diff-file`): its name, bold, then what the change adds and removes, `+N` in `--k-success` and `-M` in `--k-error`, or new, deleted or binary. A run of unchanged lines left out is a muted row, `⋯ N unchanged lines` (`k-fold`). Each hunk is a `div tabindex=-1 role=option data-on=click` (`k-hunk`), whose id is the diff's, `~b` and the hunk's index: its header in info and its section muted (`k-hh`), then its lines. Unified, a line is a flex row (`k-dl`): its old number and its new (`--k-lo` and `--k-ln` wide, `aria-hidden`), its sign, then its code, its tokens in a HottyCode's spans. Split, the hunk is a grid of two equal columns, the old side and the new (`k-ds`), paired as cells pairs them, a rule between them and the header across both. A removed line (`k-d-del`) is filled with a sixth of `--k-error`, an added one (`k-d-add`) with a sixth of `--k-success`, and its changed words (`k-w`) more. The selected hunk (`k-sel`, `aria-selected`) has a rail on its left and its header reversed, muted, and in `--k-focus` while the diff has the keyboard (`k-on`). It then has the host's focus itself, so that the host scrolls it into view (SPEC.md §5.3) as cells keeps it in sight. A split diff stays split at any width, its sides wrapping: the markup does not know the width, and a host has no container queries |
@@ -122,10 +124,11 @@ renderer's own state: a tab shown, a Modal opened.
 | event | does |
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's; a text field's new value then runs its suggestions' `onInput` (§6.22) |
-| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a tap on a HottyRangeSlider's track moves its nearer knob there, and a click on a knob gives it the keyboard; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it |
+| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a tap on a HottyRangeSlider's track moves its nearer knob there, and a click on a knob gives it the keyboard; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it; a click on a toast dismisses it, and one on its action sends its event and dismisses it (§6.23) |
 | `submit` | the HottyForm submits (§6.2) |
 | `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it. A HottyRangeSlider's dragstart picks the knob that moves (§6.20), and each drag moves it, stopped where it meets the other. The click a drag ends with, which comes right after its dragend and only when it was let go on the slider, changes nothing more |
 | `focus`, `blur` | the surface has the keyboard, or not |
+| `hover` | on a surface placed with `v=1` (SPEC.md §9.4; the storybook asks where the host lists `hover`): the element under the pointer, whose description shows as the tooltip, and a toast under it waits (§6.23); out, neither. A key, a click or a focus the user moves hides the tooltip until the pointer goes to another element, as in cells |
 
 Typing reaches the data model at every key (`data-on=input`), as A2UI's
 own renderers write a bound field. The renderer does not send the value back
@@ -240,7 +243,7 @@ Natural widths:
 | HottySpinner | its set's widest frame, plus 1 and the label when it has one |
 | HottyTable | its columns' widths, each a column's `width`, else its header's or its widest cell's, whichever is wider, plus 2 for each column (a column of padding each side) |
 | HottyList | 2 for the indent, plus its widest line: its title + 2, its status line, its empty text, `Filter: ` + 1 when it filters, each item's label and description |
-| HottyKeyHints | its short line, or in the full view its columns, uncut |
+| HottyKeyHints | its short line, or in the full view its columns, uncut; not its tooltip's row (§6.23), which is cut to the rest, so that nothing moves as it changes |
 | HottyScrollView | its widest line unwrapped (whether it wraps them or not), or its child's natural width, plus 2 for the scrollbar |
 | HottyCode | its gutter (§3.4) and its widest line |
 | HottyDiff | 1 for the rail, then its gutter (§3.4) and its widest line; split, twice a side's gutter and that line, and 3; or a file's row, a hunk's header or a fold, if one is wider |
@@ -362,7 +365,8 @@ How the containers lay their children out:
 | HottyProgress | its label on a row, when it has one, then the bar and the percentage on the next: ` 42%`, five columns (`%3.0f%%` after a space, half to even). The bar takes the columns before them, filled in eighths of a cell: `█` for each full cell, then one of `▏▎▍▌▋▊▉` for a cell part filled, blending from `info` into `accent` across the bar (§3.6), or `success` alone once full. The rest is `░` in `border`. Without a value, a segment of a quarter of the bar (at least one cell) is `█` in `info`, moving with the clock (below), and the percentage's columns are blank. When the bar would be shorter than 3, the percentage is dropped. |
 | HottyTable | a header row, bold; a rule of `─` in `border`; then a row for each row the body shows, a cell for each column: its text, padded a column each side, cut with `…` when wider than its column, at the start, the centre (rounded down) or the end as `align` says. The columns take their natural widths; while the table is too wide, a column at a time comes off the widest that is wider than 3 (the first of equals), and once none is, off the widest. The body shows `height` rows, or all of them (one, `No rows` in `muted`, when it has none): from the first it showed, moved as little as brings the selected row into view, never past the last (the view's `Top`, the same in both renditions). While it scrolls, the rule ends with ` 4–10 of 12 ` in `muted` and one more `─`. The selected row is reversed across the table, in `accent` while the table has the keyboard and in `muted` otherwise. |
 | HottyList | as bubbles' list with its default delegate, every line 2 columns in: its title, ` Title ` in `accent` reversed, and a blank row (neither without a title); its status line in `muted` and a blank row; then the items of the page that shows, each its label and, under it, its description in `muted` (one row an item, with no blank rows between, when none has a description; else two, a blank row between). The selected item's first two columns are `│ `: in `accent` with its label and description while the list has the keyboard, and in `muted` otherwise, its text plain. A label too wide is cut with `…`; its characters that matched the filter are underlined. With a `height`, a page shows that many items, from the page that holds the selected one, and the body keeps their rows on every page; after it, while the items take more than a page, a blank row and a dot for each page (`•`, the page shown's in `fg`, the others in `border`; `3/10` in `muted` when the dots do not fit), whose two rows stay while a filter leaves one page. The status line is `12 items` (`1 item`, `No items`); while a filter applies, `“query” 7 items`, or `Nothing matched`, then ` • 5 filtered`. While the filter is typed, `Filter: ` in `accent` and the text take the title's row, with the cursor after them. With no items, the empty text shows in `muted` in the body. |
-| HottyKeyHints | as bubbles' help draws it: the short view one line, each key in `muted`, a space, what it does in `muted` faint, and ` • ` in `border` faint between them (bubbles' three steps; the Terminal theme's `muted` and `border` are one colour); the hints that do not fit go, and ` …` ends the line where it fits. The full view (after `?`, §3.7) is its groups (§6.10) as columns four apart, each a row a key, the keys padded to the widest, then a space and what they do; a group that does not fit goes, and ` …` follows the first row where it fits. |
+| HottyKeyHints | as bubbles' help draws it: the short view one line, each key in `muted`, a space, what it does in `muted` faint, and ` • ` in `border` faint between them (bubbles' three steps; the Terminal theme's `muted` and `border` are one colour); the hints that do not fit go, and ` …` ends the line where it fits. The full view (after `?`, §3.7) is its groups (§6.10) as columns four apart, each a row a key, the keys padded to the widest, then a space and what they do; a group that does not fit goes, and ` …` follows the first row where it fits. On a surface with a component that has an `accessibility.description`, a row comes before the keys: the tooltip (§6.23), the description of the element under the pointer, else of the element with the keyboard, in the text's colour and italic, cut with `…` to the keys' width; blank when neither has one, so that nothing moves. |
+| a toast (`hottyToast`, §6.23) | a box with rounded corners, its border in its kind's colour (`info`, `success`, `warning`, `error`), over the frame's top right corner a column from its edge (the column blank), the toasts stacked down from the top, the newest first, all as wide as the widest needs (its mark, its message, and its action, 2 columns apart, and 4 for the borders and padding), at most 40 and the frame: a column of padding each side, then on its first row its kind's mark, the glyph of its icon (`ⓘ`, `✓`, `!`, `✗`, the Icon glyphs of `info`, `check`, `warning` and `error`, §3.6), bold in its kind's colour, and a space; then its message, wrapped, continuation rows indented 2 under the message; then its action's label at the end of the last row, bold and underlined (reversed in `accent` while it has the keyboard), or on a row of its own when it does not fit there. A toast is drawn over what is under it, as an open Modal's panel is: it hides it and takes its clicks (§3.7), and a field's cursor under it is not shown. The frame is at least as tall as the stack |
 | HottyScrollView | a box `height` rows tall, as bubbles' viewport: its content, 2 columns narrower than the box, then a blank column and the scrollbar down the last. Its lines are a row each, cut at the box and scrolled sideways six columns at a time, or with `wrap` broken between characters into the rows they take; a child is laid out at the content's width, and shows through the box at the rows scrolled to: what it hides takes no click, and the element with the keyboard inside it is scrolled into sight. It starts at its top, or with `follow` at its end, where it stays as lines arrive until the user scrolls up, and follows again once back at the end. The scrollbar, while the content is taller than the box, is a track of `│` in `border` faint and on it a thumb of `┃` as long as the share that shows (at least a row), where it shows, in `muted`, and in `accent` while the box has the keyboard. bubbles' viewport draws no scrollbar: without one, a box with no edge gives no sign that it scrolls |
 | HottyCode | a row for each line, or with `wrap` (the default) as many as the line takes, broken by cluster under the code: first its number, right-aligned as wide as the widest, in `muted`, and a space, when `lineNumbers` is on; then, when the code has marks, the line's sign and a space (`▎` in `info` for highlight, `+` in `success` for added, `-` and `✗` in `error` for removed and error, `!` in `warning`); then the code. Continuation rows leave the gutter blank. Without `wrap` a long line is cut with `…`. Each token is coloured by its kind (package `highlight`): keywords `info` and bold, types and builtins `info`, functions' names bold, strings `success`, numbers and constants `warning`, as are preprocessor lines, decorators and attributes, comments `muted` and italic, a diff's added and removed lines `success` and `error`, its hunk headers `info` and bold, and the rest `fg`. Not `accent`, which marks only focus (§3.6). A marked line's rows are tinted across the width (§3.6): toward `selection` itself for highlight, a sixth of the way toward `success`, `error` or `warning` for the others. As OpenTUI's Code and LineNumbers; glamour, the reference shot's, draws code blocks with neither numbers nor marks |
 | HottyDiff | a column for the rail, then rows. For each file: a blank row before all but the first; its name when it has one (or the diff has several files), bold, then `+N` in `success` and `-M` in `error`, or `new`, `deleted` or `binary`. For each hunk: `⋯ N unchanged lines` in `muted` when it leaves lines out before it (and after the last, where the diff knows, from two texts); its header in `info` and its section in `muted`; then its lines. Unified, a line is its old number and its new (blank on the side that does not have it), right-aligned as wide as the widest, in `muted`, each and a space, when `lineNumbers` is on (the default); its sign (`-` in `error`, `+` in `success`) and a space; then its code, its tokens coloured as a HottyCode's, wrapped under the code or, without `wrap`, cut with `…`. Split, where each side has room for 16 columns of code (unified where not): the old side, ` │ ` in `border`, then the new, each a number, a sign and code; a context line on both, and in a run of removed lines followed by added ones, each removed line beside the added line that replaces it; a row is as tall as its taller side, and a side with no line is blank. A removed line's rows are tinted a sixth of the way toward `error`, an added one's toward `success`, its changed words a third (§3.6). The selected hunk's rows have `▎` in the rail and its header is reversed, both in `muted`, in `accent` while the diff has the keyboard; a scroll view around it keeps that hunk in sight. With no hunks and no name, `No changes` in `muted`. As OpenTUI's Diff, which has no names, folds, word marks or selection |
@@ -396,7 +400,9 @@ at column ⌊k × (bar + segment) / 50⌋ − segment in cells, and at
 k × 125% / 50 − 25% of the track on a host. Each rendition says how soon
 what it last made changes by itself (`Rendition.Animating`: the shortest
 interval it showed, 0 while nothing moves): a draw in cells, a Doc or an
-Update on a host. The program draws or updates again then: the
+Update on a host. A toast counts its time down on the same clock, by the
+draws that show it, and asks for one every quarter second while it does
+(`view.ToastStep`, §6.23). The program draws or updates again then: the
 storybook's `Book.Tick` and `storybook -bare` do, on Bubble Tea's
 `tea.Every`. So two renditions of one surface made at once show the same
 frame, and a test sets the clock (`Rendition.Clock`, in both).
@@ -520,7 +526,9 @@ Cells name NEIO-4's roles (`fg`, `bg`, `muted`, `accent`, `selection`,
 `accent` goes only on focus, and on a HottySwitch that is on, as a
 switch's colour says so. Every state that has a colour also has a glyph
 or an attribute: `✗`, `!` and `…`, reverse for focus, faint for disabled
-and for placeholders.
+and for placeholders. A toast's kind (§6.23) is its border's and its
+mark's role, `info`, `success`, `warning` or `error`, and its mark, `ⓘ`,
+`✓`, `!` or `✗`, says it without colour.
 
 At the ANSI-16 floor, a role is a foreground colour:
 
@@ -694,6 +702,10 @@ In the output:
   - A key a focused text field uses, a character it types or a key its
     keymap binds to an edit, never reaches a HottyShortcut.
 - **Escape** that no HottyShortcut takes closes an open Modal, as on a host.
+  Then it dismisses the newest toast (§6.23), as on a host; a focused text
+  field keeps the keyboard. On a toast's action, a button, Escape
+  dismisses that toast before anything else, and Space and Enter send its
+  event and dismiss it; the keyboard goes with it.
 
 **A click** lands on the topmost thing drawn at its cell:
 - **Something that takes focus** gets the keyboard, and then:
@@ -755,6 +767,21 @@ In the output:
   does. Nor does a disabled HottySwitch, which the click leaves as it is.
 - **A click on nothing that takes focus** gives the keyboard back.
 - **A click outside an open Modal's panel** closes the Modal.
+- **A click on a toast** (§6.23) is on it, not on what it covers: on its
+  action, the action sends its event and the toast goes, and the keyboard
+  with it; anywhere else on it, the toast goes and the keyboard comes
+  back, as a click on a box does on a host. A press on a toast starts no
+  drag.
+
+**The pointer** with no button down, where the terminal reports every move
+(mode 1003, which the storybook asks for), is the rendition's
+(`Rendition.Hover`, which reports whether the frame changes): over a
+toast, the toast's time waits; over an element with an
+`accessibility.description`, or in one, the innermost such element's
+description is the tooltip (§6.23), until the pointer leaves it. A key or
+a click hides it, as a GUI's tooltip goes, until the pointer leaves the
+element. Under an open Modal's panel only its content is described, and
+under a toast nothing.
 
 **The wheel** over a HottyTree with a `height` moves its rows, three a
 notch, while they can move that way. Else it scrolls the innermost
@@ -765,10 +792,13 @@ under the pointer; a program without mouse reports has no wheel.
 
 ### 3.8 What cells keep
 
-The cursor, the scroll offsets, which select's list is open and a press
-that may start a drag belong to the rendition, by element id; a drag
-under way is the controller's (`view.Drag`), and so is a text field's
-highlighted suggestion and whether its list is shut (`view.Suggest`).
+The cursor, the scroll offsets, which select's list is open, a press
+that may start a drag, and what the pointer is over (the tooltip it
+shows, the toast it holds, the element a key hid the tooltip of) belong
+to the rendition, by element id; a drag under way is the controller's
+(`view.Drag`), and so are a text field's highlighted suggestion and
+whether its list is shut (`view.Suggest`), and the toasts and their
+time (`view.ToastState`).
 Everything else is the surface's state (§1).
 
 ### 3.9 Vectors
@@ -838,7 +868,14 @@ reference is `rendition/text`.
 - Image, Icon, Video, AudioPlayer and placeholders are as §7 has them; a
   HottyIcon is an Icon's glyph.
 - An open Modal's content follows the surface, after a line `───`.
-- A component with `accessibility.hidden` says nothing.
+- The toasts (§6.23) follow that, after another `───`, a line each, the
+  newest first: the kind's mark (`ⓘ`, `✓`, `!`, `✗`), a space, the
+  message, and the action as a Button, two spaces after it
+  (`✗ Could not reach the server  [ Retry ]`). A pipe has no time: a toast
+  is listed while the view has it.
+- A component with `accessibility.hidden` says nothing, and an
+  `accessibility.description` is not written: a pipe has no pointer and no
+  focus to show it for.
 
 ## 5. Keys and focus
 
@@ -892,7 +929,7 @@ the host had focused, wherever Tab took it. A renderer whose fields report
 **Vectors.** `vectors/keys.yaml` checks all of this against both
 renditions: a story played by keys, focus, blur, clicks, and taps and
 drags on a slider's track, Alt with the arrows moving items (§6.21), with who has the keyboard, the actions the
-agent got and the data model expected after each step. The host side
+agent got, the data model and the toasts shown (§6.23) expected after each step. The host side
 runs on hottytest's host, whose `Key` takes keys as SPEC.md §10.2 has a
 host take them, and which reports a drag's steps (SPEC.md §9.1).
 
@@ -1064,8 +1101,9 @@ so the agent places it once and never updates it. The renderer builds it
    a HottyForm, a CheckBox's `space toggle`, a HottySwitch's
    `space/enter toggle`, a Button's `enter press`, a
    Slider's or a HottyRangeSlider's knob's `←/→ adjust`, a select's `enter open`, a HottyScrollView's
-   `↑/k up`, `↓/j down`, `f/pgdn page down`, `b/pgup page up`; and
-   `esc close` while a Modal is open.
+   `↑/k up`, `↓/j down`, `f/pgdn page down`, `b/pgup page up`, a
+   toast's action's `enter` and its label, lower-cased, and `esc
+   dismiss` (§6.23); and `esc close` while a Modal is open.
 2. The surface's HottyShortcuts that have a `label` (§6.1), each its key
    as bubbles writes keys (`ctrl+s`, `alt+←`, `pgdn`) and the label.
 3. In the short view, `? more` while `toggle` is on.
@@ -1082,6 +1120,11 @@ its keymap, §5, two keys an action at most); the HottyShortcuts; then `tab next
 `shift+tab back` and `? close help`.
 Which view shows is the renderer's state, shared by the surface's
 renditions. It takes no focus and sends nothing.
+
+On a surface where a component has an `accessibility.description`, the
+HottyKeyHints is also its status line for tooltips: a row over its keys
+shows the description of the element under the pointer, else of the
+element with the keyboard (§6.23).
 
 On a host, the component's keys are those of a HottyTable, a HottyList,
 a HottyDiff, a HottyTree, a Slider, a HottyRangeSlider's knob or a select, whose keys the program works; the host moves focus
@@ -1500,6 +1543,75 @@ as any field; the ghost, the list as a surface of its own and the keys
 wait for vault KIT-11h, since a host keeps Tab (SPEC §10.2) and doesn't
 set a focused field's value from a program's delta (§6.2). Text shows the
 field alone (§4).
+
+### 6.23 Toasts and tooltips
+
+**A toast** is a notice the renderer shows over a surface, in its top
+right corner, for a while: a message, a kind, a time and an action at
+most, as Textual's `notify` and opencode's toasts on OpenTUI. It is not a
+component: it belongs to no place in the tree, outlives the components
+that showed it, and an agent's prompt would have to place it somewhere and
+take it out again. It is a renderer function, `hottyToast`
+(`rendererOrAgent`), as `hottyFocus` is (§6.3), called by a Button's
+action or by the agent (`callRendererFunction`):
+
+| arg | |
+| --- | --- |
+| `message` | what it says, a line or a few; a literal or a path |
+| `kind` | `info` (the default), `success`, `warning` or `error`: its mark and its colour |
+| `timeout` | how long it shows, in milliseconds: 5000 by default, as Textual's; 0 keeps it until it is dismissed |
+| `id` | names it: a toast shown with the id of one there takes its place, where it stands (progress, `Uploading…` then `Uploaded`), and `hottyDismissToast({id})` takes it away. Without one the renderer names it (`toast-1`, …) |
+| `actionLabel`, `action` | a button on it, labelled `actionLabel`: `action` is `{"event": {"name", "context"}}`, which it sends as a Button's event, as the toast's `sourceComponentId` (`hottyToast:` and its id). The context is read as the toast shows, so `Undo` sends what was deleted even after the data model moved on. Each needs the other |
+
+`message` and the context take literals or paths, not basic functions
+(vault a2ui-limits L1: a hotty function's args call hotty functions only).
+Called by a Button, the toast shows on the Button's surface, its paths in
+the Button's scope; by the agent, on the surface with the keyboard, else
+the first, its paths at the root, unless `surfaceId` names one.
+`hottyDismissToast({id})` dismisses the toast of that id: on the caller's
+surface, or on every surface for the agent's call; one that is not there
+is no error.
+
+The toasts stack, the newest nearest the corner. A surface shows five at
+most: a sixth takes the oldest's place. Each counts its time down on the
+rendition's clock (§3.4), by the draws that show it: the time between two
+draws counts only while nothing held it, so a toast the pointer or the
+keyboard is on waits (an error to read, an action to reach). Dismissing
+one, by a click on it, Escape (the newest, or the one whose action has
+the keyboard), or its action, sends nothing; its action sends its event.
+Its action is a Tab stop, after the surface's own (and an open Modal's),
+the newest toast's first; its keys are a Button's, and the keyboard goes
+with the toast. The renderer keeps the toasts (`view.ToastState`), as it
+keeps which tab shows, not the data model.
+
+| rendition | a toast |
+| --- | --- |
+| cells | a box, rounded, its border in its kind's role, over the top right corner a column in (§3.4): `╭──────────────────────╮`, `│ ✓ Draft saved        │`, `╰──────────────────────╯`; its action at the end of its last row, `│ ✗ Could not reach the server  Retry │`. Its mark (`ⓘ ✓ ! ✗`) says its kind without colour |
+| host | a box in the toasts' region over the surface and the layer (§2): its kind's icon in its colour, its message, its action a borderless button; `role=alert` for a warning or an error, `role=status` otherwise. The region is the surface's, cut at its edges: a toast in a surface of its own at a higher z (SPEC.md §5.2), which can reach past the surface, is vault KIT-13h |
+| text | after the surface, after `───`: `✓ Draft saved`, `✗ Could not reach the server  [ Retry ]` (§4) |
+
+**A tooltip** is a component's `accessibility.description`, A2UI's own
+property for the words that say more than its label: no new component,
+and an agent that writes descriptions for screen readers gets tooltips
+for nothing. The HottyKeyHints shows it (§6.10), in a row over its keys,
+as a status line: the description of the element under the pointer, else
+of the element with the keyboard, an element's own or the nearest one
+around it. A key, a click or a focus the user moves hides the pointer's,
+until the pointer goes to another element. Without a HottyKeyHints on the
+surface, there is no tooltip; a surface whose components have no
+description has no row.
+- **In cells** the pointer is the terminal's motion reports (mode 1003),
+  which the storybook already asks for to set the pointer's shape:
+  hovering costs a frame when the pointer goes onto or off an element with
+  a description or a toast, and nothing else. A floating box at the
+  pointer would cover what the user is reading, needs room on every side
+  in a grid, and could not show for the keyboard; a fixed row does both.
+- **On a host** the host reports the element under the pointer (SPEC.md
+  §9.4, `hover`, to a surface placed with `v=1`), and the description of
+  the element with the keyboard shows otherwise. Each element also has
+  it as `aria-description`, for a screen reader. A floating tooltip, a
+  surface of its own by the element (SPEC.md §5.2), is vault KIT-13h.
+- **In text** it is not written: a pipe has no pointer and no focus.
 
 ## 7. Fallbacks
 
