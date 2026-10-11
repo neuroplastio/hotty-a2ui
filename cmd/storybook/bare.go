@@ -157,6 +157,10 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if p.press {
 				p.press = false
 				m.fail(p.r.Release())
+				if text, ok := p.r.Copied(); ok {
+					// A selection let go: on the terminal's clipboard.
+					px = tea.Batch(px, tea.Raw(cells.OSC52(text)))
+				}
 				if p.s.C.St.Keyboard {
 					m.give(p)
 				}

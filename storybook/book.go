@@ -288,6 +288,20 @@ func (b *Book) Keyboard() bool {
 // that has the keyboard in cells; nil for none.
 func (b *Book) Cursor() *tea.Cursor { return b.cursor }
 
+// Copied is the text a selection in a cells pane copied when the button
+// was let go (cells.Rendition.Copied), once; the storybook puts it on the
+// terminal's clipboard (cells.OSC52).
+func (b *Book) Copied() (text string, ok bool) {
+	for _, p := range b.order {
+		if p.kind == asCells {
+			if text, ok = p.cells.Copied(); ok {
+				return text, true
+			}
+		}
+	}
+	return "", false
+}
+
 // Tick is the frame clock: while something the last View showed moves (a
 // spinner, a progress bar without a value), in cells or on the host, a
 // command whose message, given to Update, asks for the next View. The

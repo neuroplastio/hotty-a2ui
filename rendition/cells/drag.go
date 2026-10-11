@@ -108,6 +108,9 @@ func (r *Rendition) DragAt(col, row int, sub float64) error {
 		r.resizeTo(col, row)
 		return nil
 	}
+	if r.extend(col, row) {
+		return nil
+	}
 	if r.drag != "" {
 		return r.slide(col, row)
 	}

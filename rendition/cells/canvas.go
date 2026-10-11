@@ -34,6 +34,10 @@ type style struct {
 	backShade bool
 	// paper is ink on paper (Cell.Paper).
 	paper bool
+	// deco is a Text's frame, not its text: a quote's bar, a list item's
+	// indent, a code block's margin; a selection's copy leaves it out
+	// (select.go). It paints as any glyph.
+	deco bool
 }
 
 // glyphs splits s into styled grapheme clusters: a tab is a space, a line

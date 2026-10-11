@@ -45,6 +45,10 @@ type Rendition struct {
 	scrollOrder []string
 	drag        string               // the Slider or HottyRangeSlider a click on its track started dragging, or the text control a press in its value did
 	resize      *resizing            // the longText whose grip a press took, while the button is down
+	sel         *textSel             // the selection in a Text, if any (select.go)
+	texts       map[string][]textRow // each Text's rows, as the last Draw painted them
+	copied      string               // what the last selection copied, until Copied takes it
+	copy        bool                 // whether copied is there to take
 	sized       map[string]fieldSize // what each longText's grip resized it to
 	knob        int                  // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
 	anchor      int                  // where in the text control the press was, which a drag selects from
@@ -166,6 +170,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 	f := newFrame(cols, rows)
 	cv := &canvas{f: f}
 	r.hits, r.panel, r.suggest, r.boxes, r.reveal, r.anim = nil, nil, nil, map[string]box{}, map[string]box{}, 0
+	r.texts = map[string][]textRow{}
 	r.animate(toasts)
 	r.animate(timers)
 	r.scrolls, r.scrollOrder = map[string]scrolled{}, nil
@@ -226,6 +231,7 @@ func (r *Rendition) Sight(id string) (col, row, w, h int, ok bool) {
 func (r *Rendition) Click(col, row int) error {
 	r.press = nil
 	r.hush()
+	r.sel = nil
 	if r.grip(col, row) {
 		return nil
 	}
@@ -244,6 +250,7 @@ func (r *Rendition) Click(col, row int) error {
 			return nil
 		}
 	}
+	r.arm(col, row, h)
 	return r.click(col, row)
 }
 
@@ -451,6 +458,7 @@ func posAt(e *view.Element, a *fieldArea, col, row int) int {
 // drops, and a press that did not drag does what its click waited for.
 func (r *Rendition) Release() error {
 	r.drag, r.resize = "", nil
+	r.letGo()
 	return r.release()
 }
 

@@ -32,7 +32,7 @@ func (r *Rendition) document(e *view.Element, w int) []tline {
 	for _, b := range e.Doc.Blocks {
 		if b.Gap {
 			bar, _ := frames(b.In[:b.GapIn])
-			out = append(out, tline{gs: trimSpaces(bar)})
+			out = append(out, tline{gs: decor(trimSpaces(bar))})
 		}
 		first, rest := frames(b.In)
 		if w != noWrap && (width(first) >= w || width(rest) >= w) {
@@ -56,7 +56,7 @@ func (r *Rendition) document(e *view.Element, w int) []tline {
 					cw = max(inner-indent, 1)
 				}
 				for _, t := range chars(tokenGlyphs(l, Fg), cw) {
-					out = append(out, tline{gs: concat(pre, repeat(" ", indent, style{}), t.gs)})
+					out = append(out, tline{gs: concat(pre, decor(repeat(" ", indent, style{})), t.gs), cont: t.cont})
 					pre = rest
 				}
 			}
@@ -88,8 +88,9 @@ func (r *Rendition) document(e *view.Element, w int) []tline {
 		default:
 			gs = r.runGlyphs(e, b.Runs, style{})
 		}
-		for _, l := range wrap(gs, w, first, rest) {
-			out = append(out, tline{gs: l, head: head})
+		ls, cs := wrapConts(gs, w, first, rest)
+		for i, l := range ls {
+			out = append(out, tline{gs: l, head: head, cont: cs[i]})
 		}
 	}
 	return out
@@ -104,7 +105,7 @@ func frames(in []view.Frame) (first, rest []glyph) {
 		switch f.Kind {
 		case view.FrameItem:
 			m := glyphs(f.Marker, style{})
-			pad := repeat(" ", width(m), style{})
+			pad := decor(repeat(" ", width(m), style{}))
 			if f.First {
 				first = concat(first, m)
 			} else {
@@ -116,7 +117,7 @@ func frames(in []view.Frame) (first, rest []glyph) {
 			if f.Kind == view.FrameAlert {
 				st.role = alertRole(f.Alert)
 			}
-			bar := glyphs("▎ ", st)
+			bar := decor(glyphs("▎ ", st))
 			first, rest = concat(first, bar), concat(rest, bar)
 		}
 	}
@@ -239,9 +240,9 @@ func (l *layout) paintDocument(cv *canvas, e *view.Element, x, y, w, h int) {
 		}
 		gs := t.gs
 		if t.rule {
-			gs = concat(gs, repeat("─", w-width(gs), style{role: Border}))
+			gs = concat(gs, decor(repeat("─", w-width(gs), style{role: Border})))
 		}
-		cv.write(x, y+i, w, gs)
+		l.paintText(cv, e.ID, x, y+i, w, gs, t.cont)
 		at := x
 		for j := 0; j < len(gs); {
 			id := gs[j].hit

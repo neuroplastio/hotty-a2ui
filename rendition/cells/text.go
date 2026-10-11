@@ -15,6 +15,39 @@ type tline struct {
 	gs   []glyph
 	rule bool
 	head int
+	cont cont
+}
+
+// cont is how a Text's row goes on from the row before it, for a
+// selection's copy (select.go): a line of its own, or a soft wrap of the
+// line before, at a space the wrap dropped or inside a word.
+type cont int8
+
+const (
+	newLine cont = iota
+	wrapSpace
+	wrapWord
+)
+
+// joiner is what a copy puts between a row and the row before it.
+func (c cont) joiner() string {
+	switch c {
+	case wrapSpace:
+		return " "
+	case wrapWord:
+		return ""
+	}
+	return "\n"
+}
+
+// decor is glyphs as a Text's frame (style.deco), which a copy leaves out.
+func decor(gs []glyph) []glyph {
+	out := make([]glyph, len(gs))
+	for i, g := range gs {
+		g.deco = true
+		out[i] = g
+	}
+	return out
 }
 
 // codeIndent is the columns a Text's code block sits in from its prose.
@@ -48,10 +81,10 @@ func markdown(e *view.Element, w int) []tline {
 				marker = strconv.Itoa(b.Number) + ". "
 			}
 			indent := strings.Repeat("  ", b.Level)
-			first = glyphs(indent+marker, base)
-			rest = repeat(" ", Width(indent+marker), base)
+			first = concat(decor(glyphs(indent, base)), glyphs(marker, base))
+			rest = decor(repeat(" ", Width(indent+marker), base))
 		case view.Quote:
-			first = glyphs(strings.Repeat("▎ ", b.Level+1), style{role: Border})
+			first = decor(glyphs(strings.Repeat("▎ ", b.Level+1), style{role: Border}))
 			rest = first
 		case view.CodeBlock:
 			// Highlighted as its fence says (profile §3.4), two columns
@@ -66,7 +99,7 @@ func markdown(e *view.Element, w int) []tline {
 					cw = w - indent
 				}
 				for _, t := range chars(tokenGlyphs(l, base.role), cw) {
-					out = append(out, tline{gs: concat(repeat(" ", indent, base), t.gs)})
+					out = append(out, tline{gs: concat(decor(repeat(" ", indent, base)), t.gs), cont: t.cont})
 				}
 			}
 			continue
@@ -78,8 +111,9 @@ func markdown(e *view.Element, w int) []tline {
 		for _, r := range b.Runs {
 			gs = append(gs, glyphs(r.Text, runStyle(st, r))...)
 		}
-		for _, l := range wrap(gs, w, first, rest) {
-			out = append(out, tline{gs: l})
+		ls, cs := wrapConts(gs, w, first, rest)
+		for i, l := range ls {
+			out = append(out, tline{gs: l, cont: cs[i]})
 		}
 	}
 	return out
@@ -115,28 +149,37 @@ const noWrap = 1 << 30
 // spaces. first starts the first line, rest the others; neither when they
 // leave no room. Each hard line is at least one line.
 func wrap(gs []glyph, w int, first, rest []glyph) [][]glyph {
+	out, _ := wrapConts(gs, w, first, rest)
+	return out
+}
+
+// wrapConts is wrap, and how each line goes on from the one before it.
+func wrapConts(gs []glyph, w int, first, rest []glyph) ([][]glyph, []cont) {
 	if w <= 0 {
-		return nil
+		return nil, nil
 	}
 	if width(first) >= w || width(rest) >= w {
 		first, rest = nil, nil
 	}
 	var out [][]glyph
+	var conts []cont
 	var cur []glyph
+	curC := newLine
 	curW, empty := 0, true
 	start := func(prefix []glyph) {
 		cur = append([]glyph(nil), prefix...)
 		curW, empty = width(prefix), true
 	}
-	breakLine := func() {
-		out = append(out, cur)
+	breakLine := func(c cont) {
+		out, conts = append(out, cur), append(conts, curC)
+		curC = c
 		start(rest)
 	}
 	for n, hard := range splitLines(gs) {
 		if n == 0 {
 			start(first)
 		} else {
-			breakLine()
+			breakLine(newLine)
 		}
 		soft := false
 		for i := 0; i < len(hard); {
@@ -162,13 +205,13 @@ func wrap(gs []glyph, w int, first, rest []glyph) [][]glyph {
 				cur = append(append(cur, spaces...), word...)
 				curW += sw + ww
 			case !empty && width(rest)+ww <= w:
-				breakLine()
+				breakLine(wrapSpace)
 				soft = true
 				cur = append(cur, word...)
 				curW += ww
 			default:
 				if !empty {
-					breakLine()
+					breakLine(wrapSpace)
 					soft = true
 				} else {
 					cur = append(cur, spaces...)
@@ -176,7 +219,7 @@ func wrap(gs []glyph, w int, first, rest []glyph) [][]glyph {
 				}
 				for _, g := range word {
 					if curW+g.width > w && curW > width(rest) {
-						breakLine()
+						breakLine(wrapWord)
 						soft = true
 					}
 					cur = append(cur, g)
@@ -186,8 +229,7 @@ func wrap(gs []glyph, w int, first, rest []glyph) [][]glyph {
 			empty = false
 		}
 	}
-	out = append(out, cur)
-	return out
+	return append(out, cur), append(conts, curC)
 }
 
 // splitLines splits glyphs at hard breaks.
@@ -212,7 +254,7 @@ func chars(gs []glyph, w int) []tline {
 	n := 0
 	for _, g := range gs {
 		if n+g.width > w {
-			out = append(out, tline{})
+			out = append(out, tline{cont: wrapWord})
 			n = 0
 		}
 		out[len(out)-1].gs = append(out[len(out)-1].gs, g)

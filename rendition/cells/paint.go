@@ -90,10 +90,10 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 				break
 			}
 			if t.rule {
-				cv.write(x, y+i, w, repeat("─", w, style{role: Border}))
+				l.paintText(cv, e.ID, x, y+i, w, decor(repeat("─", w, style{role: Border})), newLine)
 				continue
 			}
-			cv.write(x, y+i, w, t.gs)
+			l.paintText(cv, e.ID, x, y+i, w, t.gs, t.cont)
 		}
 	case view.Document:
 		l.paintDocument(cv, e, x, y, w, h)

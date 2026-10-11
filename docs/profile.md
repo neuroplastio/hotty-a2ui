@@ -1089,6 +1089,27 @@ HottyTable's row, a HottyList's item, a HottyTree's node or a HottyDiff's
 hunk on `--k-surface`; never on what has the keyboard, which keeps its
 own look.
 
+**Selecting text** (vault KIT-12c): a press on a Text's or a
+HottyMarkdown's text where no click acts (not a link in it), then a drag,
+selects from there to the pointer, as a page's text is selected, within
+that one element and in its reading order, never by screen rows: a nav
+beside a page on the same rows stays out of it, and a drag that leaves
+the element selects to its row's start or end, or to the element's
+first or last row. The pointer over such text is an I-beam (`text`). The
+selected cells are drawn in `selection` (reversed where its colour is
+not known, as a field's selection). Letting go copies it: the program
+takes the text once (`Rendition.Copied`) and puts it on the clipboard,
+the terminal's with OSC 52 (`cells.OSC52`), as the storybook does. The
+copy is the text as shown, less the frames (a quote's bar, a list item's
+indent, a code block's margin; a list's markers stay): a row that a
+soft wrap broke from the one before is joined to it with the space the
+wrap dropped (none inside a word), and every other row is a line of its
+own, so the blank row between blocks is a blank line. A press that does
+not leave its cell selects nothing; another press, or Escape (which
+still does what it does), drops the selection. Shift with a drag is the
+terminal's own selection, which a program leaves to it. Word and line
+clicks are not there yet.
+
 **The wheel** over a HottyTree or a HottyTable with a `height` moves its
 rows, three a notch, while they can move that way, and leaves the
 selection where it is; a key that moves the selection brings it back

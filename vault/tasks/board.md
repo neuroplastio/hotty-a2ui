@@ -16,7 +16,9 @@ the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
 (2026-10-10.8): drag and drop in cells, and its three proposals; and the
 proposals of KIT-11c (2026-10-10.9) and KIT-13c (2026-10-10.10).
 KIT-24's look question left (2026-10-10.29): GitHub's colours as the
-default palette. (Live-looking controls, round 7 kept: "should look
+default palette. From the dev-server leg (2026-10-11): the hover look's
+strength in cells and on a host, the grip's `◢` (a full-cell wedge in
+hottyterm, a small triangle in xterm.js), and the selection's colour. (Live-looking controls, round 7 kept: "should look
 usable". A heading level for tab titles and the page's origin, the docs
 answered: `PageOptions`, 2026-10-11.1.)
 Phase 1 is a go
@@ -33,7 +35,11 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 ## Phase 1 — Cells parity
 
-- [ ] **KIT-12c** — Selection and copy in cells (OSC 52).
+- [x] **KIT-12c** — Selection and copy in cells (OSC 52): a drag on a
+  Text's or a HottyMarkdown's text selects it within that element, in
+  reading order, and the release copies it (`Copied`, `cells.OSC52`;
+  profile §3.7). Word and line clicks are open; asked by the maintainer
+  through the docs (2026-10-11).
 - [ ] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [ ] **KIT-18c** — Terminal, with the profile's rule for registered

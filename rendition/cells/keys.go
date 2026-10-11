@@ -28,6 +28,10 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	r.wake()
 	r.hush()
 	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
+	if key == "Escape" {
+		// A selection goes, and Escape does what it does.
+		r.sel = nil
+	}
 	if key == "Escape" && r.cancelDrag() {
 		return true, nil
 	}

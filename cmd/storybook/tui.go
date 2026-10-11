@@ -95,6 +95,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Sequence(m.s.Close(), m.px.off(), m.ptr.off(), tea.Quit)
 		}
 	}
+	if text, ok := m.b.Copied(); ok {
+		// A selection let go: on the terminal's clipboard.
+		cmd = tea.Batch(cmd, tea.Raw(cells.OSC52(text)))
+	}
 	return m, tea.Batch(cmd, m.draw(), m.b.Tick())
 }
 

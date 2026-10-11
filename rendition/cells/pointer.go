@@ -12,7 +12,8 @@ import "github.com/neuroplastio/hotty-a2ui/view"
 // what a click acts on (clickable): a Button, a CheckBox, a Switch, an
 // option, a select, a tab, a link, in place or with a scheme, a tree's
 // node, a list's item, a table's row, a hunk, a paginator's dot, a toast,
-// a Slider's track; else "", the terminal's own, a disabled control's too.
+// a Slider's track; "text" over a Text's text, which a drag selects;
+// else "", the terminal's own, a disabled control's too.
 func (r *Rendition) Pointer(col, row int) string {
 	if h := r.gripAt(col, row); h != nil {
 		if e := r.c.V.Find(h.id); e != nil {
@@ -27,6 +28,10 @@ func (r *Rendition) Pointer(col, row int) string {
 	}
 	if f := r.last; f != nil && row >= 0 && row < f.Rows && col >= 0 && col < f.Cols && f.Cells[row][col].Link != "" {
 		return "pointer"
+	}
+	if _, _, ok := r.textAt(col, row); ok {
+		// Text a drag selects (select.go).
+		return "text"
 	}
 	return ""
 }
