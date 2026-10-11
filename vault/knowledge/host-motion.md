@@ -53,8 +53,8 @@ clock (view.UntilStep; a frame is a function of the time, not of the
 frames before it), so one frame drawn now is the right one. What piles
 up is the sending.
 
-**Proposed fix (not landed; it changes the site's code, the
-maintainer's call).** When the page is hidden (`visibilitychange`,
+**The fix (the maintainer's yes 2026-10-11; web makes it in the
+site's code).** When the page is hidden (`visibilitychange`,
 `document.hidden`), the site treats the open app as off screen, as it
 already does when the user switches apps (web 743cf8b: off screen,
 an app sends nothing). The app stops drawing; when the page shows again
@@ -65,3 +65,6 @@ it with the same timer-holding test. The rule for anything that
 animates on the site, the docs' screencast too: frames are picked by
 the clock, and while hidden none are sent; on showing, the current one,
 never the backlog.
+The docs' screencast follows the rule since docs-pilot 9c49d62: a clock
+picks the frame, nothing is sent while the tab is hidden, and on
+showing it sends the frame it stopped at, once (a recording pauses).
