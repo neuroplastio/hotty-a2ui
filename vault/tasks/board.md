@@ -209,10 +209,9 @@ built on it).
   Open (for the feedback loop): IMPORTANT in the accent, no fill for
   code in a HottyScrollView,
   nothing marking the document focused after a jump. The two hottytest
-  findings were hottytest bugs, fixed in hotty-go a4025c0. That commit
-  also carries HOTTY 0.2's handshake, so the kit's hotty-go pin moves with
-  gov's P-3 order, not ahead of it; then the cells-only key vector can run
-  on hottytest. Since 2026-10-11, for the docs' own contents: every
+  findings were hottytest bugs, fixed in hotty-go a4025c0, and with
+  HOTTY 0.2 (4b74875, journal 2026-10-11.6) the key vector that was
+  cells-only runs on hottytest too. Since 2026-10-11, for the docs' own contents: every
   heading's box in cells (`view.HeadingID`) and `Controller.GoTo`. For
   the maintainer: in cells a link with a scheme is no Tab stop (the
   terminal owns OSC 8), so the keyboard can't reach outside links such as
