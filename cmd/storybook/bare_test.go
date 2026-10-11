@@ -1,6 +1,7 @@
 package main
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 
@@ -46,5 +47,36 @@ func TestBare(t *testing.T) {
 	}
 	if _, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}); cmd == nil {
 		t.Fatal("Control+C does not quit")
+	}
+}
+
+// -bare scrolls a story taller than the screen as one page: a jump to a
+// heading puts it at the top, Space scrolls a page on, and the frame is
+// the screen's rows of it.
+func TestBarePage(t *testing.T) {
+	run, err := story.Start(story.Find("hotty/markdown"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := &bareModel{run: run, th: theme.Default, plain: true}
+	for _, s := range run.Surfaces() {
+		m.panes = append(m.panes, &barePane{s: s, r: cells.New(s.C)})
+	}
+	sgr := regexp.MustCompile("\x1b\\[[0-9;]*m")
+	text := func() string { return sgr.ReplaceAllString(m.frame, "") }
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 12})
+	if m.rows <= 24 || strings.Count(text(), "\n") != 11 || !strings.HasPrefix(text(), "Lovelace") {
+		t.Fatalf("%d rows, the screen's 12 from the top:\n%s", m.rows, text())
+	}
+	m.Update(tea.KeyPressMsg{Code: tea.KeyTab})
+	m.Update(tea.KeyPressMsg{Code: tea.KeyTab}) // configuration
+	m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if !strings.HasPrefix(text(), "Configuration") {
+		t.Fatalf("after the jump, top %d:\n%s", m.scroll.Top, text())
+	}
+	top := m.scroll.Top
+	m.Update(tea.KeyPressMsg{Code: tea.KeySpace, Text: " "})
+	if m.scroll.Top != min(top+12, m.rows-12) || m.scroll.Top == top {
+		t.Errorf("Space: top %d, want a page on from %d", m.scroll.Top, top)
 	}
 }

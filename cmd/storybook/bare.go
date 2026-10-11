@@ -22,10 +22,13 @@ import (
 // sets beside the same content in Bubble Tea (vault KIT-REF), and a way to
 // try a component's keys with nothing else around it.
 //
-// The surfaces are drawn one under another, a row apart. Keys go to the
-// surface that has the keyboard; while none has it, Tab gives it to the
-// first, and q quits. Escape that the surface does not take gives the
-// keyboard back. Control+C quits.
+// The surfaces are drawn one under another, a row apart, and scroll on
+// the screen as one page where they are taller than it (storybook.Scroll):
+// the wheel, Page Down and Space, Page Up and Shift+Space, the element
+// with the keyboard kept in sight, a heading a link went to at the top.
+// Keys go to the surface that has the keyboard; while none has it, Tab
+// gives it to the first, and q quits. Escape that the surface does not
+// take gives the keyboard back. Control+C quits.
 type bareModel struct {
 	run   *story.Run
 	px    pixels
@@ -34,9 +37,12 @@ type bareModel struct {
 	plain bool
 	panes []*barePane
 	w, h  int
-	frame string
-	cur   *tea.Cursor
-	err   string
+	// scroll is the screen's window on the surfaces' rows, rows of them.
+	scroll storybook.Scroll
+	rows   int
+	frame  string
+	cur    *tea.Cursor
+	err    string
 	// anim is how often the frame wants drawing again, 0 when nothing in
 	// it moves; ticking is a tick on its way.
 	anim    time.Duration
@@ -110,9 +116,9 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case tea.MouseWheelMsg:
-		if p, row := m.at(msg.Y); p != nil {
-			dx, dy := storybook.WheelDelta(msg)
-			p.r.Wheel(msg.X, row, dx, dy)
+		dx, dy := storybook.WheelDelta(msg)
+		if p, row := m.at(msg.Y); p == nil || !p.r.Wheel(msg.X, row, dx, dy) {
+			m.scroll.Wheel(dy)
 		}
 	case tea.MouseMotionMsg:
 		if msg.Button == tea.MouseNone {
@@ -136,13 +142,13 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		for _, p := range m.panes {
 			if p.press && msg.Button == tea.MouseLeft {
-				m.fail(p.r.Drag(msg.X, msg.Y-p.top))
+				m.fail(p.r.Drag(msg.X, msg.Y+m.scroll.Top-p.top))
 			}
 		}
 	case storybook.DragMsg:
 		for _, p := range m.panes {
 			if p.press {
-				m.fail(p.r.DragAt(msg.X, msg.Y-p.top, msg.Sub))
+				m.fail(p.r.DragAt(msg.X, msg.Y+m.scroll.Top-p.top, msg.Sub))
 			}
 		}
 	case tea.MouseReleaseMsg:
@@ -172,20 +178,26 @@ func (m *bareModel) tick() tea.Cmd {
 }
 
 // key gives a key to the surface that has the keyboard, or Tab to the
-// first surface when none has it.
+// first surface when none has it; a page key it leaves scrolls the screen.
 func (m *bareModel) key(k string) {
 	p := m.keyboard()
 	if p == nil {
 		if (k == "Tab" || k == "Shift+Tab") && len(m.panes) > 0 {
 			p = m.panes[0]
 			p.s.C.FocusNext(k == "Shift+Tab")
+			return
 		}
+		m.scroll.Page(k, m.h, m.rows)
 		return
 	}
 	ok, err := p.r.Key(k)
 	m.fail(err)
-	if !ok && k == "Escape" {
+	switch {
+	case ok:
+	case k == "Escape":
 		p.s.C.Focus("")
+	default:
+		m.scroll.Page(k, m.h, m.rows)
 	}
 }
 
@@ -209,6 +221,7 @@ func (m *bareModel) keyboard() *barePane {
 
 // at is the pane drawn at a row of the screen, and the row in its frame.
 func (m *bareModel) at(y int) (*barePane, int) {
+	y += m.scroll.Top
 	for _, p := range m.panes {
 		if p.f != nil && y >= p.top && y < p.top+p.f.Rows {
 			return p, y - p.top
@@ -230,6 +243,8 @@ func (m *bareModel) draw() {
 	var b strings.Builder
 	m.cur, m.anim = nil, 0
 	top := 0
+	var cur *tea.Cursor
+	now, sighted := storybook.Sight{}, false
 	for i, p := range m.panes {
 		if i > 0 {
 			b.WriteString("\n\n")
@@ -239,14 +254,19 @@ func (m *bareModel) draw() {
 		if d := p.r.Animating(); d > 0 && (m.anim == 0 || d < m.anim) {
 			m.anim = d
 		}
+		if p.s.C.St.Keyboard {
+			if now, sighted = storybook.SightOf(p.s.C, p.r, ""); sighted {
+				now.Row += top
+			}
+		}
 		if c, row, ok := p.f.Cursor(); ok && p.s.C.St.Keyboard {
-			m.cur = tea.NewCursor(c, top+row)
-			m.cur.Blink = false // the rendition blinks it
+			cur = tea.NewCursor(c, top+row)
+			cur.Blink = false // the rendition blinks it
 			if !p.f.BlockCursor() {
-				m.cur.Shape = tea.CursorBar
+				cur.Shape = tea.CursorBar
 			}
 			if !m.plain {
-				m.cur.Color = theme.RGB(cells.Known(m.th, cells.Accent))
+				cur.Color = theme.RGB(cells.Known(m.th, cells.Accent))
 			}
 		}
 		if m.plain {
@@ -258,8 +278,16 @@ func (m *bareModel) draw() {
 	}
 	if m.err != "" {
 		fmt.Fprintf(&b, "\n\n%s", m.err)
+		top += 2
 	}
-	m.frame = b.String()
+	m.rows = top
+	at := m.scroll.Keep(now, sighted, m.h, m.rows)
+	lines := strings.Split(b.String(), "\n")
+	m.frame = strings.Join(lines[min(at, len(lines)):min(at+m.h, len(lines))], "\n")
+	if cur != nil && cur.Y >= at && cur.Y < at+m.h {
+		cur.Y -= at
+		m.cur = cur
+	}
 }
 
 func (m *bareModel) View() tea.View {

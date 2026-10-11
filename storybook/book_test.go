@@ -282,19 +282,19 @@ func TestPaneScrolls(t *testing.T) {
 	if !b.give(p, false) || p.s.C.St.Focus != "review" {
 		t.Fatalf("the keyboard on %q, want the diff", p.s.C.St.Focus)
 	}
-	if p = view(); p.top != 0 {
-		t.Errorf("the diff focused: top %d, want its start", p.top)
+	if p = view(); p.scroll.Top != 0 {
+		t.Errorf("the diff focused: top %d, want its start", p.scroll.Top)
 	}
 	b.key("j", s) // from none, the first hunk
 	b.key("G", s)
 	p = view()
 	_, row, _, h, _ := p.cells.Sight("review")
-	if p.top == 0 || row < p.top || row+h > p.top+p.rect.H {
-		t.Errorf("G: top %d, the last hunk at %d+%d", p.top, row, h)
+	if p.scroll.Top == 0 || row < p.scroll.Top || row+h > p.scroll.Top+p.rect.H {
+		t.Errorf("G: top %d, the last hunk at %d+%d", p.scroll.Top, row, h)
 	}
 	b.key("g", s)
-	if p = view(); p.top != 0 {
-		t.Errorf("g: top %d, want 0", p.top)
+	if p = view(); p.scroll.Top != 0 {
+		t.Errorf("g: top %d, want 0", p.scroll.Top)
 	}
 	// Up a hunk at a time from the last: each in sight whole, with its
 	// file's name, and the first at the top.
@@ -304,12 +304,12 @@ func TestPaneScrolls(t *testing.T) {
 		b.key("ArrowUp", s)
 		p = view()
 		_, row, _, h, _ := p.cells.Sight("review")
-		if row < p.top || row+h > p.top+p.rect.H {
-			t.Errorf("ArrowUp %d: top %d, the hunk at %d+%d", i+1, p.top, row, h)
+		if row < p.scroll.Top || row+h > p.scroll.Top+p.rect.H {
+			t.Errorf("ArrowUp %d: top %d, the hunk at %d+%d", i+1, p.scroll.Top, row, h)
 		}
 	}
-	if p.top != 0 {
-		t.Errorf("up to the first hunk: top %d, want 0", p.top)
+	if p.scroll.Top != 0 {
+		t.Errorf("up to the first hunk: top %d, want 0", p.scroll.Top)
 	}
 	b.key("G", s)
 	p = view()
@@ -317,15 +317,76 @@ func TestPaneScrolls(t *testing.T) {
 		b.wheel(p.rect.X+1, p.rect.Y+1, tea.MouseWheelMsg{Button: tea.MouseWheelUp})
 		p = view()
 	}
-	if p.top != 0 {
-		t.Errorf("the wheel up from the end: top %d, want 0", p.top)
+	if p.scroll.Top != 0 {
+		t.Errorf("the wheel up from the end: top %d, want 0", p.scroll.Top)
 	}
 	for range 3 {
 		b.wheel(p.rect.X+1, p.rect.Y+1, tea.MouseWheelMsg{Button: tea.MouseWheelDown})
 		p = view()
 	}
-	if p.top != 3*wheelRows {
-		t.Errorf("three notches down: top %d, want %d", p.top, 3*wheelRows)
+	if p.scroll.Top != 3*wheelRows {
+		t.Errorf("three notches down: top %d, want %d", p.scroll.Top, 3*wheelRows)
+	}
+}
+
+// TestPagePane: in cells, a story whose surface is a page (a HottyMarkdown
+// with no HottyScrollView around it) scrolls as a browser's page: a jump
+// to a heading puts it at the pane's top, Page Down and Space a page down
+// from there, Shift+Space and Page Up back, and Tab to a link brings it
+// into sight.
+func TestPagePane(t *testing.T) {
+	s := hottytea.New()
+	s.Mode = hottytea.Text
+	b := New(Options{First: "hotty/markdown"})
+	view := func() *pane {
+		t.Helper()
+		b.View(hottytea.Rect{W: 120, H: 20}, s)
+		for _, p := range b.order {
+			if p.kind == asCells && !p.chrome(b) {
+				return p
+			}
+		}
+		t.Fatal("no pane for the story")
+		return nil
+	}
+	p := view()
+	if p.frame.Rows <= p.rect.H+p.rect.H/2 {
+		t.Fatalf("the page fits its %d rows: %d", p.rect.H, p.frame.Rows)
+	}
+	if p.s.C.V.Find("box") != nil {
+		t.Fatal("the page is in a box")
+	}
+	if !b.give(p, false) || p.s.C.St.Focus != "page/link/0" {
+		t.Fatalf("the keyboard on %q, want the first link", p.s.C.St.Focus)
+	}
+	b.key("Tab", s) // configuration, a #fragment
+	if f := p.s.C.St.Focus; f != "page/link/1" {
+		t.Fatalf("the keyboard on %q, want configuration's link", f)
+	}
+	b.key("Enter", s)
+	p = view()
+	_, row, _, _, ok := p.cells.Sight("page")
+	if !ok || p.scroll.Top != row || row == 0 {
+		t.Errorf("the jump: top %d, its heading at %d (%v)", p.scroll.Top, row, ok)
+	}
+	jumped := p.scroll.Top
+	b.key("Space", s)
+	if p = view(); p.scroll.Top != min(jumped+p.rect.H, p.frame.Rows-p.rect.H) {
+		t.Errorf("Space: top %d, want a page down from %d", p.scroll.Top, jumped)
+	}
+	b.key("Shift+Space", s)
+	if p = view(); p.scroll.Top != max(min(jumped+p.rect.H, p.frame.Rows-p.rect.H)-p.rect.H, 0) {
+		t.Errorf("Shift+Space: top %d", p.scroll.Top)
+	}
+	b.key("PageUp", s)
+	b.key("PageUp", s)
+	b.key("PageUp", s)
+	if p = view(); p.scroll.Top != 0 {
+		t.Errorf("Page Up to the start: top %d", p.scroll.Top)
+	}
+	b.key("PageDown", s)
+	if p = view(); p.scroll.Top != p.rect.H {
+		t.Errorf("Page Down: top %d, want %d", p.scroll.Top, p.rect.H)
 	}
 }
 
@@ -406,7 +467,7 @@ func TestTabsKeepTheStory(t *testing.T) {
 	press("j")
 	press("G")
 	p = storyPane()
-	top := p.top
+	top := p.scroll.Top
 	press("F5")
 	if q := storyPane(); q != nil || b.focus != nil {
 		t.Fatalf("on About: the story's pane drawn (%v), the keyboard on %v", q != nil, b.focus)
@@ -418,8 +479,8 @@ func TestTabsKeepTheStory(t *testing.T) {
 		press("F5")
 	}
 	q := storyPane()
-	if q != p || q.top != top || q.s.C.S.Data.Value("/hunk") == nil {
-		t.Errorf("back on the preview: same pane %v, top %d (was %d), hunk %v", q == p, q.top, top, q.s.C.S.Data.Value("/hunk"))
+	if q != p || q.scroll.Top != top || q.s.C.S.Data.Value("/hunk") == nil {
+		t.Errorf("back on the preview: same pane %v, top %d (was %d), hunk %v", q == p, q.scroll.Top, top, q.s.C.S.Data.Value("/hunk"))
 	}
 	x := q.rect.X
 	press("F1")

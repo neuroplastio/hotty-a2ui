@@ -53,20 +53,13 @@ type pane struct {
 	cells *cells.Rendition
 	rect  hottytea.Rect // in the Book, not on the screen
 	frame *cells.Frame
-	top   int // the frame's first row shown
-	// sight is what scrollTo last kept in sight: the element with the
-	// keyboard and its cells (cells.Rendition.Sight), or else follow's.
-	sight  sight
+	// scroll is the frame's window, which keeps follow in sight while the
+	// pane has not the keyboard.
+	scroll Scroll
 	follow string
 	// popRows is the rows the open list's surface needs (html.Popover),
 	// as the host's fit says; 0 until it does, and while none is open.
 	popRows int
-}
-
-type sight struct {
-	id       string
-	row, h   int
-	keyboard bool
 }
 
 // takesInput: text is for reading. Cells beside a surface take input as
@@ -217,11 +210,11 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 		b.wheel(msg.X-b.at.X, msg.Y-b.at.Y, msg)
 	case tea.MouseMotionMsg:
 		if p := b.pressed; msg.Button == tea.MouseLeft && p != nil {
-			b.fail(p.cells.Drag(msg.X-b.at.X-p.rect.X, msg.Y-b.at.Y-p.rect.Y+p.top))
+			b.fail(p.cells.Drag(msg.X-b.at.X-p.rect.X, msg.Y-b.at.Y-p.rect.Y+p.scroll.Top))
 		}
 	case DragMsg:
 		if p := b.pressed; p != nil {
-			b.fail(p.cells.DragAt(msg.X-b.at.X-p.rect.X, msg.Y-b.at.Y-p.rect.Y+p.top, msg.Sub))
+			b.fail(p.cells.DragAt(msg.X-b.at.X-p.rect.X, msg.Y-b.at.Y-p.rect.Y+p.scroll.Top, msg.Sub))
 		}
 	case tea.MouseReleaseMsg:
 		if p := b.pressed; p != nil {
@@ -462,6 +455,9 @@ func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 				}
 				return false
 			}
+			if p.frame != nil && p.scroll.Page(k, p.rect.H, p.frame.Rows) {
+				return false
+			}
 		case asSurface:
 			cmds, ok, err := p.html.Key(k)
 			h.Send(cmds...)
@@ -650,9 +646,9 @@ func (b *Book) click(x, y int, shift bool) {
 			f.s.C.St.Keyboard = false
 		}
 		if shift {
-			b.fail(p.cells.ShiftClick(x-p.rect.X, y-p.rect.Y+p.top))
+			b.fail(p.cells.ShiftClick(x-p.rect.X, y-p.rect.Y+p.scroll.Top))
 		} else {
-			b.fail(p.cells.Click(x-p.rect.X, y-p.rect.Y+p.top))
+			b.fail(p.cells.Click(x-p.rect.X, y-p.rect.Y+p.scroll.Top))
 		}
 		b.pressed = p
 		b.took(p)
@@ -674,7 +670,7 @@ func (b *Book) Pointer(x, y int) string {
 		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
 			continue
 		}
-		return p.cells.Pointer(x-p.rect.X, y-p.rect.Y+p.top)
+		return p.cells.Pointer(x-p.rect.X, y-p.rect.Y+p.scroll.Top)
 	}
 	return ""
 }
@@ -697,7 +693,7 @@ func (b *Book) Hover(x, y int) (changed bool) {
 		switch {
 		case p.kind != asCells:
 		case p == on:
-			changed = p.cells.Hover(x-p.rect.X, y-p.rect.Y+p.top) || changed
+			changed = p.cells.Hover(x-p.rect.X, y-p.rect.Y+p.scroll.Top) || changed
 		default:
 			changed = p.cells.Hover(-1, -1) || changed
 		}
@@ -725,8 +721,8 @@ func (b *Book) wheel(x, y int, msg tea.MouseWheelMsg) {
 		if p.kind != asCells || x < p.rect.X || x >= p.rect.X+p.rect.W || y < p.rect.Y || y >= p.rect.Y+p.rect.H {
 			continue
 		}
-		if !p.cells.Wheel(x-p.rect.X, y-p.rect.Y+p.top, dx, dy) {
-			p.top += dy * wheelRows // scrollTo keeps it within the frame
+		if !p.cells.Wheel(x-p.rect.X, y-p.rect.Y+p.scroll.Top, dx, dy) {
+			p.scroll.Wheel(dy) // Keep holds it within the frame
 		}
 		return
 	}
@@ -1006,8 +1002,9 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			if d := p.cells.Animating(); d > 0 && (b.anim == 0 || d < b.anim) {
 				b.anim = d
 			}
-			p.top = scrollTo(p)
-			scr.blit(p.frame, p.rect, p.top)
+			now, ok := SightOf(p.s.C, p.cells, p.follow)
+			p.scroll.Keep(now, ok, p.rect.H, p.frame.Rows)
+			scr.blit(p.frame, p.rect, p.scroll.Top)
 		case asText:
 			lines := strings.Split(strings.TrimRight(text.Render(p.s.C.V), "\n"), "\n")
 			for i, l := range lines {
@@ -1042,8 +1039,8 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	th := b.theme
 	th.Term = b.term
 	if f := b.focus; f != nil && f.kind == asCells && f.s.C.St.Keyboard && f.frame != nil {
-		if c, row, ok := f.frame.Cursor(); ok && row >= f.top && row < f.top+f.rect.H {
-			b.cursor = tea.NewCursor(r.X+f.rect.X+c, r.Y+f.rect.Y+row-f.top)
+		if c, row, ok := f.frame.Cursor(); ok && row >= f.scroll.Top && row < f.scroll.Top+f.rect.H {
+			b.cursor = tea.NewCursor(r.X+f.rect.X+c, r.Y+f.rect.Y+row-f.scroll.Top)
 			b.cursor.Blink = false // the rendition blinks it
 			if !f.frame.BlockCursor() {
 				b.cursor.Shape = tea.CursorBar
@@ -1135,36 +1132,4 @@ func (b *Book) LaidOut(h *hottytea.Session) {
 			h.Send(p.html.Update()...)
 		}
 	}
-}
-
-// scrollTo is the first row a cells pane shows: the one before (where the
-// wheel left it), moved as little as brings into sight what the element
-// with the keyboard shows (cells.Rendition.Sight: a HottyDiff's selected
-// hunk), or the pane's follow while it has not the keyboard (nav's
-// selected story), and its start where that is taller than the pane. It
-// moves only when that changed, as focus scrolls a page, so that the wheel
-// can move on from there.
-func scrollTo(p *pane) int {
-	top := p.top
-	c := p.s.C
-	now := sight{keyboard: c.St.Keyboard}
-	id := p.follow
-	if c.St.Keyboard {
-		id = c.St.Focus
-	}
-	if id != "" {
-		if _, row, _, h, ok := p.cells.Sight(id); ok {
-			now = sight{id, row, h, c.St.Keyboard}
-			if now != p.sight {
-				if row+h > top+p.rect.H {
-					top = row + h - p.rect.H
-				}
-				if row < top {
-					top = row
-				}
-			}
-		}
-	}
-	p.sight = now
-	return max(0, min(top, p.frame.Rows-p.rect.H))
 }

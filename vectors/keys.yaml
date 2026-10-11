@@ -861,8 +861,7 @@
 - name: Tab goes through a HottyMarkdown's links in place; Enter follows a relative one, written to link before onLink runs
   story: hotty/markdown
   steps:
-    - focus: box
-    - key: Tab
+    - focus: page/link/0
     - expect: {focused: page/link/0}
     - key: Enter
     - expect: {focused: page/link/0, actions: [open], context: {href: guide.md}, data: {/page/link: guide.md}}

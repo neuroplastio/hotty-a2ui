@@ -702,10 +702,6 @@ textarea.k-input { min-height: 5.5rem; }
   overflow-y: auto; outline: none; background: var(--k-tonal); border-radius: var(--k-r-field);
   scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }
 .k-scroll:focus { outline: 2px solid var(--k-focus); outline-offset: -2px; }
-/* A plain one (variant plain) is the page itself, a docs page say: no fill,
-   no padding, no rounding; its scrollbar and its ring with the keyboard
-   stay. */
-.k-scroll.k-plain { padding: 0; background: none; border-radius: 0; }
 .k-lines { font-family: var(--k-mono); line-height: var(--hotty-cell-h, 1.25rem); white-space: pre; overflow: hidden; }
 .k-lines.k-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
 
