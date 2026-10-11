@@ -16,7 +16,3 @@ in the leg that addresses it.
   browser)". x/vt answers OSC 10/11/12 but not OSC 4, so the fill has
   no accent and magenta to blend; asked of web (the pane answering OSC 4
   from the page's palette).
-- **QR.** "QR code is not square in cells". A module is a column by half
-  a row, square where a cell is 1:2; the site's xterm.js (IBM Plex Mono
-  15px, lineHeight 1.15) makes cells about 9×22 px, so modules are about
-  a quarter taller than wide. Open: what to do about it.

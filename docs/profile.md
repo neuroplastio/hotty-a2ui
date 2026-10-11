@@ -2350,7 +2350,7 @@ It takes no focus and no keys. A screen reader has it as an image named
 
 | rendition | a HottyQRCode |
 | --- | --- |
-| cells | its modules in half blocks, a quiet zone of four, black on white whatever the theme (§3.4, §3.6), its label centred under it; narrower than its code, its label and value as text; too long, `✗ Too long for a QR code` |
+| cells | its modules in half blocks, a quiet zone of four, black on white whatever the theme (§3.4, §3.6), its label centred under it. A module is square where a cell is twice as tall as wide; a taller cell (xterm.js at line height 1.15, about 9×22 px) makes modules about a quarter taller than wide, which phones still read, so it stays (the maintainer, 2026-10-11); narrower than its code, its label and value as text; too long, `✗ Too long for a QR code` |
 | host | an `svg` of one path on white, crisp, a module as large as in cells, its label under it (§2); the host's own look is vault KIT-20h |
 | text | `Label: value` (§4) |
 
