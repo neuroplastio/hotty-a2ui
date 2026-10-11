@@ -3,13 +3,13 @@
 Last updated: 2026-10-11
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
-**Waiting on the maintainer:** round 9, the markdown page as the
-surface itself, no box (journal 2026-10-11.5,
-[round 8](../feedback/2026-10-11-review-round-8.md)). Rounds 7 and 8
-settled the timer's clock format, plain dots, page mode's live
-controls, the kit's big letters and paginator, the title's shadow and
-the question's blank row. Every pair asks one question about the one
-difference its sides show. Still to look at from earlier rounds: round 1 left out the
+**Waiting on the maintainer:** nothing from rounds 7–9
+([round 9](../feedback/2026-10-11-review-round-9.md)): they settled the
+timer's clock format, plain dots, page mode's live controls, the kit's
+big letters and paginator, the title's shadow, the question's blank row,
+and a docs page as the surface itself, with no box (journal
+2026-10-11.5). Every pair asks one question about the one difference its
+sides show. Still to look at from earlier rounds: round 1 left out the
 icons (journal 2026-10-10.1, story `basic/icons`); KIT-BOOK (2026-10-10.4):
 the storybook's nav and tabs; KIT-10c (2026-10-10.6): the charts; KIT-SLIDE
 (2026-10-10.7): the sliders, and its four open points; KIT-23c
