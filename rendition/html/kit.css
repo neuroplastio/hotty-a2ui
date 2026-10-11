@@ -343,7 +343,12 @@
    is a .k-input too, but a button. */
 :is(input, textarea).k-input { cursor: text; }
 .k-date { width: auto; max-width: 100%; }
-textarea.k-input { min-height: 5.5rem; }
+/* A longText's corner resizes it, as a web textarea's, along the axes
+   its resize allows (profile §6.30); a host draws the corner. */
+textarea.k-input { min-height: 5.5rem; resize: both; }
+textarea.k-resize-vertical { resize: vertical; }
+textarea.k-resize-horizontal { resize: horizontal; }
+textarea.k-resize-none { resize: none; }
 
 /* Hover: what a click acts on shows where the pointer is, a step past its
    own look, as cells draws it (paintHover), and no more, so that it does

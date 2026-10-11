@@ -1675,3 +1675,19 @@ func TestCodeOnHost(t *testing.T) {
 		t.Errorf("%d rows after the update", got)
 	}
 }
+
+// A longText's textarea resizes along the axes its resize allows: both,
+// a browser's default, with no class; else its k-resize class.
+func TestResizeClass(t *testing.T) {
+	run, err := story.Start(story.Find("hotty/resize"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc := New(run.Surfaces()[0].C, "notes").Doc()
+	for id, want := range map[string]string{"both": `class="k-input"`, "vertical": `class="k-input k-resize-vertical"`,
+		"horizontal": `class="k-input k-resize-horizontal"`, "none": `class="k-input k-resize-none"`} {
+		if !strings.Contains(doc, `<textarea id="`+DOMID(id)+`" `+want) {
+			t.Errorf("%s: no textarea with %s in\n%s", id, want, doc)
+		}
+	}
+}

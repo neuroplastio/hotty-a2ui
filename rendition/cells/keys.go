@@ -232,7 +232,7 @@ func (r *Rendition) pageRows(e *view.Element) int {
 	if n := r.rows[e.ID]; n > 0 {
 		return n
 	}
-	return fieldRows(e)
+	return r.fieldRows(e)
 }
 
 // selectKey works a select. Closed, the arrows, Home, End, Page Up, Page

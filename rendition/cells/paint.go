@@ -29,6 +29,9 @@ type fieldArea struct {
 	x, y       int
 	hoff, voff int
 	w, rows    int
+	// grip: a longText's grip is in the column after w on its last row
+	// (resize.go).
+	grip bool
 }
 
 type trackArea struct{ x, n int }

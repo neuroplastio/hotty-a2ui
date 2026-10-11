@@ -43,15 +43,17 @@ type Rendition struct {
 	// ids in the order painted, the innermost last (Wheel).
 	scrolls     map[string]scrolled
 	scrollOrder []string
-	drag        string        // the Slider or HottyRangeSlider a click on its track started dragging, or the text control a press in its value did
-	knob        int           // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
-	anchor      int           // where in the text control the press was, which a drag selects from
-	blinkID     string        // the text control whose caret blinks (caretOn)
-	blinkFrom   time.Time     // when its caret last showed anew: it took the keyboard, a key, a press
-	press       *press        // a press that may start a drag and drop (drag.go)
-	anim        time.Duration // how soon the last Draw changes again (Animating)
-	jumped      int           // the jump to a heading the last Draw showed (view.Jump.Seq)
-	last        *Frame        // the frame the last Draw returned, for its links (Pointer)
+	drag        string               // the Slider or HottyRangeSlider a click on its track started dragging, or the text control a press in its value did
+	resize      *resizing            // the longText whose grip a press took, while the button is down
+	sized       map[string]fieldSize // what each longText's grip resized it to
+	knob        int                  // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
+	anchor      int                  // where in the text control the press was, which a drag selects from
+	blinkID     string               // the text control whose caret blinks (caretOn)
+	blinkFrom   time.Time            // when its caret last showed anew: it took the keyboard, a key, a press
+	press       *press               // a press that may start a drag and drop (drag.go)
+	anim        time.Duration        // how soon the last Draw changes again (Animating)
+	jumped      int                  // the jump to a heading the last Draw showed (view.Jump.Seq)
+	last        *Frame               // the frame the last Draw returned, for its links (Pointer)
 	// mouse is where the pointer is (Hover); pointing, what it is over
 	// that the last Draw drew hovered (paintHover).
 	mouse    spot
@@ -72,7 +74,7 @@ type box struct{ x, y, w, h int }
 // New is a surface's rendition in cells.
 func New(c *view.Controller) *Rendition {
 	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
-		fields: map[string]*hottyedit.Field{}, Clock: time.Now}
+		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, Clock: time.Now}
 }
 
 // Animating is how soon the last Draw's frame changes by itself: the
@@ -224,6 +226,9 @@ func (r *Rendition) Sight(id string) (col, row, w, h int, ok bool) {
 func (r *Rendition) Click(col, row int) error {
 	r.press = nil
 	r.hush()
+	if r.grip(col, row) {
+		return nil
+	}
 	h := r.hitAt(col, row)
 	if (r.panel == nil || r.panel.contains(col, row)) && !r.holds(h) && !r.onToast(h) {
 		if id, item, at, ok := r.grab(col, row, h); ok {
@@ -445,7 +450,7 @@ func posAt(e *view.Element, a *fieldArea, col, row int) int {
 // Release is the primary button let go: a drag ends; a drag and drop
 // drops, and a press that did not drag does what its click waited for.
 func (r *Rendition) Release() error {
-	r.drag = ""
+	r.drag, r.resize = "", nil
 	return r.release()
 }
 

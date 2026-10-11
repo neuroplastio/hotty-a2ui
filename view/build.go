@@ -152,6 +152,9 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	e.A11y = b.a11y(n)
 	e.Autofocus = autofocus(n)
 	e.Keys = keys(n)
+	if e.Kind == TextField && e.Variant == "longText" {
+		e.Resize = resize(n)
+	}
 	if e.Kind != Placeholder {
 		dragDrop(n, e)
 	}
@@ -322,6 +325,18 @@ func fill(n *a2ui.Node) string {
 		return "end"
 	}
 	return ""
+}
+
+// resize reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.resize on a longText TextField: the axes its
+// corner resizes it along, "vertical", "horizontal" or "none"; anything
+// else is "both", as a web textarea's.
+func resize(n *a2ui.Node) string {
+	switch v := hottyExt(n)["resize"]; v {
+	case "vertical", "horizontal", "none":
+		return v.(string)
+	}
+	return "both"
 }
 
 // iconNames reads the hotty extension metadata.extensions

@@ -89,7 +89,7 @@ so that an error comes and goes as a text delta.
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
 | Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. While it has the host's focus it is filled with `--k-focus`, its label in `--k-on-accent`, as cells reverses it in the accent (§3.4) and huh fills the answer a Confirm would give (§6.24): a fill, where the host's own 1px focus ring may drop out on a rounded edge at a fractional scale. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing; it keeps the ring |
-| TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input`. With suggestions (§6.22), the `input` names (`list`) a `datalist` (`~x`) of the agent's options, which follows them by deltas: a host that draws a datalist, as a browser's DOM does, shows its own list, whose pick comes back as `input`. Blitz draws none (checked with `hotty render`), so on hottyterm the field is plain. The kit's list under the field, its ghost text and its keys are cells' until a list of the kit's own, a surface at a higher z (vault KIT-11h): a host keeps Tab (SPEC.md §10.2 ignores a binding of it) and leaves the value of the field it has focused alone (SPEC.md §6.2) |
+| TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input`; a textarea resizes from its corner along the axes its `resize` allows (§6.30). With suggestions (§6.22), the `input` names (`list`) a `datalist` (`~x`) of the agent's options, which follows them by deltas: a host that draws a datalist, as a browser's DOM does, shows its own list, whose pick comes back as `input`. Blitz draws none (checked with `hotty render`), so on hottyterm the field is plain. The kit's list under the field, its ghost text and its keys are cells' until a list of the kit's own, a surface at a higher z (vault KIT-11h): a host keeps Tab (SPEC.md §10.2 ignores a binding of it) and leaves the value of the field it has focused alone (SPEC.md §6.2) |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a chevron in `--k-muted` (Material's `keyboard_arrow_down`, `keyboard_arrow_up` while the list is open, 1.25em), whose list opens in a surface of its own (below); else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9). An option's icon (§6.16) goes before its label: in the list, on a chip or a checkbox, and on the select while the option is picked |
 | Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output` as wide as the widest value (§3.3's), in `ch`. The track is cut into notches, one a value (at most 41; twenty steps without a `step`), each centred on where the knob stands at its value and half one at either end, so that a tap, a click, sets the value tapped. On a host with `steps` (SPEC.md §4, §9.1) the track is the drag target, `data-on="drag"` and `data-steps` its notches' count less one, and the notches take `click` alone: a drag sets the value of the step under the pointer wherever the pointer goes, off the track and out of the surface too, until it is let go, and the click it ends with changes nothing more. Without `steps` each notch has `data-on="drag click"`: a drag sets the value of the notch under the pointer, and stops where there is none. The track's `touch-action: pan-y` lets a finger drag it: one that moves along the track drags, and one that moves up or down scrolls. Its fill runs from the rail's start to the knob, or, with `fill` `"end"` (§6.16), from the knob to the rail's end. Hosts draw `input type=range` unevenly (Blitz not at all) |
@@ -668,7 +668,8 @@ without colour:
   same column, underlined in the toned `border`.
 - **obscured** shows `•` for each cluster.
 - **longText** shows its hard lines, at least 3 rows and at most 8, with no
-  soft wrap.
+  soft wrap; once its grip has resized it (§6.30), the rows and the
+  columns it was given.
 - **Without the keyboard** a field shows its value from the start, each
   line cut with `…`.
 - **With the keyboard** a field shows the cursor:
@@ -2331,6 +2332,21 @@ It takes no focus and no keys. A screen reader has it as an image named
 | cells | its modules in half blocks, a quiet zone of four, black on white whatever the theme (§3.4, §3.6), its label centred under it; narrower than its code, its label and value as text; too long, `✗ Too long for a QR code` |
 | host | an `svg` of one path on white, crisp, a module as large as in cells, its label under it (§2); the host's own look is vault KIT-20h |
 | text | `Label: value` (§4) |
+
+### 6.30 resize
+
+`metadata.extensions.io_neuroplast_hotty.resize` on a `longText`
+TextField: the axes the user resizes it along by dragging its corner, as
+a web textarea's CSS `resize`: `both` (the default, as a browser's
+textarea), `vertical`, `horizontal` or `none`. Anything else is `both`;
+on any other component it is ignored. The maintainer asked for a corner
+as a web textarea has, with control over each axis (2026-10-11).
+
+| rendition | a longText's corner |
+| --- | --- |
+| cells | a grip, `◢` in `border`, in the value's last column on its last row, which the text no longer takes; `accent` while it is dragged, and toward the text while the pointer is on the field (§3.7). A press on it takes nothing else, the keyboard staying where it is, and a drag moves the value's bottom right corner with the pointer, on the axes allowed: at least a row, and three columns (two of text and the grip). The rows are fixed from then on, where they followed the lines (3 to 8); the columns are at most the field's box, which a Column that stretches gives the whole width, so a wider field shows as wide as its box. Its natural width (§3.3) is the columns it was given. Kept for the rendition's life, not in the data model. The pointer over it is `nwse-resize`, `ns-resize` or `ew-resize` |
+| host | the textarea's CSS `resize` (`k-resize-vertical`, `-horizontal`, `-none`; `both` by default), the host's own corner. Blitz draws no corner and resizes nothing yet |
+| text | nothing (§4) |
 
 ## 7. Fallbacks
 

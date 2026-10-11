@@ -7,12 +7,18 @@ import "github.com/neuroplastio/hotty-a2ui/view"
 
 // Pointer is the pointer's shape over a cell of the last frame, as CSS
 // names it, for a program to set with OSC 22, as a browser shows it:
-// "text", an I-beam, over a text control's value; "pointer", a hand, over
+// "text", an I-beam, over a text control's value; over a longText's grip,
+// the axes it resizes along ("nwse-resize"); "pointer", a hand, over
 // what a click acts on (clickable): a Button, a CheckBox, a Switch, an
 // option, a select, a tab, a link, in place or with a scheme, a tree's
 // node, a list's item, a table's row, a hunk, a paginator's dot, a toast,
 // a Slider's track; else "", the terminal's own, a disabled control's too.
 func (r *Rendition) Pointer(col, row int) string {
+	if h := r.gripAt(col, row); h != nil {
+		if e := r.c.V.Find(h.id); e != nil {
+			return gripPointer(e)
+		}
+	}
 	switch p, _ := r.point(spot{col: col, row: row, in: col >= 0 && row >= 0}); {
 	case p.field:
 		return "text"
@@ -70,6 +76,9 @@ func (r *Rendition) point(at spot) (pointed, *hit) {
 	if !at.in {
 		return pointed{}, nil
 	}
+	if h := r.gripAt(at.col, at.row); h != nil {
+		return pointed{id: h.id, opt: -1, field: true}, h
+	}
 	switch h := r.hitAt(at.col, at.row); {
 	case h == nil || h.disabled:
 	case h.field != nil:
@@ -113,7 +122,15 @@ func (r *Rendition) paintHover(cv *canvas) {
 	if a := h.field; a != nil {
 		x, y, w, ht = a.x, a.y, a.w, a.rows
 		if isLongText(e) {
+			// Its bar, and its grip.
 			x, w = h.x, 1
+			if a.grip {
+				cv.restyle(a.x+a.w, a.y+a.rows-1, 1, 1, func(c *Cell) {
+					if c.Role == Border && c.Mix == 0 {
+						c.To, c.Mix = Fg, hoverBarMix
+					}
+				})
+			}
 		}
 	} else if isField(e) && w > gutter {
 		// A field's gutter is the keyboard's bar, not its face.

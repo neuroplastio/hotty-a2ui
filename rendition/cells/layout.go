@@ -310,6 +310,10 @@ func (l *layout) measure(e *view.Element) int {
 		// run start in one column and none is cut for it.
 		return gutter + l.labelWidth(e) + 1 + inset + inputWidth(e)
 	}
+	if s := l.r.sized[e.ID]; isLongText(e) && s.cols > 0 {
+		// As wide as its grip made its value.
+		return gutter + max(Width(e.Label), s.cols)
+	}
 	return controlWidth(e)
 }
 

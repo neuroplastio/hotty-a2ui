@@ -221,7 +221,7 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 	h := 1
 	switch e.Kind {
 	case view.TextField, view.DateTime:
-		h = fieldRows(e)
+		h = l.r.fieldRows(e)
 		if e.Label != "" && !inlineRow(e) {
 			h++
 		}
@@ -289,16 +289,6 @@ func (l *layout) errorIndent(e *view.Element, w int) int {
 
 // minErrorWidth is the fewest columns an error is indented into.
 const minErrorWidth = 16
-
-// fieldRows is how many rows a field's value takes: one, or a longText's
-// lines, at least 3 and at most 8.
-func fieldRows(e *view.Element) int {
-	if !isLongText(e) {
-		return 1
-	}
-	v, _ := e.Value.(string)
-	return min(max(len(splitClusters(clusters(v))), 3), 8)
-}
 
 // labelled is a one-line field's width past its gutter for a value n
 // wide: its label and a space before the value, on one row.

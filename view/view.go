@@ -360,6 +360,10 @@ type Element struct {
 	// Autofocus: the element takes the keyboard when the surface is
 	// first shown (io_neuroplast_hotty.autofocus).
 	Autofocus bool `json:"autofocus,omitempty"`
+	// Resize: the axes a longText's corner resizes it along, "both",
+	// "vertical", "horizontal" or "none" (io_neuroplast_hotty.resize);
+	// "" on any other element.
+	Resize string `json:"resize,omitempty"`
 	// Keys is the element's keymap for the text fields in it, itself if
 	// it is one (io_neuroplast_hotty.keys): SPEC §10.2's data-keys, which
 	// override the keymaps above it key by key (Surface.KeyChain).

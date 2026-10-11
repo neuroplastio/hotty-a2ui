@@ -301,7 +301,13 @@ func (m *markup) element(e *view.Element) *node {
 			// The text is the value a host builds the field with, and the
 			// attribute the one it takes later (SPEC §6.2): hotty-blitz
 			// reads a textarea's text only when it builds it.
-			n = el("textarea", "id", id, "class", "k-input", "value", v, "data-on", "input")
+			// Its corner resizes it along the axes its resize allows
+			// (k-resize-…), both by default, as a web textarea's.
+			class := "k-input"
+			if e.Resize != "" && e.Resize != "both" {
+				class += " k-resize-" + e.Resize
+			}
+			n = el("textarea", "id", id, "class", class, "value", v, "data-on", "input")
 			if v != "" {
 				n.add(txt(v))
 			}

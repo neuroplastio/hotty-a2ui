@@ -104,6 +104,10 @@ func (r *Rendition) dragging() bool { return r.c.St.Drag != nil }
 // how far down the cell the pointer is, from 0 to 1; -1 where it is not
 // known.
 func (r *Rendition) DragAt(col, row int, sub float64) error {
+	if r.resize != nil {
+		r.resizeTo(col, row)
+		return nil
+	}
 	if r.drag != "" {
 		return r.slide(col, row)
 	}

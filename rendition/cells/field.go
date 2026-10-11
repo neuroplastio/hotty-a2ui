@@ -136,15 +136,23 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	if long {
 		lines = splitClusters(cl)
 	}
-	rows := fieldRows(e)
+	rows := r.fieldRows(e)
 	r.rows[e.ID] = rows
 	// vx, vw are the value's columns: a one-line field's input, after the
-	// blank inset and as wide as inputWidth, or less where the room is.
+	// blank inset and as wide as inputWidth, or less where the room is; a
+	// longText's, as wide as its grip made it, at most its box's, its last
+	// column the grip's (resize.go).
 	vx, vw := ux, uw
 	if !long {
 		vx, vw = ux+inset, min(max(uw-inset, 0), inputWidth(e))
+	} else if s := r.sized[e.ID]; s.cols > 0 {
+		vw = min(vw, s.cols)
 	}
-	area := &fieldArea{x: vx, y: row, w: vw, rows: rows}
+	grip := gripped(e, vw)
+	if grip {
+		vw--
+	}
+	area := &fieldArea{x: vx, y: row, w: vw, rows: rows, grip: grip}
 	li, ci, curCol := 0, 0, 0
 	// What Shift and select-all selected (SPEC §10.2), while the field
 	// editKey keeps is the one shown.
@@ -212,6 +220,13 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	if !long {
 		underline(cv, vx, row, vw, focused)
+	}
+	if grip {
+		st := style{role: Border}
+		if z := r.resize; z != nil && z.id == e.ID {
+			st.role = Accent
+		}
+		cv.set(vx+vw, row+rows-1, glyph{text: gripGlyph, width: 1, style: st})
 	}
 	if focused {
 		cx, cy := vx+curCol-area.hoff, row+li-area.voff

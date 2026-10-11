@@ -157,7 +157,11 @@ func (r *Rendition) heldToast(id string) bool { return id != "" && id == r.held 
 // the pointer leaves it, or a key or a click hides it, as a tooltip does
 // (profile §6.23). What a click acts on under it, and a text control's
 // value, show hovered (paintHover); (-1, -1) is the pointer gone from the
-// frame. changed reports whether the frame is to be drawn again.
+// frame. The hover's tints are worked out from the terminal's colours: a
+// program paints the frame with Themed and a theme whose Term heard the
+// answers to TerminalQuery; with ANSI(true), which knows none, only a
+// link's accent shows. changed reports whether the frame is to be drawn
+// again.
 func (r *Rendition) Hover(col, row int) (changed bool) {
 	was, held := r.c.Tooltip(r.hover), r.held
 	r.mouse = spot{col: col, row: row, in: col >= 0 && row >= 0}

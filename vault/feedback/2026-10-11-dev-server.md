@@ -4,10 +4,6 @@ Reported while testing hotty.neuroplast.io's storybook on the local dev
 server (web's `p3` checkout, the kit at 4b74875). Each item is deleted
 in the leg that addresses it.
 
-- **Resize corner.** On a longText ("Notes" in hotty/form): "I want a
-  resizable drag corner, similar to how web textareas work." "Current
-  HOTTY version is resizable, but we need to have control over
-  resizability in every axis."
 - **I-beam.** "I beam cursor only shown when hovering over the blinking
   cursor block, but it should be when hovering over any point of the
   text input field." The kit's Pointer gives "text" over the whole
