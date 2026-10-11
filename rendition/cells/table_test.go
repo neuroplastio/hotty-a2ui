@@ -1,6 +1,7 @@
 package cells
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -126,5 +127,29 @@ func TestTableKeysAndClicks(t *testing.T) {
 	}
 	if err := r.Click(5, 0); err != nil || c.S.Data.Value("/sel") != "Tokyo" || len(*actions) != 2 {
 		t.Errorf("a click on the header changed something: %v %v %v", err, c.S.Data.Value("/sel"), *actions)
+	}
+}
+
+// The wheel over a table with a height moves its rows, three a notch,
+// and leaves the selection; a key that moves the selection brings it
+// back into view.
+func TestTableWheel(t *testing.T) {
+	r, c, _ := cityTable(t)
+	f := r.Draw(40)
+	row := rowOf(t, f, "Tokyo")
+	if !r.Wheel(4, row, 0, 1) {
+		t.Fatal("the wheel down over the table: not handled")
+	}
+	f = r.Draw(40)
+	if strings.Contains(f.Plain(), "Tokyo") || !strings.Contains(f.Plain(), "São Paulo") || c.S.Data.Value("/sel") != "Tokyo" {
+		t.Errorf("after the wheel down, selected %v:\n%s", c.S.Data.Value("/sel"), f.Plain())
+	}
+	if r.Wheel(4, row, 0, 1) {
+		t.Error("the wheel down at the end: handled")
+	}
+	c.Focus("root")
+	keys(t, r, "ArrowDown")
+	if f = r.Draw(40); !strings.Contains(f.Plain(), "Delhi") || c.S.Data.Value("/sel") != "Delhi" {
+		t.Errorf("ArrowDown after the wheel, selected %v:\n%s", c.S.Data.Value("/sel"), f.Plain())
 	}
 }

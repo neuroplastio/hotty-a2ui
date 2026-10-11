@@ -316,9 +316,10 @@ func mapTable(b *Builder, n *a2ui.Node) *Element {
 	if h := a2ui.ToNumber(b.Raw(n, "height")); h >= 1 {
 		e.Height = int(h)
 		top := b.St.Scroll[n.Key]
-		if sel := e.SelectedRow(); sel >= 0 {
+		if sel := e.SelectedRow(); sel >= 0 && b.St.Revealed[n.Key] != e.RowIDs[sel] {
 			top = min(top, sel)
 			top = max(top, sel-e.Height+1)
+			b.St.Revealed[n.Key] = e.RowIDs[sel]
 		}
 		e.Top = max(min(top, len(e.Cells)-e.Height), 0)
 		b.St.Scroll[n.Key] = e.Top

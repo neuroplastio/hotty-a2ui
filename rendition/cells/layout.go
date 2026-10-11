@@ -1,6 +1,8 @@
 package cells
 
 import (
+	"slices"
+
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -16,6 +18,9 @@ type layout struct {
 	// labelW is the width a one-line field pads its label to on its
 	// value's row: its run's widest (labelRuns).
 	labelW map[*view.Element]int
+	// indented are the Buttons, and the Rows of them, that a Column of
+	// fields starts past its gutter (labelRuns, indent).
+	indented map[*view.Element]bool
 	// pages are each HottyPaginator's child as it stands for each page
 	// (pagerPages).
 	pages map[*view.Element][]*view.Element
@@ -28,13 +33,24 @@ type sized struct {
 
 func newLayout(r *Rendition) *layout {
 	return &layout{r: r, nat: map[*view.Element]int{}, min: map[*view.Element]int{}, hgt: map[sized]int{}, text: map[sized][]tline{},
-		labelW: map[*view.Element]int{}, pages: map[*view.Element][]*view.Element{}}
+		labelW: map[*view.Element]int{}, indented: map[*view.Element]bool{}, pages: map[*view.Element][]*view.Element{}}
 }
 
 // labelRuns notes, for each run of a Column's children whose labels are
 // on their value's row (inlineRow), the widest label: each pads its own to
-// it, so that their values start in one column, as a GUI form's do.
+// it, so that their values start in one column, as a GUI form's do. In a
+// Column that holds a field, it notes the Buttons, and the Rows of
+// nothing but Buttons, which start past the gutter (indent), so that a
+// form's buttons line up with its labels, as a GUI form's do with its
+// inputs (the maintainer, 2026-10-11).
 func (l *layout) labelRuns(kids []*view.Element) {
+	if slices.ContainsFunc(kids, holdsField) {
+		for _, k := range kids {
+			if onlyButtons(k) {
+				l.indented[k] = true
+			}
+		}
+	}
 	for i := 0; i < len(kids); {
 		if !inlineRow(kids[i]) {
 			i++
@@ -81,12 +97,43 @@ func (l *layout) natural(e *view.Element) int {
 	return n
 }
 
+// widest is the widest of a Column's children, each past its indent.
 func (l *layout) widest(es []*view.Element) int {
+	l.labelRuns(es)
 	n := 0
 	for _, e := range es {
-		n = max(n, l.natural(e))
+		n = max(n, l.indent(e)+l.natural(e))
 	}
 	return n
+}
+
+// indent is the columns a Column's child starts past the Column's start:
+// a field's gutter for a Button, or a Row of them, in a Column of fields
+// (labelRuns); else none.
+func (l *layout) indent(e *view.Element) int {
+	if l.indented[e] {
+		return gutter
+	}
+	return 0
+}
+
+// holdsField reports whether a Column's child is a field, or a Row that
+// holds one.
+func holdsField(e *view.Element) bool {
+	if e.Kind == view.Stack && e.Dir == view.Horizontal {
+		return slices.ContainsFunc(shown(e.Children), holdsField)
+	}
+	return isField(e)
+}
+
+// onlyButtons reports whether a Column's child is a Button, not a List's
+// row, or a Row of nothing but those.
+func onlyButtons(e *view.Element) bool {
+	if e.Kind == view.Stack && e.Dir == view.Horizontal {
+		kids := shown(e.Children)
+		return len(kids) > 0 && !slices.ContainsFunc(kids, func(k *view.Element) bool { return !onlyButtons(k) })
+	}
+	return e.Kind == view.Button && !e.Item
 }
 
 // minimum is the narrowest an element gets before a Row breaks its words
@@ -101,9 +148,12 @@ func (l *layout) minimum(e *view.Element) int {
 	kids := shown(e.Children)
 	switch e.Kind {
 	case view.Stack:
+		if e.Dir != view.Horizontal {
+			l.labelRuns(kids)
+		}
 		for i, k := range kids {
 			if e.Dir != view.Horizontal {
-				n = max(n, l.minimum(k))
+				n = max(n, l.indent(k)+l.minimum(k))
 				continue
 			}
 			if i > 0 {
@@ -112,13 +162,15 @@ func (l *layout) minimum(e *view.Element) int {
 			n += l.minimum(k)
 		}
 	case view.Card:
+		l.labelRuns(kids)
 		for _, k := range kids {
-			n = max(n, l.minimum(k))
+			n = max(n, l.indent(k)+l.minimum(k))
 		}
 		n += 4
 	case view.Form, view.Modal, view.Tabs:
+		l.labelRuns(kids)
 		for _, k := range kids {
-			n = max(n, l.minimum(k))
+			n = max(n, l.indent(k)+l.minimum(k))
 		}
 	case view.Text, view.Document:
 		for _, t := range l.lines(e, noWrap) {
@@ -328,6 +380,7 @@ func (l *layout) lines(e *view.Element, w int) []tline {
 // columnWidth is a Column child's width: the column's when align is
 // stretch, else its own, at most the column's.
 func (l *layout) columnWidth(e *view.Element, align string, w int) int {
+	w = max(w-l.indent(e), 1)
 	if align == "stretch" || align == "" {
 		return w
 	}

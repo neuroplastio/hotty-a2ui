@@ -83,7 +83,7 @@ func TestConfirm(t *testing.T) {
 		"┃ Name         hotty-kit\n" +
 		"  Description\n" +
 		"\n" +
-		" Yes   No\n" +
+		"   Yes   No\n" +
 		"\n" +
 		"enter submit • ? more"
 	if got := r.Draw(64).Plain(); got != want {

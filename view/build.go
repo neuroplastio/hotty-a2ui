@@ -41,9 +41,10 @@ type State struct {
 	// Open are the branches unfolded in each HottyTree whose expanded is
 	// not bound, by its id: what the user made them.
 	Open map[string][]string
-	// Revealed is the node each HottyTree with a height last brought into
-	// view, by its id: the rows it shows follow the selection when that
-	// moves, and the wheel moves them otherwise (ScrollTree).
+	// Revealed is the node each HottyTree, or the row each HottyTable,
+	// with a height last brought into view, by its id: the rows it shows
+	// follow the selection when that moves, and the wheel moves them
+	// otherwise (ScrollRows).
 	Revealed map[string]string
 	// FullHints: the surface's HottyKeyHints show their full view (?).
 	FullHints bool

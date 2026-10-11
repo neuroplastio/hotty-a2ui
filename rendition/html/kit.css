@@ -345,6 +345,19 @@
 .k-date { width: auto; max-width: 100%; }
 textarea.k-input { min-height: 5.5rem; }
 
+/* Hover: what a click acts on shows where the pointer is, a step past its
+   own look, as cells draws it (paintHover), and no more, so that it does
+   not draw the eye: an input's border toward the text, a button's fill a
+   step lighter, a row, an item or a node on a faint tint. The keyboard's
+   own look wins where both are on one thing. */
+.k-input:enabled:not(:focus):hover, .k-chip:not([aria-pressed=true]):hover { border-color: color-mix(in srgb, var(--k-fg) 30%, var(--k-bg)); }
+.k-btn:enabled:not(:focus, .k-primary, .k-borderless):hover { background: color-mix(in srgb, var(--k-fg) 16%, var(--k-bg)); }
+.k-primary:enabled:not(:focus):hover { background: color-mix(in srgb, var(--k-accent) 88%, var(--k-fg)); }
+.k-borderless:enabled:not(:focus):hover { background: var(--k-surface); }
+.k-switch:enabled:not([aria-checked=true]):hover .k-switch-track { background: color-mix(in srgb, var(--k-fg) 16%, var(--k-bg)); }
+.k-table tbody tr:not(.k-sel):hover, .k-rich-item:not(.k-sel):hover, .k-node:not(.k-sel):hover, .k-hunk:not(.k-sel):hover { background: var(--k-surface); }
+.k-table tbody tr { cursor: pointer; }
+
 /* A Slider: − track + value. The track is one button, its rail, fill and
    knob drawn inside it. */
 .k-slide { display: flex; align-items: center; column-gap: var(--k-2); }

@@ -321,7 +321,7 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 	yy := y
 	for i, k := range kids {
 		yy += gaps[i] + separator(kids, i)
-		dx := 0
+		dx := l.indent(k)
 		switch align {
 		case "center":
 			dx = (w - ws[i]) / 2

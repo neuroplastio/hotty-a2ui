@@ -80,7 +80,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.MouseMotionMsg:
 		if msg.Button == tea.MouseNone {
 			// Hover: the pointer's shape changes, and the frame only when
-			// it went onto or off a toast or a description (Book.Hover).
+			// it went onto or off a toast, a description or something hovered
+			// (Book.Hover).
 			if !m.b.Hover(msg.X, msg.Y) {
 				return m, tea.Batch(cmd, m.ptr.set(m.b.Pointer(msg.X, msg.Y)))
 			}

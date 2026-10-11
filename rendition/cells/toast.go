@@ -155,9 +155,13 @@ func (r *Rendition) heldToast(id string) bool { return id != "" && id == r.held 
 // description, the nearest one (view.Controller.Description), that
 // description shows in the HottyKeyHints in place of the keyboard's, until
 // the pointer leaves it, or a key or a click hides it, as a tooltip does
-// (profile §6.23). changed reports whether the frame is to be drawn again.
+// (profile §6.23). What a click acts on under it, and a text control's
+// value, show hovered (paintHover); (-1, -1) is the pointer gone from the
+// frame. changed reports whether the frame is to be drawn again.
 func (r *Rendition) Hover(col, row int) (changed bool) {
 	was, held := r.c.Tooltip(r.hover), r.held
+	r.mouse = spot{col: col, row: row, in: col >= 0 && row >= 0}
+	pointing, _ := r.point(r.mouse)
 	r.hover, r.held = "", ""
 	if h := r.hitAt(col, row); r.onToast(h) {
 		r.held = r.c.V.Find(h.id).Name
@@ -171,7 +175,7 @@ func (r *Rendition) Hover(col, row int) (changed bool) {
 	if r.quiet != "" {
 		r.hover = ""
 	}
-	return r.c.Tooltip(r.hover) != was || r.held != held
+	return r.c.Tooltip(r.hover) != was || r.held != held || pointing != r.pointing
 }
 
 // hush hides the hovered description, as a key or a click hides a

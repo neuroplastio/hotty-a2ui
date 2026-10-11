@@ -51,6 +51,11 @@ type Rendition struct {
 	press       *press        // a press that may start a drag and drop (drag.go)
 	anim        time.Duration // how soon the last Draw changes again (Animating)
 	jumped      int           // the jump to a heading the last Draw showed (view.Jump.Seq)
+	last        *Frame        // the frame the last Draw returned, for its links (Pointer)
+	// mouse is where the pointer is (Hover); pointing, what it is over
+	// that the last Draw drew hovered (paintHover).
+	mouse    spot
+	pointing pointed
 	// hover is the element whose description the pointer shows (Hover),
 	// quiet the one a key or a click hid it on, until the pointer leaves
 	// it; held is the toast the pointer is on, whose time waits.
@@ -180,7 +185,9 @@ func (r *Rendition) Draw(cols int) *Frame {
 	}
 	l.paintDrag(cv)
 	r.paintToasts(cv, stack, tw)
+	r.paintHover(cv)
 	r.jumped = r.c.St.Jump.Seq
+	r.last = f
 	return f
 }
 
@@ -253,19 +260,6 @@ func (r *Rendition) ShiftClick(col, row int) error {
 		}
 	}
 	return r.Click(col, row)
-}
-
-// Pointer is the pointer's shape over a cell of the last frame, as CSS
-// names it, for a program to set with OSC 22: "text", an I-beam, over a
-// text control's value, as a browser shows over a field; else "", the
-// terminal's own.
-func (r *Rendition) Pointer(col, row int) string {
-	if h := r.hitAt(col, row); h != nil && !h.disabled && h.field != nil {
-		if a := h.field; row >= a.y && row < a.y+a.rows && col >= a.x && col < a.x+a.w {
-			return "text"
-		}
-	}
-	return ""
 }
 
 // hitAt is the topmost hit at a cell of the last frame, or nil.

@@ -1,0 +1,26 @@
+# The maintainer on the site's local dev server (2026-10-11)
+
+Reported while testing hotty.neuroplast.io's storybook on the local dev
+server (web's `p3` checkout, the kit at 4b74875). Each item is deleted
+in the leg that addresses it.
+
+- **Resize corner.** On a longText ("Notes" in hotty/form): "I want a
+  resizable drag corner, similar to how web textareas work." "Current
+  HOTTY version is resizable, but we need to have control over
+  resizability in every axis."
+- **I-beam.** "I beam cursor only shown when hovering over the blinking
+  cursor block, but it should be when hovering over any point of the
+  text input field." The kit's Pointer gives "text" over the whole
+  value; the site's app panes drop OSC 22 (web vterm/pane.go), asked of
+  web.
+- **Slider drags.** "Cell-only sliders lost their draggability (hotty
+  version works)." A drag through the Book in Go moves the slider, so
+  the cause is likely the page's mouse reports under 0.2.
+- **Gradient.** "Gradient is not shown in cell only progress bar (web
+  browser)". x/vt answers OSC 10/11/12 but not OSC 4, so the fill has
+  no accent and magenta to blend; asked of web (the pane answering OSC 4
+  from the page's palette).
+- **QR.** "QR code is not square in cells". A module is a column by half
+  a row, square where a cell is 1:2; the site's xterm.js (IBM Plex Mono
+  15px, lineHeight 1.15) makes cells about 9×22 px, so modules are about
+  a quarter taller than wide. Open: what to do about it.

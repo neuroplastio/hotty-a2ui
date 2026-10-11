@@ -39,7 +39,7 @@ func (n TreeNode) Branch() bool { return n.Kids > 0 }
 // mapTree makes a HottyTree's element: its nodes, an id each (its value,
 // as text, else its place, "0.2.1"), those that show and where they
 // matched the filter, and the rows a height shows: where the wheel left
-// them (ScrollTree), or when the selection moved, moved as little as
+// them (ScrollRows), or when the selection moved, moved as little as
 // brings the selected node into view.
 func mapTree(b *Builder, n *a2ui.Node) *Element {
 	e := &Element{Kind: Tree, Value: a2ui.ToString(b.Value(n, "selected")), Placeholder: b.String(n, "emptyText"),
@@ -306,15 +306,24 @@ func (c *Controller) ToggleNode(id string, i int) error {
 	return err
 }
 
-// ScrollTree moves the rows a HottyTree with a height shows by rows (up
-// when negative), as the wheel does, clamped, leaving the selection where
-// it is; moved reports whether they moved.
-func (c *Controller) ScrollTree(id string, rows int) (moved bool) {
+// ScrollRows moves the rows a HottyTree or a HottyTable with a height
+// shows by rows (up when negative), as the wheel does, clamped, leaving
+// the selection where it is; moved reports whether they moved.
+func (c *Controller) ScrollRows(id string, rows int) (moved bool) {
 	e := c.V.Find(id)
-	if e == nil || e.Kind != Tree || e.Height <= 0 {
+	if e == nil || e.Height <= 0 {
 		return false
 	}
-	top := max(min(e.Top+rows, len(e.Shown)-e.Height), 0)
+	n := 0
+	switch e.Kind {
+	case Tree:
+		n = len(e.Shown)
+	case Table:
+		n = len(e.Cells)
+	default:
+		return false
+	}
+	top := max(min(e.Top+rows, n-e.Height), 0)
 	if top == e.Top {
 		return false
 	}

@@ -535,11 +535,11 @@ func TestClick(t *testing.T) {
 		t.Fatalf("click on the box: %v %v %s", err, data()["agree"], c.St.Focus)
 	}
 	f = r.Draw(40)
-	if err := r.Click(2, row(" Go")); err != nil || !slices.Equal(*actions, []string{"go"}) {
+	if err := r.Click(2, row("   Go")); err != nil || !slices.Equal(*actions, []string{"go"}) {
 		t.Fatalf("click on the Button: %v %v", err, *actions)
 	}
 	f = r.Draw(40)
-	if err := r.Click(30, row(" Go")); err != nil || c.St.Keyboard {
+	if err := r.Click(30, row("   Go")); err != nil || c.St.Keyboard {
 		t.Fatal("a click on nothing kept the keyboard")
 	}
 	_ = c.SetValue("name", "Ada")

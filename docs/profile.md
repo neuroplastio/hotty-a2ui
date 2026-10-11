@@ -98,8 +98,8 @@ so that an error comes and goes as a text delta.
 | Modal | its trigger; while open, its content in the layer, over a backdrop, the surface `inert` |
 | HottyForm | `form` with a hidden submit button out of the Tab order, so Enter submits |
 | HottyProgress | `div role=progressbar` with `aria-valuemin`, `aria-valuemax` and, when it has a value, `aria-valuenow`: the label, then a rounded track with a fill as wide as the fraction (in `--k-info`, `--k-success` once full) and an `output` with the percentage. Without a value, a quarter of the track sweeps across it with the clock (§3.4): the element's `--k-at` is where it starts, so that a tick is one attribute's delta |
-| HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling, a sticky header and the row under the pointer are vault KIT-01h. A `reorderable` one's `data-keys` also give the program Alt+ArrowUp and Alt+ArrowDown, which move the selected row (§6.21); a drag is vault KIT-23h |
-| HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`, in a row (`~d`, `role=status`) that says which page shows (a HottyPaginator's dots, §6.26). Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type and the item under the pointer are vault KIT-04h. A `reorderable` one's `data-keys` give Alt+ArrowUp and Alt+ArrowDown too (§6.21) |
+| HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling and a sticky header are vault KIT-01h; the row under the pointer is on `--k-surface` (§3.7, hovered). A `reorderable` one's `data-keys` also give the program Alt+ArrowUp and Alt+ArrowDown, which move the selected row (§6.21); a drag is vault KIT-23h |
+| HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`, in a row (`~d`, `role=status`) that says which page shows (a HottyPaginator's dots, §6.26). Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type are vault KIT-04h; the item under the pointer is on `--k-surface` (§3.7, hovered). A `reorderable` one's `data-keys` give Alt+ArrowUp and Alt+ArrowDown too (§6.21) |
 | HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a HottyDiff's, a HottyTree's, a HottyPaginator's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h. On a surface with a component that has an `accessibility.description`, a row (`~z`, `k-hints-tip`) comes first: the tooltip (§6.23), the description of the element the host says the pointer is over, else of the element with the keyboard, in the text's colour and italics, cut with an ellipsis; empty, a line high, when neither has one |
 | a toast (`hottyToast`, §6.23) | in the toasts' region (`~t`, `div role=region aria-label=Notifications`), fixed at the surface's top right corner, a column `min(22rem, 100% − 1rem)` wide, the newest at the top: a `div data-on=click` whose id is `hottyToast:` and the toast's id, `role=alert` for a warning or an error, which a screen reader reads at once, `role=status` for news and a success, read when it is idle. It holds the kind's mark, the basic catalog's icon (`info`, `check`, `warning`, `error`) in the kind's colour (`--k-info`, `--k-success`, `--k-warning`, `--k-error`), `aria-hidden`; the message; and its action, a borderless `button` whose id is the toast's and `/action/0`. It is filled with a tenth of its kind's colour over `--k-surface`, ringed with it, rounded and shadowed. The region is cut at the surface's edges: a toast as a surface of its own at a higher z (SPEC.md §5.2) is vault KIT-13h |
 | HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there. Its `data-keys` binds the keys bubbles' viewport scrolls with to the host's scroll actions (SPEC.md §10.2, *Scrolling keys*), so that they scroll it as in cells (§3.7): j and k, f, b, Space and Shift+Space, u and d (Control+u, Control+d), g and G, and h and l while its lines are cut. A Button in it keeps Space and a field in it types the letters, since a key an element uses stays its own and a field leaves scroll actions out. Following the tail on a host is vault KIT-07h |
@@ -421,6 +421,13 @@ How the containers lay their children out:
   - Across: with `align` stretch, a child gets the full width. With start,
     center or end, it gets its natural width (at most the full width),
     placed at the start, the centre (rounded down) or the end.
+  - In a Column that holds a field (or a Row that holds one), a Button,
+    or a Row of nothing but Buttons, starts past the gutter, two columns
+    in, so that a form's buttons line up with its labels, as a GUI form's
+    line up with its inputs (the maintainer, 2026-10-11), with start or
+    stretch; center and end place it as any child. Its natural and
+    minimum widths in the Column count the two columns. A List's rows
+    are not indented.
   - A Column has spare rows only when it is given more than it needs (a
     Row's stretch). Weighted children take them by weight: each takes the
     floor of its share, then the weighted children take one row each, in
@@ -1055,8 +1062,36 @@ a click hides it, as a GUI's tooltip goes, until the pointer leaves the
 element. Under an open Modal's panel only its content is described, and
 under a toast nothing.
 
-**The wheel** over a HottyTree with a `height` moves its rows, three a
-notch, while they can move that way. Else it scrolls the innermost
+The pointer's shape (`Rendition.Pointer`, which a program sets with OSC
+22) is a browser's: an I-beam (`text`) over a text field's input; a hand
+(`pointer`) over what a click acts on: a Button, a CheckBox, a
+HottySwitch, a select and its open list's options, a Choice's options, a
+tab, a link (in place, or a cell with an OSC 8 link), a HottyTree's node,
+a HottyList's item, a HottyTable's row, a HottyDiff's hunk, a
+HottyPaginator's dot, a toast and its action, a Slider's, a
+HottyRangeSlider's or a HottyKnob's track; the terminal's own elsewhere,
+over a field's label and over a disabled control too. What has a hand or
+an I-beam is drawn **hovered** while the pointer is on it, a step past
+its own look and no more, as a browser's `:hover`, so that it shows
+where the pointer is without drawing the eye: a one-line field's or a
+select's underline from half its contrast to its whole, a longText's
+bar 35% of the way from `border` toward the text where both are known, a Button's fill from 48 to
+72 parts of 255 toward the text, a link in `accent`, and anything else on
+a tint 20 parts toward the text, past the gutter; only where a tint shows
+(§3.6), and never on reversed cells, the keyboard's or a selection. The
+hover is worked out from each frame as it is drawn, so it stays under the
+pointer when what is there moves or a Modal opens over it. On a host the
+stylesheet's `:hover` rules take the same steps: an input's border, or a
+chip's, toward the text, a Button's fill a step lighter (a primary one's
+a step toward the text), an off HottySwitch's track a step lighter, and a
+HottyTable's row, a HottyList's item, a HottyTree's node or a HottyDiff's
+hunk on `--k-surface`; never on what has the keyboard, which keeps its
+own look.
+
+**The wheel** over a HottyTree or a HottyTable with a `height` moves its
+rows, three a notch, while they can move that way, and leaves the
+selection where it is; a key that moves the selection brings it back
+into view. Else it scrolls the innermost
 HottyScrollView, or HottyCode whose lines are cut, under the pointer that
 can still move that way: three rows a notch, or sideways (the wheel's
 left and right, or Shift with it) six columns, as bubbles' viewport takes

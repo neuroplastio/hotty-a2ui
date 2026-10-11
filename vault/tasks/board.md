@@ -97,9 +97,12 @@ As of 2026-10-09, from the hotty agent:
   click or keyboard loss elsewhere, or the handover stays just for Tab.
   Hosts need hotty-blitz 33b2f9c or later (from the hotty agent,
   2026-10-09).
-- [ ] **KIT-01h** — Table: a real table, a sticky header, hover, sorting by
-  header click.
-- [ ] **KIT-04h** — Rich list: two-line rows in proportional type, hover.
+- [ ] **KIT-01h** — Table: a real table, a sticky header, sorting by
+  header click, the wheel on a host (the surface scrolls itself today, so
+  the wheel never reaches the program's window of rows). Hover landed
+  2026-10-11 (kit.css `:hover`).
+- [ ] **KIT-04h** — Rich list: two-line rows in proportional type. Hover
+  landed 2026-10-11.
 - [ ] **KIT-08h** — Key hints as keycaps, following the host's focus. On
   a host the hints leave out what the host works itself (fields, boxes,
   Buttons), since it moves focus without telling the renderer (journal
