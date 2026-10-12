@@ -106,3 +106,23 @@ func TestFilePickerOnHost(t *testing.T) {
 		t.Errorf("entry 0 aria-selected after back = %q, want true", got)
 	}
 }
+
+func TestFilePickerOnHostScrollbar(t *testing.T) {
+	x := newHarness(t)
+	h := `"catalogId":"` + hottycat.ID + `"`
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"dir":"","sel":""}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["fp"]},
+ {"id":"fp","component":"HottyFilePicker",`+h+`,"root":"project","height":2}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	r.C.Grant("project", htmlTestFS)
+	r.C.Rebuild()
+	x.update(r)
+
+	doc := r.Doc()
+	if !strings.Contains(doc, "k-file-scrollbar") || !strings.Contains(doc, "k-file-thumb") {
+		t.Errorf("expected k-file-scrollbar and k-file-thumb in doc:\n%s", doc)
+	}
+}

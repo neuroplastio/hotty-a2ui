@@ -662,7 +662,10 @@ textarea.k-resize-none { resize: none; }
    directories first, then files; its title the directory shown from the
    root. The selected entry's 3px bar and text take the focus colour while
    it has the keyboard. */
-.k-filepicker { display: flex; flex-direction: column; align-self: stretch; outline: none; }
+.k-filepicker { position: relative; display: flex; flex-direction: column; align-self: stretch; outline: none; }
+.k-file-scrollbar { position: absolute; right: var(--k-1); top: calc(var(--k-1) * 2 + 1.5rem); bottom: var(--k-1); width: 3px; background: color-mix(in srgb, var(--k-border) 40%, transparent); border-radius: 999px; }
+.k-file-thumb { position: absolute; width: 100%; min-height: 8px; background: var(--k-muted); border-radius: 999px; }
+.k-filepicker:focus .k-file-thumb { background: var(--k-focus); }
 .k-file-title { font-weight: 600; padding: var(--k-1) var(--k-3); }
 .k-file-title.k-file-up { cursor: pointer; user-select: none; }
 .k-file-title.k-file-up:hover { background: var(--k-surface); }

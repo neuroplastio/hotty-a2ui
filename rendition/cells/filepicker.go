@@ -84,7 +84,17 @@ func fileSizeWidth(e *view.Element) int {
 	return n
 }
 
-// fileWidth is a HottyFilePicker's natural width: its widest line.
+// fileBar is the columns a HottyFilePicker's scrollbar takes: while its
+// entries scroll, a blank column and the bar (scrollBar); none otherwise.
+func fileBar(e *view.Element) int {
+	if e.Height > 0 && len(e.Files) > e.Height {
+		return scrollBar
+	}
+	return 0
+}
+
+// fileWidth is a HottyFilePicker's natural width: its widest line, and
+// its scrollbar.
 func fileWidth(e *view.Element) int {
 	n := Width(fileTitle(e))
 	for _, f := range e.Files {
@@ -94,12 +104,12 @@ func fileWidth(e *view.Element) int {
 	if e.Error != "" {
 		n = max(n, Width(e.Error))
 	}
-	return fileIndent + n
+	return fileIndent + n + fileBar(e)
 }
 
 // fileMinimum is a HottyFilePicker's minimum: its indent and a few
-// columns, so that its names cut.
-func fileMinimum(e *view.Element) int { return fileIndent + 4 }
+// columns, so that its names cut, and its scrollbar.
+func fileMinimum(e *view.Element) int { return fileIndent + 4 + fileBar(e) }
 
 // fileHeight is a HottyFilePicker's height.
 func fileHeight(e *view.Element) int { return fileHead + fileBody(e) }
@@ -109,17 +119,22 @@ func fileHeight(e *view.Element) int { return fileHead + fileBody(e) }
 // title; the highlighted entry's bar, name and size are in the accent
 // while the picker has the keyboard, else its name is bold and its bar
 // muted. A file's size is right-aligned in muted; the empty text, or the
-// error, shows where its entries would.
+// error, shows where its entries would. While its entries scroll, a scroll
+// view's bar runs beside them.
 func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	focused := r.focused(e.ID)
+	bar := min(fileBar(e), w)
 	in := x + fileIndent
-	iw := max(w-fileIndent, 0)
+	iw := max(w-fileIndent-bar, 0)
 	row := y
 	cv.write(in, row, iw, fit(line(fileTitle(e), style{role: Accent, attr: Reverse}), iw))
 	r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -1})
-	row += fileHead
+	row++
+	r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -2})
+	row++
 
+	totH := fileHead + fileBody(e)
 	switch {
 	case e.Error != "":
 		cv.write(in, row, iw, fit(line("✗ "+e.Error, style{role: Error}), iw))
@@ -128,8 +143,14 @@ func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	if e.Error != "" || len(e.Files) == 0 {
 		r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -2})
-		r.boxes[e.ID] = box{x, y, w, row + 1 - y}
+		if rem := y + totH - (row + 1); rem > 0 {
+			r.hits = append(r.hits, hit{x: x, y: row + 1, w: w, h: rem, id: e.ID, opt: -2})
+		}
+		r.boxes[e.ID] = box{x, y, w, totH}
 		return
+	}
+	if bar > 0 {
+		l.paintScrollbar(cv, e, x+w-1, row, e.Height, len(e.Files), e.Top)
 	}
 	sizeW := fileSizeWidth(e)
 	end := len(e.Files)
@@ -139,15 +160,15 @@ func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 	at := row
 	for i := e.Top; i < end; i++ {
 		f := e.Files[i]
-		name, size, bar := style{}, style{role: Muted}, style{}
+		name, size, barSt := style{}, style{role: Muted}, style{}
 		if i == e.Selected {
-			name, bar = style{attr: Bold}, style{role: Muted}
+			name, barSt = style{attr: Bold}, style{role: Muted}
 			if focused {
-				name, size, bar = style{role: Accent}, style{role: Accent}, style{role: Accent}
+				name, size, barSt = style{role: Accent}, style{role: Accent}, style{role: Accent}
 			}
 		}
 		if i == e.Selected {
-			cv.write(x, at, w, line("│", bar))
+			cv.write(x, at, w, line("│", barSt))
 		}
 		nw := max(iw-sizeW, 0)
 		cv.write(in, at, nw, fit(line(fileLabel(f), name), nw))
@@ -157,7 +178,10 @@ func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: 1, id: e.ID, opt: i})
 		at++
 	}
-	r.boxes[e.ID] = box{x, y, w, at - y}
+	if rem := y + totH - at; rem > 0 {
+		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: rem, id: e.ID, opt: -2})
+	}
+	r.boxes[e.ID] = box{x, y, w, totH}
 }
 
 // clickFile is a click on a HottyFilePicker, which has the keyboard now:

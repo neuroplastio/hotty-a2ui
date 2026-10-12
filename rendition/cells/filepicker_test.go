@@ -155,12 +155,13 @@ func TestFilePickerCellsScrollAndWheel(t *testing.T) {
 		t.Fatalf("page 0 output unexpected:\n%s", f)
 	}
 
-	// Move selection to d3 (entry 3, which is on page 1)
-	c.Focus("root")
-	c.FileKey("root", "PageDown")
+	// Wheel down over blank separator row (y=1) scrolls down
+	if !r.Wheel(5, 1, 0, 1) {
+		t.Error("wheel down over separator was not handled")
+	}
 	f = r.Draw(40).Plain()
 	if !strings.Contains(f, "d3/") || strings.Contains(f, "d0/") {
-		t.Fatalf("page 1 output unexpected:\n%s", f)
+		t.Fatalf("wheel down did not scroll to d3:\n%s", f)
 	}
 
 	// Wheel up over the file picker scrolls back to d0
@@ -186,11 +187,14 @@ func TestFilePickerCellsScrollAndWheel(t *testing.T) {
 		t.Fatal(err)
 	}
 	e = c.V.Find("root")
-	if e.FileDir != "" || e.Selected != 3 || e.Top != 3 {
-		t.Errorf("after back: dir %q, selected %d, top %d; want empty, 3, 3", e.FileDir, e.Selected, e.Top)
+	if e.FileDir != "" || e.Selected != 3 || e.Top != 1 {
+		t.Errorf("after back: dir %q, selected %d, top %d; want empty, 3, 1", e.FileDir, e.Selected, e.Top)
 	}
 	f = r.Draw(40).Plain()
 	if !strings.Contains(f, "d3/") {
-		t.Errorf("drawing after back did not restore page 1 showing d3:\n%s", f)
+		t.Errorf("drawing after back did not restore view showing d3:\n%s", f)
+	}
+	if !strings.Contains(f, "┃") {
+		t.Errorf("expected scrollbar thumb in output:\n%s", f)
 	}
 }

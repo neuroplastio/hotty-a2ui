@@ -233,13 +233,22 @@ func TestFilePickerScrollAndFocusRestore(t *testing.T) {
 		t.Fatalf("initial top = %d, want 0", e.Top)
 	}
 
-	// Select entry 4 (e_dir), which is on page 1 (top 4)
+	// Select entry 4 (e_dir), which scrolls just enough to reveal it (top 1)
 	if err := c.ClickFile("root", 4); err != nil {
 		t.Fatal(err)
 	}
 	e = c.V.Find("root")
-	if e.Selected != 4 || e.Top != 4 {
-		t.Fatalf("after select: selected = %d, top = %d, want 4, 4", e.Selected, e.Top)
+	if e.Selected != 4 || e.Top != 1 {
+		t.Fatalf("after select: selected = %d, top = %d, want 4, 1", e.Selected, e.Top)
+	}
+
+	// Scroll further down to top 2
+	if !c.ScrollRows("root", 1) {
+		t.Fatal("ScrollRows failed")
+	}
+	e = c.V.Find("root")
+	if e.Top != 2 {
+		t.Fatalf("after scroll: top = %d, want 2", e.Top)
 	}
 
 	// Enter e_dir (second click)
@@ -268,8 +277,8 @@ func TestFilePickerScrollAndFocusRestore(t *testing.T) {
 	if e.Selected != 4 {
 		t.Errorf("selected after back = %d, want 4 (e_dir)", e.Selected)
 	}
-	// Scrolling must be restored to page 1 (top 4)
-	if e.Top != 4 {
-		t.Errorf("top after back = %d, want 4", e.Top)
+	// Scrolling must be restored to top 2
+	if e.Top != 2 {
+		t.Errorf("top after back = %d, want 2", e.Top)
 	}
 }

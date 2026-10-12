@@ -150,11 +150,11 @@ func mapFilePicker(b *Builder, n *a2ui.Node) *Element {
 		top := b.St.Scroll[n.Key]
 		fileKey := e.FileDir + ":" + strconv.Itoa(e.Selected)
 		if e.Selected >= 0 && b.St.Revealed[n.Key] != fileKey {
-			top = e.Selected
+			top = min(top, e.Selected)
+			top = max(top, e.Selected-e.Height+1)
 			b.St.Revealed[n.Key] = fileKey
 		}
-		top = min(top, len(e.Files)-1)
-		e.Top = max(top-top%e.Height, 0)
+		e.Top = max(min(top, len(e.Files)-e.Height), 0)
 		b.St.Scroll[n.Key] = e.Top
 	}
 	st.Dirs[e.FileDir] = DirPick{Index: e.Selected, Top: e.Top}
@@ -330,9 +330,6 @@ func (c *Controller) fileGoTo(e *Element, dir, child string) error {
 				for i, f := range files {
 					if f.Dir && f.Name == child {
 						st.Index = i
-						if e.Height > 0 {
-							c.St.Scroll[e.ID] = max(i-i%e.Height, 0)
-						}
 						break
 					}
 				}

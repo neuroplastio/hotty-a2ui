@@ -59,13 +59,19 @@ func filePicker(e *view.Element) *node {
 		box.add(item)
 	}
 	// A paged picker keeps its height, as in cells: hidden rows stand in
-	// for the entries a window leaves out.
+	// for the entries a window leaves out, and a scrollbar runs beside them.
 	if e.Height > 0 && len(e.Files) > e.Height {
 		for range e.Height - (end - e.Top) {
 			box.add(el("div", "class", "k-file-item k-file-gap", "aria-hidden", "true").add(
 				el("span", "class", "k-file-name").add(txt("\u00a0")),
 			))
 		}
+		total := len(e.Files)
+		topPct := float64(e.Top) * 100.0 / float64(total)
+		hPct := float64(e.Height) * 100.0 / float64(total)
+		thumb := el("div", "class", "k-file-thumb", "style",
+			"top: "+strconv.FormatFloat(topPct, 'f', 1, 64)+"%; height: "+strconv.FormatFloat(hPct, 'f', 1, 64)+"%;")
+		box.add(el("div", "class", "k-file-scrollbar", "aria-hidden", "true").add(thumb))
 	}
 	return box
 }
