@@ -196,6 +196,17 @@ built on it).
 - [ ] **KIT-FIT** — Re-check `html.Rendition.SetFit` (`k-fit`) on hottyterm
   26.10.09. That build ships hotty-blitz 050d4ba with the `100vh` fit fix.
   Keep `k-fit` unless it is now dead weight.
+- [ ] **KIT-28** — Context menu (right click): application-level context menu
+  support on secondary click (right click). Available by default in text inputs
+  (`TextField`, `longText`) and wherever text selection is supported (KIT-12;
+  `Text`, `HottyMarkdown`, `Code`). Menu items follow standard browser text input
+  context menus: Undo, Redo, separator, Cut, Copy, Paste, Delete, Select All,
+  with mnemonic accelerators (`_U_ndo`, `_R_edo`, `Cu_t_`, `_C_opy`, `_P_aste`,
+  `_D_elete`, `Select _A_ll`) and dynamic disabled/enabled states based on
+  selection, clipboard content, and field mutability. Must work both in cells
+  (drawn popup overlay box) and on a HOTTY host (surface/overlay at a higher z)
+  without relying on native browser context menus when running in an xterm.js /
+  web terminal addon. Reference shot: `vault/knowledge/context-menu.png`.
 
 ## Parked
 

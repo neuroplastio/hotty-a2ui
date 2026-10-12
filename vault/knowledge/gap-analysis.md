@@ -76,6 +76,7 @@ they're built.
 | KIT-24 | **Page mode**: a surface in an ordinary web page | gov NEIO-14 (the docs sites, 2026-10-10), GitHub's Markdown pages | Medium | — (a rendition of its own: static HTML, the stylesheet once a page, the page's theme as the palette, readable without a program) | A page host later: the addon's surface code without the terminal, for a wasm program |
 | KIT-25 | **Long-form Markdown** | gov NEIO-14, GitHub's Markdown, web's docs pilot (`textview`) | Medium | Headings, fenced code as HottyCode, GFM tables, images by alt text, alerts, component markers with fallbacks | The same in HTML, headings with GitHub's IDs |
 | KIT-26 | **Links that go in place** | gov NEIO-14 (nav, contents, pager) | Medium | A link the program handles, a HottyTree leaf among them | An event the program handles; a same-tab `href` on a plain page |
+| KIT-28 | **Context menu** (right click) | Browser text input context menu | Medium | A popup menu on secondary click (right click) for text inputs and wherever text selection is active (KIT-12). Standard browser items: Undo, Redo, Cut, Copy, Paste, Delete, Select All (with accelerators and enabled/disabled states). Drawn in cells as an overlay box | An overlay surface at a higher z (SPEC §5.2); does not rely on native browser context menu when running via xterm.js addon |
 
 ## What "parity" means here
 
