@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyFilePicker",
   "icon": "folder",
-  "description": "Bubbles' filepicker: browse a program-granted root directory. Arrow keys, j and k move the selection; Enter, l and ArrowRight open a directory or pick a file; Backspace, h, Escape and ArrowLeft go to the parent directory. Picking a file loads its code into a HottyCode preview.",
+  "description": "Bubbles' filepicker: browse a program-granted root directory. Arrow keys, j and k move the selection; Enter, l and ArrowRight open a directory or pick a file; Backspace, h, Escape, ArrowLeft or clicking the title go back to the parent directory, restoring focus and scroll position. Picking a file loads its code into a HottyCode preview.",
   "messages": [
     {
       "version": "v1.0",

@@ -125,3 +125,72 @@ func TestFilePickerCellsErrorAndEmpty(t *testing.T) {
 		t.Errorf("expected error in output:\n%s", plain)
 	}
 }
+
+func TestFilePickerCellsScrollAndWheel(t *testing.T) {
+	fsys := fstest.MapFS{
+		"d0":         &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"d1":         &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"d2":         &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"d3":         &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"d3/sub.txt": &fstest.MapFile{Data: []byte("hi\n"), Mode: 0644},
+		"f4.txt":     &fstest.MapFile{Data: []byte("f4\n"), Mode: 0644},
+		"f5.txt":     &fstest.MapFile{Data: []byte("f5\n"), Mode: 0644},
+	}
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"dir":"","sel":""}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyFilePicker","catalogId":"` + hotty.ID + `","root":"project",
+	  "path":{"@path":"/dir"},"selected":{"@path":"/sel"},"height":3}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	c.Grant("project", fsys)
+	c.Rebuild()
+	r := New(c)
+
+	// Page 0: d0, d1, d2
+	f := r.Draw(40).Plain()
+	if !strings.Contains(f, "d0/") || !strings.Contains(f, "d2/") || strings.Contains(f, "d3/") {
+		t.Fatalf("page 0 output unexpected:\n%s", f)
+	}
+
+	// Move selection to d3 (entry 3, which is on page 1)
+	c.Focus("root")
+	c.FileKey("root", "PageDown")
+	f = r.Draw(40).Plain()
+	if !strings.Contains(f, "d3/") || strings.Contains(f, "d0/") {
+		t.Fatalf("page 1 output unexpected:\n%s", f)
+	}
+
+	// Wheel up over the file picker scrolls back to d0
+	if !r.Wheel(5, 3, 0, -1) {
+		t.Error("wheel up was not handled")
+	}
+	f = r.Draw(40).Plain()
+	if !strings.Contains(f, "d0/") {
+		t.Fatalf("wheel up did not scroll to d0:\n%s", f)
+	}
+
+	// Re-select d3 and open it
+	c.ClickFile("root", 3) // select
+	c.ClickFile("root", 3) // open
+	e := c.V.Find("root")
+	if e.FileDir != "d3" {
+		t.Fatalf("fileDir = %q, want d3", e.FileDir)
+	}
+
+	// Inside d3, click title to go back up
+	r.Draw(40)
+	if err := r.Click(3, 0); err != nil {
+		t.Fatal(err)
+	}
+	e = c.V.Find("root")
+	if e.FileDir != "" || e.Selected != 3 || e.Top != 3 {
+		t.Errorf("after back: dir %q, selected %d, top %d; want empty, 3, 3", e.FileDir, e.Selected, e.Top)
+	}
+	f = r.Draw(40).Plain()
+	if !strings.Contains(f, "d3/") {
+		t.Errorf("drawing after back did not restore page 1 showing d3:\n%s", f)
+	}
+}

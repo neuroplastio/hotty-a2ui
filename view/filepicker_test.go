@@ -203,3 +203,73 @@ func TestFilePickerClick(t *testing.T) {
 		t.Errorf("/dir = %v, want src", got)
 	}
 }
+
+func TestFilePickerScrollAndFocusRestore(t *testing.T) {
+	fsys := fstest.MapFS{
+		"a_dir":        &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"b_dir":        &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"c_dir":        &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"d_dir":        &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"e_dir":        &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"e_dir/sub.go": &fstest.MapFile{Data: []byte("package sub\n"), Mode: 0644},
+		"file1.txt":    &fstest.MapFile{Data: []byte("1\n"), Mode: 0644},
+		"file2.txt":    &fstest.MapFile{Data: []byte("2\n"), Mode: 0644},
+	}
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"dir":"","sel":""}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyFilePicker","catalogId":"` + hotty.ID + `","root":"project",
+	  "path":{"@path":"/dir"},"selected":{"@path":"/sel"},"height":4}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	c.Grant("project", fsys)
+	c.Rebuild()
+
+	// Initially at root, page 0: entries 0..3 shown
+	e := c.V.Find("root")
+	if e.Top != 0 {
+		t.Fatalf("initial top = %d, want 0", e.Top)
+	}
+
+	// Select entry 4 (e_dir), which is on page 1 (top 4)
+	if err := c.ClickFile("root", 4); err != nil {
+		t.Fatal(err)
+	}
+	e = c.V.Find("root")
+	if e.Selected != 4 || e.Top != 4 {
+		t.Fatalf("after select: selected = %d, top = %d, want 4, 4", e.Selected, e.Top)
+	}
+
+	// Enter e_dir (second click)
+	if err := c.ClickFile("root", 4); err != nil {
+		t.Fatal(err)
+	}
+	e = c.V.Find("root")
+	if e.FileDir != "e_dir" {
+		t.Fatalf("fileDir = %q, want e_dir", e.FileDir)
+	}
+
+	// In e_dir, select sub.go (entry 0)
+	if err := c.ClickFile("root", 0); err != nil {
+		t.Fatal(err)
+	}
+
+	// Now go back up (FileUp)
+	if err := c.FileUp("root"); err != nil {
+		t.Fatal(err)
+	}
+	e = c.V.Find("root")
+	if e.FileDir != "" {
+		t.Errorf("fileDir = %q, want empty", e.FileDir)
+	}
+	// Focus must be restored to e_dir (index 4)
+	if e.Selected != 4 {
+		t.Errorf("selected after back = %d, want 4 (e_dir)", e.Selected)
+	}
+	// Scrolling must be restored to page 1 (top 4)
+	if e.Top != 4 {
+		t.Errorf("top after back = %d, want 4", e.Top)
+	}
+}

@@ -320,6 +320,8 @@ func (c *Controller) ScrollRows(id string, rows int) (moved bool) {
 		n = len(e.Shown)
 	case Table:
 		n = len(e.Cells)
+	case FilePicker:
+		n = len(e.Files)
 	default:
 		return false
 	}

@@ -79,11 +79,20 @@ type State struct {
 }
 
 // FilePick is a HottyFilePicker's renderer state: the directory it shows
-// where `path` is not bound ("" for the root), and the index of the entry
-// it has highlighted.
+// where `path` is not bound ("" for the root), the index of the entry
+// it has highlighted, and each visited directory's saved highlight and
+// scroll offset.
 type FilePick struct {
 	Path  string
 	Index int
+	Dirs  map[string]DirPick
+}
+
+// DirPick is a directory's saved highlight and scroll offset, restored
+// when returning to it.
+type DirPick struct {
+	Index int
+	Top   int
 }
 
 // NewState is a surface's state before the user does anything.

@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -86,6 +87,9 @@ func mapFilePicker(b *Builder, n *a2ui.Node) *Element {
 		b.St.File = map[string]FilePick{}
 	}
 	st := b.St.File[n.Key]
+	if st.Dirs == nil {
+		st.Dirs = map[string]DirPick{}
+	}
 	e := &Element{Kind: FilePicker, Root: b.String(n, "root"),
 		Placeholder: b.String(n, "emptyText"),
 		Value:       a2ui.ToString(b.Value(n, "selected")),
@@ -94,7 +98,19 @@ func mapFilePicker(b *Builder, n *a2ui.Node) *Element {
 		e.Placeholder = "Empty."
 	}
 	if bd, ok := n.Props["path"].(a2ui.Bound); ok && bd.Writable() {
-		e.FileDir = cleanFile(a2ui.ToString(b.Value(n, "path")))
+		dir := cleanFile(a2ui.ToString(b.Value(n, "path")))
+		if dir != st.Path {
+			if saved, has := st.Dirs[dir]; has {
+				st.Index = saved.Index
+				b.St.Scroll[n.Key] = saved.Top
+			} else {
+				st.Index = -1
+				b.St.Scroll[n.Key] = 0
+			}
+			st.Path = dir
+			delete(b.St.Revealed, n.Key)
+		}
+		e.FileDir = dir
 	} else {
 		e.FileDir = cleanFile(st.Path)
 		st.Path = e.FileDir
@@ -132,13 +148,16 @@ func mapFilePicker(b *Builder, n *a2ui.Node) *Element {
 	}
 	if e.Height > 0 && len(e.Files) > 0 {
 		top := b.St.Scroll[n.Key]
-		if e.Selected >= 0 {
+		fileKey := e.FileDir + ":" + strconv.Itoa(e.Selected)
+		if e.Selected >= 0 && b.St.Revealed[n.Key] != fileKey {
 			top = e.Selected
+			b.St.Revealed[n.Key] = fileKey
 		}
 		top = min(top, len(e.Files)-1)
 		e.Top = max(top-top%e.Height, 0)
 		b.St.Scroll[n.Key] = e.Top
 	}
+	st.Dirs[e.FileDir] = DirPick{Index: e.Selected, Top: e.Top}
 	b.St.File[n.Key] = st
 	return e
 }
@@ -218,6 +237,10 @@ func (c *Controller) FileKey(id, key string) (ok bool, err error) {
 func (c *Controller) fileSelect(e *Element, i int) error {
 	st := c.St.File[e.ID]
 	st.Index = i
+	if st.Dirs == nil {
+		st.Dirs = map[string]DirPick{}
+	}
+	st.Dirs[e.FileDir] = DirPick{Index: i, Top: e.Top}
 	c.St.File[e.ID] = st
 	c.Rebuild()
 	return nil
@@ -255,22 +278,69 @@ func (c *Controller) FileUp(id string) error {
 }
 
 // fileUp goes to the parent of the directory shown, stopping at the root
-// (nothing happens there).
+// (nothing happens there). It restores the focus and scrolling in the parent,
+// highlighting the directory just left.
 func (c *Controller) fileUp(e *Element) error {
 	if e.FileDir == "" {
 		return nil
 	}
-	return c.fileGo(e, path.Dir(e.FileDir))
+	parent := cleanFile(path.Dir(e.FileDir))
+	child := path.Base(e.FileDir)
+	return c.fileGoTo(e, parent, child)
 }
 
-// fileGo shows the directory dir of the root: it resets the highlight,
-// writes the directory to the bound `path` (else to the renderer's
-// state), rebuilds, and runs onChange (whose context reads `path`).
+// fileGo shows the directory dir of the root: it writes the directory to
+// the bound `path` (else to the renderer's state), rebuilds, and runs
+// onChange (whose context reads `path`).
 func (c *Controller) fileGo(e *Element, dir string) error {
+	return c.fileGoTo(e, dir, "")
+}
+
+// fileGoTo shows directory dir of the root. When child is non-empty,
+// we are returning from child, so focus is restored to child in dir,
+// and scrolling is restored to show it.
+func (c *Controller) fileGoTo(e *Element, dir, child string) error {
 	dir = cleanFile(dir)
 	n := c.V.Node(e.ID)
 	st := c.St.File[e.ID]
-	st.Index = -1
+	if st.Dirs == nil {
+		st.Dirs = map[string]DirPick{}
+	}
+	st.Dirs[e.FileDir] = DirPick{Index: e.Selected, Top: e.Top}
+
+	if saved, ok := st.Dirs[dir]; ok {
+		st.Index = saved.Index
+		c.St.Scroll[e.ID] = saved.Top
+	} else {
+		st.Index = -1
+		c.St.Scroll[e.ID] = 0
+	}
+
+	if child != "" && child != "." {
+		if fsys, ok := c.St.Roots[e.Root]; ok && fsys != nil {
+			if ents, err := fs.ReadDir(fsys, fsDir(dir)); err == nil {
+				var files []FileEntry
+				for _, de := range ents {
+					if !fileMatch(e.Query.Text, de.Name()) {
+						continue
+					}
+					files = append(files, FileEntry{Name: de.Name(), Dir: de.IsDir()})
+				}
+				sortFile(files)
+				for i, f := range files {
+					if f.Dir && f.Name == child {
+						st.Index = i
+						if e.Height > 0 {
+							c.St.Scroll[e.ID] = max(i-i%e.Height, 0)
+						}
+						break
+					}
+				}
+			}
+		}
+	}
+
+	delete(c.St.Revealed, e.ID)
 	if bd, ok := n.Props["path"].(a2ui.Bound); ok && bd.Writable() {
 		if err := c.S.Write(bd.Path, dir); err != nil {
 			return err

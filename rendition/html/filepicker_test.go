@@ -99,4 +99,10 @@ func TestFilePickerOnHost(t *testing.T) {
 	if got, _ := s.Attr(partID("fp", partTitle), "class"); got != "k-file-title" {
 		t.Errorf("title class at root = %q, want k-file-title", got)
 	}
+	if got := r.C.V.Find("fp").Selected; got != 0 {
+		t.Errorf("selected after back = %d, want 0", got)
+	}
+	if got, _ := s.Attr(partID("fp", partEntry+"0"), "aria-selected"); got != "true" {
+		t.Errorf("entry 0 aria-selected after back = %q, want true", got)
+	}
 }

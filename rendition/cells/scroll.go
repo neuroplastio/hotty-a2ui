@@ -330,7 +330,7 @@ func (r *Rendition) Wheel(col, row, dx, dy int) (handled bool) {
 			if col < h.x || col >= h.x+h.w || row < h.y || row >= h.y+h.h {
 				continue
 			}
-			if e := r.c.V.Find(h.id); e != nil && (e.Kind == view.Tree || e.Kind == view.Table) && r.c.ScrollRows(e.ID, dy*wheelRows) {
+			if e := r.c.V.Find(h.id); e != nil && (e.Kind == view.Tree || e.Kind == view.Table || e.Kind == view.FilePicker) && r.c.ScrollRows(e.ID, dy*wheelRows) {
 				return true
 			}
 			break
