@@ -207,6 +207,26 @@ built on it).
   (drawn popup overlay box) and on a HOTTY host (surface/overlay at a higher z)
   without relying on native browser context menus when running in an xterm.js /
   web terminal addon. Reference shot: `vault/knowledge/context-menu.png`.
+- [ ] **KIT-29** — Horizontal scroll support: lateral scrolling and indicator
+  support for components that overflow available width or contain wide tabular,
+  hierarchical, or preformatted content. Targets components that benefit from
+  horizontal viewport panning:
+  - `HottyTable`: wide tables with many or wide columns keep minimum readable
+    widths without aggressive crushing (`fitWidths` down to 0-width dropped
+    columns); optional frozen key column.
+  - `HottyTree`: deeply nested branches and long labels pan sideways without
+    clipping or wrapping tree hierarchy.
+  - `HottyFilePicker`: multi-column file listings (name, size, permissions,
+    modified) or long paths in narrow panes.
+  - `HottyScrollView`: true two-axis scroll container; scrolls child components
+    horizontally (`scrollX` / `overflow-x`) with horizontal scrollbar (`─` track
+    with `━` thumb or `◄` `►` overflow markers) along the bottom.
+  - `HottyCode` & `HottyDiff`: unwrapped long lines with bottom scroll indicator
+    and keyboard panning (Shift+arrows or h/l).
+  - Overflowing `Row` and `Tabs`: horizontal strips that pan when items exceed
+    container width.
+  Supports Shift+Wheel, horizontal mouse wheel / trackpad gestures, keyboard
+  navigation, and drawn horizontal scrollbars across cells and HOTTY host renditions.
 
 ## Parked
 

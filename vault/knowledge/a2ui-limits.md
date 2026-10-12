@@ -162,6 +162,7 @@ an enum or `{svgPath}` (added 2026-10-10, gov R-4).
 | KIT-20 QR code | Settled (KIT-20c, profile §6.29): `HottyQRCode`, `value` (a DynamicString, bound to follow a field), `errorCorrection` (L, M, Q, H; raised where the code's size allows) and `label`; no size or colour props, since a camera needs black on white and the size is the value's | Fits |
 | KIT-22 Toggle | `label`, a bound `value` (DynamicBoolean), `checks`, `disabled` | Fits. L1 |
 | KIT-28 Context menu | nothing: renderer behaviour on secondary click (right click); actions/shortcuts for clipboard and edits | Fits. L8 |
+| KIT-29 Horizontal scroll | nothing: renderer behaviour on horizontal wheel/gesture or arrows for wide content; optional `scrollX` or freeze columns | Fits. L5, L8 |
 
 The prop names above are sketches. Each phase-1 leg settles its component's
 props, under `Hotty` names ([catalog-naming](catalog-naming.md)).
