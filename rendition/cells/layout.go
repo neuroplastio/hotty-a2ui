@@ -202,6 +202,8 @@ func (l *layout) minimum(e *view.Element) int {
 		n = tableMinimum(e)
 	case view.RichList:
 		n = listMinimum(e)
+	case view.FilePicker:
+		n = fileMinimum(e)
 	case view.Tree:
 		n = treeMinimum(e)
 	case view.Chart:

@@ -360,7 +360,7 @@ textarea.k-resize-none { resize: none; }
 .k-primary:enabled:not(:focus):hover { background: color-mix(in srgb, var(--k-accent) 88%, var(--k-fg)); }
 .k-borderless:enabled:not(:focus):hover { background: var(--k-surface); }
 .k-switch:enabled:not([aria-checked=true]):hover .k-switch-track { background: color-mix(in srgb, var(--k-fg) 16%, var(--k-bg)); }
-.k-table tbody tr:not(.k-sel):hover, .k-rich-item:not(.k-sel):hover, .k-node:not(.k-sel):hover, .k-hunk:not(.k-sel):hover { background: var(--k-surface); }
+.k-table tbody tr:not(.k-sel):hover, .k-rich-item:not(.k-sel):hover, .k-node:not(.k-sel):hover, .k-hunk:not(.k-sel):hover, .k-file-item:not(.k-sel):hover { background: var(--k-surface); }
 .k-table tbody tr { cursor: pointer; }
 
 /* A Slider: − track + value. The track is one button, its rail, fill and
@@ -657,6 +657,23 @@ textarea.k-resize-none { resize: none; }
 .k-rich-pages { padding: var(--k-2) var(--k-3) 0; letter-spacing: 0.2em; }
 .k-dot { color: var(--k-border); }
 .k-dot.k-on { color: var(--k-fg); }
+
+/* HottyFilePicker (profile §2, §6.31): a listbox of a directory's entries,
+   directories first, then files; its title the directory shown from the
+   root. The selected entry's 3px bar and text take the focus colour while
+   it has the keyboard. */
+.k-filepicker { display: flex; flex-direction: column; align-self: stretch; outline: none; }
+.k-file-title { font-weight: 600; padding: var(--k-1) var(--k-3); }
+.k-file-item { display: flex; justify-content: space-between; align-items: baseline; padding: var(--k-1) var(--k-3); border-left: 3px solid transparent; cursor: pointer; }
+.k-file-item + .k-file-item { margin-top: var(--k-1); }
+.k-file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.k-file-size { color: var(--k-muted); font-size: 0.875rem; margin-left: var(--k-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.k-file-item.k-sel { border-left-color: var(--k-border); background: var(--k-tonal); }
+.k-filepicker:focus .k-file-item.k-sel { border-left-color: var(--k-focus); }
+.k-filepicker:focus .k-file-item.k-sel .k-file-name, .k-filepicker:focus .k-file-item.k-sel .k-file-size { color: var(--k-focus); }
+.k-file-gap { visibility: hidden; }
+.k-file-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
+.k-file-error { color: var(--k-error); padding: var(--k-1) var(--k-3); }
 
 /* HottyPaginator: a baseline (phase 1), as cells draws it: its child,
    holding the page the view shows, then its pages, a HottyList's dots,

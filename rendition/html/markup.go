@@ -255,6 +255,8 @@ func (m *markup) element(e *view.Element) *node {
 		n = table(e)
 	case view.RichList:
 		n = richList(e)
+	case view.FilePicker:
+		n = filePicker(e)
 	case view.Tree:
 		if m.page {
 			n = m.pageTree(e)

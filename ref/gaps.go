@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/bubbles/v2/filepicker"
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/list"
@@ -69,6 +70,9 @@ func init() {
 	})
 	register("sparkline", "hotty/sparkline", "ntcharts: sparkline (KIT-10)", func() tea.Model {
 		return screen{newSparklines()}
+	})
+	register("filepicker", "hotty/filepicker", "bubbles: filepicker (KIT-17)", func() tea.Model {
+		return screen{newFilepicker()}
 	})
 }
 
@@ -665,4 +669,33 @@ func storyMarkdown() string {
 		}
 	}
 	return "no HottyMarkdown with a literal text in hotty/markdown"
+}
+
+// filepicker: bubbles' filepicker example.
+type filepickerRef struct {
+	fp filepicker.Model
+}
+
+func newFilepicker() *filepickerRef {
+	fp := filepicker.New()
+	fp.CurrentDirectory, _ = os.Getwd()
+	fp.ShowSize = true
+	fp.ShowHidden = false
+	fp.AutoHeight = false
+	fp.SetHeight(8)
+	return &filepickerRef{fp: fp}
+}
+
+func (m *filepickerRef) Init() tea.Cmd {
+	return m.fp.Init()
+}
+
+func (m *filepickerRef) Update(msg tea.Msg) tea.Cmd {
+	var cmd tea.Cmd
+	m.fp, cmd = m.fp.Update(msg)
+	return cmd
+}
+
+func (m *filepickerRef) View() string {
+	return m.fp.View()
 }

@@ -92,7 +92,7 @@ func onPage(e *view.Element) *view.Element {
 	switch e.Kind {
 	case view.KeyHints:
 		return nil
-	case view.Table, view.RichList:
+	case view.Table, view.RichList, view.FilePicker:
 		c := *e
 		c.Height, c.Top, c.Query.Editing = 0, 0, false
 		return &c

@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"strings"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -331,6 +332,31 @@ func TestChart(t *testing.T) {
 		"2      4\n" +
 		"No data\n" +
 		"1 – 2.5 -3\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
+// TestFilePicker: a HottyFilePicker reads as its directory shown, "/",
+// then each entry, directory with a trailing "/", the highlighted one
+// marked with "> ".
+func TestFilePicker(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyFilePicker","catalogId":"` + hotty.ID + `","root":"project"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	fsys := fstest.MapFS{
+		"src":     &fstest.MapFile{Mode: fs.ModeDir | 0755},
+		"main.go": &fstest.MapFile{Data: []byte("package main\n"), Mode: 0644},
+	}
+	c := view.NewController(p.Surface("s"))
+	c.Grant("project", fsys)
+	c.Rebuild()
+	got := text.Render(c.V)
+	want := "/\n> src/\n  main.go (13 bytes)\n"
 	if got != want {
 		t.Errorf("got\n%s\nwant\n%s", got, want)
 	}

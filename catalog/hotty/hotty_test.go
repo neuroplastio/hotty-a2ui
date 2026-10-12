@@ -100,6 +100,12 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"q","component":"HottyQRCode","label":"Scan me"}`, false},
 		{`{"id":"q","component":"HottyQRCode","value":"x","errorCorrection":"X"}`, false},
 		{`{"id":"q","component":"HottyQRCode","value":"x","errorCorrection":"m"}`, false},
+		// HottyFilePicker (instruction 31): walks a granted root directory.
+		{`{"id":"fp","component":"HottyFilePicker","root":"project"}`, true},
+		{`{"id":"fp","component":"HottyFilePicker","root":"project","path":{"@path":"/dir"},"selected":{"@path":"/file"},"filter":"go","height":8,"emptyText":"None","onPick":{"event":{"name":"pick"}},"onChange":{"event":{"name":"ch"}}}`, true},
+		{`{"id":"fp","component":"HottyFilePicker"}`, false},
+		{`{"id":"fp","component":"HottyFilePicker","root":123}`, false},
+		{`{"id":"fp","component":"HottyFilePicker","root":"project","height":"eight"}`, false},
 	} {
 		var d map[string]any
 		if err := json.Unmarshal([]byte(tc.def), &d); err != nil {

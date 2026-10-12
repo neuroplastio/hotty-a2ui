@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-11
+Last updated: 2026-10-12
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from rounds 7–9
@@ -40,7 +40,7 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   reading order, and the release copies it (`Copied`, `cells.OSC52`;
   profile §3.7). Word and line clicks are open; asked by the maintainer
   through the docs (2026-10-11).
-- [ ] **KIT-17c** — File picker, with the profile's rule for granted roots
+- [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [ ] **KIT-18c** — Terminal, with the profile's rule for registered
   commands (L10). The docs want it to play recordings (asciicast), and

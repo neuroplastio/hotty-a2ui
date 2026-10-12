@@ -24,6 +24,7 @@ const (
 	partLess   = "m" // a Slider's − button
 	partMore   = "n" // a Slider's + button
 	partNotch  = "k" // a Slider's notches, "k0" to "kN": where a drag sets it
+	partEntry  = "k" // a HottyFilePicker's entries, "k0" to "kN", by their index
 	partTabs   = "t" // a Tabs' bar
 	partPanel  = "p" // a Tabs' content
 	partSubmit = "s" // a Form's hidden submit button

@@ -90,7 +90,7 @@ func isControlElement(e *view.Element) bool {
 	case e.Kind == view.Button:
 		return !e.Item
 	}
-	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Timer || e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.ScrollView ||
+	return e.Kind == view.Progress || e.Kind == view.Spinner || e.Kind == view.Timer || e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.FilePicker || e.Kind == view.ScrollView ||
 		e.Kind == view.Tree
 }
 
@@ -101,7 +101,7 @@ func isControlElement(e *view.Element) bool {
 // their one row.
 func hasTitle(e *view.Element) bool {
 	switch e.Kind {
-	case view.Table, view.RichList:
+	case view.Table, view.RichList, view.FilePicker:
 		return true
 	case view.TextField, view.DateTime, view.Choice, view.Progress:
 		return e.Label != "" && !inlineRow(e)
@@ -188,6 +188,8 @@ func controlWidth(e *view.Element) int {
 		return tableNatural(e)
 	case view.RichList:
 		return listWidth(e)
+	case view.FilePicker:
+		return fileWidth(e)
 	case view.Tree:
 		return treeWidth(e)
 	case view.Chart:
@@ -233,6 +235,8 @@ func (l *layout) controlHeight(e *view.Element, w int) int {
 		h = 2 + bodyRows(e)
 	case view.RichList:
 		h = listHeight(e)
+	case view.FilePicker:
+		h = fileHeight(e)
 	case view.Tree:
 		h = treeHeight(e)
 	case view.Chart:

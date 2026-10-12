@@ -366,6 +366,8 @@ func (r *Rendition) click(col, row int) error {
 		return r.clickDiff(e, h.opt)
 	case e.Kind == view.RichList:
 		return r.clickList(e, h.opt)
+	case e.Kind == view.FilePicker:
+		return r.clickFile(e, h.opt)
 	case e.Kind == view.Tree:
 		return r.c.ClickNode(e.ID, h.opt)
 	case e.Kind == view.Paginator:

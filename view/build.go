@@ -1,6 +1,7 @@
 package view
 
 import (
+	"io/fs"
 	"strconv"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -67,13 +68,29 @@ type State struct {
 	// Jump is the heading a HottyMarkdown's link in place last went to
 	// (FollowLink).
 	Jump Jump
+	// Roots are the filesystems a HottyFilePicker may read, by the name
+	// its `root` gives (profile §6.31). The program grants them; the
+	// renderer reads only within one, and the agent never reads a
+	// filesystem. A picker whose root is not granted shows its error.
+	Roots map[string]fs.FS
+	// File is each HottyFilePicker's own state, by its id: the directory
+	// it shows where `path` is not bound, and the entry highlighted.
+	File map[string]FilePick
+}
+
+// FilePick is a HottyFilePicker's renderer state: the directory it shows
+// where `path` is not bound ("" for the root), and the index of the entry
+// it has highlighted.
+type FilePick struct {
+	Path  string
+	Index int
 }
 
 // NewState is a surface's state before the user does anything.
 func NewState() *State {
 	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}, Query: map[string]Query{},
 		Left: map[string]int{}, Tail: map[string]bool{}, Open: map[string][]string{}, Revealed: map[string]string{}, Moved: map[string]Moved{},
-		Suggest: map[string]Suggest{}, Timers: map[string]*TimerState{}}
+		Suggest: map[string]Suggest{}, Timers: map[string]*TimerState{}, File: map[string]FilePick{}}
 }
 
 // Mapper makes an element of a node, children included; nil when the

@@ -204,6 +204,8 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		l.paintTable(cv, e, x, y, w)
 	case view.RichList:
 		l.paintList(cv, e, x, y, w)
+	case view.FilePicker:
+		l.paintFilePicker(cv, e, x, y, w)
 	case view.Tree:
 		l.paintTree(cv, e, x, y, w)
 	case view.Chart:

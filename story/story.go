@@ -144,6 +144,9 @@ type Run struct {
 	// Changed, if set, is called when the agent's messages change a
 	// surface, after its view is built again; deleted when it went.
 	Changed func(s *Surface, deleted bool)
+	// Roots are the filesystems granted to each surface's controller as it
+	// is made (profile §6.31).
+	Roots map[string]fs.FS
 
 	surfaces []*Surface
 }
@@ -155,7 +158,7 @@ type Run struct {
 // hottyDismissToast show and take away their toasts, and hottyStartTimer,
 // hottyStopTimer, hottyToggleTimer and hottyResetTimer work their timers.
 func NewRun() *Run {
-	r := &Run{}
+	r := &Run{Roots: map[string]fs.FS{"project": FixtureFS}}
 	h := hotty.Catalog()
 	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo, FoldAll: r.foldAll,
 		Toast: r.toast, DismissToast: r.dismissToast, Timer: r.timer})
@@ -181,7 +184,12 @@ func NewRun() *Run {
 		case deleted:
 			return
 		case i < 0:
-			r.surfaces = append(r.surfaces, &Surface{S: s, C: view.NewController(s)})
+			c := view.NewController(s)
+			for name, fsys := range r.Roots {
+				c.Grant(name, fsys)
+			}
+			c.Rebuild()
+			r.surfaces = append(r.surfaces, &Surface{S: s, C: c})
 			i = len(r.surfaces) - 1
 		default:
 			r.surfaces[i].C.Rebuild()
@@ -191,6 +199,18 @@ func NewRun() *Run {
 		}
 	}
 	return r
+}
+
+// Grant gives each surface's controller a root to list (profile §6.31).
+func (r *Run) Grant(name string, fsys fs.FS) {
+	if r.Roots == nil {
+		r.Roots = map[string]fs.FS{}
+	}
+	r.Roots[name] = fsys
+	for _, s := range r.surfaces {
+		s.C.Grant(name, fsys)
+		s.C.Rebuild()
+	}
 }
 
 // Start runs a story: a new run, fed the story's messages.

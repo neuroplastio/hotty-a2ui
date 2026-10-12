@@ -897,3 +897,22 @@
     - key: Enter
     - key: Shift+Tab
     - expect: {focused: page/link/2}
+
+# A HottyFilePicker (profile §6.31): arrow keys move, right arrow and Enter
+# open a directory or pick a file, left arrow, h, Backspace and Escape go
+# up to parent directory.
+- name: HottyFilePicker moves with arrows, enters directories, picks files, and goes up with Escape
+  story: hotty/filepicker
+  steps:
+    - focus: fp
+    - expect: {focused: fp}
+    - key: ArrowDown
+    - key: ArrowDown
+    - key: Enter
+    - expect: {focused: fp, actions: [filePicked], data: {/picked: go.mod, /dir: ""}}
+    - key: Home
+    - key: Enter
+    - expect: {focused: fp, actions: [filePicked, dirChanged], data: {/dir: docs}}
+    - key: Escape
+    - expect: {focused: fp, actions: [filePicked, dirChanged, dirChanged], data: {/dir: ""}}
+

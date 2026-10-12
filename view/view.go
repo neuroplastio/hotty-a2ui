@@ -96,6 +96,14 @@ const (
 	// items a page shows, 0 for all of them), Top (the page's first, in
 	// Shown) and Placeholder (what shows when no item does).
 	RichList Kind = "richlist"
+	// FilePicker lists a directory of a root the program grants
+	// (HottyFilePicker): Root, the grant's name; FileDir, the directory
+	// shown, relative to the root ("" for the root); Files, the entries
+	// it lists, directories first; Selected, the entry highlighted; Value,
+	// the path the user picked, written to selected where bound;
+	// Query.Text, its filter; Error, why it lists nothing; Height and Top
+	// as a Table's.
+	FilePicker Kind = "filepicker"
 	// KeyHints shows the keys its surface takes now (HottyKeyHints), as
 	// Controller.KeyHints has them: Open while the full view shows, Active
 	// when ? switches views.
@@ -284,6 +292,14 @@ type Element struct {
 	Shown   []int   `json:"shown,omitempty"`
 	Matched [][]int `json:"matched,omitempty"`
 
+	// FilePicker: the grant's name it lists, the directory shown
+	// relative to that root, and the entries it lists (profile §6.31).
+	// Its Selected is the highlighted entry's index, its Placeholder what
+	// shows when a directory has nothing.
+	Root    string      `json:"root,omitempty"`
+	FileDir string      `json:"fileDir,omitempty"`
+	Files   []FileEntry `json:"files,omitempty"`
+
 	// TextField: its suggestions (io_neuroplast_hotty.suggestions, profile
 	// §6.22), the agent's options, non-nil when it has the extension. Its
 	// Shown are those its value leaves, by index, while its list is open;
@@ -371,6 +387,15 @@ type Element struct {
 	A11y A11y   `json:"a11y,omitzero"`
 }
 
+// FileEntry is one entry of a HottyFilePicker's directory: its name, and
+// whether it is a directory (one a pick opens, where a file is picked).
+// Size is its bytes, -1 when not known (a directory).
+type FileEntry struct {
+	Name string `json:"name"`
+	Dir  bool   `json:"dir,omitempty"`
+	Size int64  `json:"size,omitempty"`
+}
+
 // ChoiceOption is one of a Choice's options.
 type ChoiceOption struct {
 	Label string `json:"label"`
@@ -407,7 +432,7 @@ func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button, Switch, Knob:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, ScrollView, Tree, ToastAction, Paginator, Link:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, FilePicker, ScrollView, Tree, ToastAction, Paginator, Link:
 		return true
 	case DiffView:
 		return len(e.RowIDs) > 0

@@ -157,6 +157,8 @@ func element(e *view.Element) []string {
 		return table(e)
 	case view.RichList:
 		return richList(e)
+	case view.FilePicker:
+		return filePicker(e)
 	case view.Tree:
 		return tree(e)
 	case view.Chart:
@@ -392,6 +394,40 @@ func richList(e *view.Element) []string {
 	}
 	if len(e.Items) == 0 {
 		out = append(out, "  "+e.Placeholder)
+	}
+	return out
+}
+
+// filePicker is a HottyFilePicker as text: the directory shown, "/",
+// then every entry, whatever the height, a directory with a trailing
+// "/", "> " marking the highlighted one. Its error, or its empty text,
+// shows where the entries would.
+func filePicker(e *view.Element) []string {
+	path := "/"
+	if e.FileDir != "" {
+		path = "/" + e.FileDir
+	}
+	out := []string{path}
+	switch {
+	case e.Error != "":
+		return append(out, "✗ "+e.Error)
+	case len(e.Files) == 0:
+		return append(out, "  "+e.Placeholder)
+	}
+	for i, f := range e.Files {
+		mark := "  "
+		if i == e.Selected {
+			mark = "> "
+		}
+		name := f.Name
+		if f.Dir {
+			name += "/"
+		}
+		s := mark + name
+		if !f.Dir && f.Size >= 0 {
+			s += " (" + strconv.FormatInt(f.Size, 10) + " bytes)"
+		}
+		out = append(out, s)
 	}
 	return out
 }

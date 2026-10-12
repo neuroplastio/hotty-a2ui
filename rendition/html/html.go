@@ -353,6 +353,16 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			}
 			return nil
 		}
+		if e.Kind == view.FilePicker {
+			// An entry of a HottyFilePicker is selected by a click, or
+			// opened or picked by another (view.Controller.ClickFile).
+			c.Focus(id)
+			r.host = keyboard{true, id}
+			if i, err := strconv.Atoi(strings.TrimPrefix(part, partEntry)); err == nil && strings.HasPrefix(part, partEntry) {
+				return c.ClickFile(id, i)
+			}
+			return nil
+		}
 		if e.Kind == view.Tree {
 			// A node is selected by a click, a branch opened or closed by
 			// it, and a leaf acted on by another (view.Controller.ClickNode).
@@ -574,6 +584,13 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	// Escape before an open Modal does.
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.RichList {
 		if ok, err := c.ListKey(e.ID, key); ok {
+			return nil, true, err
+		}
+	}
+	// A focused HottyFilePicker is a box on the host too: it moves, opens
+	// and goes up by the keys (view.Controller.FileKey).
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.FilePicker {
+		if ok, err := c.FileKey(e.ID, key); ok {
 			return nil, true, err
 		}
 	}
