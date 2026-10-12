@@ -75,4 +75,28 @@ func TestFilePickerOnHost(t *testing.T) {
 	if got := r.C.S.Data.Value("/sel"); got != "main.go" {
 		t.Errorf("/sel = %v, want main.go", got)
 	}
+
+	// Click entry 0 (docs): first selects it, second opens it
+	must(t, x.h.Click(r.name, partID("fp", partEntry+"0")))
+	x.pump()
+	must(t, x.h.Click(r.name, partID("fp", partEntry+"0")))
+	x.pump()
+	x.update(r)
+	if got := r.C.S.Data.Value("/dir"); got != "docs" {
+		t.Fatalf("/dir = %v, want docs", got)
+	}
+	if got, _ := s.Attr(partID("fp", partTitle), "class"); !strings.Contains(got, "k-file-up") {
+		t.Errorf("title class in subdir = %q, want k-file-up", got)
+	}
+
+	// Click title to go back up
+	must(t, x.h.Click(r.name, partID("fp", partTitle)))
+	x.pump()
+	x.update(r)
+	if got := r.C.S.Data.Value("/dir"); got != "" {
+		t.Errorf("/dir after back = %v, want empty", got)
+	}
+	if got, _ := s.Attr(partID("fp", partTitle), "class"); got != "k-file-title" {
+		t.Errorf("title class at root = %q, want k-file-title", got)
+	}
 }

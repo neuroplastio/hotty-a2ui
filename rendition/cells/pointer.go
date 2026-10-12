@@ -49,6 +49,9 @@ func (r *Rendition) clickable(h *hit) bool {
 	if h.opt >= 0 {
 		return true
 	}
+	if e.Kind == view.FilePicker && e.FileDir != "" && h.opt == -1 {
+		return true
+	}
 	switch e.Kind {
 	case view.Button, view.CheckBox, view.Switch, view.Option, view.Tab, view.Link,
 		view.Toast, view.ToastAction, view.Slider, view.RangeSlider, view.Knob:

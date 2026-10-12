@@ -30,13 +30,13 @@ func fileBody(e *view.Element) int {
 	return max(n, 1)
 }
 
-// filePath is the title a HottyFilePicker draws: the directory shown
-// from the root, "/".
-func filePath(e *view.Element) string {
+// fileTitle is the title a HottyFilePicker draws: " / " at the root,
+// or " ◂ /path " in a subdirectory, whose chevron clicks up.
+func fileTitle(e *view.Element) string {
 	if e.FileDir == "" {
-		return "/"
+		return " / "
 	}
-	return "/" + e.FileDir
+	return " ◂ /" + e.FileDir + " "
 }
 
 // fileLabel is an entry's name as a line: a directory with a trailing
@@ -86,7 +86,7 @@ func fileSizeWidth(e *view.Element) int {
 
 // fileWidth is a HottyFilePicker's natural width: its widest line.
 func fileWidth(e *view.Element) int {
-	n := Width(filePath(e))
+	n := Width(fileTitle(e))
 	for _, f := range e.Files {
 		n = max(n, Width(fileLabel(f)))
 	}
@@ -116,9 +116,9 @@ func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 	in := x + fileIndent
 	iw := max(w-fileIndent, 0)
 	row := y
-	cv.write(in, row, iw, fit(line(" "+filePath(e)+" ", style{role: Accent, attr: Reverse}), iw))
+	cv.write(in, row, iw, fit(line(fileTitle(e), style{role: Accent, attr: Reverse}), iw))
+	r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -1})
 	row += fileHead
-	r.hits = append(r.hits, hit{x: x, y: y, w: w, h: row - y, id: e.ID, opt: -1})
 
 	switch {
 	case e.Error != "":
@@ -127,7 +127,7 @@ func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 		cv.write(in, row, iw, fit(line(e.Placeholder, style{role: Muted}), iw))
 	}
 	if e.Error != "" || len(e.Files) == 0 {
-		r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -1})
+		r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -2})
 		r.boxes[e.ID] = box{x, y, w, row + 1 - y}
 		return
 	}
@@ -162,8 +162,12 @@ func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 
 // clickFile is a click on a HottyFilePicker, which has the keyboard now:
 // on an entry, it selects it, or opens or picks it when it was selected
-// already; elsewhere, it does nothing more.
+// already; on the title in a subdirectory, it goes up one level; elsewhere,
+// it does nothing more.
 func (r *Rendition) clickFile(e *view.Element, item int) error {
+	if item == -1 && e.FileDir != "" {
+		return r.c.FileUp(e.ID)
+	}
 	if item < 0 {
 		return nil
 	}

@@ -82,6 +82,38 @@ func TestFilePickerCellsClick(t *testing.T) {
 	if got := c.S.Data.Value("/sel"); got != "main.go" {
 		t.Errorf("picked file = %v, want main.go", got)
 	}
+
+	// Click entry 0 (src/): first selects it, second opens it
+	if err := r.Click(3, 2); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Click(3, 2); err != nil {
+		t.Fatal(err)
+	}
+	e = c.V.Find("root")
+	if e.FileDir != "src" {
+		t.Fatalf("fileDir = %q, want src", e.FileDir)
+	}
+	plain := r.Draw(40).Plain()
+	if !strings.Contains(plain, "◂ /src") {
+		t.Errorf("expected ◂ /src in title:\n%s", plain)
+	}
+	if got := r.Pointer(3, 0); got != "pointer" {
+		t.Errorf("pointer over title in subdir = %q, want pointer", got)
+	}
+
+	// Click title row to go back up
+	if err := r.Click(3, 0); err != nil {
+		t.Fatal(err)
+	}
+	e = c.V.Find("root")
+	if e.FileDir != "" {
+		t.Errorf("fileDir after back = %q, want empty", e.FileDir)
+	}
+	r.Draw(40)
+	if got := r.Pointer(3, 0); got != "" {
+		t.Errorf("pointer over title at root = %q, want empty", got)
+	}
 }
 
 func TestFilePickerCellsErrorAndEmpty(t *testing.T) {

@@ -21,7 +21,16 @@ func filePicker(e *view.Element) *node {
 	box := el("div", "id", domID(e.ID), "class", "k-filepicker", "tabindex", "0", "role", "listbox", "data-keys", fileKeys)
 	path := filePath(e)
 	box.set("aria-label", path)
-	box.add(el("div", "id", partID(e.ID, partTitle), "class", "k-file-title").add(texts(path)...))
+	title := el("div", "id", partID(e.ID, partTitle), "class", "k-file-title")
+	if e.FileDir != "" {
+		title.set("class", "k-file-title k-file-up")
+		title.set("data-on", "click")
+		title.set("role", "button")
+		title.set("aria-label", "Parent directory: "+path)
+		title.add(el("span", "class", "k-file-back").add(txt("◂\u00a0")))
+	}
+	title.add(el("span", "class", "k-file-path").add(texts(path)...))
+	box.add(title)
 
 	switch {
 	case e.Error != "":

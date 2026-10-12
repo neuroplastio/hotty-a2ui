@@ -355,9 +355,13 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		}
 		if e.Kind == view.FilePicker {
 			// An entry of a HottyFilePicker is selected by a click, or
-			// opened or picked by another (view.Controller.ClickFile).
+			// opened or picked by another (view.Controller.ClickFile);
+			// the title in a subdirectory goes up to the parent.
 			c.Focus(id)
 			r.host = keyboard{true, id}
+			if part == partTitle && e.FileDir != "" {
+				return c.FileUp(id)
+			}
 			if i, err := strconv.Atoi(strings.TrimPrefix(part, partEntry)); err == nil && strings.HasPrefix(part, partEntry) {
 				return c.ClickFile(id, i)
 			}

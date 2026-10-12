@@ -244,6 +244,16 @@ func (c *Controller) fileOpen(e *Element) error {
 	return nil
 }
 
+// FileUp goes to the parent of the directory shown in HottyFilePicker id,
+// stopping at the root.
+func (c *Controller) FileUp(id string) error {
+	e := c.V.Find(id)
+	if e == nil || e.Kind != FilePicker {
+		return nil
+	}
+	return c.fileUp(e)
+}
+
 // fileUp goes to the parent of the directory shown, stopping at the root
 // (nothing happens there).
 func (c *Controller) fileUp(e *Element) error {
