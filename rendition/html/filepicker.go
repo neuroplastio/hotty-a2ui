@@ -41,14 +41,13 @@ func filePicker(e *view.Element) *node {
 		return box
 	}
 
-	end := len(e.Files)
+	list := el("div", "class", "k-file-list")
 	if e.Height > 0 {
-		end = min(e.Top+e.Height, end)
+		list.set("class", "k-file-list k-scrolls").set("style", "--k-rows: "+strconv.Itoa(e.Height))
 	}
-	for i := e.Top; i < end; i++ {
-		f := e.Files[i]
+	for i, f := range e.Files {
 		item := el("div", "id", partID(e.ID, partEntry+strconv.Itoa(i)), "class", "k-file-item", "role", "option",
-			"aria-selected", strconv.FormatBool(i == e.Selected), "data-on", "click")
+			"tabindex", "-1", "aria-selected", strconv.FormatBool(i == e.Selected), "data-on", "click")
 		if i == e.Selected {
 			item.set("class", "k-file-item k-sel")
 		}
@@ -56,23 +55,9 @@ func filePicker(e *view.Element) *node {
 		if s := fileSizeText(f); s != "" {
 			item.add(el("span", "class", "k-file-size").add(txt(s)))
 		}
-		box.add(item)
+		list.add(item)
 	}
-	// A paged picker keeps its height, as in cells: hidden rows stand in
-	// for the entries a window leaves out, and a scrollbar runs beside them.
-	if e.Height > 0 && len(e.Files) > e.Height {
-		for range e.Height - (end - e.Top) {
-			box.add(el("div", "class", "k-file-item k-file-gap", "aria-hidden", "true").add(
-				el("span", "class", "k-file-name").add(txt("\u00a0")),
-			))
-		}
-		total := len(e.Files)
-		topPct := float64(e.Top) * 100.0 / float64(total)
-		hPct := float64(e.Height) * 100.0 / float64(total)
-		thumb := el("div", "class", "k-file-thumb", "style",
-			"top: "+strconv.FormatFloat(topPct, 'f', 1, 64)+"%; height: "+strconv.FormatFloat(hPct, 'f', 1, 64)+"%;")
-		box.add(el("div", "class", "k-file-scrollbar", "aria-hidden", "true").add(thumb))
-	}
+	box.add(list)
 	return box
 }
 

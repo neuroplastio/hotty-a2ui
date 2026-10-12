@@ -122,7 +122,10 @@ func TestFilePickerOnHostScrollbar(t *testing.T) {
 	x.update(r)
 
 	doc := r.Doc()
-	if !strings.Contains(doc, "k-file-scrollbar") || !strings.Contains(doc, "k-file-thumb") {
-		t.Errorf("expected k-file-scrollbar and k-file-thumb in doc:\n%s", doc)
+	if !strings.Contains(doc, "k-file-list k-scrolls") || !strings.Contains(doc, "--k-rows: 2") {
+		t.Errorf("expected k-file-list k-scrolls with --k-rows: 2 in doc:\n%s", doc)
+	}
+	if got := r.focusOn("fp"); got != partID("fp", partEntry+"0") {
+		t.Errorf("focusOn = %q, want %q", got, partID("fp", partEntry+"0"))
 	}
 }

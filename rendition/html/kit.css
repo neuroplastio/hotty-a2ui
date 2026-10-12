@@ -662,22 +662,20 @@ textarea.k-resize-none { resize: none; }
    directories first, then files; its title the directory shown from the
    root. The selected entry's 3px bar and text take the focus colour while
    it has the keyboard. */
-.k-filepicker { position: relative; display: flex; flex-direction: column; align-self: stretch; outline: none; }
-.k-file-scrollbar { position: absolute; right: var(--k-1); top: calc(var(--k-1) * 2 + 1.5rem); bottom: var(--k-1); width: 3px; background: color-mix(in srgb, var(--k-border) 40%, transparent); border-radius: 999px; }
-.k-file-thumb { position: absolute; width: 100%; min-height: 8px; background: var(--k-muted); border-radius: 999px; }
-.k-filepicker:focus .k-file-thumb { background: var(--k-focus); }
-.k-file-title { font-weight: 600; padding: var(--k-1) var(--k-3); }
+.k-filepicker { display: flex; flex-direction: column; align-self: stretch; outline: none; }
+.k-file-title { font-weight: 600; padding: var(--k-1) var(--k-3); flex: none; }
 .k-file-title.k-file-up { cursor: pointer; user-select: none; }
 .k-file-title.k-file-up:hover { background: var(--k-surface); }
 .k-file-back { color: var(--k-focus); }
-.k-file-item { display: flex; justify-content: space-between; align-items: baseline; padding: var(--k-1) var(--k-3); border-left: 3px solid transparent; cursor: pointer; }
-.k-file-item + .k-file-item { margin-top: var(--k-1); }
+.k-file-list { --k-file-h: 2rem; display: flex; flex-direction: column; }
+.k-file-list.k-scrolls { height: calc(var(--k-rows) * var(--k-file-h)); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }
+.k-file-item { flex: none; height: var(--k-file-h); box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; padding: 0 var(--k-3); border-left: 3px solid transparent; cursor: pointer; outline: none; }
 .k-file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .k-file-size { color: var(--k-muted); font-size: 0.875rem; margin-left: var(--k-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .k-file-item.k-sel { border-left-color: var(--k-border); background: var(--k-tonal); }
-.k-filepicker:focus .k-file-item.k-sel { border-left-color: var(--k-focus); }
-.k-filepicker:focus .k-file-item.k-sel .k-file-name, .k-filepicker:focus .k-file-item.k-sel .k-file-size { color: var(--k-focus); }
-.k-file-gap { visibility: hidden; }
+.k-filepicker:focus-within .k-file-item.k-sel, .k-file-item:focus { border-left-color: var(--k-focus); }
+.k-filepicker:focus-within .k-file-item.k-sel .k-file-name, .k-filepicker:focus-within .k-file-item.k-sel .k-file-size,
+.k-file-item:focus .k-file-name, .k-file-item:focus .k-file-size { color: var(--k-focus); }
 .k-file-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
 .k-file-error { color: var(--k-error); padding: var(--k-1) var(--k-3); }
 

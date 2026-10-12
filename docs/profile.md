@@ -2418,7 +2418,7 @@ L10). The agent never reads the filesystem:
 | rendition | a HottyFilePicker |
 | --- | --- |
 | cells | the directory path on a title row reversed in `accent` (§3.4), a blank row, then its entries 2 columns in, directories first with a trailing `/`, a file's size right-aligned in `muted`. The highlighted entry has a `│ ` bar in `accent` (focused) or `muted`, its name bold. Windowed at `height`. Error `✗ error` in `error`, or empty text in `muted` |
-| host | `div.k-filepicker` (`role=listbox`), title `div.k-file-title`, entries `div.k-file-item` (`role=option`) with `.k-sel` and `aria-selected`, directory with trailing `/`, size `span.k-file-size`; filler gaps to maintain height; `data-keys` gives navigation keys to the program (§2) |
+| host | `div.k-filepicker` (`role=listbox`), title `div.k-file-title`, entries `div.k-file-item` (`role=option`) with `.k-sel` and `aria-selected`, directory with trailing `/`, size `span.k-file-size`; with a `height`, `div.k-file-list.k-scrolls` is that many rows tall and the host scrolls it (SPEC.md §5.3), with the wheel and a thin scrollbar; the selected entry is `tabindex=-1` and has the host's focus while the picker has the keyboard, so the host scrolls it into view; `data-keys` gives navigation keys to the program (§2) |
 | text | the directory shown, `/`, then every entry whatever its `height`, a directory with a trailing `/`, `> ` marking the highlighted one, and a file's size in bytes; its error, or its empty text, shows where the entries would (§4) |
 
 ## 7. Fallbacks

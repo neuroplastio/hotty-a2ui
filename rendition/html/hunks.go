@@ -271,6 +271,10 @@ func (r *Rendition) focusOn(id string) string {
 		if i := e.SelectedRow(); i >= 0 && slices.Contains(e.Shown, i) {
 			return partID(id, partNode+strconv.Itoa(i))
 		}
+	case e.Kind == view.FilePicker:
+		if e.Selected >= 0 && e.Selected < len(e.Files) {
+			return partID(id, partEntry+strconv.Itoa(e.Selected))
+		}
 	}
 	return id
 }
