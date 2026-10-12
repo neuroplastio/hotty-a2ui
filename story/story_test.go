@@ -85,3 +85,25 @@ func TestKitStoriesSayWhatTheyAre(t *testing.T) {
 		}
 	}
 }
+
+// TestFilePickerPickLoadsCode: picking a file in the filepicker story
+// loads its content into /code.
+func TestFilePickerPickLoadsCode(t *testing.T) {
+	run, err := Start(Find("hotty/filepicker"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := run.Surfaces()[0].C
+	// Entry 2 is go.mod
+	if err := c.ClickFile("fp", 2); err != nil {
+		t.Fatal(err)
+	}
+	// Second click picks it
+	if err := c.ClickFile("fp", 2); err != nil {
+		t.Fatal(err)
+	}
+	code, _ := c.S.Data.Value("/code").(string)
+	if !strings.Contains(code, "module example.com/project") {
+		t.Errorf("got code %q, want module example.com/project", code)
+	}
+}

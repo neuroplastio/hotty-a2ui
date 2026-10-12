@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyFilePicker",
   "icon": "folder",
-  "description": "Bubbles' filepicker: browse a program-granted root directory. Arrow keys, j and k move the selection; Enter, l and ArrowRight open a directory or pick a file; Backspace, h, Escape and ArrowLeft go to the parent directory. Picking a file writes its path to /selected and triggers onPick.",
+  "description": "Bubbles' filepicker: browse a program-granted root directory. Arrow keys, j and k move the selection; Enter, l and ArrowRight open a directory or pick a file; Backspace, h, Escape and ArrowLeft go to the parent directory. Picking a file loads its code into a HottyCode preview.",
   "messages": [
     {
       "version": "v1.0",
@@ -12,7 +12,8 @@
         "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
         "dataModel": {
           "dir": "",
-          "picked": ""
+          "picked": "",
+          "code": "// Press Enter or double-click on a file above to view its contents"
         }
       }
     },
@@ -26,7 +27,7 @@
             "component": "Column",
             "children": [
               "picker_card",
-              "status_text"
+              "preview_card"
             ]
           },
           {
@@ -68,11 +69,18 @@
             }
           },
           {
-            "id": "status_text",
-            "component": "Text",
-            "text": {
-              "@path": "/picked"
-            }
+            "id": "preview_card",
+            "component": "Card",
+            "child": "code_preview"
+          },
+          {
+            "id": "code_preview",
+            "component": "HottyCode",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "code": {
+              "@path": "/code"
+            },
+            "lineNumbers": true
           }
         ]
       }

@@ -170,6 +170,26 @@ func NewRun() *Run {
 		if r.Out != nil {
 			r.Out(o)
 		}
+		if o.Action != nil && o.Action.Name == "filePicked" {
+			if file, ok := o.Action.Context["file"].(string); ok && file != "" {
+				if fsys := r.Roots["project"]; fsys != nil {
+					if data, err := fs.ReadFile(fsys, file); err == nil {
+						updateMsg := []any{
+							map[string]any{
+								"version": "v1.0",
+								"updateDataModel": map[string]any{
+									"surfaceId": o.Action.SurfaceID,
+									"path":      "/code",
+									"value":     string(data),
+								},
+							},
+						}
+						msgJSON, _ := json.Marshal(updateMsg)
+						_ = r.P.ProcessJSON(msgJSON)
+					}
+				}
+			}
+		}
 	}
 	r.P.Changed = func(s *a2ui.Surface, deleted bool) {
 		i := slices.IndexFunc(r.surfaces, func(x *Surface) bool { return x.S == s })
