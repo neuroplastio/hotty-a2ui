@@ -359,13 +359,16 @@ textarea.k-resize-none { resize: none; }
    own look, as cells draws it (paintHover), and no more, so that it does
    not draw the eye: an input's border toward the text, a button's fill a
    step lighter, a row, an item or a node on a faint tint. The keyboard's
-   own look wins where both are on one thing. */
-.k-input:enabled:not(:focus):hover, .k-chip:not([aria-pressed=true]):hover { border-color: color-mix(in srgb, var(--k-fg) 30%, var(--k-bg)); }
-.k-btn:enabled:not(:focus, .k-primary, .k-borderless):hover { background: color-mix(in srgb, var(--k-fg) 16%, var(--k-bg)); }
-.k-primary:enabled:not(:focus):hover { background: color-mix(in srgb, var(--k-accent) 88%, var(--k-fg)); }
-.k-borderless:enabled:not(:focus):hover { background: var(--k-surface); }
-.k-switch:enabled:not([aria-checked=true]):hover .k-switch-track { background: color-mix(in srgb, var(--k-fg) 16%, var(--k-bg)); }
-.k-table tbody tr:not(.k-sel):hover, .k-rich-item:not(.k-sel):hover, .k-node:not(.k-sel):hover, .k-hunk:not(.k-sel):hover, .k-file-item:not(.k-sel):hover { background: var(--k-surface); }
+   own look wins where both are on one thing. While a drag is under way
+   (k-dragging, drag.go), nothing shows it: the pointer carries an item,
+   and only the line says what it is over. :where adds no weight. */
+.k-input:enabled:not(:focus):hover:where(:not(.k-dragging *)), .k-chip:not([aria-pressed=true]):hover:where(:not(.k-dragging *)) { border-color: color-mix(in srgb, var(--k-fg) 30%, var(--k-bg)); }
+.k-btn:enabled:not(:focus, .k-primary, .k-borderless):hover:where(:not(.k-dragging *)) { background: color-mix(in srgb, var(--k-fg) 16%, var(--k-bg)); }
+.k-primary:enabled:not(:focus):hover:where(:not(.k-dragging *)) { background: color-mix(in srgb, var(--k-accent) 88%, var(--k-fg)); }
+.k-borderless:enabled:not(:focus):hover:where(:not(.k-dragging *)) { background: var(--k-surface); }
+.k-switch:enabled:not([aria-checked=true]):hover:where(:not(.k-dragging *)) .k-switch-track { background: color-mix(in srgb, var(--k-fg) 16%, var(--k-bg)); }
+.k-table tbody tr:not(.k-sel):hover:where(:not(.k-dragging *)), .k-rich-item:not(.k-sel):hover:where(:not(.k-dragging *)), .k-node:not(.k-sel):hover:where(:not(.k-dragging *)),
+.k-hunk:not(.k-sel):hover:where(:not(.k-dragging *)), .k-file-item:not(.k-sel):hover:where(:not(.k-dragging *)) { background: var(--k-surface); }
 .k-table tbody tr { cursor: pointer; }
 
 /* A Slider: − track + value. The track is one button, its rail, fill and
@@ -670,7 +673,7 @@ textarea.k-resize-none { resize: none; }
 .k-filepicker { display: flex; flex-direction: column; align-self: stretch; outline: none; }
 .k-file-title { font-weight: 600; padding: var(--k-1) var(--k-3); flex: none; }
 .k-file-title.k-file-up { cursor: pointer; user-select: none; }
-.k-file-title.k-file-up:hover { background: var(--k-surface); }
+.k-file-title.k-file-up:hover:where(:not(.k-dragging *)) { background: var(--k-surface); }
 .k-file-back { color: var(--k-focus); }
 .k-file-list { --k-file-h: 2rem; display: flex; flex-direction: column; }
 .k-file-list.k-scrolls { height: calc(var(--k-rows) * var(--k-file-h)); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }

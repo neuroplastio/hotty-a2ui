@@ -1890,7 +1890,9 @@ which the elements give the program (§2), and drags (SPEC.md §9.1):
   HottyList's items or a List's children (beside them in a Row), along a
   table's rows, inside a tree's node from where its level starts. A
   node it would go into is in the accent, reversed (`k-drop-into`), and a
-  drop target as a whole is ringed (`k-drop-on`).
+  drop target as a whole is ringed (`k-drop-on`). Nothing shows hovered
+  meanwhile (`k-dragging` on the surface), as in cells: only the line
+  says what the pointer is over.
 - The release drops it there, and the click the host sends after a drag
   that came back to where it began is the drag's. Escape cancels.
 - The host names only what can be dragged, and not where in it the

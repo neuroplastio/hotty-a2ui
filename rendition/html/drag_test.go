@@ -138,7 +138,13 @@ func TestDragOnHost(t *testing.T) {
 	if got := x.classes(item("list", 2)); !slices.Contains(got, "k-drop-after") {
 		t.Errorf("the classes of the item it would land after: %v", got)
 	}
+	if got := x.classes(surfaceID); !slices.Contains(got, "k-dragging") {
+		t.Errorf("the surface's classes while dragging, which turn hover off: %v", got)
+	}
 	x.do(x.h.DragEnd(item("list", 2), 4, 5))
+	if got := x.classes(surfaceID); slices.Contains(got, "k-dragging") {
+		t.Errorf("the surface's classes after the drop: %v", got)
+	}
 	if got := ids(c, "/todos"); got != "plumber ferns milk passport backup dentist" {
 		t.Errorf("after the drop: %s", got)
 	}

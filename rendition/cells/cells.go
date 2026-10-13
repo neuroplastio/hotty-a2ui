@@ -194,7 +194,11 @@ func (r *Rendition) Draw(cols int) *Frame {
 	}
 	l.paintDrag(cv)
 	r.paintToasts(cv, stack, tw)
-	r.paintHover(cv)
+	// While a drag is under way, only its line says what the pointer is
+	// over, as on a host (kit.css, hover).
+	if !r.dragging() {
+		r.paintHover(cv)
+	}
 	r.jumped = r.c.St.Jump.Seq
 	r.last = f
 	return f

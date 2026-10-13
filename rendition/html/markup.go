@@ -79,8 +79,14 @@ func surface(v *view.Surface, th theme.Theme, keys string, fit bool, m *markup) 
 	if fit {
 		class += " k-fit"
 	}
-	main = el("div", "id", surfaceID, "class", class).add(m.element(v.Root))
-	layer = el("div", "id", layerID, "class", "k-layer")
+	// While a drag is under way, nothing shows the pointer over it (kit.css,
+	// hover): only the drag's line does.
+	dragging := ""
+	if m.drag != nil {
+		dragging = " k-dragging"
+	}
+	main = el("div", "id", surfaceID, "class", class+dragging).add(m.element(v.Root))
+	layer = el("div", "id", layerID, "class", "k-layer"+dragging)
 	if css := themeCSS(th); css != "" {
 		main.set("style", css)
 		layer.set("style", css)

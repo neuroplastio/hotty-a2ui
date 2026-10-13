@@ -317,3 +317,22 @@ func TestDragOrClick(t *testing.T) {
 		t.Errorf("after a drag: %v", got)
 	}
 }
+
+// While a drag is under way, nothing shows hovered: a card the pointer
+// was over keeps its fill, and only the line says where the drag is.
+func TestDragHidesHover(t *testing.T) {
+	r, _, _ := dragging(t, "hotty/drag-kanban", 72)
+	x, y, _, _, _ := r.Box("card[/board/todo/1]")
+	ox, oy, _, _, _ := r.Box("card[/board/doing/0]")
+	plain := r.Draw(72).Cells[oy][ox+1]
+	r.Hover(ox+1, oy)
+	if got := r.Draw(72).Cells[oy][ox+1]; got == plain {
+		t.Fatalf("the hovered card looks as it did: %+v", got)
+	}
+	must(t, r.Click(x+1, y))
+	must(t, r.Drag(ox+1, oy))
+	if got := r.Draw(72).Cells[oy][ox+1]; got.BackMix != plain.BackMix || got.Back != plain.Back {
+		t.Errorf("the card under a drag shows hovered: %+v, was %+v", got, plain)
+	}
+	must(t, r.Release())
+}
