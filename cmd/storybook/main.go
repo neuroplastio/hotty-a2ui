@@ -222,10 +222,8 @@ func printText(w io.Writer, st *story.Story, in io.Reader, out func(a2ui.Outboun
 		if st == nil {
 			return errors.New("a story, or -stream: storybook -list names them")
 		}
-		for _, m := range st.Messages {
-			if err := run.Feed(m); err != nil {
-				return err
-			}
+		if err := run.Play(st); err != nil {
+			return err
 		}
 		ss := run.Surfaces()
 		for i, s := range ss {
@@ -270,10 +268,8 @@ func printHTML(w io.Writer, args []string, th theme.Theme) error {
 		return fmt.Errorf("no story %q (storybook -list)", args[0])
 	}
 	run := story.NewRun()
-	for _, m := range st.Messages {
-		if err := run.Feed(m); err != nil {
-			return err
-		}
+	if err := run.Play(st); err != nil {
+		return err
 	}
 	for _, s := range run.Surfaces() {
 		r := html.New(s.C, s.S.ID)

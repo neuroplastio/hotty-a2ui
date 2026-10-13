@@ -97,6 +97,7 @@ func play(t *testing.T, v vector, rendition string) {
 		if st == nil {
 			t.Fatalf("no story %s", v.Story)
 		}
+		run.Program(st)
 		for _, m := range st.Messages {
 			msgs = append(msgs, m)
 		}

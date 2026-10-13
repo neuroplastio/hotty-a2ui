@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -671,24 +672,23 @@ func storyMarkdown() string {
 	return "no HottyMarkdown with a literal text in hotty/markdown"
 }
 
-// filepicker: bubbles' filepicker example.
+// filepicker: bubbles' filepicker over the story's files
+// (story/fixture.json), written to a directory of their own, six entries
+// a screen as the story's height has it, sizes shown.
 type filepickerRef struct {
 	fp filepicker.Model
 }
 
 func newFilepicker() *filepickerRef {
 	fp := filepicker.New()
-	fp.CurrentDirectory, _ = os.Getwd()
+	fp.CurrentDirectory = storyFiles()
 	fp.ShowSize = true
-	fp.ShowHidden = false
 	fp.AutoHeight = false
-	fp.SetHeight(8)
+	fp.SetHeight(6)
 	return &filepickerRef{fp: fp}
 }
 
-func (m *filepickerRef) Init() tea.Cmd {
-	return m.fp.Init()
-}
+func (m *filepickerRef) Init() tea.Cmd { return m.fp.Init() }
 
 func (m *filepickerRef) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
@@ -696,6 +696,42 @@ func (m *filepickerRef) Update(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (m *filepickerRef) View() string {
-	return m.fp.View()
+func (m *filepickerRef) View() string { return m.fp.View() }
+
+// storyFiles writes the files the story hotty/filepicker lists
+// (story/fixture.json) to a directory under the system's temporary one,
+// afresh each time, and is its path.
+func storyFiles() string {
+	dir := filepath.Join(os.TempDir(), "hotty-a2ui-ref-filepicker")
+	if err := writeFiles(dir, "story/fixture.json"); err != nil {
+		fmt.Fprintln(os.Stderr, "ref filepicker runs from the repository's root:", err)
+		os.Exit(1)
+	}
+	return dir
+}
+
+// writeFiles writes the files a JSON object holds, a text by each path,
+// under dir, which it empties first.
+func writeFiles(dir, from string) error {
+	b, err := os.ReadFile(from)
+	if err != nil {
+		return err
+	}
+	var files map[string]string
+	if err := json.Unmarshal(b, &files); err != nil {
+		return err
+	}
+	if err := os.RemoveAll(dir); err != nil {
+		return err
+	}
+	for name, text := range files {
+		p := filepath.Join(dir, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(p, []byte(text), 0o644); err != nil {
+			return err
+		}
+	}
+	return nil
 }

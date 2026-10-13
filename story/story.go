@@ -144,9 +144,11 @@ type Run struct {
 	// Changed, if set, is called when the agent's messages change a
 	// surface, after its view is built again; deleted when it went.
 	Changed func(s *Surface, deleted bool)
-	// Roots are the filesystems granted to each surface's controller as it
-	// is made (profile §6.31).
-	Roots map[string]fs.FS
+	// roots are the filesystems granted to each surface's controller, by
+	// name (Grant); hears hears the user's actions, as the program behind
+	// the story does (Program).
+	roots map[string]fs.FS
+	hears func(a *a2ui.ActionMessage)
 
 	surfaces []*Surface
 }
@@ -158,7 +160,7 @@ type Run struct {
 // hottyDismissToast show and take away their toasts, and hottyStartTimer,
 // hottyStopTimer, hottyToggleTimer and hottyResetTimer work their timers.
 func NewRun() *Run {
-	r := &Run{Roots: map[string]fs.FS{"project": FixtureFS}}
+	r := &Run{}
 	h := hotty.Catalog()
 	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo, FoldAll: r.foldAll,
 		Toast: r.toast, DismissToast: r.dismissToast, Timer: r.timer})
@@ -170,25 +172,8 @@ func NewRun() *Run {
 		if r.Out != nil {
 			r.Out(o)
 		}
-		if o.Action != nil && o.Action.Name == "filePicked" {
-			if file, ok := o.Action.Context["file"].(string); ok && file != "" {
-				if fsys := r.Roots["project"]; fsys != nil {
-					if data, err := fs.ReadFile(fsys, file); err == nil {
-						updateMsg := []any{
-							map[string]any{
-								"version": "v1.0",
-								"updateDataModel": map[string]any{
-									"surfaceId": o.Action.SurfaceID,
-									"path":      "/code",
-									"value":     string(data),
-								},
-							},
-						}
-						msgJSON, _ := json.Marshal(updateMsg)
-						_ = r.P.ProcessJSON(msgJSON)
-					}
-				}
-			}
+		if o.Action != nil && r.hears != nil {
+			r.hears(o.Action)
 		}
 	}
 	r.P.Changed = func(s *a2ui.Surface, deleted bool) {
@@ -205,10 +190,12 @@ func NewRun() *Run {
 			return
 		case i < 0:
 			c := view.NewController(s)
-			for name, fsys := range r.Roots {
-				c.Grant(name, fsys)
+			if len(r.roots) > 0 {
+				for name, fsys := range r.roots {
+					c.Grant(name, fsys)
+				}
+				c.Rebuild()
 			}
-			c.Rebuild()
 			r.surfaces = append(r.surfaces, &Surface{S: s, C: c})
 			i = len(r.surfaces) - 1
 		default:
@@ -221,27 +208,71 @@ func NewRun() *Run {
 	return r
 }
 
-// Grant gives each surface's controller a root to list (profile §6.31).
+// Grant gives the run's views a root to list, by name (view.Controller.Grant):
+// those it has, and those it makes.
 func (r *Run) Grant(name string, fsys fs.FS) {
-	if r.Roots == nil {
-		r.Roots = map[string]fs.FS{}
+	if r.roots == nil {
+		r.roots = map[string]fs.FS{}
 	}
-	r.Roots[name] = fsys
-	for _, s := range r.surfaces {
-		s.C.Grant(name, fsys)
-		s.C.Rebuild()
+	r.roots[name] = fsys
+	for _, x := range r.surfaces {
+		x.C.Grant(name, fsys)
+		x.C.Rebuild()
 	}
 }
 
-// Start runs a story: a new run, fed the story's messages.
-func Start(st *Story) (*Run, error) {
-	r := NewRun()
+// programs are the programs behind the stories that need one, by the
+// story's name: what the program around the agent's surface does, which
+// no A2UI message says (granting a root, reading a file).
+var programs = map[string]func(r *Run){
+	"hotty/filepicker": filePickerProgram,
+}
+
+// filePickerProgram is the program behind hotty/filepicker: it grants
+// FixtureFS as the root "project" and, since it granted it, it (not the
+// agent) reads the file a filePicked action's context names, and sends
+// its text to the surface's /code, as an agent's message, logged as one.
+func filePickerProgram(r *Run) {
+	r.Grant("project", FixtureFS)
+	r.hears = func(a *a2ui.ActionMessage) {
+		file, _ := a.Context["file"].(string)
+		if a.Name != "filePicked" || file == "" {
+			return
+		}
+		text, err := fs.ReadFile(FixtureFS, file)
+		if err != nil {
+			return
+		}
+		msg, _ := json.Marshal(map[string]any{"version": "v1.0", "updateDataModel": map[string]any{
+			"surfaceId": a.SurfaceID, "path": "/code", "value": string(text)}})
+		r.Feed(msg)
+	}
+}
+
+// Program sets the run up as the program behind a story, if it has one
+// (programs), before its messages are fed.
+func (r *Run) Program(st *Story) {
+	if p := programs[st.Name]; p != nil {
+		p(r)
+	}
+}
+
+// Play plays a story in the run: the program behind it (Program), then
+// its messages, until one fails.
+func (r *Run) Play(st *Story) error {
+	r.Program(st)
 	for _, m := range st.Messages {
 		if err := r.Feed(m); err != nil {
-			return r, err
+			return err
 		}
 	}
-	return r, nil
+	return nil
+}
+
+// Start runs a story: a new run, playing it.
+func Start(st *Story) (*Run, error) {
+	r := NewRun()
+	return r, r.Play(st)
 }
 
 // Surfaces are the run's surfaces, in the order they were made.

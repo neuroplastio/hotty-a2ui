@@ -69,10 +69,8 @@ func printPage(w io.Writer, args []string, stream string, th theme.Theme) error 
 			return fmt.Errorf("no story %q (storybook -list)", a)
 		}
 		run := story.NewRun()
-		for _, m := range st.Messages {
-			if err := run.Feed(m); err != nil {
-				return fmt.Errorf("%s: %w", st.Name, err)
-			}
+		if err := run.Play(st); err != nil {
+			return fmt.Errorf("%s: %w", st.Name, err)
 		}
 		parts = append(parts, part{st.Title, st.Name, run.Surfaces()})
 	}

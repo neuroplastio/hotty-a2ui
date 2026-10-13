@@ -362,11 +362,8 @@ func (b *Book) open(name string) {
 		name = st.Name
 		run := story.NewRun()
 		run.Out = b.o.Out
-		for _, msg := range st.Messages {
-			if err := run.Feed(msg); err != nil {
-				b.status = "✗ " + strings.TrimPrefix(err.Error(), "a2ui: ")
-				break
-			}
+		if err := run.Play(st); err != nil {
+			b.status = "✗ " + strings.TrimPrefix(err.Error(), "a2ui: ")
 		}
 		b.run = run
 		a = about{title: st.Title, icon: st.Icon, names: st.Component, description: st.Description}
