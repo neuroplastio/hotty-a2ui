@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-12
+Last updated: 2026-10-13
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from rounds 7–9
@@ -227,6 +227,35 @@ built on it).
     container width.
   Supports Shift+Wheel, horizontal mouse wheel / trackpad gestures, keyboard
   navigation, and drawn horizontal scrollbars across cells and HOTTY host renditions.
+- [ ] **KIT-17a** — The file picker for apps: what bubbles' filepicker and
+  huh's field give an app that HottyFilePicker doesn't (the gap analysis of
+  2026-10-13, against bubbles v2.2.1 and huh v2.0.3). All of it is props
+  and the program's API, with nothing new on the wire. In order:
+  1. Grants per app, not per `view.Controller`: one place where a program
+     grants roots for every surface it shows (only `story.Run` grants
+     today), and a helper that turns a root-relative pick into the
+     program's own path.
+  2. What can be picked: allowed types (others muted, and a pick of one
+     shows the field's error, as huh's "X files only"); files, directories
+     or both (`FileAllowed`, `DirAllowed`: a "choose a folder"); hidden
+     files left out unless asked for (`ShowHidden`).
+  3. A form field: `label`, `checks` and their error, the picked file
+     marked in the listing, and a closed state that shows the picked path
+     or a placeholder and opens to pick, as huh's does.
+  4. The entry the cursor is on, bound (`HighlightedPath`), so that an app
+     can preview it as the user moves.
+  5. Symbolic links: `name → target`, and a link to a directory opens it
+     (Go 1.25's `fs.ReadLinkFS`, which `os.DirFS` and `os.OpenRoot`'s FS
+     have). Today one is listed and picked as a file.
+
+  Then: reading without blocking a build (bubbles reads in a `tea.Cmd`; a
+  slow or remote root stalls the UI), the permissions column, a height
+  that fills the room (`AutoHeight`), sizes as bubbles writes them (SI,
+  `1.2kB`, where ours are `1.2K` in binary units), and a cap or a window for
+  very large directories on a host (deferred in journal 2026-10-13.1).
+  Beyond both references, the maintainer's call: picking several files, a
+  save dialog (a name, a new folder, an overwrite question), sorting by
+  date, typing a path.
 
 ## Parked
 
