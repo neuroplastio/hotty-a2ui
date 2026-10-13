@@ -306,9 +306,10 @@ func (c *Controller) ToggleNode(id string, i int) error {
 	return err
 }
 
-// ScrollRows moves the rows a HottyTree or a HottyTable with a height
-// shows by rows (up when negative), as the wheel does, clamped, leaving
-// the selection where it is; moved reports whether they moved.
+// ScrollRows moves the rows a HottyTree, a HottyTable or a
+// HottyFilePicker with a height shows by rows (up when negative), as the
+// wheel does, clamped, leaving the selection where it is; moved reports
+// whether they moved.
 func (c *Controller) ScrollRows(id string, rows int) (moved bool) {
 	e := c.V.Find(id)
 	if e == nil || e.Height <= 0 {

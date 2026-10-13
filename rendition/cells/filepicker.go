@@ -1,8 +1,6 @@
 package cells
 
 import (
-	"strconv"
-
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -13,12 +11,21 @@ import (
 // highlighted entry's two columns are a "│" bar, as a HottyList's
 // selected item has.
 
-// fileIndent is the columns before every line of a HottyFilePicker.
-const fileIndent = 2
+const (
+	// fileIndent is the columns before every line of a HottyFilePicker.
+	fileIndent = 2
+	// fileHead is the rows a HottyFilePicker's title takes: its path and
+	// a blank row.
+	fileHead = 2
+)
 
-// fileHead is the rows a HottyFilePicker's title takes: its path and a
-// blank row.
-const fileHead = 2
+// The hits of a HottyFilePicker that are not an entry's (whose opt is
+// the entry's index): its title, which a click in a subdirectory takes up
+// to the parent, and the rest of its box.
+const (
+	fileTitleHit = -1
+	fileElseHit  = -2
+)
 
 // fileBody is the rows a HottyFilePicker's entries take: its height's
 // worth, else as many as it has; at least a row, for the empty text.
@@ -39,44 +46,12 @@ func fileTitle(e *view.Element) string {
 	return " ◂ /" + e.FileDir + " "
 }
 
-// fileLabel is an entry's name as a line: a directory with a trailing
-// "/".
-func fileLabel(f view.FileEntry) string {
-	if f.Dir {
-		return f.Name + "/"
-	}
-	return f.Name
-}
-
-// fileSizeText is a file's size, as bubbles' filepicker has it: bytes,
-// then K, M, G, T, to one decimal from K up. A directory's ("-").
-func fileSizeText(f view.FileEntry) string {
-	if f.Dir || f.Size < 0 {
-		return ""
-	}
-	n := float64(f.Size)
-	for _, u := range []string{"B", "K", "M", "G"} {
-		switch {
-		case n < 1024:
-			if u == "B" {
-				return strconv.FormatInt(f.Size, 10) + "B"
-			}
-			return strconv.FormatFloat(n, 'f', 1, 64) + u
-		}
-		if u == "G" {
-			return strconv.FormatFloat(n/1024, 'f', 1, 64) + "T"
-		}
-		n /= 1024
-	}
-	return ""
-}
-
 // fileSizeWidth is the columns the size column takes: the widest size
 // among the files, plus a space.
 func fileSizeWidth(e *view.Element) int {
 	n := 0
 	for _, f := range e.Files {
-		n = max(n, Width(fileSizeText(f)))
+		n = max(n, Width(f.SizeText()))
 	}
 	if n > 0 {
 		n++
@@ -98,11 +73,11 @@ func fileBar(e *view.Element) int {
 func fileWidth(e *view.Element) int {
 	n := Width(fileTitle(e))
 	for _, f := range e.Files {
-		n = max(n, Width(fileLabel(f)))
+		n = max(n, Width(f.Label()))
 	}
 	n += fileSizeWidth(e)
 	if e.Error != "" {
-		n = max(n, Width(e.Error))
+		n = max(n, Width("✗ "+e.Error))
 	}
 	return fileIndent + n + fileBar(e)
 }
@@ -123,77 +98,64 @@ func fileHeight(e *view.Element) int { return fileHead + fileBody(e) }
 // view's bar runs beside them.
 func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
-	focused := r.focused(e.ID)
+	h := fileHeight(e)
+	r.boxes[e.ID] = box{x, y, w, h}
+	// The box's hit first: the title's and the entries' are over it.
+	r.hits = append(r.hits, hit{x: x, y: y, w: w, h: h, id: e.ID, opt: fileElseHit},
+		hit{x: x, y: y, w: w, h: 1, id: e.ID, opt: fileTitleHit})
 	bar := min(fileBar(e), w)
 	in := x + fileIndent
 	iw := max(w-fileIndent-bar, 0)
-	row := y
-	cv.write(in, row, iw, fit(line(fileTitle(e), style{role: Accent, attr: Reverse}), iw))
-	r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -1})
-	row++
-	r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -2})
-	row++
-
-	totH := fileHead + fileBody(e)
+	cv.write(in, y, iw, fit(line(fileTitle(e), style{role: Accent, attr: Reverse}), iw))
+	row := y + fileHead
 	switch {
 	case e.Error != "":
 		cv.write(in, row, iw, fit(line("✗ "+e.Error, style{role: Error}), iw))
+		return
 	case len(e.Files) == 0:
 		cv.write(in, row, iw, fit(line(e.Placeholder, style{role: Muted}), iw))
-	}
-	if e.Error != "" || len(e.Files) == 0 {
-		r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: -2})
-		if rem := y + totH - (row + 1); rem > 0 {
-			r.hits = append(r.hits, hit{x: x, y: row + 1, w: w, h: rem, id: e.ID, opt: -2})
-		}
-		r.boxes[e.ID] = box{x, y, w, totH}
 		return
 	}
 	if bar > 0 {
 		l.paintScrollbar(cv, e, x+w-1, row, e.Height, len(e.Files), e.Top)
 	}
 	sizeW := fileSizeWidth(e)
+	nw := max(iw-sizeW, 0)
 	end := len(e.Files)
 	if e.Height > 0 {
 		end = min(e.Top+e.Height, end)
 	}
-	at := row
+	focused := r.focused(e.ID)
 	for i := e.Top; i < end; i++ {
 		f := e.Files[i]
-		name, size, barSt := style{}, style{role: Muted}, style{}
+		name, size := style{}, style{role: Muted}
 		if i == e.Selected {
-			name, barSt = style{attr: Bold}, style{role: Muted}
+			barSt := style{role: Muted}
+			name = style{attr: Bold}
 			if focused {
 				name, size, barSt = style{role: Accent}, style{role: Accent}, style{role: Accent}
 			}
+			cv.write(x, row, w, line("│", barSt))
 		}
-		if i == e.Selected {
-			cv.write(x, at, w, line("│", barSt))
+		cv.write(in, row, nw, fit(line(f.Label(), name), nw))
+		if s := f.SizeText(); s != "" {
+			cv.write(in+nw, row, sizeW, fit(line(s, size), sizeW))
 		}
-		nw := max(iw-sizeW, 0)
-		cv.write(in, at, nw, fit(line(fileLabel(f), name), nw))
-		if s := fileSizeText(f); s != "" && sizeW > 0 {
-			cv.write(in+max(iw-sizeW, 0), at, sizeW, fit(line(s, size), sizeW))
-		}
-		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: 1, id: e.ID, opt: i})
-		at++
+		r.hits = append(r.hits, hit{x: x, y: row, w: w, h: 1, id: e.ID, opt: i})
+		row++
 	}
-	if rem := y + totH - at; rem > 0 {
-		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: rem, id: e.ID, opt: -2})
-	}
-	r.boxes[e.ID] = box{x, y, w, totH}
 }
 
 // clickFile is a click on a HottyFilePicker, which has the keyboard now:
-// on an entry, it selects it, or opens or picks it when it was selected
-// already; on the title in a subdirectory, it goes up one level; elsewhere,
-// it does nothing more.
+// on an entry, it highlights it, or opens or picks it when it was
+// highlighted already; on the title in a subdirectory, it goes up one
+// level; elsewhere, it does nothing more.
 func (r *Rendition) clickFile(e *view.Element, item int) error {
-	if item == -1 && e.FileDir != "" {
+	switch {
+	case item >= 0:
+		return r.c.ClickFile(e.ID, item)
+	case item == fileTitleHit:
 		return r.c.FileUp(e.ID)
 	}
-	if item < 0 {
-		return nil
-	}
-	return r.c.ClickFile(e.ID, item)
+	return nil
 }

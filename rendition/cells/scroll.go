@@ -318,9 +318,9 @@ func (r *Rendition) scrollBy(e *view.Element, s scrolled, dx, dy int) {
 
 // Wheel is a notch of the wheel at (col, row) of the last frame: dy rows
 // down (up when negative), dx columns right, as the terminal reported it.
-// A HottyTree or a HottyTable with a height under the pointer scrolls
-// first, three rows a notch, while it can move that way: it is inside any
-// scroll view there.
+// A HottyTree, a HottyTable or a HottyFilePicker with a height under the
+// pointer scrolls first, three rows a notch, while it can move that way:
+// it is inside any scroll view there.
 // Else the innermost scroll view under the pointer that can still move
 // that way scrolls, three rows a notch, or six columns, as bubbles'
 // viewport does; handled reports whether one did.

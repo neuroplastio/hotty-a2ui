@@ -362,7 +362,7 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			if part == partTitle && e.FileDir != "" {
 				return c.FileUp(id)
 			}
-			if i, err := strconv.Atoi(strings.TrimPrefix(part, partEntry)); err == nil && strings.HasPrefix(part, partEntry) {
+			if i, err := strconv.Atoi(strings.TrimPrefix(part, partItem)); err == nil && strings.HasPrefix(part, partItem) {
 				return c.ClickFile(id, i)
 			}
 			return nil

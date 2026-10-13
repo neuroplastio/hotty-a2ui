@@ -24,7 +24,6 @@ const (
 	partLess   = "m" // a Slider's − button
 	partMore   = "n" // a Slider's + button
 	partNotch  = "k" // a Slider's notches, "k0" to "kN": where a drag sets it
-	partEntry  = "k" // a HottyFilePicker's entries, "k0" to "kN", by their index
 	partTabs   = "t" // a Tabs' bar
 	partPanel  = "p" // a Tabs' content
 	partSubmit = "s" // a Form's hidden submit button
@@ -34,7 +33,7 @@ const (
 	partFrame  = "f" // a Spinner's frame; a timer's time: what a tick changes
 	partTitle  = "h" // a HottyList's title, or its filter while typed
 	partStatus = "u" // a HottyList's status line
-	partItem   = "i" // a HottyList's items, "i0" to "iN", by their index
+	partItem   = "i" // a HottyList's items, or a HottyFilePicker's entries, "i0" to "iN", by their index
 	partDots   = "d" // a HottyList's or a HottyPaginator's page dots; a HottyPaginator's each, "d0" to "dN"
 	partLines  = "j" // a HottyScrollView's lines, which a log appends to
 	partHunk   = "b" // a HottyDiff's hunks, "b0" to "bN", by their index

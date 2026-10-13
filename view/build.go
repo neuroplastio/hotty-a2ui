@@ -42,8 +42,9 @@ type State struct {
 	// Open are the branches unfolded in each HottyTree whose expanded is
 	// not bound, by its id: what the user made them.
 	Open map[string][]string
-	// Revealed is the node each HottyTree, or the row each HottyTable,
-	// with a height last brought into view, by its id: the rows it shows
+	// Revealed is the node each HottyTree, the row each HottyTable, or the
+	// entry each HottyFilePicker (by its path), with a height last brought
+	// into view, by its id: the rows it shows
 	// follow the selection when that moves, and the wheel moves them
 	// otherwise (ScrollRows).
 	Revealed map[string]string
@@ -74,25 +75,37 @@ type State struct {
 	// filesystem. A picker whose root is not granted shows its error.
 	Roots map[string]fs.FS
 	// File is each HottyFilePicker's own state, by its id: the directory
-	// it shows where `path` is not bound, and the entry highlighted.
+	// it shows where `path` is not bound, and each directory's highlight.
 	File map[string]FilePick
 }
 
 // FilePick is a HottyFilePicker's renderer state: the directory it shows
-// where `path` is not bound ("" for the root), the index of the entry
-// it has highlighted, and each visited directory's saved highlight and
-// scroll offset.
+// where `path` is not bound ("" for the root), the one its last build
+// showed, each directory it showed as the user left it, by its path, and
+// the listing it read last.
 type FilePick struct {
-	Path  string
-	Index int
-	Dirs  map[string]DirPick
+	Dir     string
+	Shown   string
+	Dirs    map[string]DirPick
+	Listing *FileListing
 }
 
-// DirPick is a directory's saved highlight and scroll offset, restored
-// when returning to it.
+// FileListing is a directory as a HottyFilePicker read it: its root's
+// name, its path, and every entry, sorted as the picker lists them, or
+// why it could not be read. A build reads a directory again only when
+// the picker shows another one, or the program grants a root (Grant).
+type FileListing struct {
+	Root, Dir string
+	Files     []FileEntry
+	Failed    string
+}
+
+// DirPick is a directory as a HottyFilePicker left it: the entry it
+// highlighted, by name, and the first row it showed. Coming back to it
+// shows them again.
 type DirPick struct {
-	Index int
-	Top   int
+	Name string
+	Top  int
 }
 
 // NewState is a surface's state before the user does anything.

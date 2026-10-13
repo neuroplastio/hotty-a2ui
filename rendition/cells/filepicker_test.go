@@ -198,3 +198,37 @@ func TestFilePickerCellsScrollAndWheel(t *testing.T) {
 		t.Errorf("expected scrollbar thumb in output:\n%s", f)
 	}
 }
+
+// TestFilePickerCellsModalEscape: in a Modal, Escape in a picker in a
+// subdirectory goes up, and at its root closes the Modal.
+func TestFilePickerCellsModalEscape(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"dir":""}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["m"]},
+	 {"id":"m","component":"Modal","trigger":"open","content":"fp"},
+	 {"id":"open_t","component":"Text","text":"Open"},
+	 {"id":"open","component":"Button","child":"open_t","action":{"event":{"name":"o"}}},
+	 {"id":"fp","component":"HottyFilePicker","catalogId":"` + hotty.ID + `","root":"project","path":{"@path":"/dir"}}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	c.Grant("project", cellsTestFS)
+	c.Rebuild()
+	r := New(c)
+	openModal(t, c)
+	c.Focus("fp")
+	r.Draw(40)
+	for _, key := range []string{"Enter", "Escape"} { // into src/, and out
+		if ok, err := r.Key(key); !ok || err != nil {
+			t.Fatalf("%s: %v, %v", key, ok, err)
+		}
+	}
+	if got := c.S.Data.Value("/dir"); got != "" || c.V.Overlay == nil {
+		t.Fatalf("after Enter, Escape: /dir %v, Modal open %v; want the root, open", got, c.V.Overlay != nil)
+	}
+	if ok, err := r.Key("Escape"); !ok || err != nil || c.V.Overlay != nil {
+		t.Errorf("Escape at the root left the Modal open (%v, %v)", ok, err)
+	}
+}

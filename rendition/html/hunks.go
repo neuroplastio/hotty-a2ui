@@ -273,7 +273,7 @@ func (r *Rendition) focusOn(id string) string {
 		}
 	case e.Kind == view.FilePicker:
 		if e.Selected >= 0 && e.Selected < len(e.Files) {
-			return partID(id, partEntry+strconv.Itoa(e.Selected))
+			return partID(id, partItem+strconv.Itoa(e.Selected))
 		}
 	}
 	return id

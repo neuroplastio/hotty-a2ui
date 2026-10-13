@@ -138,7 +138,7 @@ func TestFilePickerNavigation(t *testing.T) {
 		t.Errorf("actions = %+v, want [change]", *actions)
 	}
 
-	// In "src": dirs view, files app.go, util.go? Wait, testFS has src/app.go, src/view/view.go
+	// In src: the directory view, then the file app.go.
 	e = c.V.Find("root")
 	if e.FileDir != "src" {
 		t.Errorf("fileDir = %q, want src", e.FileDir)
@@ -156,16 +156,24 @@ func TestFilePickerNavigation(t *testing.T) {
 		t.Errorf("/dir = %v, want empty", got)
 	}
 
-	// Escape at root does nothing
-	ok, err = c.FileKey("root", "Escape")
-	if !ok || err != nil {
-		t.Fatalf("FileKey: %v, %v", ok, err)
+	// Back at the root, src is highlighted again.
+	if e = c.V.Find("root"); e.Selected != 1 {
+		t.Errorf("selected after going up = %d, want 1 (src)", e.Selected)
+	}
+
+	// At the root, the keys that go up are not the picker's: they pass on
+	// (Escape to a Modal, say).
+	for _, key := range []string{"Escape", "ArrowLeft", "Backspace", "h"} {
+		if ok, err := c.FileKey("root", key); ok || err != nil {
+			t.Errorf("FileKey(%s) at the root: %v, %v; want false", key, ok, err)
+		}
 	}
 	if got := c.S.Data.Value("/dir"); got != "" {
 		t.Errorf("/dir = %v, want empty", got)
 	}
 
-	// Pick a file: End goes to last file (main.go), Enter picks it
+	// Pick a file: End goes to the last one (README.md, case aside), Enter
+	// picks it.
 	c.FileKey("root", "End")
 	e = c.V.Find("root")
 	if e.Selected != 4 {
@@ -260,9 +268,9 @@ func TestFilePickerScrollAndFocusRestore(t *testing.T) {
 		t.Fatalf("fileDir = %q, want e_dir", e.FileDir)
 	}
 
-	// In e_dir, select sub.go (entry 0)
-	if err := c.ClickFile("root", 0); err != nil {
-		t.Fatal(err)
+	// A directory not shown before highlights its first entry, sub.go.
+	if e.Selected != 0 || e.Top != 0 {
+		t.Errorf("in e_dir: selected = %d, top = %d, want 0, 0", e.Selected, e.Top)
 	}
 
 	// Now go back up (FileUp)
@@ -280,5 +288,100 @@ func TestFilePickerScrollAndFocusRestore(t *testing.T) {
 	// Scrolling must be restored to top 2
 	if e.Top != 2 {
 		t.Errorf("top after back = %d, want 2", e.Top)
+	}
+}
+
+// TestFilePickerLiteralPath: a `path` not bound is where the picker
+// starts; the user walks from there, and up to the root.
+func TestFilePickerLiteralPath(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyFilePicker","catalogId":"` + hotty.ID + `","root":"project","path":"src/../src"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	c.Grant("project", testFS)
+	c.Rebuild()
+	if e := c.V.Find("root"); e.FileDir != "src" || len(e.Files) != 2 {
+		t.Fatalf("dir %q, files %+v; want src's two", e.FileDir, e.Files)
+	}
+	if err := c.FileUp("root"); err != nil {
+		t.Fatal(err)
+	}
+	if e := c.V.Find("root"); e.FileDir != "" || e.File().Name != "src" {
+		t.Errorf("after going up: dir %q, highlighted %q; want the root, src", e.FileDir, e.File().Name)
+	}
+}
+
+// TestFilePickerKeepsItsEntry: the highlight is an entry, not a row: when
+// a filter changes the rows, it stays on the same entry while it shows.
+func TestFilePickerKeepsItsEntry(t *testing.T) {
+	c, _ := filePickerHarness(t, `,"filter":{"@path":"/q"}`)
+	if err := c.ClickFile("root", 3); err != nil { // main.go
+		t.Fatal(err)
+	}
+	if err := c.S.Write("/q", "m"); err != nil { // go.mod, main.go, README.md
+		t.Fatal(err)
+	}
+	c.Rebuild()
+	if e := c.V.Find("root"); e.File().Name != "main.go" || e.Selected != 1 {
+		t.Errorf("highlighted %q at %d, want main.go at 1", e.File().Name, e.Selected)
+	}
+}
+
+// TestFilePickerAgentPath: where the agent moves `path`, going up
+// highlights the directory left, as it does where the user walked.
+func TestFilePickerAgentPath(t *testing.T) {
+	c, _ := filePickerHarness(t, "")
+	if err := c.S.Write("/dir", "src/view"); err != nil {
+		t.Fatal(err)
+	}
+	c.Rebuild()
+	if ok, err := c.FileKey("root", "Escape"); !ok || err != nil {
+		t.Fatalf("Escape: %v, %v", ok, err)
+	}
+	if e := c.V.Find("root"); e.FileDir != "src" || e.File().Name != "view" {
+		t.Errorf("dir %q, highlighted %q; want src, view", e.FileDir, e.File().Name)
+	}
+}
+
+// TestFilePickerReadsWhenShown: a picker reads a directory when it shows
+// it; another build uses the listing it has, until it shows another
+// directory, or the program grants a root.
+func TestFilePickerReadsWhenShown(t *testing.T) {
+	fsys := fstest.MapFS{
+		"a.txt":    &fstest.MapFile{Data: []byte("a\n")},
+		"sub/b.go": &fstest.MapFile{Data: []byte("b\n")},
+	}
+	c, _ := filePickerHarness(t, "")
+	c.Grant("project", fsys)
+	c.Rebuild()
+	names := func() (out []string) {
+		for _, f := range c.V.Find("root").Files {
+			out = append(out, f.Name)
+		}
+		return out
+	}
+	fsys["c.txt"] = &fstest.MapFile{Data: []byte("c\n")}
+	c.Rebuild()
+	if got := names(); len(got) != 2 {
+		t.Errorf("a build read the directory again: %v", got)
+	}
+	if err := c.ClickFile("root", 0); err != nil { // sub/, highlighted: open it
+		t.Fatal(err)
+	}
+	if err := c.FileUp("root"); err != nil {
+		t.Fatal(err)
+	}
+	if got := names(); len(got) != 3 {
+		t.Errorf("coming back did not read the directory: %v", got)
+	}
+	delete(fsys, "c.txt")
+	c.Grant("project", fsys)
+	c.Rebuild()
+	if got := names(); len(got) != 2 {
+		t.Errorf("a grant did not read the directory: %v", got)
 	}
 }

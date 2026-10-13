@@ -42,11 +42,11 @@ func TestFilePickerOnHost(t *testing.T) {
 		{"fp", "aria-label", "/"},
 		{"fp", "data-keys", fileKeys},
 		{partID("fp", partTitle), "class", "k-file-title"},
-		{partID("fp", partEntry+"0"), "class", "k-file-item k-sel"},
-		{partID("fp", partEntry+"0"), "role", "option"},
-		{partID("fp", partEntry+"0"), "aria-selected", "true"},
-		{partID("fp", partEntry+"1"), "class", "k-file-item"},
-		{partID("fp", partEntry+"1"), "aria-selected", "false"},
+		{partID("fp", partItem+"0"), "class", "k-file-item k-sel"},
+		{partID("fp", partItem+"0"), "role", "option"},
+		{partID("fp", partItem+"0"), "aria-selected", "true"},
+		{partID("fp", partItem+"1"), "class", "k-file-item"},
+		{partID("fp", partItem+"1"), "aria-selected", "false"},
 	} {
 		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
 			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
@@ -60,26 +60,26 @@ func TestFilePickerOnHost(t *testing.T) {
 	}
 
 	// Click entry 1 (main.go): selects it
-	must(t, x.h.Click(r.name, partID("fp", partEntry+"1")))
+	must(t, x.h.Click(r.name, partID("fp", partItem+"1")))
 	x.pump()
 	if r.C.St.Focus != "fp" || !r.C.St.Keyboard {
 		t.Fatalf("focus %q (%v), want fp", r.C.St.Focus, r.C.St.Keyboard)
 	}
-	if got, _ := s.Attr(partID("fp", partEntry+"1"), "aria-selected"); got != "true" {
+	if got, _ := s.Attr(partID("fp", partItem+"1"), "aria-selected"); got != "true" {
 		t.Errorf("entry 1 aria-selected = %q, want true", got)
 	}
 
 	// Second click picks main.go
-	must(t, x.h.Click(r.name, partID("fp", partEntry+"1")))
+	must(t, x.h.Click(r.name, partID("fp", partItem+"1")))
 	x.pump()
 	if got := r.C.S.Data.Value("/sel"); got != "main.go" {
 		t.Errorf("/sel = %v, want main.go", got)
 	}
 
 	// Click entry 0 (docs): first selects it, second opens it
-	must(t, x.h.Click(r.name, partID("fp", partEntry+"0")))
+	must(t, x.h.Click(r.name, partID("fp", partItem+"0")))
 	x.pump()
-	must(t, x.h.Click(r.name, partID("fp", partEntry+"0")))
+	must(t, x.h.Click(r.name, partID("fp", partItem+"0")))
 	x.pump()
 	x.update(r)
 	if got := r.C.S.Data.Value("/dir"); got != "docs" {
@@ -102,7 +102,7 @@ func TestFilePickerOnHost(t *testing.T) {
 	if got := r.C.V.Find("fp").Selected; got != 0 {
 		t.Errorf("selected after back = %d, want 0", got)
 	}
-	if got, _ := s.Attr(partID("fp", partEntry+"0"), "aria-selected"); got != "true" {
+	if got, _ := s.Attr(partID("fp", partItem+"0"), "aria-selected"); got != "true" {
 		t.Errorf("entry 0 aria-selected after back = %q, want true", got)
 	}
 }
@@ -125,7 +125,7 @@ func TestFilePickerOnHostScrollbar(t *testing.T) {
 	if !strings.Contains(doc, "k-file-list k-scrolls") || !strings.Contains(doc, "--k-rows: 2") {
 		t.Errorf("expected k-file-list k-scrolls with --k-rows: 2 in doc:\n%s", doc)
 	}
-	if got := r.focusOn("fp"); got != partID("fp", partEntry+"0") {
-		t.Errorf("focusOn = %q, want %q", got, partID("fp", partEntry+"0"))
+	if got := r.focusOn("fp"); got != partID("fp", partItem+"0") {
+		t.Errorf("focusOn = %q, want %q", got, partID("fp", partItem+"0"))
 	}
 }

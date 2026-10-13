@@ -403,11 +403,7 @@ func richList(e *view.Element) []string {
 // "/", "> " marking the highlighted one. Its error, or its empty text,
 // shows where the entries would.
 func filePicker(e *view.Element) []string {
-	path := "/"
-	if e.FileDir != "" {
-		path = "/" + e.FileDir
-	}
-	out := []string{path}
+	out := []string{"/" + e.FileDir}
 	switch {
 	case e.Error != "":
 		return append(out, "✗ "+e.Error)
@@ -415,15 +411,10 @@ func filePicker(e *view.Element) []string {
 		return append(out, "  "+e.Placeholder)
 	}
 	for i, f := range e.Files {
-		mark := "  "
+		s := "  " + f.Label()
 		if i == e.Selected {
-			mark = "> "
+			s = "> " + f.Label()
 		}
-		name := f.Name
-		if f.Dir {
-			name += "/"
-		}
-		s := mark + name
 		if !f.Dir && f.Size >= 0 {
 			s += " (" + strconv.FormatInt(f.Size, 10) + " bytes)"
 		}

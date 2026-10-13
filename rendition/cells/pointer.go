@@ -38,9 +38,10 @@ func (r *Rendition) Pointer(col, row int) string {
 
 // clickable reports whether a click on a hit acts on what it is over: an
 // item of something (an option of an open select, a row, a node, a dot, a
-// hunk, a suggestion), or a control a click works; not a container's own
-// hit (a table's header, a list's frame, a HottyScrollView), which a click
-// gives the keyboard to and no more.
+// hunk, a suggestion, a file picker's entry), or a control a click works,
+// as is a file picker's title in a subdirectory, which goes up; not a
+// container's own hit (a table's header, a list's frame, a
+// HottyScrollView), which a click gives the keyboard to and no more.
 func (r *Rendition) clickable(h *hit) bool {
 	e := r.c.V.Find(h.id)
 	if e == nil || e.Disabled {
@@ -49,10 +50,9 @@ func (r *Rendition) clickable(h *hit) bool {
 	if h.opt >= 0 {
 		return true
 	}
-	if e.Kind == view.FilePicker && e.FileDir != "" && h.opt == -1 {
-		return true
-	}
 	switch e.Kind {
+	case view.FilePicker:
+		return h.opt == fileTitleHit && e.FileDir != ""
 	case view.Button, view.CheckBox, view.Switch, view.Option, view.Tab, view.Link,
 		view.Toast, view.ToastAction, view.Slider, view.RangeSlider, view.Knob:
 		return true
