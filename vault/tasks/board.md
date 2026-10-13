@@ -46,6 +46,14 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   planned. On a host, the HTML rendition reads SPEC §9's `count` (hotty
   7eaa22d, hotty-go 1d58e1a). On items, a run of clicks acts once
   (`view.Controller.ClickItem`, journal 2026-10-13.4).
+- [ ] **KIT-12d** — Copy as a page copies (the maintainer, 2026-10-13:
+  "I want both hotty and cell modes to feel browser-like", with Ctrl+C
+  and Cmd+C overridden, and an option to change them). Cells is done
+  (journal 2026-10-13.6): a selection goes to the primary selection, and
+  a copy key puts it on the clipboard (`SetCopyKeys`, the storybook's
+  `-copy`). On a host the selection is the host's, so hotty-blitz,
+  hottyterm and the addon carry it; that went to hotty. web wires the
+  site's storybook. Paste waits until the maintainer has tried copying.
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [x] **KIT-DEF** — A cue for the default button (the maintainer, round

@@ -47,6 +47,7 @@ func (r *Rendition) selectRun(e *view.Element, p, n int) {
 	r.cursor[e.ID] = end
 	r.drag = ""
 	r.wake()
+	r.primary(e)
 }
 
 // wordAt is the word of a value at character (cluster) p, as a browser's

@@ -33,6 +33,7 @@ import (
 	"github.com/charmbracelet/x/term"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
+	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/rendition/html"
 	"github.com/neuroplastio/hotty-a2ui/rendition/text"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
@@ -50,6 +51,7 @@ func main() {
 	rend := flag.String("rendition", "", "start in this `rendition`: surfaces, cells, text or side (surfaces beside cells)")
 	out := flag.String("out", "", "write what the renderer sends the agent (actions, errors, function calls) to `file` as JSON lines (- for stdout)")
 	bare := flag.Bool("bare", false, "show one story's surfaces alone, in cells, on the whole screen: no list, pickers or panel")
+	copyFlag := flag.String("copy", strings.Join(cells.DefaultCopyKeys, ","), "the `keys` that copy a selection in cells, comma-separated, as HOTTY names them; \"\" for none. With nothing selected, Control+c quits")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: storybook [flags] [story]")
 		flag.PrintDefaults()
@@ -72,6 +74,10 @@ func main() {
 		}
 		th = t
 	}
+	copyKeys := []string{}
+	if *copyFlag != "" {
+		copyKeys = strings.Split(*copyFlag, ",")
+	}
 	if *doc {
 		if err := printHTML(os.Stdout, args, th); err != nil {
 			fmt.Fprintln(os.Stderr, "storybook:", err)
@@ -91,19 +97,19 @@ func main() {
 		if len(args) == 1 {
 			st = story.Find(args[0])
 		}
-		if err := runBare(st, th); err != nil {
+		if err := runBare(st, th, copyKeys); err != nil {
 			fmt.Fprintln(os.Stderr, "storybook:", err)
 			os.Exit(1)
 		}
 		return
 	}
-	if err := run(*list, *plain, *stream, *out, *rend, th, args); err != nil {
+	if err := run(*list, *plain, *stream, *out, *rend, th, copyKeys, args); err != nil {
 		fmt.Fprintln(os.Stderr, "storybook:", err)
 		os.Exit(1)
 	}
 }
 
-func run(list, plain bool, stream, outPath, rend string, th theme.Theme, args []string) error {
+func run(list, plain bool, stream, outPath, rend string, th theme.Theme, copyKeys, args []string) error {
 	if list {
 		for _, st := range story.All() {
 			fmt.Printf("%s\t%s\n", st.Name, st.Title)
@@ -148,13 +154,13 @@ func run(list, plain bool, stream, outPath, rend string, th theme.Theme, args []
 	if outPath == "-" && stdoutTTY {
 		return errors.New("-out - writes to stdout, which is the terminal: pipe it, or name a file")
 	}
-	return interactive(st, in, stream, rend, th, w)
+	return interactive(st, in, stream, rend, th, copyKeys, w)
 }
 
 // interactive runs the storybook in the terminal: /dev/tty when stdin
 // is the stream or stdout carries the actions, as with an agent on both
 // ends of a pipe.
-func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Theme, out func(a2ui.Outbound)) error {
+func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Theme, copyKeys []string, out func(a2ui.Outbound)) error {
 	termIn, termOut := os.Stdin, os.Stdout
 	if in == os.Stdin || !term.IsTerminal(os.Stdin.Fd()) || !term.IsTerminal(os.Stdout.Fd()) {
 		tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
@@ -176,7 +182,7 @@ func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Th
 	if source == "-" {
 		source = "stdin"
 	}
-	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th})
+	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th, CopyKeys: copyKeys})
 	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)), tea.WithoutSignalHandler())
 	m.s.Attach(p.Send)
 	endOnSignal(p)

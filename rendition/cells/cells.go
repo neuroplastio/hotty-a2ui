@@ -6,6 +6,7 @@
 package cells
 
 import (
+	"slices"
 	"time"
 
 	"github.com/neuroplastio/hotty-go/hottyedit"
@@ -47,8 +48,8 @@ type Rendition struct {
 	resize      *resizing            // the longText whose grip a press took, while the button is down
 	sel         *textSel             // the selection in a Text, if any (select.go)
 	texts       map[string][]textRow // each Text's rows, as the last Draw painted them
-	copied      string               // what the last selection copied, until Copied takes it
-	copy        bool                 // whether copied is there to take
+	clip        *Clip                // what the last copy made, until Copied takes it
+	copyKeys    []string             // the keys that copy what is selected (SetCopyKeys)
 	sized       map[string]fieldSize // what each longText's grip resized it to
 	knob        int                  // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
 	anchor      int                  // where in the text control the press was, which a drag selects from
@@ -80,7 +81,7 @@ type box struct{ x, y, w, h int }
 // New is a surface's rendition in cells.
 func New(c *view.Controller) *Rendition {
 	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
-		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, Clock: time.Now}
+		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, copyKeys: slices.Clone(DefaultCopyKeys), Clock: time.Now}
 }
 
 // Animating is how soon the last Draw's frame changes by itself: the
@@ -479,6 +480,9 @@ func posAt(e *view.Element, a *fieldArea, col, row int) int {
 // Release is the primary button let go: a drag ends; a drag and drop
 // drops, and a press that did not drag does what its click waited for.
 func (r *Rendition) Release() error {
+	if e := r.c.V.Find(r.drag); e != nil && isTextControl(e) {
+		r.primary(e)
+	}
 	r.drag, r.resize = "", nil
 	r.letGo()
 	return r.release()

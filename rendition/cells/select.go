@@ -2,15 +2,21 @@ package cells
 
 import (
 	"encoding/base64"
+	"slices"
 	"strings"
+
+	"github.com/neuroplastio/hotty-go"
+
+	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
 // Selecting a Text's or a HottyMarkdown's text with the pointer, and
 // copying it (profile §3.7, vault KIT-12c), as a page's text is selected:
 // a press on a cell of one that no click acts on, then a drag, selects
 // from there to the pointer, in the element's reading order, never across
-// screen rows (a page's nav beside it stays out); the release copies it
-// (Copied). Its cells are drawn in selection.
+// screen rows (a page's nav beside it stays out); the release puts it in
+// the primary selection, and a copy key on the clipboard (Copied). Its
+// cells are drawn in selection.
 
 // textRow is a row of a Text as the last Draw painted it: where, the
 // text each column copies as (a cluster at its first column, "" at a wide
@@ -229,7 +235,7 @@ func (r *Rendition) selectWords(id string, at textPos, n int) {
 		return
 	}
 	r.sel = &textSel{id: id, a: cells[start], b: cells[end-1], whole: true}
-	r.copied, r.copy = r.selText(), true
+	r.clip = &Clip{Text: r.selText(), Primary: true}
 }
 
 // extend moves a held selection's head to the pointer, kept in its Text.
@@ -243,7 +249,7 @@ func (r *Rendition) extend(col, row int) bool {
 }
 
 // letGo ends a held selection: a press that did not leave its cell
-// selects nothing; else its text is copied (Copied).
+// selects nothing; else its text goes to the primary selection (Copied).
 func (r *Rendition) letGo() {
 	s := r.sel
 	if s == nil || !s.held {
@@ -254,7 +260,7 @@ func (r *Rendition) letGo() {
 		r.sel = nil
 		return
 	}
-	r.copied, r.copy = r.selText(), true
+	r.clip = &Clip{Text: r.selText(), Primary: true}
 }
 
 // selText is a selection's text: each row's columns it takes, the spaces
@@ -281,26 +287,115 @@ func (r *Rendition) selText() string {
 	return b.String()
 }
 
-// Copied is the text a selection copied when the button was let go, once:
-// ok is false until another selection ends. A program puts it on the
-// clipboard, with OSC52 for the terminal's.
-func (r *Rendition) Copied() (text string, ok bool) {
-	text, ok = r.copied, r.copy
-	r.copied, r.copy = "", false
-	return text, ok
+// Clip is text for the terminal to keep: on its clipboard, or, Primary,
+// in its primary selection, which a middle click pastes.
+type Clip struct {
+	Text    string
+	Primary bool
 }
 
-// Selection is the text selected now, "" for none.
+// OSC52 is the sequence that puts a clip where it goes (OSC 52's "c" or
+// "p"). A terminal may ask the user first, or refuse; macOS has no primary
+// selection, and its terminals drop one.
+func (c Clip) OSC52() string {
+	to := "c"
+	if c.Primary {
+		to = "p"
+	}
+	return "\x1b]52;" + to + ";" + base64.StdEncoding.EncodeToString([]byte(c.Text)) + "\x1b\\"
+}
+
+// Copied is the clip the last copy made, once: ok is false until the
+// next. A program puts it where it goes (Clip.OSC52). As on a page, a
+// selection made with the pointer goes to the primary selection when the
+// button is let go (or at once, by a double or a triple click), and a copy
+// key puts what is selected on the clipboard (CopyKey).
+func (r *Rendition) Copied() (c Clip, ok bool) {
+	if r.clip == nil {
+		return Clip{}, false
+	}
+	c, r.clip = *r.clip, nil
+	return c, true
+}
+
+// DefaultCopyKeys are a page's keys that copy: Control+c, and Command+c
+// on a Mac, which SPEC §10.4 names Meta+c.
+var DefaultCopyKeys = []string{"Control+c", "Meta+c"}
+
+// SetCopyKeys sets the keys that copy what is selected (CopyKey), in SPEC
+// §10.4's names. New starts with DefaultCopyKeys; with none, a key copies
+// nothing and the program has them all.
+func (r *Rendition) SetCopyKeys(keys ...string) {
+	r.copyKeys = r.copyKeys[:0]
+	for _, k := range keys {
+		if p, ok := hotty.ParseKey(k); ok {
+			k = p
+		}
+		r.copyKeys = append(r.copyKeys, k)
+	}
+}
+
+// CopyKey copies what is selected (Selection) to the clipboard, when key
+// is one of the copy keys (SetCopyKeys), and reports whether it did. The
+// selection stays, as a page's does. With nothing selected the key is not
+// the copy's: Control+c then interrupts or quits, as the program has it.
+// Key does this first; a program calls it where a selection may be in a
+// rendition that doesn't have the keyboard.
+func (r *Rendition) CopyKey(key string) bool {
+	if k, ok := hotty.ParseKey(key); ok {
+		key = k
+	}
+	if !slices.Contains(r.copyKeys, key) {
+		return false
+	}
+	text := r.Selection()
+	if text == "" {
+		return false
+	}
+	r.clip = &Clip{Text: text}
+	return true
+}
+
+// Selection is the text selected now, "" for none: in the text control
+// that has the keyboard, else in a Text. A password field's selection
+// copies nothing, as on a page.
 func (r *Rendition) Selection() string {
+	if e := r.c.V.Find(r.c.St.Focus); r.c.St.Keyboard && e != nil && isTextControl(e) {
+		if text := r.fieldSelection(e); text != "" {
+			return text
+		}
+	}
 	if r.sel.empty() {
 		return ""
 	}
 	return r.selText()
 }
 
-// OSC52 is the sequence that puts text on the terminal's clipboard (OSC
-// 52, "c", the clipboard), which a terminal may ask the user about or
-// refuse.
-func OSC52(text string) string {
-	return "\x1b]52;c;" + base64.StdEncoding.EncodeToString([]byte(text)) + "\x1b\\"
+// Deselect drops the selection in a Text, as a press anywhere else does.
+// A program with several renditions calls it on the others when one is
+// pressed: a page has one selection.
+func (r *Rendition) Deselect() { r.sel = nil }
+
+// fieldSelection is the text selected in a text control, as editKey and
+// the pointer left it; "" for none, and in a password field.
+func (r *Rendition) fieldSelection(e *view.Element) string {
+	if e.Variant == "obscured" {
+		return ""
+	}
+	v, _ := e.Value.(string)
+	cl := clusters(v)
+	f := r.fields[e.ID]
+	if f == nil || f.Value != v || f.Caret != r.cursorOf(e.ID, len(cl)) {
+		return ""
+	}
+	s0, s1 := f.Selection()
+	return strings.Join(cl[s0:s1], "")
+}
+
+// primary puts what a text control's pointer selected in the primary
+// selection, as a page does with an input's.
+func (r *Rendition) primary(e *view.Element) {
+	if text := r.fieldSelection(e); text != "" {
+		r.clip = &Clip{Text: text, Primary: true}
+	}
 }

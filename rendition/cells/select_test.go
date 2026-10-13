@@ -58,14 +58,15 @@ func selectDrag(t *testing.T, r *Rendition, from, to string) *Frame {
 
 // TestSelectCopy: a drag on a page's text selects it in reading order,
 // its wrapped lines joined, its list's markers kept and the quote's bar
-// left out, paragraphs a blank line apart; the release copies it once.
+// left out, paragraphs a blank line apart; the release puts it in the
+// primary selection, once.
 func TestSelectCopy(t *testing.T) {
 	r, _ := sidePage(t, selPage)
 	f := selectDrag(t, r, "paragraph", "quoted")
 	want := "paragraph that is long enough to wrap twice here.\n\n• one item\n• two item\n\nquoted"
 	got, ok := r.Copied()
-	if !ok || got != want {
-		t.Fatalf("copied %q, %v; want %q\n%s", got, ok, want, f.Plain())
+	if !ok || got != (Clip{Text: want, Primary: true}) {
+		t.Fatalf("copied %+v, %v; want %q to the primary selection\n%s", got, ok, want, f.Plain())
 	}
 	if _, ok := r.Copied(); ok {
 		t.Error("Copied twice")
@@ -99,8 +100,8 @@ func TestSelectStaysInText(t *testing.T) {
 		t.Fatal(err)
 	}
 	r.Release()
-	if got, _ := r.Copied(); got != "• two item" {
-		t.Errorf("into the nav: %q, want the page's row from its start", got)
+	if got, _ := r.Copied(); got.Text != "• two item" {
+		t.Errorf("into the nav: %q, want the page's row from its start", got.Text)
 	}
 	r.Draw(48)
 	if err := r.Click(x, y); err != nil {
@@ -108,7 +109,7 @@ func TestSelectStaysInText(t *testing.T) {
 	}
 	r.Release()
 	if got, ok := r.Copied(); ok || r.Selection() != "" {
-		t.Errorf("a click: copied %q, selected %q", got, r.Selection())
+		t.Errorf("a click: copied %q, selected %q", got.Text, r.Selection())
 	}
 	f = r.Draw(48)
 	ly := rowOf(t, f, "link")
@@ -138,8 +139,96 @@ func TestSelectStaysInText(t *testing.T) {
 }
 
 func TestOSC52(t *testing.T) {
-	if got, want := OSC52("hi"), "\x1b]52;c;aGk=\x1b\\"; got != want {
+	if got, want := (Clip{Text: "hi"}).OSC52(), "\x1b]52;c;aGk=\x1b\\"; got != want {
 		t.Errorf("%q, want %q", got, want)
+	}
+	if got, want := (Clip{Text: "hi", Primary: true}).OSC52(), "\x1b]52;p;aGk=\x1b\\"; got != want {
+		t.Errorf("%q, want %q", got, want)
+	}
+}
+
+// TestCopyKeys: Control+c and Meta+c copy a Text's selection to the
+// clipboard and leave it selected; with nothing selected they are the
+// program's, as they are once SetCopyKeys has none, and another key set
+// copies instead.
+func TestCopyKeys(t *testing.T) {
+	r, _ := sidePage(t, selPage)
+	if ok, _ := r.Key("Control+c"); ok {
+		t.Fatal("Control+c with nothing selected was taken")
+	}
+	selectDrag(t, r, "one item", "one item")
+	r.Copied()
+	for _, k := range []string{"Control+c", "Meta+c"} {
+		ok, err := r.Key(k)
+		if got, copied := r.Copied(); !ok || err != nil || !copied || got != (Clip{Text: "one item"}) {
+			t.Errorf("%s: handled %v, %v; copied %+v, %v", k, ok, err, got, copied)
+		}
+	}
+	if got := r.Selection(); got != "one item" {
+		t.Errorf("the selection after a copy: %q", got)
+	}
+	r.SetCopyKeys()
+	if ok, _ := r.Key("Control+c"); ok {
+		t.Error("Control+c with no copy keys was taken")
+	}
+	r.SetCopyKeys("Shift+Control+c")
+	if ok, _ := r.Key("Control+C"); !ok {
+		t.Error("Shift+Control+c, set, did not copy")
+	}
+	if got, _ := r.Copied(); got.Text != "one item" {
+		t.Errorf("Shift+Control+c copied %q", got.Text)
+	}
+	r.Deselect()
+	if ok, _ := r.Key("Control+C"); ok || r.Selection() != "" {
+		t.Error("Deselect left a selection")
+	}
+}
+
+// TestCopyField: in the text control that has the keyboard, a copy key
+// copies what is selected there; a double click there puts the word in
+// the primary selection; a password field copies nothing.
+func TestCopyField(t *testing.T) {
+	c, _, _ := form(t)
+	r := New(c)
+	c.Focus("name")
+	r.Draw(40)
+	keys(t, r, "A", "d", "a", "Space", "L", "Shift+ArrowLeft", "Shift+ArrowLeft")
+	if ok, _ := r.Key("Control+c"); !ok {
+		t.Fatal("Control+c on a selection in the field was not taken")
+	}
+	if got, _ := r.Copied(); got != (Clip{Text: " L"}) {
+		t.Errorf("copied %+v, want \" L\"", got)
+	}
+	keys(t, r, "ArrowRight")
+	if ok, _ := r.Key("Control+c"); ok {
+		t.Error("Control+c with nothing selected in the field was taken")
+	}
+	now := time.Unix(0, 0)
+	r.Clock = func() time.Time { return now }
+	for range 2 {
+		now = now.Add(100 * time.Millisecond)
+		if err := r.Click(nameAt+1, 0); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.Release()
+	if got, _ := r.Copied(); got != (Clip{Text: "Ada", Primary: true}) {
+		t.Errorf("a double click on Ada: %+v", got)
+	}
+	p := a2ui.NewProcessor(basic.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"TextField","label":"Password","variant":"obscured","value":"secret"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c = view.NewController(p.Surface("s"))
+	r = New(c)
+	c.Focus("root")
+	r.Draw(40)
+	keys(t, r, "Control+a")
+	if ok, _ := r.Key("Control+c"); ok {
+		t.Error("Control+c copied from a password field")
 	}
 }
 
@@ -167,10 +256,10 @@ func TestSelectWords(t *testing.T) {
 			}
 		}
 		got, ok := r.Copied()
-		if !ok {
-			t.Fatalf("%d clicks on %q copied nothing", n, word)
+		if !ok || !got.Primary {
+			t.Fatalf("%d clicks on %q: %+v, %v", n, word, got, ok)
 		}
-		return got
+		return got.Text
 	}
 	if got := run("paragraph", 2); got != "paragraph" {
 		t.Errorf("a double click on paragraph copied %q", got)

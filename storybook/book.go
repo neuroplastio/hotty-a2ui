@@ -91,6 +91,10 @@ type Options struct {
 	// Prefix goes before the name of every surface the Book places, so
 	// that they keep clear of the program's own.
 	Prefix string
+	// CopyKeys are the keys that copy a selection in cells
+	// (cells.Rendition.SetCopyKeys); nil for cells.DefaultCopyKeys, and
+	// an empty list for none. With nothing selected, Control+c quits.
+	CopyKeys []string
 }
 
 // Book is the storybook. Its methods are for the program's Update and
@@ -288,18 +292,54 @@ func (b *Book) Keyboard() bool {
 // that has the keyboard in cells; nil for none.
 func (b *Book) Cursor() *tea.Cursor { return b.cursor }
 
-// Copied is the text a selection in a cells pane copied when the button
-// was let go (cells.Rendition.Copied), once; the storybook puts it on the
-// terminal's clipboard (cells.OSC52).
-func (b *Book) Copied() (text string, ok bool) {
+// Copied is what a cells pane last copied (cells.Rendition.Copied), once:
+// a selection let go, for the primary selection, or what a copy key
+// copied, for the clipboard. The storybook writes it to the terminal
+// (cells.Clip.OSC52).
+func (b *Book) Copied() (c cells.Clip, ok bool) {
 	for _, p := range b.order {
 		if p.kind == asCells {
-			if text, ok = p.cells.Copied(); ok {
-				return text, true
+			if c, ok = p.cells.Copied(); ok {
+				return c, true
 			}
 		}
 	}
-	return "", false
+	return cells.Clip{}, false
+}
+
+// Selection is what is selected in the cells panes, which a copy key
+// copies (cells.Rendition.Selection): in the one with the keyboard, else a
+// Text's in any; "" for none. A program that keeps Control+c for itself,
+// as a way out, gives it to the Book while there is a selection.
+func (b *Book) Selection() string {
+	if p := b.focus; p != nil && p.kind == asCells {
+		if text := p.cells.Selection(); text != "" {
+			return text
+		}
+	}
+	for _, p := range b.order {
+		if p.kind == asCells {
+			if text := p.cells.Selection(); text != "" {
+				return text
+			}
+		}
+	}
+	return ""
+}
+
+// copyKey copies the selection in the cells panes on a copy key
+// (cells.Rendition.CopyKey): in the one with the keyboard, else where a
+// Text's is. There is one at a time: a press in one drops the others'.
+func (b *Book) copyKey(k string) bool {
+	if p := b.focus; p != nil && p.kind == asCells && p.cells.CopyKey(k) {
+		return true
+	}
+	for _, p := range b.order {
+		if p.kind == asCells && p.cells.CopyKey(k) {
+			return true
+		}
+	}
+	return false
 }
 
 // Tick is the frame clock: while something the last View showed moves (a
@@ -442,11 +482,15 @@ func (p *pane) chrome(b *Book) bool {
 	return p.s == b.ch.surface(pickID) || p.s == b.ch.surface(navID) || p.s == b.ch.surface(panelID)
 }
 
-// key handles a key that reached the storybook: the pane with the
-// keyboard first (on a host, only what the surface left), then the
-// story's Shortcuts, then the storybook's own keys.
+// key handles a key that reached the storybook: a copy key with a
+// selection in cells copies it, then the pane with the keyboard (on a
+// host, only what the surface left), then the story's Shortcuts, then
+// the storybook's own keys, Control+c's quit among them.
 func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 	b.status = ""
+	if b.copyKey(k) {
+		return false
+	}
 	if k == "Control+c" || k == "Control+q" {
 		return true
 	}
@@ -656,6 +700,7 @@ func (b *Book) click(x, y int, shift bool) {
 		if f := b.focus; f != nil && f != p && f.s != p.s {
 			f.s.C.St.Keyboard = false
 		}
+		b.deselect(p)
 		if shift {
 			b.fail(p.cells.ShiftClick(x-p.rect.X, y-p.rect.Y+p.scroll.Top))
 		} else {
@@ -665,9 +710,20 @@ func (b *Book) click(x, y int, shift bool) {
 		b.took(p)
 		return
 	}
+	b.deselect(nil)
 	if f := b.focus; f != nil && f.kind == asCells {
 		f.s.C.St.Keyboard = false
 		b.focus = nil
+	}
+}
+
+// deselect drops the selection in every cells pane but p, as a press
+// elsewhere on a page does.
+func (b *Book) deselect(p *pane) {
+	for _, q := range b.order {
+		if q != p && q.kind == asCells {
+			q.cells.Deselect()
+		}
 	}
 }
 
@@ -834,6 +890,9 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 			p.html = html.New(s.C, name)
 		case asCells:
 			p.cells = cells.New(s.C)
+			if b.o.CopyKeys != nil {
+				p.cells.SetCopyKeys(b.o.CopyKeys...)
+			}
 		}
 		b.panes[name] = p
 	}
@@ -866,7 +925,11 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if b.o.Bars {
 		x := scr.put(0, 0, W, "HOTTY kit storybook", cells.Fg, cells.Bold)
 		scr.put(x, 0, W-x, " · "+b.cur+" · "+b.rend, cells.Muted, 0)
-		help := "Tab next · Esc leave · F1 sidebar · F2 rendition · F3 theme · F4 keys · F5 tab · Ctrl+C quit"
+		quit := "Ctrl+C quit"
+		if b.o.CopyKeys == nil || slices.Contains(b.o.CopyKeys, "Control+c") {
+			quit = "Ctrl+C copy or quit"
+		}
+		help := "Tab next · Esc leave · F1 sidebar · F2 rendition · F3 theme · F4 keys · F5 tab · " + quit
 		if b.status != "" {
 			help = b.status + " · " + help
 		}

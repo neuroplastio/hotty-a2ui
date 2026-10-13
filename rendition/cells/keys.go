@@ -10,8 +10,9 @@ import (
 )
 
 // Key is a key the user pressed, named as SPEC §10.4 has it: "a", "A",
-// "Space", "Enter", "Shift+Tab", "Control+s" (profile §5). While the
-// surface has the keyboard, the focused element takes the keys it uses: a
+// "Space", "Enter", "Shift+Tab", "Control+s" (profile §5). A copy key
+// with something selected copies it (CopyKey). While the surface has the
+// keyboard, the focused element takes the keys it uses: a
 // text control those its keymap names, and the characters it types (SPEC
 // §10.2, editKey); another kind those of SPEC §10.2's table, unmodified or
 // with Shift only. Tab and Shift+Tab move focus. Any other key, Escape
@@ -28,6 +29,9 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	r.wake()
 	r.hush()
 	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
+	if r.CopyKey(key) {
+		return true, nil
+	}
 	if key == "Escape" {
 		// A selection goes, and Escape does what it does.
 		r.sel = nil

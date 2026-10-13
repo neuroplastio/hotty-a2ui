@@ -1039,8 +1039,8 @@ In the output:
     rest of the document is text, which takes no click of its own. A
     double click on a Text's or a HottyMarkdown's text selects the word
     under it, as in a field, and a triple click its paragraph: its line,
-    the rows a wrap made of it joined; either copies it at once
-    (`Copied`), and the button held drags nothing;
+    the rows a wrap made of it joined; either puts it in the primary
+    selection at once (`Copied`), and the button held drags nothing;
   - anything else is activated.
 - **A press on what can be dragged** (§6.21: a `reorderable` list's
   item, a List's item with `reorder`, a drag source) may start a drag. It
@@ -1121,18 +1121,33 @@ beside a page on the same rows stays out of it, and a drag that leaves
 the element selects to its row's start or end, or to the element's
 first or last row. The pointer over such text is an I-beam (`text`). The
 selected cells are drawn in `selection` (reversed where its colour is
-not known, as a field's selection). Letting go copies it: the program
-takes the text once (`Rendition.Copied`) and puts it on the clipboard,
-the terminal's with OSC 52 (`cells.OSC52`), as the storybook does. The
+not known, as a field's selection). The
 copy is the text as shown, less the frames (a quote's bar, a list item's
 indent, a code block's margin; a list's markers stay): a row that a
 soft wrap broke from the one before is joined to it with the space the
 wrap dropped (none inside a word), and every other row is a line of its
 own, so the blank row between blocks is a blank line. A press that does
 not leave its cell selects nothing; another press, or Escape (which
-still does what it does), drops the selection. Shift with a drag is the
-terminal's own selection, which a program leaves to it. Word and line
-clicks are not there yet.
+still does what it does), drops the selection; a program with several
+renditions drops it in the others when one is pressed
+(`Rendition.Deselect`), as a page has one selection. Shift with a drag is
+the terminal's own selection, which a program leaves to it.
+
+**Copying** is a page's. Letting go of a selection puts it in the
+primary selection, which a middle click pastes, as a browser does on
+Linux; macOS has none, and its terminals drop it. A copy key puts what is
+selected on the clipboard and leaves it selected: the selection in the
+text control that has the keyboard, else a Text's; a password field's
+copies nothing. The copy keys are `Control+c` and `Meta+c` (Command+c)
+by default (`cells.DefaultCopyKeys`), and a program sets its own, or none
+(`Rendition.SetCopyKeys`). With nothing selected they do what they did:
+`Control+c` interrupts, or quits the storybook. Either way the program
+takes the clip once (`Rendition.Copied`) and writes it to the terminal
+with OSC 52 (`cells.Clip.OSC52`: `c` for the clipboard, `p` for the
+primary selection), as the storybook does; its `-copy` flag sets the
+keys. Command+c reaches a program only from a terminal that doesn't keep
+it for itself, through the kitty keyboard protocol. Pasting is not there
+yet.
 
 **The wheel** over a HottyTree or a HottyTable with a `height` moves its
 rows, three a notch, while they can move that way, and leaves the

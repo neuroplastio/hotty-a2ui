@@ -28,7 +28,9 @@ import (
 // with the keyboard kept in sight, a heading a link went to at the top.
 // Keys go to the surface that has the keyboard; while none has it, Tab
 // gives it to the first, and q quits. Escape that the surface does not
-// take gives the keyboard back. Control+C quits.
+// take gives the keyboard back. A copy key copies what is selected, as on
+// a page (cells.Rendition.CopyKey); with nothing selected, Control+C
+// quits.
 type bareModel struct {
 	run   *story.Run
 	px    pixels
@@ -60,7 +62,7 @@ type barePane struct {
 	press bool
 }
 
-func runBare(st *story.Story, th theme.Theme) error {
+func runBare(st *story.Story, th theme.Theme, copyKeys []string) error {
 	if st == nil {
 		return errors.New("-bare shows one story: name it (storybook -list)")
 	}
@@ -70,7 +72,9 @@ func runBare(st *story.Story, th theme.Theme) error {
 	}
 	m := &bareModel{run: run, th: th, plain: os.Getenv("NO_COLOR") != ""}
 	for _, s := range run.Surfaces() {
-		m.panes = append(m.panes, &barePane{s: s, r: cells.New(s.C)})
+		r := cells.New(s.C)
+		r.SetCopyKeys(copyKeys...)
+		m.panes = append(m.panes, &barePane{s: s, r: r})
 	}
 	_, err = tea.NewProgram(m).Run()
 	return err
@@ -101,12 +105,25 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if k == "" {
 			break
 		}
+		if m.copyKey(k) {
+			break
+		}
 		if k == "Control+c" || k == "q" && m.keyboard() == nil {
 			return m, tea.Sequence(m.px.off(), m.ptr.off(), tea.Quit)
 		}
 		m.key(k)
 	case tea.MouseClickMsg:
-		if p, row := m.at(msg.Y); p != nil && msg.Button == tea.MouseLeft {
+		p, row := m.at(msg.Y)
+		if msg.Button != tea.MouseLeft {
+			break
+		}
+		// A page has one selection: a press elsewhere drops it.
+		for _, q := range m.panes {
+			if q != p {
+				q.r.Deselect()
+			}
+		}
+		if p != nil {
 			m.give(p)
 			p.press = true
 			if msg.Mod&tea.ModShift != 0 {
@@ -157,18 +174,34 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if p.press {
 				p.press = false
 				m.fail(p.r.Release())
-				if text, ok := p.r.Copied(); ok {
-					// A selection let go: on the terminal's clipboard.
-					px = tea.Batch(px, tea.Raw(cells.OSC52(text)))
-				}
 				if p.s.C.St.Keyboard {
 					m.give(p)
 				}
 			}
 		}
 	}
+	for _, p := range m.panes {
+		if c, ok := p.r.Copied(); ok {
+			// A selection let go, or a copy key: to the terminal.
+			px = tea.Batch(px, tea.Raw(c.OSC52()))
+		}
+	}
 	m.draw()
 	return m, tea.Batch(px, m.tick())
+}
+
+// copyKey copies the selection on a copy key: the one in the surface
+// that has the keyboard, else a Text's in any (cells.Rendition.CopyKey).
+func (m *bareModel) copyKey(k string) bool {
+	if p := m.keyboard(); p != nil && p.r.CopyKey(k) {
+		return true
+	}
+	for _, p := range m.panes {
+		if p.r.CopyKey(k) {
+			return true
+		}
+	}
+	return false
 }
 
 // tick asks for the next frame while something in this one moves (a
