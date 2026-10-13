@@ -53,6 +53,7 @@ func (m *markup) tree(e *view.Element) *node {
 		if i == sel {
 			row.set("class", "k-node k-sel")
 		}
+		m.drags(row, e, i)
 		fold := ""
 		if n.Branch() {
 			open := n.Open || e.Filtering()

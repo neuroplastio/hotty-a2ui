@@ -23,7 +23,7 @@ const listKeys = tableKeys + " ArrowLeft=program ArrowRight=program Space=progra
 // each an option whose id is the list's, "~i" and the item's index, and
 // the page's dots. The box's keys are the program's, so the filter is
 // typed as in cells: / and then the text.
-func richList(e *view.Element) *node {
+func (m *markup) richList(e *view.Element) *node {
 	box := el("div", "id", domID(e.ID), "class", "k-rich", "tabindex", "0", "role", "listbox", "data-keys", listKeys)
 	if e.Label != "" {
 		box.set("aria-label", e.Label)
@@ -55,6 +55,7 @@ func richList(e *view.Element) *node {
 		if i == sel {
 			item.set("class", "k-rich-item k-sel")
 		}
+		m.drags(item, e, i)
 		item.add(el("div", "class", "k-rich-label").add(marked(it.Label, match)...))
 		if it.Description != "" {
 			item.add(el("div", "class", "k-rich-desc").add(texts(it.Description)...))

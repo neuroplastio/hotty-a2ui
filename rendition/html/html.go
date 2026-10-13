@@ -70,6 +70,11 @@ type Rendition struct {
 	// pressed: a drag just started on a HottyRangeSlider's track, which
 	// takes no focus, so that the host's blur follows (rangeDrag).
 	pressed bool
+	// press is the drag of an item armed or under way (moveDrag), and
+	// dropped is set when one that lifted ended where it began: the click
+	// after it is the drag's.
+	press   *press
+	dropped bool
 	// Away is set while the keyboard is in another rendition of the same
 	// surface (cells beside it): the host's surface gives it up, and its
 	// blur leaves the controller's keyboard where it is.
@@ -129,7 +134,7 @@ func (r *Rendition) markup() *markup {
 	toasts := r.C.TickToasts(at, r.heldToast)
 	short, full := r.C.KeyHints(r.keys, true)
 	m := &markup{list: r.openList(), now: at, short: short, full: full, steps: r.steps,
-		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover)}
+		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover), drag: r.C.St.Drag}
 	m.animate(toasts)
 	m.animate(timers)
 	if r.C.St.Keyboard && !r.Away {
@@ -252,10 +257,14 @@ func (r *Rendition) Event(ev hotty.Event) error {
 	if ev.Kind != hotty.EventChange {
 		r.pressed = false
 	}
+	dropped := r.dropped
+	r.dropped = false
 	if ev.Kind != hotty.EventClick {
 		// The click a drag ends with comes right after its dragend; after
 		// anything else (the blur of a new press), a click is a tap.
 		r.dragged = ""
+	} else if dropped {
+		return nil
 	}
 	switch ev.Kind {
 	case hotty.EventFocus:
@@ -318,6 +327,9 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		return err
 	}
 	if done, err := r.slideSteps(ev); done {
+		return err
+	}
+	if done, err := r.moveDrag(ev); done {
 		return err
 	}
 	id, part, ok := viewID(ev.Target)
@@ -542,6 +554,12 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	}
 	c := r.C
 	r.hush()
+	if key == "Escape" && r.press != nil && r.press.lifted && !r.press.done {
+		// Escape cancels a drag under way; the rest of it is nothing.
+		r.press.done = true
+		c.CancelDrag()
+		return nil, true, nil
+	}
 	if r.pending != "" {
 		// The blur never came: the host had given the keyboard back
 		// already. Run what waited.

@@ -171,7 +171,33 @@ The cells leg and the keys on a host. The API is profile §6.21's:
 - Choosing a tree's level by the pointer's column after a branch's last
   child (it lands at the child's level).
 - S7 copy and S8 several, as planned.
-- On a host: drags, the line, the grip (G1, G2).
+- On a host: halves and thirds (G1), an empty list and drop-only targets
+  (G2), the grip.
+
+## Built on a host (KIT-23h baseline, 2026-10-13, journal 2026-10-13.3)
+
+The maintainer asked for drags on a host before G1 and G2: the storybook's
+drag stories selected text instead. `rendition/html/drag.go`:
+- **Opting in.** `drag` goes in the `data-on` of what can be dragged: an
+  item, a row or a node that can move, a List's child, a drag source. So
+  a press there selects no text (§9.1).
+- **The gesture is cells'.** dragstart arms the drag. The item lifts at
+  the first `drag` that names another element, or none, so a press and
+  a release stay a click. Lifting earlier would select the item on the
+  press, and the click after it would then act on the item.
+- **Over what.** `t` names the item under the pointer, and DropTarget
+  finds what takes it. Over gets frac -1, since nothing says where in the
+  item the pointer is: the item takes the place of the one it is over.
+- **The click after.** A drag that lifted and came back to where it began
+  ends with the host's click on that element. The rendition swallows that
+  click, or it would select the item or toggle a branch.
+- **The look** is classes on the items (`k-lifted`, `k-drop-before`,
+  `k-drop-after`, `k-drop-into`, `k-drop-on`), with the line drawn as a
+  pseudo-element. Blitz draws an inset or offset box-shadow with
+  hairline frames: around each table cell, and inside a rounded button.
+  The pseudo-element is clean, and sits in the gap between items.
+- **Not yet:** G1 and G2 as above. Touch scrolls instead of dragging
+  until the grips land.
 
 ## Cost
 

@@ -44,6 +44,8 @@ type markup struct {
 	// keyboard is the element with the keyboard, "" while the surface
 	// has none.
 	keyboard string
+	// drag is the drag under way, nil when none is (drags).
+	drag *view.Drag
 	// page: the markup is for a web page with no program behind it
 	// (Rendition.Page, page.go); heading and site are what the page said
 	// of itself (PageOptions).
@@ -174,7 +176,13 @@ func (m *markup) element(e *view.Element) *node {
 	var n, outer *node
 	switch e.Kind {
 	case view.Stack:
-		n = el("div", "id", id, "class", stackClass(e)).add(m.all(e.Children)...)
+		n = el("div", "id", id, "class", stackClass(e))
+		for i, c := range e.Children {
+			if k := m.element(c); k != nil {
+				m.drags(k, e, i)
+				n.add(k)
+			}
+		}
 	case view.Card:
 		n = el("div", "id", id, "class", "k-card k-stack k-col").add(m.all(e.Children)...)
 	case view.Text:
@@ -252,9 +260,9 @@ func (m *markup) element(e *view.Element) *node {
 	case view.QRCode:
 		n = qrCode(e)
 	case view.Table:
-		n = table(e)
+		n = m.table(e)
 	case view.RichList:
-		n = richList(e)
+		n = m.richList(e)
 	case view.FilePicker:
 		n = filePicker(e)
 	case view.Tree:
@@ -506,6 +514,7 @@ func (m *markup) element(e *view.Element) *node {
 		n = el("div", "id", id, "class", "k-stack k-col").add(m.all(e.Children)...)
 	}
 	accessible(n, e)
+	m.drags(n, e, -1)
 	if keys := strings.TrimSpace(moveKeys(e) + " " + e.Keys); keys != "" {
 		// After the keys the element binds itself, which its own override
 		// key by key, as a later binding does (SPEC §10.2).
@@ -729,7 +738,7 @@ const tableKeys = "ArrowUp=program ArrowDown=program PageUp=program PageDown=pro
 // cell holds, out of sight and taking no height, its column's widest
 // cells of every row (sizer), so that the columns are as wide as all the
 // rows need, as cells has them, wherever the window is.
-func table(e *view.Element) *node {
+func (m *markup) table(e *view.Element) *node {
 	box := el("div", "id", domID(e.ID), "class", "k-table", "tabindex", "0", "role", "grid",
 		"aria-rowcount", strconv.Itoa(len(e.Cells)), "data-keys", tableKeys)
 	head := el("tr")
@@ -752,6 +761,7 @@ func table(e *view.Element) *node {
 		if i == sel {
 			tr.set("class", "k-row k-sel")
 		}
+		m.drags(tr, e, i)
 		for j, c := range e.Columns {
 			tr.add(el("td", "class", "k-"+c.Align).add(texts(e.Cells[i][j])...))
 		}

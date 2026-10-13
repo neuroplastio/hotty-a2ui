@@ -719,6 +719,36 @@ textarea.k-resize-none { resize: none; }
 .k-tree.k-on .k-node.k-sel { border-left-color: var(--k-focus); color: var(--k-focus); }
 .k-tree-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
 
+/* Drag and drop (profile §6.21, drag.go), as cells shows it: what a drag
+   lifted is faint, and a line in the accent shows where it would land,
+   before or after an item: in the gap between a HottyList's items or a
+   List's children (at their side in a row), along a table's rows, and
+   inside a tree's node, from where its level starts. It takes no room,
+   so the rest stays where it is; a pseudo-element, which Blitz draws
+   clean where its shadows leave hairlines. A tree's node it would go
+   into is in the accent, reversed, and a drop target as a whole is
+   ringed. */
+.k-lifted { opacity: 0.4; }
+.k-rich-item:is(.k-drop-before, .k-drop-after), .k-node:is(.k-drop-before, .k-drop-after),
+.k-col > :is(.k-drop-before, .k-drop-after), .k-row > :is(.k-drop-before, .k-drop-after),
+.k-table tr:is(.k-drop-before, .k-drop-after) > td { position: relative; }
+.k-rich-item.k-drop-before::before, .k-rich-item.k-drop-after::after, .k-node.k-drop-before::before, .k-node.k-drop-after::after,
+.k-col > .k-drop-before::before, .k-col > .k-drop-after::after, .k-row > .k-drop-before::before, .k-row > .k-drop-after::after,
+.k-table tr.k-drop-before > td::before, .k-table tr.k-drop-after > td::after { content: ""; position: absolute; left: 0; right: 0; height: 2px; background: var(--k-accent); }
+.k-rich-item.k-drop-before::before { top: calc(var(--k-1) / -2 - 1px); }
+.k-rich-item.k-drop-after::after { bottom: calc(var(--k-1) / -2 - 1px); }
+.k-node.k-drop-before::before { top: 0; left: calc(var(--k-3) + var(--k-level, 0) * var(--k-5)); }
+.k-node.k-drop-after::after { bottom: 0; left: calc(var(--k-3) + var(--k-level, 0) * var(--k-5)); }
+.k-col > .k-drop-before::before { top: calc(var(--k-2) / -2 - 1px); }
+.k-col > .k-drop-after::after { bottom: calc(var(--k-2) / -2 - 1px); }
+.k-row > .k-drop-before::before { top: 0; bottom: 0; left: calc(var(--k-3) / -2 - 1px); width: 2px; height: auto; }
+.k-row > .k-drop-after::after { top: 0; bottom: 0; left: auto; right: calc(var(--k-3) / -2 - 1px); width: 2px; height: auto; }
+.k-table tr.k-drop-before > td::before { top: -1px; right: -1px; }
+.k-table tr.k-drop-after > td::after { bottom: -1px; right: -1px; }
+.k-tree .k-node.k-drop-into { background: var(--k-accent); color: var(--k-on-accent); }
+.k-node.k-drop-into .k-node-fold, .k-node.k-drop-into .k-node-count { color: inherit; }
+.k-drop-on { outline: 2px solid var(--k-accent); outline-offset: 2px; }
+
 /* HottyKeyHints: a baseline (phase 1), as cells draws it, bubbles' help:
    keys muted, what they do fainter, the separators fainter still (cells'
    faint); the full view's groups in columns 4ch apart, each a grid of

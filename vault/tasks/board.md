@@ -155,8 +155,14 @@ As of 2026-10-09, from the hotty agent:
 - [ ] **KIT-17h** — File picker.
 - [ ] **KIT-22h** — Toggle: a pill whose knob slides by deltas.
 - [ ] **KIT-23h** — Drag and drop on a host: SPEC §9.1 drags, with a line
-  where the item lands. Blocked on G1 (where in the target) and G2 (a
-  target that isn't draggable), with hotty since 2026-10-10.
+  where the item lands. The baseline landed on 2026-10-13, at the
+  maintainer's ask (journal 2026-10-13.3): a mouse or a pen drags items,
+  rows, nodes and a List's children, and the line works as in cells
+  without pixels. Still to do:
+  - G1 (where in the target): halves and thirds, and beside a folder.
+  - G2 (a target that isn't draggable): an empty list, and S5's drop
+    targets. Both have been with hotty since 2026-10-10.
+  - The grips, for touch.
 
 ## For the docs (gov NEIO-14)
 
