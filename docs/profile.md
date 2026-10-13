@@ -1000,9 +1000,9 @@ In the output:
     (past a line's end, its last word; an obscured value is one word); a
     triple click selects its line, the whole value in a one-line field;
     the cursor goes to the selection's end, and the button held drags
-    nothing. A terminal's mouse reports carry no count, so the rendition
-    counts: presses on one cell 500 ms apart or less are a run (`Click`).
-    A program whose host counts them gives that count (`ClickCount`);
+    nothing. A terminal's mouse reports carry no count (a HOTTY host's
+    count is a surface's clicks', not the terminal's), so the rendition
+    counts: presses on one cell 500 ms apart or less are a run (`Click`);
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
   - a click on a row of a text field's suggestions takes that one, the

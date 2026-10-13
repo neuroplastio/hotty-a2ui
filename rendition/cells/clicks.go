@@ -10,8 +10,8 @@ import (
 
 // Repeated clicks: a double click in a text control selects the word under
 // it, a triple click its line (profile §3.5). A terminal's mouse reports
-// carry no count, so the rendition counts the presses itself (clickRun);
-// a program whose host counts them gives its count to ClickCount.
+// carry no count, and no HOTTY host adds one to them (only a surface's
+// clicks have one), so the rendition counts the presses itself (clickRun).
 
 // clickGap is how soon after a press the next must come to be part of its
 // run: the double-click time most platforms ship with.

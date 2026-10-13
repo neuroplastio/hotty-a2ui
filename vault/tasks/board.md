@@ -41,8 +41,10 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   profile §3.7). Asked by the maintainer through the docs (2026-10-11).
   Word and line clicks: done in text controls (2026-10-13, the
   maintainer: a double click selects the word, a triple its line; the
-  rendition counts presses until a host's click count reaches cells),
-  open in a Text.
+  rendition counts presses, since a terminal's mouse reports carry no
+  count and none is planned: the host's `count` is a surface's clicks',
+  hotty 2026-10-13), open in a Text. When the surface count ships, hotty
+  pings the kit, for its HTML rendition.
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [x] **KIT-DEF** — A cue for the default button (the maintainer, round

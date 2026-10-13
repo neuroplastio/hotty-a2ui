@@ -66,7 +66,7 @@ func TestClickRun(t *testing.T) {
 
 // TestDoubleClickSelects: in a field, a second press on the same cell
 // selects the word there, a third the line, and one that comes too late
-// only puts the caret there; ClickCount takes a host's count as it is.
+// only puts the caret there.
 func TestDoubleClickSelects(t *testing.T) {
 	c, _, _ := form(t)
 	if err := c.S.Write("/name", "hello wide world"); err != nil {
@@ -125,13 +125,5 @@ func TestDoubleClickSelects(t *testing.T) {
 	press(col, row, 100*time.Millisecond)
 	if got := sel("note"); got != [2]int{8, 18} {
 		t.Errorf("triple click in a long text: %v, want its line [8 18]", got)
-	}
-
-	col, row = cell("name", 0, 1) // in "hello"
-	if err := r.ClickCount(col, row, 2); err != nil {
-		t.Fatal(err)
-	}
-	if got := sel("name"); got != [2]int{0, 5} {
-		t.Errorf("a host's double click: %v, want [0 5]", got)
 	}
 }
