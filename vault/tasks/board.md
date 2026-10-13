@@ -42,12 +42,6 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   through the docs (2026-10-11).
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
-- [ ] **KIT-18c** — Terminal, with the profile's rule for registered
-  commands (L10). The docs want it to play recordings (asciicast), and
-  will switch to it when it does. They play screencasts already, from
-  frames made at build time with hotty-go's `hottyvt`. That format (web
-  docs-pilot `internal/view`: a Cast, then one Frame per change, each with
-  its rows and title) is there to reuse (docs, 2026-10-11).
 - [ ] **KIT-DEF** — A cue for the default button, low priority (the
   maintainer, round 7): which Button Enter presses, Windows XP style, a
   small symmetric mark, not an underline, and not the picked look that
@@ -153,7 +147,6 @@ As of 2026-10-09, from the hotty agent:
 - [ ] **KIT-19h** — Big text as display type.
 - [ ] **KIT-20h** — QR code as SVG.
 - [ ] **KIT-17h** — File picker.
-- [ ] **KIT-18h** — Terminal.
 - [ ] **KIT-22h** — Toggle: a pill whose knob slides by deltas.
 - [ ] **KIT-23h** — Drag and drop on a host: SPEC §9.1 drags, with a line
   where the item lands. Blocked on G1 (where in the target) and G2 (a
@@ -169,10 +162,10 @@ components with the kit, as a plain web page, as HOTTY surfaces (xterm.js
 with the addon) and in cells (NEIO-14, a draft, *On the kit*; web's pilot
 is its branch `docs-pilot`). None of these blocks the
 docs: until the kit has a piece, the docs module draws it and switches when
-it lands. The docs also wait on KIT-09h, KIT-05h, KIT-01h and KIT-18c/18h,
-and want Terminal to play an asciicast: screencasts, and one-frame HOTTY
-snapshots through hotty-go's `hottyvt` (web's `shared/screencast` player is
-built on it).
+it lands. The docs also wait on KIT-09h, KIT-05h and KIT-01h. They wanted
+Terminal to play an asciicast, which is parked (KIT-18): until it comes
+back, their own player draws screencasts and one-frame HOTTY snapshots
+through hotty-go's `hottyvt` (web's `shared/screencast`).
 
 - [ ] **KIT-24p** — A page host, split from KIT-24: the addon's surface
   code (DOM, events, deltas) without the terminal, so that a wasm program
@@ -259,6 +252,25 @@ built on it).
 
 ## Parked
 
+- **KIT-18** — Terminal, cells and host (KIT-18c, KIT-18h), shelved by the
+  maintainer on 2026-10-13. What was sketched, for when it comes back: a
+  complete VT, not a log view, on charmbracelet's `x/vt` (web's
+  `internal/vterm` runs its panes on it) or hotty-go's `hottyvt`: colours,
+  the cursor, the alternate screen, the child's mouse modes, a scrollback
+  the kit keeps. Input while focused: keys encoded for the child (web's
+  vterm fixes, kitty flag 1), the mouse only when the child asks, the size
+  following the box, bracketed paste (the clipboard on a host is parked),
+  and one reserved key that hands the keyboard back, the maintainer's
+  choice and the first decision. A "registered command" (L10) as a stream
+  each way plus resize, which the program provides: a process in a PTY, an
+  in-process Go program, a wasm worker, or an asciicast player (the docs'
+  ask; wasm has no processes). The agent names one by id, never a command
+  line or keystrokes, and sees the exit status, the output only if the
+  program shares it. Open for the host leg: a VT grid in an HTML surface
+  may be heavy for full-screen apps, and drawing it natively is a SPEC
+  question; a HOTTY app inside the pane would need its surfaces relayed, as
+  vt-apps does. Pick up the docs' frame format (web docs-pilot
+  `internal/view`: a Cast, then a Frame per change) for the player.
 - **KIT-21** — 3D and audio. These are not for a terminal UI kit. Media is
   gov R-2's research.
 
