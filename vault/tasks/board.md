@@ -38,8 +38,11 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 - [x] **KIT-12c** — Selection and copy in cells (OSC 52): a drag on a
   Text's or a HottyMarkdown's text selects it within that element, in
   reading order, and the release copies it (`Copied`, `cells.OSC52`;
-  profile §3.7). Word and line clicks are open; asked by the maintainer
-  through the docs (2026-10-11).
+  profile §3.7). Asked by the maintainer through the docs (2026-10-11).
+  Word and line clicks: done in text controls (2026-10-13, the
+  maintainer: a double click selects the word, a triple its line; the
+  rendition counts presses until a host's click count reaches cells),
+  open in a Text.
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [x] **KIT-DEF** — A cue for the default button (the maintainer, round

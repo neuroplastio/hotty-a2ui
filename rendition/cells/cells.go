@@ -55,6 +55,8 @@ type Rendition struct {
 	blinkID     string               // the text control whose caret blinks (caretOn)
 	blinkFrom   time.Time            // when its caret last showed anew: it took the keyboard, a key, a press
 	press       *press               // a press that may start a drag and drop (drag.go)
+	clicks      clickRun             // the run of presses the last Click was part of (clicks.go)
+	count       int                  // the press under way's place in its run (ClickCount)
 	anim        time.Duration        // how soon the last Draw changes again (Animating)
 	jumped      int                  // the jump to a heading the last Draw showed (view.Jump.Seq)
 	last        *Frame               // the frame the last Draw returned, for its links (Pointer)
@@ -228,7 +230,20 @@ func (r *Rendition) Sight(id string) (col, row, w, h int, ok bool) {
 // selects a list's item there now, and what else the click does (a second
 // click's action, a branch opening, a Button in a card running) waits for
 // the Release, which a drag does not do.
+//
+// Presses on one cell within clickGap of each other are a run, as a
+// double click is (ClickCount).
 func (r *Rendition) Click(col, row int) error {
+	r.clicks = r.clicks.next(col, row, r.Clock())
+	return r.ClickCount(col, row, r.clicks.n)
+}
+
+// ClickCount is a primary press that is the count-th of a run of clicks
+// on one place, as a host counts them, 1 for a press on its own: in a text
+// control a second selects the word under it, a third its line
+// (selectRun). Click counts the presses itself, for a host that does not.
+func (r *Rendition) ClickCount(col, row, count int) error {
+	r.count = count
 	r.press = nil
 	r.hush()
 	r.sel = nil
@@ -347,6 +362,10 @@ func (r *Rendition) click(col, row int) error {
 			// The caret goes where the press is, and a drag from there
 			// selects (Drag), as in a GUI's field.
 			p := posAt(e, a, col, row)
+			if r.count >= 2 {
+				r.selectRun(e, p, r.count)
+				return nil
+			}
 			r.field(e).Select(p, p)
 			r.cursor[e.ID] = p
 			r.drag, r.anchor = e.ID, p

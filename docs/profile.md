@@ -994,7 +994,15 @@ In the output:
     in a GUI's field. With Shift (`ShiftClick`), a press in the field that
     has the keyboard extends the selection from its anchor, or from the
     cursor, instead; a terminal sends Shift with a click only when the
-    program asks (XTSHIFTESCAPE), which the storybook does;
+    program asks (XTSHIFTESCAPE), which the storybook does. A double
+    click selects the word under it, as a browser's field does: a segment
+    of UAX #29's words, a run of letters and digits, of spaces, or a mark
+    (past a line's end, its last word; an obscured value is one word); a
+    triple click selects its line, the whole value in a one-line field;
+    the cursor goes to the selection's end, and the button held drags
+    nothing. A terminal's mouse reports carry no count, so the rendition
+    counts: presses on one cell 500 ms apart or less are a run (`Click`).
+    A program whose host counts them gives that count (`ClickCount`);
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
   - a click on a row of a text field's suggestions takes that one, the
