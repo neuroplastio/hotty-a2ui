@@ -42,10 +42,11 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   through the docs (2026-10-11).
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
-- [ ] **KIT-DEF** — A cue for the default button, low priority (the
-  maintainer, round 7): which Button Enter presses, Windows XP style, a
-  small symmetric mark, not an underline, and not the picked look that
-  huh gives it before you reach it.
+- [x] **KIT-DEF** — A cue for the default button (the maintainer, round
+  7): a HottyForm's default is the Button whose action is its onSubmit;
+  cells draws a bar at its left edge (`▏Yes `, `▎` while it has the
+  keyboard), a host a line inside its left edge, whatever has the
+  keyboard (profile §3.4, §6.2; journal 2026-10-13.2).
 
 ## Phase 2 — The HOTTY layer
 

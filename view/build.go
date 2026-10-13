@@ -2,6 +2,7 @@ package view
 
 import (
 	"io/fs"
+	"reflect"
 	"strconv"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -304,6 +305,32 @@ func (b *Builder) SetOverlay(e *Element) { b.out.Overlay = e }
 // AddShortcut records a key the surface takes; press is the component id
 // of the Button it presses, if any.
 func (b *Builder) AddShortcut(sc Shortcut) { b.out.Shortcuts = append(b.out.Shortcuts, sc) }
+
+// markDefault marks a HottyForm's default (profile §6.2): the first
+// Button in it whose action is the form's onSubmit, so that Enter in the
+// form does what pressing it does.
+func (b *Builder) markDefault(form *Element, n *a2ui.Node) {
+	submit, ok := n.Props["onSubmit"].(a2ui.ActionRef)
+	if !ok {
+		return
+	}
+	var walk func(e *Element) bool
+	walk = func(e *Element) bool {
+		if bn := b.out.nodes[e.ID]; e.Kind == Button && bn != nil {
+			if act, ok := bn.Props["action"].(a2ui.ActionRef); ok && reflect.DeepEqual(act.Raw, submit.Raw) {
+				e.Default = true
+				return true
+			}
+		}
+		for _, ch := range e.Children {
+			if walk(ch) {
+				return true
+			}
+		}
+		return false
+	}
+	walk(form)
+}
 
 // pressTarget finds the element of the Button a Shortcut presses by its
 // component id: the first in tree order.

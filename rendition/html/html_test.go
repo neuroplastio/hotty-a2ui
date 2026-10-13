@@ -1691,3 +1691,18 @@ func TestResizeClass(t *testing.T) {
 		}
 	}
 }
+
+// TestDefaultButtonClass: a HottyForm's default Button, the one Enter in
+// the form presses, has k-enter on a host (profile §2); the other not.
+func TestDefaultButtonClass(t *testing.T) {
+	run, err := story.Start(story.Find("hotty/confirm-form"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc := New(run.Surfaces()[0].C, "s").Doc()
+	for _, want := range []string{`id="yes" type="button" class="k-btn k-default k-enter"`, `id="no" type="button" class="k-btn k-default"`} {
+		if !strings.Contains(doc, want) {
+			t.Errorf("no %s in\n%s", want, doc)
+		}
+	}
+}

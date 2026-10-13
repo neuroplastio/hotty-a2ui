@@ -261,11 +261,7 @@ func (c *Controller) ownHints(e *Element, keys string) (short []Hint, groups [][
 	}
 	// A box, as a host's checkbox, leaves Enter to its HottyForm; a chip
 	// takes it.
-	box := e.Kind == CheckBox
-	if anc := c.Ancestors(e.ID); e.Kind == Option && len(anc) > 0 {
-		box = anc[len(anc)-1].Variant != "chips"
-	}
-	if enter && box {
+	if enter && c.isBox(e) {
 		short = append(short, Hint{"enter", "submit"})
 	}
 	return short, nonEmpty(short)

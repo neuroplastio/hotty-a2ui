@@ -128,6 +128,7 @@ func init() {
 		valid, _ := b.Checks(n)
 		e := &Element{Kind: Form, Disabled: !valid}
 		b.InForm(n.Key, func() { e.Children = b.Children(n.Props["child"]) })
+		b.markDefault(e, n)
 		return e
 	})
 	Register(hotty.ID, "HottyProgress", func(b *Builder, n *a2ui.Node) *Element {

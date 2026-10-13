@@ -72,7 +72,9 @@ func TestConfirm(t *testing.T) {
 	}
 
 	// In the form, the field's keys are its own: the hints leave out what
-	// it types and the arrows it moves by, until Yes has the keyboard.
+	// it types and the arrows it moves by, until Yes has the keyboard. Yes
+	// is the form's default, which Enter in the field presses: its padding
+	// starts with a bar, whatever has the keyboard.
 	run, err = story.Start(story.Find("hotty/confirm-form"))
 	if err != nil {
 		t.Fatal(err)
@@ -83,7 +85,7 @@ func TestConfirm(t *testing.T) {
 		"┃ Name         hotty-kit\n" +
 		"  Description\n" +
 		"\n" +
-		"   Yes   No\n" +
+		"  ▏Yes   No\n" +
 		"\n" +
 		"enter submit • ? more"
 	if got := r.Draw(64).Plain(); got != want {
@@ -100,5 +102,11 @@ func TestConfirm(t *testing.T) {
 	}
 	if got := f.Plain(); !strings.HasSuffix(got, "\nenter press • ←/→ move • y yes • n no • ? more") {
 		t.Errorf("the hints on Yes:\n%s", got)
+	}
+	if _, err := r.Key("Tab"); err != nil {
+		t.Fatal(err)
+	}
+	if got := r.Draw(64).Plain(); !strings.Contains(got, "▏Yes   No") {
+		t.Errorf("the default's cue went with the keyboard on No:\n%s", got)
 	}
 }

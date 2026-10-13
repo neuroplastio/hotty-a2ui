@@ -376,6 +376,10 @@ type Element struct {
 	// Autofocus: the element takes the keyboard when the surface is
 	// first shown (io_neuroplast_hotty.autofocus).
 	Autofocus bool `json:"autofocus,omitempty"`
+	// Default: a Button is its HottyForm's default, the one Enter in the
+	// form presses: the first whose action is the form's onSubmit
+	// (profile §6.2). The renditions mark it.
+	Default bool `json:"default,omitempty"`
 	// Resize: the axes a longText's corner resizes it along, "both",
 	// "vertical", "horizontal" or "none" (io_neuroplast_hotty.resize);
 	// "" on any other element.

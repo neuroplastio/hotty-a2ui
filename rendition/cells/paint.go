@@ -3,6 +3,7 @@ package cells
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -151,6 +152,9 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		face := buttonFace(e, st)
 		if width(face) > w {
 			face = fitButton(e, st, w)
+		}
+		if e.Default {
+			face = cueDefault(face)
 		}
 		if e.Item {
 			// A row: its style (focus, say) goes across the List.
@@ -353,6 +357,27 @@ func buttonFill(st style, disabled bool) style {
 		st.backMix = buttonTint / 2
 	}
 	return st
+}
+
+// cueDefault marks a HottyForm's default Button (view.Element.Default,
+// profile §3.4): its left padding's outer edge is a bar, whatever has the
+// keyboard. Otherwise it is ▏ in its label's colour on its fill. While it
+// has the keyboard, the bar is ▎ in fg on the accent the Button is
+// reversed in: reversed, it would be the background's colour at the
+// edge, and vanish into what is round it. The face keeps its width.
+func cueDefault(face []glyph) []glyph {
+	if len(face) < 3 || face[0].text != " " {
+		return face
+	}
+	face = slices.Clone(face)
+	face[0].text = "▏"
+	if st := face[0].style; st.attr&Reverse != 0 {
+		st.attr &^= Reverse
+		st.back, st.backMix, st.backAttr = st.role, 255, Reverse
+		st.role = Fg
+		face[0].text, face[0].style = "▎", st
+	}
+	return face
 }
 
 // fitButton is a Button's face cut to w: the label loses columns first.

@@ -295,6 +295,9 @@ func (m *markup) element(e *view.Element) *node {
 		if e.Item {
 			class += " k-item"
 		}
+		if e.Default {
+			class += " k-enter"
+		}
 		n = el("button", "id", id, "type", "button", "class", class).flag("disabled", e.Disabled).add(m.all(e.Children)...)
 	case view.TextField:
 		v, _ := e.Value.(string)

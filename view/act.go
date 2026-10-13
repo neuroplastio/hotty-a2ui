@@ -371,6 +371,19 @@ func (c *Controller) Submit(formID string) error {
 	return err
 }
 
+// isBox reports whether e is a box, as a host's checkbox is: a CheckBox,
+// or an Option that is not a chip. A box leaves Enter to its HottyForm.
+func (c *Controller) isBox(e *Element) bool {
+	switch e.Kind {
+	case CheckBox:
+		return true
+	case Option:
+		anc := c.Ancestors(e.ID)
+		return len(anc) > 0 && anc[len(anc)-1].Variant != "chips"
+	}
+	return false
+}
+
 // Enter is Enter in a text field: it submits the field's Form, if it is
 // in one.
 func (c *Controller) Enter(id string) error {

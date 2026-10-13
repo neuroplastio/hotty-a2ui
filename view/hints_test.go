@@ -9,6 +9,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	"github.com/neuroplastio/hotty-a2ui/catalog/hotty"
+	"github.com/neuroplastio/hotty-a2ui/story"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -221,5 +222,18 @@ func TestKeyText(t *testing.T) {
 		if got := view.KeyText(key); got != want {
 			t.Errorf("%s: %q, want %q", key, got, want)
 		}
+	}
+}
+
+// TestDefault: confirm-form's Yes, whose action is the form's onSubmit,
+// is its default; No is not.
+func TestDefault(t *testing.T) {
+	run, err := story.Start(story.Find("hotty/confirm-form"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := run.Surfaces()[0].C
+	if !c.V.Find("yes").Default || c.V.Find("no").Default {
+		t.Error("the default is not Yes alone")
 	}
 }
