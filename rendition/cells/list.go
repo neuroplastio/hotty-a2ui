@@ -176,16 +176,3 @@ func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	r.boxes[e.ID] = box{x, y, w, row - y}
 }
-
-// clickList is a click on a HottyList, which has the keyboard now: on an
-// item, it selects it, or acts on it when it was selected already;
-// elsewhere, it does nothing more.
-func (r *Rendition) clickList(e *view.Element, item int) error {
-	switch {
-	case item < 0:
-		return nil
-	case item == e.SelectedRow():
-		return r.c.Activate(e.ID)
-	}
-	return r.c.SelectRow(e.ID, item)
-}

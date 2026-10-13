@@ -137,16 +137,18 @@ func rows(e *view.Element) bool {
 }
 
 // itemOf is the item of element e a part names ("i3": a HottyList's item
-// 3), or -1.
+// 3, or a HottyFilePicker's entry), or -1.
 func itemOf(e *view.Element, part string) int {
 	prefix := ""
 	switch e.Kind {
-	case view.RichList:
+	case view.RichList, view.FilePicker:
 		prefix = partItem
 	case view.Table:
 		prefix = partRow
 	case view.Tree:
 		prefix = partNode
+	case view.DiffView:
+		prefix = partHunk
 	}
 	rest, ok := strings.CutPrefix(part, prefix)
 	if prefix == "" || !ok {

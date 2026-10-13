@@ -244,7 +244,9 @@ func (r *Rendition) Click(col, row int) error {
 
 // clickCount is a primary press that is the count-th of a run of clicks
 // on one cell, 1 for a press on its own: in a text control a second
-// selects the word under it, a third its line (selectRun).
+// selects the word under it, a third its line (selectRun), and in a Text
+// too (selectWords); on a list's, a table's or a tree's item, a run acts
+// once (view.Controller.ClickItem).
 func (r *Rendition) clickCount(col, row, count int) error {
 	r.count = count
 	r.press = nil
@@ -382,16 +384,12 @@ func (r *Rendition) click(col, row int) error {
 		}
 		r.toggleList(e)
 		return nil
-	case e.Kind == view.Table:
-		return r.clickTable(e, h.opt)
-	case e.Kind == view.DiffView:
-		return r.clickDiff(e, h.opt)
-	case e.Kind == view.RichList:
-		return r.clickList(e, h.opt)
+	case e.Kind == view.Table, e.Kind == view.DiffView, e.Kind == view.RichList, e.Kind == view.Tree:
+		// A row, a hunk, an item or a node: selected by a click, acted on
+		// by another, once a run (view.Controller.ClickItem).
+		return r.c.ClickItem(e.ID, h.opt, r.count)
 	case e.Kind == view.FilePicker:
 		return r.clickFile(e, h.opt)
-	case e.Kind == view.Tree:
-		return r.c.ClickNode(e.ID, h.opt)
 	case e.Kind == view.Paginator:
 		return r.clickPager(e, h.opt)
 	case e.Kind == view.Slider:

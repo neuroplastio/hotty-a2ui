@@ -78,6 +78,17 @@ type State struct {
 	// File is each HottyFilePicker's own state, by its id: the directory
 	// it shows where `path` is not bound, and each directory's highlight.
 	File map[string]FilePick
+	// Clicks is the run of clicks on an item the user is making
+	// (ClickItem).
+	Clicks Clicks
+}
+
+// Clicks is a run of clicks on an item (Controller.ClickItem): element
+// ID's item Item, and whether a click of the run acted on it.
+type Clicks struct {
+	ID    string
+	Item  int
+	Acted bool
 }
 
 // FilePick is a HottyFilePicker's renderer state: the directory it shows

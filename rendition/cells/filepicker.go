@@ -153,7 +153,7 @@ func (l *layout) paintFilePicker(cv *canvas, e *view.Element, x, y, w int) {
 func (r *Rendition) clickFile(e *view.Element, item int) error {
 	switch {
 	case item >= 0:
-		return r.c.ClickFile(e.ID, item)
+		return r.c.ClickItem(e.ID, item, r.count)
 	case item == fileTitleHit:
 		return r.c.FileUp(e.ID)
 	}

@@ -190,16 +190,3 @@ func (l *layout) paintTable(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	r.boxes[e.ID] = box{x, y, tw + bar, 2 + h}
 }
-
-// clickTable is a click on a Table, which has the keyboard now: on a row,
-// it selects it, or acts on it when it was selected already; on the
-// header, it does nothing more.
-func (r *Rendition) clickTable(e *view.Element, row int) error {
-	switch {
-	case row < 0:
-		return nil
-	case row == e.SelectedRow():
-		return r.c.Activate(e.ID)
-	}
-	return r.c.SelectRow(e.ID, row)
-}

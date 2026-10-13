@@ -453,15 +453,3 @@ func (l *layout) paintDiff(cv *canvas, e *view.Element, x, y, w int) {
 		r.reveal[e.ID] = box{x, y + first, w, last - first + 1}
 	}
 }
-
-// clickDiff is a click on a HottyDiff, which has the keyboard now: on a
-// hunk, it selects it, or acts on it when it was selected already.
-func (r *Rendition) clickDiff(e *view.Element, hunk int) error {
-	switch {
-	case hunk < 0:
-		return nil
-	case hunk == e.SelectedRow():
-		return r.c.Activate(e.ID)
-	}
-	return r.c.SelectRow(e.ID, hunk)
-}

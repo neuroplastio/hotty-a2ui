@@ -88,6 +88,54 @@ func (c *Controller) FormOf(id string) *Element {
 	return nil
 }
 
+// ClickItem is a click on element id's item i: a HottyList's item, a
+// HottyTable's row, a HottyDiff's hunk, a HottyTree's node, a
+// HottyFilePicker's entry. count is its place in a run of clicks on the
+// item, 1 for one on its own and 2 for a double click's second, as the
+// rendition or its host counts them (SPEC §9, count). A click selects the
+// item, or acts on it when it was selected already: a row, a hunk or a
+// leaf is activated (Activate), an entry opened or picked (ClickFile); a
+// branch is selected and opened or closed at once (ClickNode). A run acts
+// once: its second click acts only where its first selected, and the
+// clicks after that do nothing more. So a double click acts on an item
+// once, whether it was selected or not, and leaves a branch as its first
+// click did. i < 0, a click beside the items, does nothing more.
+func (c *Controller) ClickItem(id string, i, count int) error {
+	e := c.V.Find(id)
+	if e == nil || i < 0 {
+		return nil
+	}
+	var acts bool
+	switch e.Kind {
+	case FilePicker:
+		acts = i == e.Selected
+	case Tree:
+		acts = i < len(e.Nodes) && (e.Nodes[i].Branch() && !e.Filtering() || i == e.SelectedRow())
+	case RichList, Table, DiffView:
+		acts = i == e.SelectedRow()
+	default:
+		return nil
+	}
+	run := &c.St.Clicks
+	if count > 1 && run.ID == id && run.Item == i {
+		if count > 2 || run.Acted {
+			return nil
+		}
+	} else {
+		*run = Clicks{ID: id, Item: i}
+	}
+	run.Acted = acts
+	switch {
+	case e.Kind == FilePicker:
+		return c.ClickFile(id, i)
+	case e.Kind == Tree:
+		return c.ClickNode(id, i)
+	case acts:
+		return c.Activate(id)
+	}
+	return c.SelectRow(id, i)
+}
+
 // Activate is a click on an element, or Enter or Space on it (SPEC
 // §10.2): a Button runs its action, a CheckBox, a Switch or an Option
 // toggles (a disabled Switch does nothing), a Tab is shown, a link opens,

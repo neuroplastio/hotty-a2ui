@@ -31,12 +31,18 @@ func (p textPos) before(q textPos) bool {
 
 // textSel is a selection in a Text: from its anchor, where the press was,
 // to its head, where the pointer is; held while the button is down. It is
-// a selection once the head has left the anchor's cell.
+// a selection once the head has left the anchor's cell, or, made by a
+// double or a triple click (whole), from the first: a word of one cell.
 type textSel struct {
-	id   string
-	a, b textPos
-	held bool
+	id    string
+	a, b  textPos
+	held  bool
+	whole bool
 }
+
+// empty reports whether a selection selects nothing: none, or a press that
+// has not left its cell.
+func (s *textSel) empty() bool { return s == nil || s.a == s.b && !s.whole }
 
 // span is the selection's first and last cells, in reading order.
 func (s *textSel) span() (lo, hi textPos) {
@@ -50,7 +56,7 @@ func (s *textSel) span() (lo, hi textPos) {
 // whether it takes any: none of its frame before its text (a quote's
 // bar), as a page's selection leaves a quote's border.
 func (s *textSel) cols(i int, row textRow) (c0, c1 int, ok bool) {
-	if s == nil || s.a == s.b {
+	if s.empty() {
 		return 0, 0, false
 	}
 	lo, hi := s.span()
@@ -160,7 +166,8 @@ func (r *Rendition) textNear(id string, col, row int) textPos {
 
 // arm starts a selection at a press on a cell of a Text that no click
 // acts on (not a link in it, nor a field over it); any other press drops
-// the selection there was.
+// the selection there was. The second press of a run selects the word
+// there instead, and a third its line (selectWords).
 func (r *Rendition) arm(col, row int, h *hit) {
 	r.sel = nil
 	if h != nil && (h.field != nil || r.clickable(h)) {
@@ -168,7 +175,61 @@ func (r *Rendition) arm(col, row int, h *hit) {
 	}
 	if id, at, ok := r.textAt(col, row); ok {
 		r.sel = &textSel{id: id, a: at, b: at, held: true}
+		if r.count >= 2 {
+			r.selectWords(id, at, r.count)
+		}
 	}
+}
+
+// selectWords selects in a Text what the n-th press of a run (n ≥ 2) at
+// at selects, as a page's text takes a double and a triple click, and
+// copies it at once (Copied): the word there (wordAt, as a field's), or
+// on a third press and after, its line, the rows a soft wrap made of one,
+// a paragraph. The button held drags nothing.
+func (r *Rendition) selectWords(id string, at textPos, n int) {
+	rows := r.texts[id]
+	first, last := at.row, at.row
+	for first > 0 && rows[first].cont != newLine {
+		first--
+	}
+	for last+1 < len(rows) && rows[last+1].cont != newLine {
+		last++
+	}
+	// The line's clusters, as a copy joins its rows, and the cell of each:
+	// a space a wrap dropped has none, and takes the next row's first.
+	var line strings.Builder
+	var cells []textPos
+	p := -1
+	for i := first; i <= last; i++ {
+		t := rows[i]
+		c0, end := textExtent(t.cols)
+		if i > first && t.cont == wrapSpace {
+			line.WriteString(" ")
+			cells = append(cells, textPos{i, c0})
+		}
+		for c := c0; c < end; c++ {
+			if t.cols[c] == "" {
+				continue
+			}
+			if i == at.row && c <= at.col {
+				p = len(cells)
+			}
+			line.WriteString(t.cols[c])
+			cells = append(cells, textPos{i, c})
+		}
+	}
+	if p < 0 || len(cells) == 0 {
+		return
+	}
+	start, end := 0, len(cells)
+	if n == 2 {
+		start, end = wordAt(line.String(), p, false)
+	}
+	if end <= start {
+		return
+	}
+	r.sel = &textSel{id: id, a: cells[start], b: cells[end-1], whole: true}
+	r.copied, r.copy = r.selText(), true
 }
 
 // extend moves a held selection's head to the pointer, kept in its Text.
@@ -189,7 +250,7 @@ func (r *Rendition) letGo() {
 		return
 	}
 	s.held = false
-	if s.a == s.b {
+	if s.empty() {
 		r.sel = nil
 		return
 	}
@@ -231,7 +292,7 @@ func (r *Rendition) Copied() (text string, ok bool) {
 
 // Selection is the text selected now, "" for none.
 func (r *Rendition) Selection() string {
-	if r.sel == nil || r.sel.a == r.sel.b {
+	if r.sel.empty() {
 		return ""
 	}
 	return r.selText()

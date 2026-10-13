@@ -345,49 +345,19 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		if isSelect(e) {
 			return r.clickSelect(e, part, ev)
 		}
-		if e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.DiffView {
-			// A row (a Table's), an item (a HottyList's) or a hunk (a
-			// HottyDiff's) is selected by a click, and acted on by another.
+		if e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.DiffView || e.Kind == view.Tree || e.Kind == view.FilePicker {
+			// A row (a Table's), an item (a HottyList's), a hunk (a
+			// HottyDiff's), a node (a HottyTree's) or an entry (a
+			// HottyFilePicker's) is selected by a click and acted on by
+			// another, once a run of clicks, which the host counts
+			// (view.Controller.ClickItem). A HottyFilePicker's title in a
+			// subdirectory goes up to the parent.
 			c.Focus(id)
 			r.host = keyboard{true, id}
-			prefix := partRow
-			switch e.Kind {
-			case view.RichList:
-				prefix = partItem
-			case view.DiffView:
-				prefix = partHunk
-			}
-			if i, err := strconv.Atoi(strings.TrimPrefix(part, prefix)); err == nil && strings.HasPrefix(part, prefix) {
-				if i == e.SelectedRow() {
-					return c.Activate(id)
-				}
-				return c.SelectRow(id, i)
-			}
-			return nil
-		}
-		if e.Kind == view.FilePicker {
-			// An entry of a HottyFilePicker is selected by a click, or
-			// opened or picked by another (view.Controller.ClickFile);
-			// the title in a subdirectory goes up to the parent.
-			c.Focus(id)
-			r.host = keyboard{true, id}
-			if part == partTitle && e.FileDir != "" {
+			if e.Kind == view.FilePicker && part == partTitle && e.FileDir != "" {
 				return c.FileUp(id)
 			}
-			if i, err := strconv.Atoi(strings.TrimPrefix(part, partItem)); err == nil && strings.HasPrefix(part, partItem) {
-				return c.ClickFile(id, i)
-			}
-			return nil
-		}
-		if e.Kind == view.Tree {
-			// A node is selected by a click, a branch opened or closed by
-			// it, and a leaf acted on by another (view.Controller.ClickNode).
-			c.Focus(id)
-			r.host = keyboard{true, id}
-			if i, err := strconv.Atoi(strings.TrimPrefix(part, partNode)); err == nil && strings.HasPrefix(part, partNode) {
-				return c.ClickNode(id, i)
-			}
-			return nil
+			return c.ClickItem(id, itemOf(e, part), ev.Count)
 		}
 		if e.Kind == view.Paginator {
 			// A dot shows its page, and the box has the keyboard.

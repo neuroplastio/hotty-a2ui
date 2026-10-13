@@ -1015,6 +1015,13 @@ In the output:
   - a click on a HottyTree's node selects it, and opens or closes it
     when it is a branch (while no filter applies), or acts on it when it
     is the selected leaf (§6.14, `view.Controller.ClickNode`);
+  - on these items (a row, an item, a hunk, a node, a HottyFilePicker's
+    entry) a run of clicks acts once (`view.Controller.ClickItem`): its
+    second click acts only where its first only selected, and the clicks
+    after it do nothing more. So a double click acts on an item once,
+    whether it was selected or not, and leaves a branch as its first
+    click left it. On a host the run is the host's count (SPEC.md §9);
+    in cells, the rendition's, as for a field;
   - a click on a Slider's track sets the value at that column:
     min + (max − min) × column / (track − 1), stepped and clamped, and
     the value follows the pointer while the button stays down;
@@ -1029,7 +1036,11 @@ In the output:
     elsewhere on it, its page's text included, only focuses it, and what
     in its page takes a click takes its own;
   - a click on a HottyMarkdown's link in place follows it (§6.27); the
-    rest of the document is text, which takes no click of its own;
+    rest of the document is text, which takes no click of its own. A
+    double click on a Text's or a HottyMarkdown's text selects the word
+    under it, as in a field, and a triple click its paragraph: its line,
+    the rows a wrap made of it joined; either copies it at once
+    (`Copied`), and the button held drags nothing;
   - anything else is activated.
 - **A press on what can be dragged** (§6.21: a `reorderable` list's
   item, a List's item with `reorder`, a drag source) may start a drag. It
@@ -2471,8 +2482,9 @@ brings them.
   the root). At the root, these are not the picker's: they pass on
   (Escape to close a Modal or a toast, say).
 - Single click: highlight an entry. Second click (or double click): open
-  a directory or pick a file. A click on the title in a subdirectory goes
-  up.
+  a directory or pick a file; a run of clicks acts once, so a triple
+  click does nothing in the directory it opened (§3.7). A click on the
+  title in a subdirectory goes up.
 
 | rendition | a HottyFilePicker |
 | --- | --- |

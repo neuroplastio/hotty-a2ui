@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
@@ -139,5 +140,66 @@ func TestSelectStaysInText(t *testing.T) {
 func TestOSC52(t *testing.T) {
 	if got, want := OSC52("hi"), "\x1b]52;c;aGk=\x1b\\"; got != want {
 		t.Errorf("%q, want %q", got, want)
+	}
+}
+
+// TestSelectWords: in a Text, a double click selects the word under it
+// and a triple click its paragraph, the rows a wrap made of one joined,
+// and each copies at once; a word on a wrapped row is selected as well,
+// and a drag after it extends nothing.
+func TestSelectWords(t *testing.T) {
+	r, _ := sidePage(t, selPage)
+	now := time.Unix(0, 0)
+	r.Clock = func() time.Time { return now }
+	f := r.Draw(48)
+	run := func(word string, n int) string {
+		t.Helper()
+		now = now.Add(time.Second)
+		y := rowOf(t, f, word)
+		x := colIn(t, f, y, word) + 1
+		for range n {
+			now = now.Add(100 * time.Millisecond)
+			if err := r.Click(x, y); err != nil {
+				t.Fatal(err)
+			}
+			if err := r.Release(); err != nil {
+				t.Fatal(err)
+			}
+		}
+		got, ok := r.Copied()
+		if !ok {
+			t.Fatalf("%d clicks on %q copied nothing", n, word)
+		}
+		return got
+	}
+	if got := run("paragraph", 2); got != "paragraph" {
+		t.Errorf("a double click on paragraph copied %q", got)
+	}
+	if got := r.Selection(); got != "paragraph" {
+		t.Errorf("the selection after it: %q", got)
+	}
+	if got := run("paragraph", 3); got != "First paragraph that is long enough to wrap twice here." {
+		t.Errorf("a triple click copied %q", got)
+	}
+	if got := run("twice", 2); got != "twice" {
+		t.Errorf("a double click on a wrapped row's word copied %q", got)
+	}
+	now = now.Add(time.Second)
+	y := rowOf(t, f, "quoted")
+	x := colIn(t, f, y, "quoted")
+	for range 2 {
+		now = now.Add(100 * time.Millisecond)
+		if err := r.Click(x, y); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := r.Drag(x+10, y); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Release(); err != nil {
+		t.Fatal(err)
+	}
+	if got := r.Selection(); got != "quoted" {
+		t.Errorf("a drag after a double click: %q", got)
 	}
 }

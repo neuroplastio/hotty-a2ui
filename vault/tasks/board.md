@@ -39,12 +39,13 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   Text's or a HottyMarkdown's text selects it within that element, in
   reading order, and the release copies it (`Copied`, `cells.OSC52`;
   profile §3.7). Asked by the maintainer through the docs (2026-10-11).
-  Word and line clicks: done in text controls (2026-10-13, the
-  maintainer: a double click selects the word, a triple its line; the
-  rendition counts presses, since a terminal's mouse reports carry no
-  count and none is planned: the host's `count` is a surface's clicks',
-  hotty 2026-10-13), open in a Text. When the surface count ships, hotty
-  pings the kit, for its HTML rendition.
+  Word and line clicks (2026-10-13, the maintainer): a double click
+  selects the word, a triple its line, in text controls and in a Text or
+  a HottyMarkdown (its paragraph, copied at once). The rendition counts
+  presses, since a terminal's mouse reports carry no count and none is
+  planned. On a host, the HTML rendition reads SPEC §9's `count` (hotty
+  7eaa22d, hotty-go 1d58e1a). On items, a run of clicks acts once
+  (`view.Controller.ClickItem`, journal 2026-10-13.4).
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [x] **KIT-DEF** — A cue for the default button (the maintainer, round

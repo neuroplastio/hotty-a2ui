@@ -285,3 +285,23 @@ func (x *onHost) check() {
 		x.t.Errorf("the deltas made\n%s\nthe document is\n%s", got, want)
 	}
 }
+
+// A double click on a host, whose second click has count 2 (SPEC §9):
+// on a tree's branch it closes it, as its first click does, and leaves it
+// so; on a list's item not selected, it selects it and acts on it once.
+func TestDoubleClickOnHost(t *testing.T) {
+	x := dragStory(t, "hotty/drag-files")
+	c := x.r.C
+	tree := c.V.Find("tree")
+	src := slices.IndexFunc(tree.Nodes, func(n view.TreeNode) bool { return n.Label == "src" })
+	x.do(x.h.DoubleClick("drag", partID("tree", partNode+strconv.Itoa(src))))
+	if c.V.Find("tree").Nodes[src].Open {
+		t.Errorf("a double click on src left it open")
+	}
+	x = dragStory(t, "hotty/drag-backlog")
+	c = x.r.C
+	x.do(x.h.DoubleClick("drag", partID("table", partRow+"2")))
+	if sel := c.S.Data.Value("/selected"); sel != "KIT-35" {
+		t.Errorf("a double click on KIT-35 selected %v", sel)
+	}
+}
