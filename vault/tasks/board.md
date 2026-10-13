@@ -159,11 +159,12 @@ As of 2026-10-09, from the hotty agent:
   where the item lands. The baseline landed on 2026-10-13, at the
   maintainer's ask (journal 2026-10-13.3): a mouse or a pen drags items,
   rows, nodes and a List's children, and the line works as in cells
-  without pixels. Still to do:
-  - G1 (where in the target): halves and thirds, and beside a folder.
-  - G2 (a target that isn't draggable): an empty list, and S5's drop
-    targets. Both have been with hotty since 2026-10-10.
-  - The grips, for touch.
+  without pixels. G1 and G2 landed the same day (hotty 155b24a, caps
+  `drop`; hotty-go 649c60a; journal 2026-10-13.5): halves, a folder's
+  thirds, an empty list and drop-only targets on a host that has `drop`.
+  Hosts: blitz ea72902 and addon 0be7c8f are on main, while hottyterm
+  7d38a45 and npm 0.1.0-next.13 wait on the maintainer. Still to do:
+  the grips, for touch.
 
 ## For the docs (gov NEIO-14)
 

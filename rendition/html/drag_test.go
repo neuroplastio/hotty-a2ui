@@ -26,13 +26,13 @@ type onHost struct {
 	seen int
 }
 
-func dragStory(t *testing.T, name string) *onHost {
+func dragStory(t *testing.T, name string, opts ...hottytest.Option) *onHost {
 	t.Helper()
 	run, err := story.Start(story.Find(name))
 	if err != nil {
 		t.Fatal(err)
 	}
-	x := &onHost{t: t, h: hottytest.New(t), r: New(run.Surfaces()[0].C, "drag"), run: run}
+	x := &onHost{t: t, h: hottytest.New(t, opts...), r: New(run.Surfaces()[0].C, "drag"), run: run}
 	x.send(hotty.Doc("drag", x.r.Doc()), hotty.Place("drag", hotty.Placement{Cols: 72, Rows: 24}))
 	x.pump()
 	return x
@@ -121,8 +121,14 @@ func TestDragOnHost(t *testing.T) {
 	x := dragStory(t, "hotty/drag-todo")
 	c := x.r.C
 	s := x.h.Surface("drag")
-	if on, _ := s.Attr(item("list", 0), "data-on"); on != "click drag" {
+	if on, _ := s.Attr(item("list", 0), "data-on"); on != "click drag drop" {
 		t.Fatalf("an item's data-on: %q", on)
+	}
+	if steps, _ := s.Attr(item("list", 0), "data-steps"); steps != "0 1" {
+		t.Errorf("an item's data-steps: %q, want its halves", steps)
+	}
+	if on, _ := s.Attr("list", "data-on"); on != "drop" {
+		t.Errorf("the list's data-on: %q", on)
 	}
 	x.do(x.h.DragStart("drag", item("list", 0), 4, 3))
 	if c.St.Drag != nil {
@@ -230,7 +236,7 @@ func TestDragTreeAndTableOnHost(t *testing.T) {
 	x = dragStory(t, "hotty/drag-backlog")
 	c = x.r.C
 	row := func(i int) string { return partID("table", partRow+strconv.Itoa(i)) }
-	if on, _ := x.h.Surface("drag").Attr(row(3), "data-on"); on != "click drag" {
+	if on, _ := x.h.Surface("drag").Attr(row(3), "data-on"); on != "click drag drop" {
 		t.Fatalf("a row's data-on: %q", on)
 	}
 	x.do(x.h.DragStart("drag", row(3), 4, 5))
@@ -253,7 +259,7 @@ func TestDragKanbanOnHost(t *testing.T) {
 	x := dragStory(t, "hotty/drag-kanban")
 	c := x.r.C
 	card, onto := DOMID("card[/board/todo/1]"), DOMID("card[/board/doing/0]")
-	if on, _ := x.h.Surface("drag").Attr(card, "data-on"); on != "drag" {
+	if on, _ := x.h.Surface("drag").Attr(card, "data-on"); on != "drag drop" {
 		t.Fatalf("a card's data-on: %q", on)
 	}
 	x.do(x.h.DragStart("drag", card, 4, 5))
@@ -303,5 +309,106 @@ func TestDoubleClickOnHost(t *testing.T) {
 	x.do(x.h.DoubleClick("drag", partID("table", partRow+"2")))
 	if sel := c.S.Data.Value("/selected"); sel != "KIT-35" {
 		t.Errorf("a double click on KIT-35 selected %v", sel)
+	}
+}
+
+// dropHost is a host that names a target that is not draggable and says
+// where in it the pointer is (SPEC §9.1, caps drop).
+func dropHost() hottytest.Option {
+	caps := hottytest.DefaultCaps()
+	caps.Drop = true
+	return hottytest.Caps(caps)
+}
+
+// On a host with drop, an item's halves say where it lands: its top half
+// before it, its bottom half after; a folder's middle step into it, its
+// first before and its last after.
+func TestDragHalvesOnHost(t *testing.T) {
+	x := dragStory(t, "hotty/drag-todo", dropHost())
+	c := x.r.C
+	x.do(x.h.DragStart("drag", item("list", 0), 4, 3))
+	x.do(x.h.DragOver(item("list", 3), 4, 6, 0, 0))
+	if d := c.St.Drag; d == nil || d.Target != "list" || d.At != 3 || d.Where != view.Before {
+		t.Fatalf("over the top half of Renew the passport: %+v, want before it", d)
+	}
+	x.do(x.h.DragOver(item("list", 3), 4, 6, 0, 1))
+	if d := c.St.Drag; d.At != 3 || d.Where != view.After {
+		t.Errorf("over its bottom half: %+v, want after it", *d)
+	}
+	x.do(x.h.DragEndOver(item("list", 3), 4, 6, 0, 0))
+	if got := ids(c, "/todos"); got != "plumber ferns milk passport backup dentist" {
+		t.Errorf("dropped before Renew the passport: %s", got)
+	}
+
+	x = dragStory(t, "hotty/drag-files", dropHost())
+	c = x.r.C
+	tree := c.V.Find("tree")
+	at := func(label string) string {
+		i := slices.IndexFunc(tree.Nodes, func(n view.TreeNode) bool { return n.Label == label })
+		return partID("tree", partNode+strconv.Itoa(i))
+	}
+	if steps, _ := x.h.Surface("drag").Attr(at("archive"), "data-steps"); steps != "0 2" {
+		t.Errorf("a folder's data-steps: %q", steps)
+	}
+	x.do(x.h.DragStart("drag", at("guide.md"), 4, 2))
+	for ty, want := range []view.Where{view.Before, view.Into, view.After} {
+		x.do(x.h.DragOver(at("archive"), 4, 8, 0, ty))
+		if d := c.St.Drag; d == nil || d.Target != "tree" || d.Where != want {
+			t.Errorf("over archive's step %d: %+v, want %v", ty, d, want)
+		}
+	}
+	x.do(x.h.DragOver(at("archive"), 4, 8, 0, 0))
+	x.do(x.h.DragEndOver(at("archive"), 4, 8, 0, 0))
+	var roots []string
+	for _, n := range c.V.Find("tree").Nodes {
+		if n.Level == 0 {
+			roots = append(roots, n.Label)
+		}
+	}
+	if !slices.Equal(roots, []string{"docs", "src", "guide.md", "archive", "README.md"}) {
+		t.Errorf("dropped before archive, the roots: %v", roots)
+	}
+}
+
+// On a host with drop, a card goes into an empty column, by the column's
+// box, and onto a person, a drop target that is no drag source: the
+// person ringed while it would, then written to /assigning and assign
+// sent, the card staying where it was.
+func TestDropOnlyOnHost(t *testing.T) {
+	x := dragStory(t, "hotty/drag-kanban", dropHost())
+	c := x.r.C
+	if on, _ := x.h.Surface("drag").Attr("ada", "data-on"); on != "drop" {
+		t.Fatalf("Ada's data-on: %q", on)
+	}
+	x.do(x.h.DragStart("drag", DOMID("card[/board/done/0]"), 60, 3))
+	x.do(x.h.DragOver(DOMID("card[/board/doing/0]"), 30, 3, 0, 1))
+	x.do(x.h.DragEndOver(DOMID("card[/board/doing/0]"), 30, 3, 0, 1))
+	if got := ids(c, "/board/done"); got != "" {
+		t.Fatalf("done after its card left: %q", got)
+	}
+	x.do(x.h.DragStart("drag", DOMID("card[/board/todo/0]"), 4, 3))
+	x.do(x.h.DragMove("done", 60, 3))
+	if d := c.St.Drag; d == nil || d.Target != "done" || d.At != -1 {
+		t.Fatalf("over the empty column: %+v", d)
+	}
+	if got := x.classes("done"); !slices.Contains(got, "k-drop-on") {
+		t.Errorf("the empty column's classes: %v", got)
+	}
+	x.do(x.h.DragEnd("done", 60, 3))
+	if got := ids(c, "/board/done"); got != "c1" {
+		t.Errorf("done after the drop: %q", got)
+	}
+
+	x.do(x.h.DragStart("drag", DOMID("card[/board/todo/0]"), 4, 3))
+	x.do(x.h.DragMove("grace", 20, 12))
+	if got := x.classes("grace"); !slices.Contains(got, "k-drop-on") {
+		t.Errorf("Grace's classes while a card is over her: %v", got)
+	}
+	x.do(x.h.DragEnd("grace", 20, 12))
+	if got := x.actions(); len(got) == 0 || got[len(got)-1] != "assign" {
+		t.Errorf("sent %v", got)
+	}
+	if got := ids(c, "/board/todo"); got != "c2 c3" {
+		t.Errorf("todo after the assign: %q", got)
 	}
 }

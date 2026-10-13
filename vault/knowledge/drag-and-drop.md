@@ -171,8 +171,7 @@ The cells leg and the keys on a host. The API is profile §6.21's:
 - Choosing a tree's level by the pointer's column after a branch's last
   child (it lands at the child's level).
 - S7 copy and S8 several, as planned.
-- On a host: halves and thirds (G1), an empty list and drop-only targets
-  (G2), the grip.
+- On a host: the grip.
 
 ## Built on a host (KIT-23h baseline, 2026-10-13, journal 2026-10-13.3)
 
@@ -196,8 +195,24 @@ drag stories selected text instead. `rendition/html/drag.go`:
   pseudo-element. Blitz draws an inset or offset box-shadow with
   hairline frames: around each table cell, and inside a rounded button.
   The pseudo-element is clean, and sits in the gap between items.
-- **Not yet:** G1 and G2 as above. Touch scrolls instead of dragging
-  until the grips land.
+- **Not yet:** touch scrolls instead of dragging until the grips land.
+
+**G1 and G2 (2026-10-13, journal 2026-10-13.5).** hotty landed them as
+`drop` in `data-on` (hotty 155b24a, caps `drop`):
+- a drop-only element can be `t`;
+- a `t` with `drop` and `data-steps` says where in it the pointer is
+  (`tx`, `ty`).
+
+In the kit:
+- each item that moves has `drop` and its halves (`"0 1"`), or a
+  folder's before, into and after (`"0 2"`);
+- a moving list's box and every drop target have `drop`;
+- `stepFrac` turns the step into the middle of what it spans, for the
+  view's halves and thirds.
+
+Between items, over the list's own box, the line stays where it was. An
+empty List keeps a card's height. A list box's ring is inset, past the
+`outline: none` of a box that scrolls.
 
 ## Cost
 
