@@ -45,8 +45,17 @@ func TestBare(t *testing.T) {
 	if !strings.Contains(m.frame, "A") {
 		t.Fatalf("the field did not take a key:\n%s", m.frame)
 	}
-	if _, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}); cmd == nil {
-		t.Fatal("Control+C does not quit")
+	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+	if !m.quitAsked || !strings.Contains(m.frame, "Ctrl+C again to quit") {
+		t.Fatalf("one Control+C did not ask for another:\n%s", m.frame)
+	}
+	m.Update(tea.KeyPressMsg{Code: 'B', Text: "B"})
+	if m.quitAsked || strings.Contains(m.frame, "again to quit") {
+		t.Fatal("another key did not end the ask")
+	}
+	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+	if _, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}); cmd == nil || m.quitAsked {
+		t.Fatal("Control+C twice does not quit")
 	}
 }
 

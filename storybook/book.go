@@ -93,8 +93,8 @@ type Options struct {
 	Prefix string
 	// Keys are bindings over the keymap picked (F4), as data-keys has them
 	// (SPEC §10.2), in cells and on a host alike: "Mod+c=program" keeps
-	// Control+c, or Command+c on a Mac, for the storybook (it quits) even
-	// with something selected.
+	// Control+c, or Command+c on a Mac, for the storybook (twice, it
+	// quits) even with something selected.
 	Keys string
 }
 
@@ -133,6 +133,9 @@ type Book struct {
 	last   *pane   // the pane that had it last: Tab goes on from there
 	cursor *tea.Cursor
 	status string
+	// quitAsked is a Control+c nothing took, which asked for a second one
+	// to quit (key); any other key, or a click, ends the ask.
+	quitAsked bool
 	// pressed is the cells pane the primary button went down on, which
 	// the pointer's moves and the release go to until it is let go.
 	pressed *pane
@@ -186,8 +189,8 @@ func New(o Options) *Book {
 
 // Update takes a message, as the Session's Update left it: the user's
 // keys and clicks, and the host's events. Its commands to the host go out
-// with the Session's next Flush. quit reports Control+C, Control+Q, or q
-// while no pane has the keyboard.
+// with the Session's next Flush. quit reports Control+C a second time in
+// a row (key), Control+Q, or q while no pane has the keyboard.
 func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	if TerminalColours(msg, &b.term) {
 		return false
@@ -223,6 +226,9 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	case tea.ClipboardMsg:
 		b.paste(msg.Content)
 	case tea.MouseClickMsg:
+		if b.quitAsked {
+			b.quitAsked, b.status = false, ""
+		}
 		if msg.Button == tea.MouseLeft {
 			b.click(msg.X-b.at.X, msg.Y-b.at.Y, msg.Mod&tea.ModShift != 0)
 		}
@@ -525,13 +531,28 @@ func (p *pane) chrome(b *Book) bool {
 // selection in cells copies it, then the pane with the keyboard (on a
 // host, only what the surface left), then the story's Shortcuts, then
 // the storybook's own keys, Control+c's quit among them.
+//
+// A Control+c that nothing copied with quits only when it follows another
+// such: the first asks for it on the bar. Text controls use Control+c, and
+// one with nothing to copy (a password field's, any with nothing
+// selected) leaves the key to the program, as a host does, so one press
+// is never the way out (the maintainer, 2026-10-14).
 func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 	b.status = ""
+	asked := b.quitAsked
+	b.quitAsked = false
 	if b.copyKey(k) {
 		return false
 	}
-	if k == "Control+c" || k == "Control+q" {
+	switch k {
+	case "Control+q":
 		return true
+	case "Control+c":
+		if asked {
+			return true
+		}
+		b.quitAsked, b.status = true, "Ctrl+C again to quit"
+		return false
 	}
 	if b.ch == nil {
 		return false
@@ -735,7 +756,8 @@ func (b *Book) takeEdit(h *hottytea.Session) {
 // command is an edit command the host sent in place of its key (SPEC
 // §10.6): the cells pane with the keyboard does what it can
 // (cells.Rendition.Command), a paste with its text; else it is its key,
-// as the storybook takes keys (Control+c copies a selection, or quits).
+// as the storybook takes keys (Control+c copies a selection, or twice
+// quits).
 // One from the terminal's menu, with no key, copies where a selection is.
 func (b *Book) command(c hotty.Command, h *hottytea.Session) (quit bool) {
 	if p := b.focus; p != nil && p.kind == asCells {
@@ -999,9 +1021,9 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	if b.o.Bars {
 		x := scr.put(0, 0, W, "HOTTY kit storybook", cells.Fg, cells.Bold)
 		scr.put(x, 0, W-x, " · "+b.cur+" · "+b.rend, cells.Muted, 0)
-		quit := "Ctrl+C quit"
+		quit := "Ctrl+C twice to quit"
 		if hotty.Resolve(hotty.PlatformOf(b.caps), false, b.keymap()).Lookup("Control+c") == hotty.Copy {
-			quit = "Ctrl+C copy or quit"
+			quit = "Ctrl+C copy, twice to quit"
 		}
 		help := "Tab next · Esc leave · F1 sidebar · F2 rendition · F3 theme · F4 keys · F5 tab · " + quit
 		if b.status != "" {

@@ -29,8 +29,8 @@ import (
 // Keys go to the surface that has the keyboard; while none has it, Tab
 // gives it to the first, and q quits. Escape that the surface does not
 // take gives the keyboard back. A copy key copies what is selected, as on
-// a page (cells.Rendition.CopyKey); with nothing selected, Control+C
-// quits.
+// a page (cells.Rendition.CopyKey); with nothing selected, Control+C asks
+// for another, and the second in a row quits, as the Book has it.
 type bareModel struct {
 	run   *story.Run
 	px    pixels
@@ -45,6 +45,9 @@ type bareModel struct {
 	frame  string
 	cur    *tea.Cursor
 	err    string
+	// quitAsked is a Control+C nothing took, which asked for a second one
+	// to quit; any other key, or a click, ends the ask.
+	quitAsked bool
 	// anim is how often the frame wants drawing again, 0 when nothing in
 	// it moves; ticking is a tick on its way.
 	anim    time.Duration
@@ -105,7 +108,13 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if k == "" {
 			break
 		}
+		asked := m.quitAsked
+		m.quitAsked = false
 		if m.copyKey(k) {
+			break
+		}
+		if k == "Control+c" && !asked {
+			m.quitAsked = true
 			break
 		}
 		if k == "Control+c" || k == "q" && m.keyboard() == nil {
@@ -117,6 +126,7 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.ClipboardMsg:
 		m.paste(msg.Content)
 	case tea.MouseClickMsg:
+		m.quitAsked = false
 		p, row := m.at(msg.Y)
 		if msg.Button != tea.MouseLeft {
 			break
@@ -333,6 +343,10 @@ func (m *bareModel) draw() {
 	}
 	if m.err != "" {
 		fmt.Fprintf(&b, "\n\n%s", m.err)
+		top += 2
+	}
+	if m.quitAsked {
+		b.WriteString("\n\nCtrl+C again to quit")
 		top += 2
 	}
 	m.rows = top

@@ -1158,7 +1158,11 @@ puts what is selected on the clipboard and leaves it selected: the
 selection in the text control that has the keyboard, by its keymap, else
 a Text's, by the keymap of the element it starts in (SPEC §11); a
 password field's copies nothing. With nothing selected the key does what
-it did: `Control+c` interrupts, or quits the storybook. Either way the
+it did: `Control+c` is the program's, to interrupt or quit. Since a text
+control's press with nothing to copy reaches the program, a program
+with text controls doesn't quit on one press: the storybook asks for a
+second one in a row on its bar, and any other key or a click ends the
+ask (the maintainer, 2026-10-14). Either way the
 program takes the clip once (`Rendition.Copied`) and writes it to the
 terminal with OSC 52 (`cells.Clip.OSC52`: `c` for the clipboard, `p` for
 the primary selection), as the storybook does.
@@ -1183,7 +1187,8 @@ items, as a `command` in place of the key. `Rendition.Command` does a
 paste with the clipboard's text the command brings, with no query and no
 prompt, and a menu's command, which has no key, where it can; any other
 command is its key, which the program gives to `Key` as any key, so that
-the keymap decides and Control+c with nothing selected still quits.
+the keymap decides and Control+c with nothing selected still reaches the
+program (twice in a row, the storybook quits).
 
 **Undoing** is a text control's too, each with a history of its own, as
 on a page. A run of typing is one step, and so is a run of deleting a

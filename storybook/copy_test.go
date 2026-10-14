@@ -13,8 +13,8 @@ import (
 
 // TestCopyOrQuit: in cells, Control+c with a story's text selected copies
 // it to the clipboard and leaves the storybook running; a press in
-// another pane drops the selection, and Control+c then quits. With Mod+c
-// bound to program (-keys), it quits with the text selected.
+// another pane drops the selection, and Control+c twice then quits. With
+// Mod+c bound to program (-keys), it quits so with the text selected.
 func TestCopyOrQuit(t *testing.T) {
 	for _, o := range []Options{{First: "basic/00_simple-text"}, {First: "basic/00_simple-text", Keys: "Mod+c=program"}} {
 		s := hottytea.New()
@@ -50,8 +50,8 @@ func TestCopyOrQuit(t *testing.T) {
 		}
 		quit := b.key("Control+c", s)
 		if o.Keys != "" {
-			if !quit {
-				t.Error("no copy keys: Control+c did not quit")
+			if quit || !b.key("Control+c", s) {
+				t.Error("no copy keys: Control+c twice did not quit, or once did")
 			}
 			continue
 		}
@@ -64,9 +64,72 @@ func TestCopyOrQuit(t *testing.T) {
 		if got := b.Selection(); got != "" {
 			t.Errorf("a press in nav left %q selected", got)
 		}
-		if !b.key("Control+c", s) {
-			t.Error("Control+c with nothing selected did not quit")
+		if b.key("Control+c", s) || !b.key("Control+c", s) {
+			t.Error("Control+c twice with nothing selected did not quit, or once did")
 		}
+	}
+}
+
+// TestQuitTwice: a Control+c that nothing copied with asks on the bar for
+// another, and the second in a row quits: in a password field, which
+// never copies, one press does not. Another key, or a click, ends the
+// ask; Control+q quits at once.
+func TestQuitTwice(t *testing.T) {
+	s := hottytea.New()
+	s.Mode = hottytea.Text
+	b := New(Options{First: "basic/00_simple-login-form", Bars: true})
+	b.View(hottytea.Rect{W: 120, H: 24}, s)
+	var p *pane
+	for _, q := range b.order {
+		if q.kind == asCells && !q.chrome(b) {
+			p = q
+		}
+	}
+	x, y := -1, -1
+	for i, l := range strings.Split(p.frame.Plain(), "\n") {
+		if c := strings.Index(l, "Password"); c >= 0 {
+			x, y = p.rect.X+len([]rune(l[:c]))+len("Password: "), p.rect.Y+i
+		}
+	}
+	if y < 0 {
+		t.Fatalf("no Password in the story:\n%s", p.frame.Plain())
+	}
+	click := func() {
+		b.Update(tea.MouseClickMsg{X: x, Y: y, Button: tea.MouseLeft}, s)
+		b.Update(tea.MouseReleaseMsg{X: x, Y: y, Button: tea.MouseLeft}, s)
+	}
+	click()
+	if bar, _ := b.View(hottytea.Rect{W: 120, H: 24}, s); !strings.Contains(bar, "Ctrl+C copy, twice to quit") {
+		t.Errorf("the bar's keys:\n%s", bar)
+	}
+	for _, k := range []string{"p", "w", "Control+a"} {
+		b.key(k, s)
+	}
+	asks := func(when string) {
+		t.Helper()
+		if b.key("Control+c", s) {
+			t.Fatalf("%s: one Control+c quit", when)
+		}
+		if bar, _ := b.View(hottytea.Rect{W: 120, H: 24}, s); !strings.Contains(bar, "Ctrl+C again to quit") {
+			t.Fatalf("%s: the bar does not ask for another:\n%s", when, bar)
+		}
+	}
+	asks("in the password field")
+	if e := p.s.C.V.Find(p.s.C.St.Focus); e == nil || e.Value != "pw" {
+		t.Fatalf("the password field: %+v", e)
+	}
+	b.key("x", s)
+	asks("after another key")
+	click()
+	if bar, _ := b.View(hottytea.Rect{W: 120, H: 24}, s); strings.Contains(bar, "again to quit") {
+		t.Errorf("a click left the ask on the bar:\n%s", bar)
+	}
+	asks("after a click")
+	if !b.key("Control+c", s) {
+		t.Error("a second Control+c in a row did not quit")
+	}
+	if !b.key("Control+q", s) {
+		t.Error("Control+q did not quit")
 	}
 }
 
@@ -108,7 +171,7 @@ func TestPaste(t *testing.T) {
 // TestEditCommands: on a host that sends edit commands (caps edit), the
 // storybook takes them all (SPEC §10.6). A paste into a story's text field
 // in cells brings its text, typed with no clipboard read; a copy with
-// nothing selected is its key, Control+c, which quits.
+// nothing selected is its key, Control+c, which quits the second time.
 func TestEditCommands(t *testing.T) {
 	s := hottytea.New()
 	s.Mode = hottytea.Native
@@ -151,7 +214,7 @@ func TestEditCommands(t *testing.T) {
 	if e := p.s.C.V.Find(p.s.C.St.Focus); e == nil || e.Value != "ada" {
 		t.Errorf("the field after the paste: %+v", e)
 	}
-	if !command(hotty.Command{Name: "copy", Key: "Control+c"}) {
-		t.Error("copy with nothing selected did not quit")
+	if command(hotty.Command{Name: "copy", Key: "Control+c"}) || !command(hotty.Command{Name: "copy", Key: "Control+c"}) {
+		t.Error("copy twice with nothing selected did not quit, or once did")
 	}
 }
