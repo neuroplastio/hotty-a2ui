@@ -62,7 +62,7 @@ func (c *Controller) KeyHints(keys string, host bool) (short []Hint, full [][]Hi
 	// §6.1): its hint goes while the field has the keyboard.
 	var field *hotty.Keymap
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && (e.Kind == TextField || e.Kind == DateTime) {
-		field = hotty.Resolve(e.Kind == TextField && e.Variant == "longText", append([]string{keys}, c.V.KeyChain(e.ID)...)...)
+		field = hotty.Resolve(c.Platform, e.Kind == TextField && e.Variant == "longText", append([]string{keys}, c.V.KeyChain(e.ID)...)...)
 	}
 	// Shortcuts with the same label are one hint, their keys joined by /, as
 	// a bubbles binding of several keys shows them: "←/→ move".
@@ -212,7 +212,7 @@ func (c *Controller) ownHints(e *Element, keys string) (short []Hint, groups [][
 		if enter && !long {
 			short = []Hint{{"enter", "submit"}}
 		}
-		groups = fieldHints(hotty.Resolve(long, append([]string{keys}, c.V.KeyChain(e.ID)...)...), long, enter)
+		groups = fieldHints(hotty.Resolve(c.Platform, long, append([]string{keys}, c.V.KeyChain(e.ID)...)...), c.Platform.Mod, long, enter)
 		if len(e.Shown) > 0 {
 			// Its suggestions' keys (SuggestKey), in huh's word for Tab's;
 			// Enter picks the one highlighted, else submits as ever.
@@ -303,13 +303,25 @@ var editNames = []struct {
 // Meta (macOS's Command) after the others, so that a terminal keymap's
 // Control+e shows before the default's Meta+ArrowRight; Submit only in a
 // HottyForm, where Enter submits; the lines' only in a long text, as
-// bubbles' text input has none.
-func fieldHints(km *hotty.Keymap, long, inForm bool) [][]Hint {
+// bubbles' text input has none. A key bound with Mod shows as the key it
+// is where Mod is mod (SPEC §10.4): ctrl+a, or meta+a on a Mac.
+func fieldHints(km *hotty.Keymap, mod string, long, inForm bool) [][]Hint {
+	if mod != "Meta" {
+		mod = "Control"
+	}
 	keys := map[hotty.Action][]string{}
 	for _, b := range strings.Fields(km.Format()) {
 		i := strings.LastIndexByte(b, '=')
-		a := hotty.Action(b[i+1:])
-		keys[a] = append(keys[a], b[:i])
+		a, k := hotty.Action(b[i+1:]), b[:i]
+		if rest, ok := strings.CutPrefix(k, "Mod+"); ok {
+			k = mod + "+" + rest
+			if p, ok := hotty.ParseKey(k); ok {
+				k = p
+			}
+		}
+		if !slices.Contains(keys[a], k) {
+			keys[a] = append(keys[a], k)
+		}
 	}
 	for a, ks := range keys {
 		meta := func(k string) int {

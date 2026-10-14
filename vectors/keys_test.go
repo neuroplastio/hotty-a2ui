@@ -26,7 +26,10 @@ type vector struct {
 	Story    string `yaml:"story"`
 	Messages []any  `yaml:"messages"`
 	// Keys is the surface's keymap, when given (SetKeys).
-	Keys  *string          `yaml:"keys"`
+	Keys *string `yaml:"keys"`
+	// Mod is the host's Mod (SPEC §10.4): "Meta" plays a Mac's keys,
+	// Control's when not given.
+	Mod   string           `yaml:"mod"`
 	Steps []map[string]any `yaml:"steps"`
 	// Renditions, when given, are those it plays on (cells, host): what
 	// the other's baseline does not do yet.
@@ -120,6 +123,7 @@ func play(t *testing.T, v vector, rendition string) {
 	default:
 		keys = *v.Keys
 	}
+	s.C.Platform = hotty.Platform{Mod: v.Mod}
 	var p player
 	if rendition == "cells" {
 		p = newCellsPlayer(t, s.C, keys)
@@ -342,6 +346,7 @@ const surface = "story"
 func newHostPlayer(t *testing.T, c *view.Controller, keys string) *hostPlayer {
 	caps := hottytest.DefaultCaps()
 	caps.Steps = true
+	caps.Mod = c.Platform.Mod
 	p := &hostPlayer{t: t, h: hottytest.New(t, hottytest.Caps(caps)), r: html.New(c, surface)}
 	p.r.SetKeys(keys)
 	p.r.SetSteps(true)

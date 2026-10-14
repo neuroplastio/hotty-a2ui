@@ -91,19 +91,11 @@ type Options struct {
 	// Prefix goes before the name of every surface the Book places, so
 	// that they keep clear of the program's own.
 	Prefix string
-	// CopyKeys are the keys that copy a selection in cells
-	// (cells.Rendition.SetCopyKeys); nil for cells.DefaultCopyKeys, and
-	// an empty list for none. With nothing selected, Control+c quits.
-	CopyKeys []string
-	// CutKeys and PasteKeys are the keys that cut and paste in a text
-	// field in cells (cells.Rendition.SetCutKeys, SetPasteKeys), as
-	// CopyKeys: nil for the defaults, an empty list for none. A paste
-	// key asks for the terminal's clipboard (PasteWanted).
-	CutKeys, PasteKeys []string
-	// UndoKeys and RedoKeys are the keys that undo and redo a text
-	// field's edits in cells (cells.Rendition.SetUndoKeys, SetRedoKeys),
-	// as CopyKeys.
-	UndoKeys, RedoKeys []string
+	// Keys are bindings over the keymap picked (F4), as data-keys has them
+	// (SPEC §10.2), in cells and on a host alike: "Mod+c=program" keeps
+	// Control+c, or Command+c on a Mac, for the storybook (it quits) even
+	// with something selected.
+	Keys string
 }
 
 // Book is the storybook. Its methods are for the program's Update and
@@ -130,7 +122,8 @@ type Book struct {
 	run    *story.Run
 	stream *story.Run
 	rend   string
-	keys   string // the keymap picked: keysTerminal or keysDefault
+	keys   string     // the keymap picked: keysTerminal or keysDefault
+	caps   hotty.Caps // the host's, with each caps event merged in
 	gen    int
 	seq    map[*a2ui.Surface]int
 
@@ -202,11 +195,21 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	switch msg := msg.(type) {
 	case hottytea.ReadyMsg:
 		b.steps, b.hovers = msg.Caps.Steps, hotty.Hovers(msg.Caps)
+		b.caps = msg.Caps
 		b.ready(msg.Mode)
+		b.takeEdit(h)
 	case tickMsg:
 		b.ticking = false
 	case hottytea.EventMsg:
-		b.event(msg.Event)
+		switch ev := msg.Event; {
+		case ev.Kind == hotty.EventCommand && ev.Command != nil:
+			quit = b.command(*ev.Command, h)
+		case ev.Kind == hotty.EventCaps && ev.Changed != nil:
+			b.caps = hotty.Merge(b.caps, *ev.Changed)
+			b.takeEdit(h)
+		default:
+			b.event(ev)
+		}
 	case hottytea.ErrorMsg:
 		if b.mine(msg.Reply.Surface) {
 			b.status = "✗ the host: " + hotty.Err(msg.Reply).Error()
@@ -714,9 +717,45 @@ func (b *Book) nextKeys() {
 // picked, over SPEC §10.2's default.
 func (b *Book) keymap() string {
 	if b.keys == keysDefault {
-		return ""
+		return b.o.Keys
 	}
-	return hotty.TerminalKeys
+	return hotty.TerminalKeys + " " + b.o.Keys
+}
+
+// takeEdit asks a host that sends edit commands (caps edit) for all of
+// them (SPEC §10.6): their keys then come as commands, which the cells
+// panes do as a page's fields do, a paste with the clipboard's text.
+func (b *Book) takeEdit(h *hottytea.Session) {
+	if b.caps.Edit == nil {
+		return
+	}
+	h.Send(hotty.Edit([]string{"select-all", "copy", "cut", "paste", "undo", "redo"}))
+}
+
+// command is an edit command the host sent in place of its key (SPEC
+// §10.6): the cells pane with the keyboard does what it can
+// (cells.Rendition.Command), a paste with its text; else it is its key,
+// as the storybook takes keys (Control+c copies a selection, or quits).
+// One from the terminal's menu, with no key, copies where a selection is.
+func (b *Book) command(c hotty.Command, h *hottytea.Session) (quit bool) {
+	if p := b.focus; p != nil && p.kind == asCells {
+		handled, err := p.cells.Command(c)
+		b.fail(err)
+		if handled {
+			return false
+		}
+	}
+	if c.Key == "" {
+		for _, p := range b.order {
+			if p.kind == asCells {
+				if ok, _ := p.cells.Command(c); ok {
+					return false
+				}
+			}
+		}
+		return false
+	}
+	return b.key(c.Key, h)
 }
 
 // click is a primary click on the cells, in the Book: a list open on the
@@ -926,24 +965,11 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 			p.html = html.New(s.C, name)
 		case asCells:
 			p.cells = cells.New(s.C)
-			if b.o.CopyKeys != nil {
-				p.cells.SetCopyKeys(b.o.CopyKeys...)
-			}
-			if b.o.CutKeys != nil {
-				p.cells.SetCutKeys(b.o.CutKeys...)
-			}
-			if b.o.PasteKeys != nil {
-				p.cells.SetPasteKeys(b.o.PasteKeys...)
-			}
-			if b.o.UndoKeys != nil {
-				p.cells.SetUndoKeys(b.o.UndoKeys...)
-			}
-			if b.o.RedoKeys != nil {
-				p.cells.SetRedoKeys(b.o.RedoKeys...)
-			}
 		}
 		b.panes[name] = p
 	}
+	// The host's Mod and edit shortcuts, Control's where it says none.
+	s.C.Platform = hotty.PlatformOf(b.caps)
 	p.rect = r
 	return p
 }
@@ -974,7 +1000,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		x := scr.put(0, 0, W, "HOTTY kit storybook", cells.Fg, cells.Bold)
 		scr.put(x, 0, W-x, " · "+b.cur+" · "+b.rend, cells.Muted, 0)
 		quit := "Ctrl+C quit"
-		if b.o.CopyKeys == nil || slices.Contains(b.o.CopyKeys, "Control+c") {
+		if hotty.Resolve(hotty.PlatformOf(b.caps), false, b.keymap()).Lookup("Control+c") == hotty.Copy {
 			quit = "Ctrl+C copy or quit"
 		}
 		help := "Tab next · Esc leave · F1 sidebar · F2 rendition · F3 theme · F4 keys · F5 tab · " + quit

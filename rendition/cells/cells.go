@@ -48,12 +48,7 @@ type Rendition struct {
 	sel         *textSel             // the selection in a Text, if any (select.go)
 	texts       map[string][]textRow // each Text's rows, as the last Draw painted them
 	clip        *Clip                // what the last copy made, until Copied takes it
-	copyKeys    []string             // the keys that copy what is selected (SetCopyKeys)
-	cutKeys     []string             // the keys that cut a text control's selection (SetCutKeys)
-	pasteKeys   []string             // the keys that paste into a text control (SetPasteKeys)
-	wantPaste   bool                 // a paste key asked for the clipboard, until PasteWanted says so
-	undoKeys    []string             // the keys that undo a text control's last edit (SetUndoKeys)
-	redoKeys    []string             // the keys that redo what an undo key undid (SetRedoKeys)
+	wantPaste   bool                 // a key bound to paste asked for the clipboard, until PasteWanted says so
 	history     map[string]*history  // each text control's edits, to undo and redo
 	sized       map[string]fieldSize // what each longText's grip resized it to
 	knob        int                  // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
@@ -86,9 +81,7 @@ type box struct{ x, y, w, h int }
 // New is a surface's rendition in cells.
 func New(c *view.Controller) *Rendition {
 	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
-		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, copyKeys: keyNames(DefaultCopyKeys),
-		cutKeys: keyNames(DefaultCutKeys), pasteKeys: keyNames(DefaultPasteKeys),
-		undoKeys: keyNames(DefaultUndoKeys), redoKeys: keyNames(DefaultRedoKeys), history: map[string]*history{}, Clock: time.Now}
+		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, history: map[string]*history{}, Clock: time.Now}
 }
 
 // Animating is how soon the last Draw's frame changes by itself: the

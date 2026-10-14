@@ -31,7 +31,7 @@ func TestUndo(t *testing.T) {
 	want("Ada Lo")
 	keys(t, r, "Shift+Control+z")
 	want("Ada ")
-	keys(t, r, "Meta+z", "x")
+	keys(t, r, "Control+z", "x")
 	want("Ada Lox")
 	keys(t, r, "Control+y")
 	want("Ada Lox")
@@ -70,9 +70,9 @@ func TestUndo(t *testing.T) {
 	}
 	want("Grace")
 
-	r.SetUndoKeys()
+	r.SetKeys("Mod+z=program")
 	if ok, _ := r.Key("Control+z"); ok {
-		t.Error("Control+z was taken with no undo keys")
+		t.Error("Control+z bound to program was taken")
 	}
 	c.Focus("go")
 	r.Draw(40)

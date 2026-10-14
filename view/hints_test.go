@@ -106,19 +106,29 @@ func TestKeyHints(t *testing.T) {
 		t.Errorf("while the filter is typed: %q", hintKeys(short))
 	}
 	// A field's keys are the surface's keymap's, with the components'
-	// over it; macOS's Command keys after the others.
+	// over it, Mod's as the platform's: Control's where no host says, and
+	// on a Mac (Mod Meta) the Command keys, after the others.
 	c.Focus("title")
 	_, full = c.KeyHints(hottygo.TerminalKeys, false)
 	if got := hintKeys(full[0]); !slices.Equal(got, []string{"←/ctrl+b character backward", "→/ctrl+f character forward",
-		"ctrl+←/alt+← word backward", "ctrl+→/alt+→ word forward", "home/meta+← line start", "end/ctrl+e line end",
-		"ctrl+home/alt+< input begin", "ctrl+end/alt+> input end", "ctrl+a/meta+a select all"}) {
+		"alt+←/ctrl+← word backward", "alt+→/ctrl+→ word forward", "home line start", "end/ctrl+e line end",
+		"ctrl+home/alt+< input begin", "ctrl+end/alt+> input end", "ctrl+a select all"}) {
 		t.Errorf("a field's moves: %q", got)
 	}
 	if got := hintKeys(full[1]); !slices.Equal(got, []string{"backspace/ctrl+h delete character backward",
-		"delete/ctrl+d delete character forward", "ctrl+backspace/alt+backspace delete word backward", "ctrl+delete/alt+delete delete word forward",
-		"ctrl+u/meta+backspace delete before cursor", "ctrl+k delete after cursor", "enter submit"}) {
+		"delete/ctrl+d delete character forward", "alt+backspace/ctrl+backspace delete word backward", "alt+delete/ctrl+delete delete word forward",
+		"ctrl+u delete before cursor", "ctrl+k delete after cursor", "enter submit"}) {
 		t.Errorf("a field's edits: %q", got)
 	}
+	c.Platform = hottygo.Platform{Mod: "Meta"}
+	_, full = c.KeyHints(hottygo.TerminalKeys, false)
+	if got := hintKeys(full[0]); !slices.Contains(got, "home/ctrl+a line start") || !slices.Contains(got, "meta+a select all") {
+		t.Errorf("a Mac field's moves: %q", got)
+	}
+	if got := hintKeys(full[1]); !slices.Contains(got, "ctrl+u/meta+backspace delete before cursor") {
+		t.Errorf("a Mac field's edits: %q", got)
+	}
+	c.Platform = hottygo.Platform{}
 	c.Focus("body")
 	if _, full = c.KeyHints(hottygo.TerminalKeys, false); !slices.Contains(hintKeys(full[0]), "↑/ctrl+p line up") ||
 		!slices.Contains(hintKeys(full[1]), "enter/ctrl+m insert newline") || slices.Contains(hintKeys(full[1]), "enter submit") {

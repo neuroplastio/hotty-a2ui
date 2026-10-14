@@ -60,8 +60,13 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   `SetPasteKeys`, `-cut`, `-paste`). The host's cut and paste went to
   hotty with its copy. Undo and redo followed (journal 2026-10-14.2):
   each text control has its own history, as on a page (`SetUndoKeys`,
-  `SetRedoKeys`, `-undo`, `-redo`). Left: a middle click pasting the
-  primary selection.
+  `SetRedoKeys`, `-undo`, `-redo`). Then the keys moved onto HOTTY's
+  keymap (journal 2026-10-14.4, hotty 9f534fc): the edit actions are
+  keymap actions bound to `Mod`, the controller's `Platform` says what
+  `Mod` is (Control's where no host says), a host's edit commands arrive
+  as `Rendition.Command`, and `-keys` replaces the five key flags. Left:
+  a middle click pasting the primary selection; key sequences and the
+  which-key menu (§10.5, §10.6's `a=menu`), the next leg.
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [x] **KIT-DEF** — A cue for the default button (the maintainer, round

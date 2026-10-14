@@ -42,7 +42,7 @@ func TestPaginatorOnHost(t *testing.T) {
 			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
 		}
 	}
-	if keys, _ := s.Attr("pager", "data-keys"); len(strings.Fields(hotty.ParseKeymap(keys).Format())) != 6 {
+	if keys, _ := s.Attr("pager", "data-keys"); len(strings.Fields(hotty.ParseKeymap(hotty.Platform{}, keys).Format())) != 6 {
 		t.Errorf("the keys %q do not all parse", keys)
 	}
 	if got := s.TextOf("pager"); !strings.Contains(got, "Cherry") || strings.Contains(got, "Date") {

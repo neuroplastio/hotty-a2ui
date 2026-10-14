@@ -19,6 +19,10 @@ type Controller struct {
 	S  *a2ui.Surface
 	St *State
 	V  *Surface
+	// Platform is how the host reads keymaps (SPEC §10.4): what Mod
+	// stands for and its edit shortcuts, hotty.PlatformOf its caps. The
+	// zero one is Control's, which a program keeps where no host says.
+	Platform hotty.Platform
 }
 
 // NewController is a surface's controller, its view built.

@@ -5,7 +5,8 @@
 # A vector is a story (story: a name, or messages: inline), the keymap of
 # its text fields (keys: a data-keys value, or "terminal" for
 # hotty.TerminalKeys; the default keymap alone when not given, as the
-# renditions start) and steps:
+# renditions start), the host's Mod (mod: Meta for a Mac's keys, SPEC
+# §10.4; Control when not given) and steps:
 #   key: a key, as SPEC §10.4 names it ("Tab", "Shift+Tab", "Space", "Control+s")
 #   type: characters, one key each
 #   focus: the program gives the keyboard at an element (by view id)
@@ -315,8 +316,10 @@
     - type: "<"
     - expect: {focused: t, data: {/t: "x <y"}}
 
-- name: macOS's Command keys, as Meta, go to the line's ends, delete to its start and select all, with Shift selecting
+- name: macOS's Command keys, as Meta, go to the line's ends, delete to its start and select all, with Shift selecting (cells only, as hottytest reads every keymap as Control's)
   keys: ""
+  mod: Meta
+  renditions: [cells]
   messages: *field
   steps:
     - focus: t

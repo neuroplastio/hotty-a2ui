@@ -12,9 +12,9 @@ import (
 // Key is a key the user pressed, named as SPEC §10.4 has it: "a", "A",
 // "Space", "Enter", "Shift+Tab", "Control+s" (profile §5). A copy key
 // with something selected copies it (CopyKey); in a text control with the
-// keyboard, a cut key cuts what is selected and a paste key asks for the
-// clipboard (PasteWanted), and an undo or a redo key undoes or redoes its
-// last edit (SetUndoKeys). While the surface has the
+// keyboard, its keymap's cut cuts what is selected, paste asks for the
+// clipboard (PasteWanted), and undo and redo take its last edit back or do
+// it again. While the surface has the
 // keyboard, the focused element takes the keys it uses: a
 // text control those its keymap names, and the characters it types (SPEC
 // §10.2, editKey); another kind those of SPEC §10.2's table, unmodified or
@@ -34,15 +34,6 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
 	if r.CopyKey(key) {
 		return true, nil
-	}
-	if ok, err := r.cutKey(key); ok {
-		return true, err
-	}
-	if r.pasteKey(key) {
-		return true, nil
-	}
-	if ok, err := r.undoKey(key); ok {
-		return true, err
 	}
 	if key == "Escape" {
 		// A selection goes, and Escape does what it does.
@@ -213,12 +204,21 @@ const numberChars = "0123456789.,-+eE"
 // a number has. ok is false for a key the keymap leaves to the program.
 // The data model is written on every change.
 func (r *Rendition) editKey(e *view.Element, key string) (ok bool, err error) {
-	km := hotty.Resolve(isLongText(e), append([]string{r.keys}, r.c.V.KeyChain(e.ID)...)...)
+	km := r.fieldKeymap(e)
 	f := r.field(e)
 	f.Rows = r.pageRows(e)
-	switch km.Lookup(key) {
-	case "":
+	switch act := km.Lookup(key); act {
+	case "", hotty.Copy:
+		// Copy copied what was selected (CopyKey); with nothing, the key is
+		// the program's.
 		return false, nil
+	case hotty.Cut:
+		return r.cut(e, f)
+	case hotty.Paste:
+		r.wantPaste = true
+		return true, nil
+	case hotty.Undo, hotty.Redo:
+		return true, r.undo(e, act == hotty.Undo)
 	case hotty.Insert:
 		ch := key
 		if strings.HasSuffix(key, "Space") {

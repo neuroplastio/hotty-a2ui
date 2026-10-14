@@ -1413,7 +1413,7 @@ func TestConfirmOnHost(t *testing.T) {
 		t.Fatalf("the host's focus starts on %q", s.Focused())
 	}
 	keys, _ := s.Attr("answers", "data-keys")
-	if km := hotty.ParseKeymap(keys); !km.Program("ArrowLeft") || !km.Program("ArrowRight") {
+	if km := hotty.ParseKeymap(hotty.Platform{}, keys); !km.Program("ArrowLeft") || !km.Program("ArrowRight") {
 		t.Errorf("the Row's keys %q leave the arrows to the host", keys)
 	}
 	key := func(k, focused string) {
@@ -1518,7 +1518,7 @@ func TestScrollViewOnHost(t *testing.T) {
 	// cut.
 	for id, want := range map[string]int{"log": 14, "doc": 12} {
 		keys, _ := s.Attr(id, "data-keys")
-		if got := len(strings.Fields(hotty.ParseKeymap(keys).Format())); got != want || len(strings.Fields(keys)) != want {
+		if got := len(strings.Fields(hotty.ParseKeymap(hotty.Platform{}, keys).Format())); got != want || len(strings.Fields(keys)) != want {
 			t.Errorf("%s's keys: %d of %q parse, want %d", id, got, keys, want)
 		}
 	}

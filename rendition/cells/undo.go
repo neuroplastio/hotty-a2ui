@@ -18,22 +18,6 @@ import (
 // same data) drops the history, as a script setting an input's value
 // does.
 
-// DefaultUndoKeys are a page's keys that undo: Control+z, and Command+z
-// on a Mac (Meta+z).
-var DefaultUndoKeys = []string{"Control+z", "Meta+z"}
-
-// DefaultRedoKeys are a page's keys that redo: Control+Shift+z and
-// Control+y, and Command+Shift+z on a Mac.
-var DefaultRedoKeys = []string{"Shift+Control+z", "Control+y", "Shift+Meta+z"}
-
-// SetUndoKeys sets the keys that undo a text control's last edit (Key),
-// as SetCopyKeys does the copy keys. New starts with DefaultUndoKeys.
-func (r *Rendition) SetUndoKeys(keys ...string) { r.undoKeys = keyNames(keys) }
-
-// SetRedoKeys sets the keys that redo what an undo key undid, as
-// SetCopyKeys does the copy keys. New starts with DefaultRedoKeys.
-func (r *Rendition) SetRedoKeys(keys ...string) { r.redoKeys = keyNames(keys) }
-
 // maxSteps bounds a text control's history: the oldest step goes.
 const maxSteps = 100
 
@@ -112,19 +96,11 @@ func (r *Rendition) record(e *view.Element, before, after fieldState, run editRu
 	}
 }
 
-// undoKey undoes the last step of the text control that has the
-// keyboard, on an undo key, or redoes the last it undid, on a redo key,
-// value and selection both. The control takes the key with nothing to
-// undo or redo too, as a page's does; elsewhere the key is the program's.
-func (r *Rendition) undoKey(key string) (ok bool, err error) {
-	e := r.editing()
-	if e == nil {
-		return false, nil
-	}
-	undo := slices.Contains(r.undoKeys, key)
-	if !undo && !slices.Contains(r.redoKeys, key) {
-		return false, nil
-	}
+// undo undoes the last step of a text control's history, or redoes the
+// last one it undid, on a key its keymap binds to undo or redo (editKey):
+// value and selection both. The control takes the key with nothing to undo
+// or redo too, as a page's does.
+func (r *Rendition) undo(e *view.Element, undo bool) error {
 	v, _ := e.Value.(string)
 	h := r.historyOf(e, v)
 	from, to := &h.undo, &h.redo
@@ -133,7 +109,7 @@ func (r *Rendition) undoKey(key string) (ok bool, err error) {
 	}
 	n := len(*from)
 	if n == 0 {
-		return true, nil
+		return nil
 	}
 	s := (*from)[n-1]
 	*from, *to = (*from)[:n-1], append(*to, s)
@@ -146,5 +122,5 @@ func (r *Rendition) undoKey(key string) (ok bool, err error) {
 	f.Value = st.value
 	f.Select(st.anchor, st.caret)
 	r.cursor[e.ID] = f.Caret
-	return true, r.c.SetValue(e.ID, f.Value)
+	return r.c.SetValue(e.ID, f.Value)
 }

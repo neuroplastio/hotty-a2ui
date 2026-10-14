@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/neuroplastio/hotty-go"
 	"github.com/neuroplastio/hotty-go/hottytea"
 
 	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
@@ -12,10 +13,10 @@ import (
 
 // TestCopyOrQuit: in cells, Control+c with a story's text selected copies
 // it to the clipboard and leaves the storybook running; a press in
-// another pane drops the selection, and Control+c then quits. With no
-// copy keys, it quits with the text selected.
+// another pane drops the selection, and Control+c then quits. With Mod+c
+// bound to program (-keys), it quits with the text selected.
 func TestCopyOrQuit(t *testing.T) {
-	for _, o := range []Options{{First: "basic/00_simple-text"}, {First: "basic/00_simple-text", CopyKeys: []string{}}} {
+	for _, o := range []Options{{First: "basic/00_simple-text"}, {First: "basic/00_simple-text", Keys: "Mod+c=program"}} {
 		s := hottytea.New()
 		s.Mode = hottytea.Text
 		b := New(o)
@@ -48,7 +49,7 @@ func TestCopyOrQuit(t *testing.T) {
 			t.Errorf("the Book's selection: %q", got)
 		}
 		quit := b.key("Control+c", s)
-		if o.CopyKeys != nil {
+		if o.Keys != "" {
 			if !quit {
 				t.Error("no copy keys: Control+c did not quit")
 			}
@@ -101,5 +102,56 @@ func TestPaste(t *testing.T) {
 	b.Update(tea.PasteMsg{Content: "\nlovelace"}, s)
 	if e := p.s.C.V.Find(p.s.C.St.Focus); e == nil || e.Value != "adalovelace" {
 		t.Errorf("the field after the pastes: %+v", e)
+	}
+}
+
+// TestEditCommands: on a host that sends edit commands (caps edit), the
+// storybook takes them all (SPEC §10.6). A paste into a story's text field
+// in cells brings its text, typed with no clipboard read; a copy with
+// nothing selected is its key, Control+c, which quits.
+func TestEditCommands(t *testing.T) {
+	s := hottytea.New()
+	s.Mode = hottytea.Native
+	b := New(Options{First: "basic/00_simple-login-form", Rendition: rendCells})
+	caps := hotty.Caps{Edit: hotty.DefaultEdit("Control"), Mod: "Control"}
+	b.Update(hottytea.ReadyMsg{Mode: hottytea.Native, Caps: caps}, s)
+	if cmd := s.Flush(); cmd == nil {
+		t.Fatal("nothing sent on ready")
+	} else if raw, _ := cmd().(tea.RawMsg); !strings.Contains(raw.Msg.(string), "a=edit:take=select-all,copy,cut,paste,undo,redo") {
+		t.Errorf("the edit commands were not taken: %q", raw.Msg)
+	}
+	b.View(hottytea.Rect{W: 120, H: 24}, s)
+	var p *pane
+	for _, q := range b.order {
+		if q.kind == asCells && !q.chrome(b) {
+			p = q
+		}
+	}
+	if p == nil {
+		t.Fatal("no cells pane for the story")
+	}
+	x, y := -1, -1
+	for i, l := range strings.Split(p.frame.Plain(), "\n") {
+		if c := strings.Index(l, "Username"); c >= 0 {
+			x, y = p.rect.X+len([]rune(l[:c]))+len("Username: "), p.rect.Y+i
+		}
+	}
+	if y < 0 {
+		t.Fatalf("no Username in the story:\n%s", p.frame.Plain())
+	}
+	b.Update(tea.MouseClickMsg{X: x, Y: y, Button: tea.MouseLeft}, s)
+	b.Update(tea.MouseReleaseMsg{X: x, Y: y, Button: tea.MouseLeft}, s)
+	command := func(c hotty.Command) bool {
+		t.Helper()
+		return b.Update(hottytea.EventMsg{Event: hotty.Event{Kind: hotty.EventCommand, Command: &c}}, s)
+	}
+	if command(hotty.Command{Name: "paste", Key: "Control+v", Text: "ada", HasText: true}) || b.PasteWanted() {
+		t.Fatal("a paste quit, or read the clipboard")
+	}
+	if e := p.s.C.V.Find(p.s.C.St.Focus); e == nil || e.Value != "ada" {
+		t.Errorf("the field after the paste: %+v", e)
+	}
+	if !command(hotty.Command{Name: "copy", Key: "Control+c"}) {
+		t.Error("copy with nothing selected did not quit")
 	}
 }

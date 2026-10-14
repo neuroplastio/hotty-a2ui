@@ -62,7 +62,7 @@ type barePane struct {
 	press bool
 }
 
-func runBare(st *story.Story, th theme.Theme, keys editKeys) error {
+func runBare(st *story.Story, th theme.Theme, keys string) error {
 	if st == nil {
 		return errors.New("-bare shows one story: name it (storybook -list)")
 	}
@@ -73,11 +73,7 @@ func runBare(st *story.Story, th theme.Theme, keys editKeys) error {
 	m := &bareModel{run: run, th: th, plain: os.Getenv("NO_COLOR") != ""}
 	for _, s := range run.Surfaces() {
 		r := cells.New(s.C)
-		r.SetCopyKeys(keys.copy...)
-		r.SetCutKeys(keys.cut...)
-		r.SetPasteKeys(keys.paste...)
-		r.SetUndoKeys(keys.undo...)
-		r.SetRedoKeys(keys.redo...)
+		r.SetKeys(keys)
 		m.panes = append(m.panes, &barePane{s: s, r: r})
 	}
 	_, err = tea.NewProgram(m).Run()

@@ -2,10 +2,10 @@ package cells
 
 import (
 	"encoding/base64"
-	"slices"
 	"strings"
 
 	"github.com/neuroplastio/hotty-go"
+	"github.com/neuroplastio/hotty-go/hottyedit"
 
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
@@ -318,65 +318,51 @@ func (r *Rendition) Copied() (c Clip, ok bool) {
 	return c, true
 }
 
-// DefaultCopyKeys are a page's keys that copy: Control+c, and Command+c
-// on a Mac, which SPEC §10.4 names Meta+c.
-var DefaultCopyKeys = []string{"Control+c", "Meta+c"}
+// The edit actions (SPEC §10.2) are a keymap's, as on a host: the default
+// keymap binds each to the host's edit shortcut, Mod+c copy, Mod+x cut,
+// Mod+v paste, Mod+z undo, Mod+Z redo (and Control+y where Mod is
+// Control), Mod being the controller's Platform's, Control where no host
+// says. A program overrides them with its keymap (SetKeys, a component's
+// keys), and binds one to program to keep its key.
 
-// DefaultCutKeys are a page's keys that cut: Control+x, and Command+x on
-// a Mac (Meta+x).
-var DefaultCutKeys = []string{"Control+x", "Meta+x"}
-
-// DefaultPasteKeys are a page's keys that paste: Control+v, and Command+v
-// on a Mac (Meta+v).
-var DefaultPasteKeys = []string{"Control+v", "Meta+v"}
-
-// SetCopyKeys sets the keys that copy what is selected (CopyKey), in SPEC
-// §10.4's names. New starts with DefaultCopyKeys; with none, a key copies
-// nothing and the program has them all.
-func (r *Rendition) SetCopyKeys(keys ...string) { r.copyKeys = keyNames(keys) }
-
-// SetCutKeys sets the keys that cut what is selected in a text control
-// (Key), as SetCopyKeys does the copy keys. New starts with
-// DefaultCutKeys.
-func (r *Rendition) SetCutKeys(keys ...string) { r.cutKeys = keyNames(keys) }
-
-// SetPasteKeys sets the keys that paste into a text control (Key,
-// PasteWanted), as SetCopyKeys does the copy keys. New starts with
-// DefaultPasteKeys.
-func (r *Rendition) SetPasteKeys(keys ...string) { r.pasteKeys = keyNames(keys) }
-
-// keyNames are keys named as hotty.ParseKey names them, so that a key
-// pressed matches however the program spelled it.
-func keyNames(keys []string) []string {
-	out := make([]string, 0, len(keys))
-	for _, k := range keys {
-		if p, ok := hotty.ParseKey(k); ok {
-			k = p
-		}
-		out = append(out, k)
-	}
-	return out
-}
-
-// CopyKey copies what is selected (Selection) to the clipboard, when key
-// is one of the copy keys (SetCopyKeys), and reports whether it did. The
-// selection stays, as a page's does. With nothing selected the key is not
-// the copy's: Control+c then interrupts or quits, as the program has it.
-// Key does this first; a program calls it where a selection may be in a
-// rendition that doesn't have the keyboard.
+// CopyKey copies what is selected to the clipboard on a key the keymap
+// binds to copy, and reports whether it did; the selection stays, as a
+// page's does. The selection is that of the text control that has the
+// keyboard, by its keymap, else a Text's, by the keymap of the element it
+// starts in (SPEC §11). With nothing selected, or the key bound to
+// program, the key is not the copy's: Control+c then interrupts or quits,
+// as the program has it. Key does this first; a program calls it where a
+// selection may be in a rendition that doesn't have the keyboard.
 func (r *Rendition) CopyKey(key string) bool {
 	if k, ok := hotty.ParseKey(key); ok {
 		key = k
 	}
-	if !slices.Contains(r.copyKeys, key) {
+	if e := r.editing(); e != nil {
+		if text := r.fieldSelection(e); text != "" {
+			if r.fieldKeymap(e).Lookup(key) != hotty.Copy {
+				return false
+			}
+			r.clip = &Clip{Text: text}
+			return true
+		}
+	}
+	if r.sel.empty() || r.keymapIn(r.sel.id, false).Lookup(key) != hotty.Copy {
 		return false
 	}
-	text := r.Selection()
-	if text == "" {
-		return false
-	}
-	r.clip = &Clip{Text: text}
+	r.clip = &Clip{Text: r.selText()}
 	return true
+}
+
+// keymapIn is the keymap of the element id, as a host resolves a field's
+// (SPEC §10.2): the default one for the Platform, then the rendition's
+// (SetKeys), then those of the components id is in, its own last.
+func (r *Rendition) keymapIn(id string, multiline bool) *hotty.Keymap {
+	return hotty.Resolve(r.c.Platform, multiline, append([]string{r.keys}, r.c.V.KeyChain(id)...)...)
+}
+
+// fieldKeymap is a text control's keymap.
+func (r *Rendition) fieldKeymap(e *view.Element) *hotty.Keymap {
+	return r.keymapIn(e.ID, isLongText(e))
 }
 
 // Selection is the text selected now, "" for none: in the text control
@@ -394,21 +380,16 @@ func (r *Rendition) Selection() string {
 	return r.selText()
 }
 
-// cutKey cuts what is selected in the text control that has the
-// keyboard, on a cut key (SetCutKeys): it goes to the clipboard, as a
-// copy key puts it there, and out of the field. ok is false when nothing
-// is selected there, and the key is then the program's: on a page, a cut
-// key does nothing to a Text's selection, or to a password field's.
-func (r *Rendition) cutKey(key string) (ok bool, err error) {
-	e := r.editing()
-	if e == nil || !slices.Contains(r.cutKeys, key) {
-		return false, nil
-	}
+// cut cuts what is selected in a text control, on a key its keymap binds
+// to cut (editKey): to the clipboard, as copy puts it there, and out of
+// the field. ok is false with nothing selected there, or in a password
+// field, and the key is then the program's: on a page, cut does nothing
+// to a Text's selection either.
+func (r *Rendition) cut(e *view.Element, f *hottyedit.Field) (ok bool, err error) {
 	text := r.fieldSelection(e)
 	if text == "" {
 		return false, nil
 	}
-	f := r.field(e)
 	before := stateOf(f)
 	f.Do(hotty.DeleteCharBackward)
 	r.cursor[e.ID] = f.Caret
@@ -417,25 +398,16 @@ func (r *Rendition) cutKey(key string) (ok bool, err error) {
 	return true, r.c.SetValue(e.ID, f.Value)
 }
 
-// pasteKey asks for the clipboard on a paste key (SetPasteKeys) while a
-// text control has the keyboard (PasteWanted); elsewhere the key is the
-// program's.
-func (r *Rendition) pasteKey(key string) bool {
-	if r.editing() == nil || !slices.Contains(r.pasteKeys, key) {
-		return false
-	}
-	r.wantPaste = true
-	return true
-}
-
 // OSC52Query asks the terminal for its clipboard: it answers with OSC 52
 // and the clipboard's text in base64, which Bubble Tea gives a program as
 // a tea.ClipboardMsg (tea.ReadClipboard sends this). A terminal may ask
 // the user first, or not answer.
 const OSC52Query = "\x1b]52;c;?\x1b\\"
 
-// PasteWanted reports, once, that a paste key asked for the clipboard.
-// The program reads it (OSC52Query) and gives what comes back to Paste.
+// PasteWanted reports, once, that a key bound to paste asked for the
+// clipboard, in a text control (editKey). The program reads it
+// (OSC52Query) and gives what comes back to Paste. A host that sends
+// edit commands (Command) brings the text with the command instead.
 func (r *Rendition) PasteWanted() bool {
 	w := r.wantPaste
 	r.wantPaste = false
@@ -443,9 +415,9 @@ func (r *Rendition) PasteWanted() bool {
 }
 
 // Paste types text into the text control that has the keyboard, in place
-// of what is selected there, as a page pastes: the clipboard a paste key
-// asked for (PasteWanted), or the terminal's own paste (bracketed paste:
-// Control+Shift+v, or Command+v on a Mac, by its default keys). A
+// of what is selected there, as a page pastes: the clipboard a key bound
+// to paste asked for (PasteWanted), a paste command's text (Command), or
+// the terminal's own paste (a bracketed paste). A
 // one-line field takes it without its line breaks, and a number field
 // only what a number has, as each takes typing. handled is false when no
 // text control has the keyboard: the paste is the program's.
@@ -476,6 +448,72 @@ func (r *Rendition) Paste(text string) (handled bool, err error) {
 	r.cursor[e.ID] = f.Caret
 	r.record(e, before, stateOf(f), noRun)
 	return true, r.c.SetValue(e.ID, f.Value)
+}
+
+// Command does an edit command that a host sent in place of its key (SPEC
+// §10.6, which a program asks for with hotty.Edit). A command with a key
+// is that key, the keymap deciding, except a paste in a text control whose
+// keymap binds the key to paste: Command types the text the paste brought,
+// where the key would have asked for the clipboard (PasteWanted). One from
+// the terminal's menu, with no key, does what it names where it can.
+// handled is false for the rest: the program gives c.Key to Key, as it
+// gives any key, and takes it as its own when Key does not, as Control+c
+// interrupts with nothing selected.
+func (r *Rendition) Command(c hotty.Command) (handled bool, err error) {
+	if c.Key == "" {
+		return r.menuCommand(c)
+	}
+	if hotty.Action(c.Name) == hotty.Paste {
+		key := c.Key
+		if k, ok := hotty.ParseKey(key); ok {
+			key = k
+		}
+		if e := r.editing(); e != nil && r.fieldKeymap(e).Lookup(key) == hotty.Paste {
+			if !c.HasText {
+				// Nothing on the clipboard, or a host that cannot read it.
+				return true, nil
+			}
+			return r.Paste(c.Text)
+		}
+	}
+	return false, nil
+}
+
+// menuCommand does a command from the terminal's menu, which names no
+// key: in the text control that has the keyboard, else copy in a Text.
+func (r *Rendition) menuCommand(c hotty.Command) (handled bool, err error) {
+	e := r.editing()
+	if e == nil {
+		if hotty.Action(c.Name) != hotty.Copy || r.sel.empty() {
+			return false, nil
+		}
+		r.clip = &Clip{Text: r.selText()}
+		return true, nil
+	}
+	f := r.field(e)
+	switch a := hotty.Action(c.Name); a {
+	case hotty.Copy:
+		text := r.fieldSelection(e)
+		if text == "" {
+			return false, nil
+		}
+		r.clip = &Clip{Text: text}
+		return true, nil
+	case hotty.Cut:
+		return r.cut(e, f)
+	case hotty.Paste:
+		if !c.HasText {
+			return true, nil
+		}
+		return r.Paste(c.Text)
+	case hotty.Undo, hotty.Redo:
+		return true, r.undo(e, a == hotty.Undo)
+	case hotty.SelectAll:
+		f.Do(hotty.SelectAll)
+		r.cursor[e.ID] = f.Caret
+		return true, nil
+	}
+	return false, nil
 }
 
 // editing is the text control that has the keyboard; nil for none.

@@ -33,7 +33,6 @@ import (
 	"github.com/charmbracelet/x/term"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
-	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/rendition/html"
 	"github.com/neuroplastio/hotty-a2ui/rendition/text"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
@@ -51,11 +50,7 @@ func main() {
 	rend := flag.String("rendition", "", "start in this `rendition`: surfaces, cells, text or side (surfaces beside cells)")
 	out := flag.String("out", "", "write what the renderer sends the agent (actions, errors, function calls) to `file` as JSON lines (- for stdout)")
 	bare := flag.Bool("bare", false, "show one story's surfaces alone, in cells, on the whole screen: no list, pickers or panel")
-	copyFlag := flag.String("copy", strings.Join(cells.DefaultCopyKeys, ","), "the `keys` that copy a selection in cells, comma-separated, as HOTTY names them; \"\" for none. With nothing selected, Control+c quits")
-	cutFlag := flag.String("cut", strings.Join(cells.DefaultCutKeys, ","), "the `keys` that cut a text field's selection in cells, as -copy names them")
-	pasteFlag := flag.String("paste", strings.Join(cells.DefaultPasteKeys, ","), "the `keys` that paste into a text field in cells, as -copy names them; the terminal's own paste works too")
-	undoFlag := flag.String("undo", strings.Join(cells.DefaultUndoKeys, ","), "the `keys` that undo a text field's last edit in cells, as -copy names them")
-	redoFlag := flag.String("redo", strings.Join(cells.DefaultRedoKeys, ","), "the `keys` that redo what -undo's undid, as -copy names them")
+	keysFlag := flag.String("keys", "", "`bindings` over the keymap, as data-keys has them (SPEC §10.2), in cells and on a host: \"Mod+c=program\" keeps Control+c (Command+c on a Mac) for quitting, even with a selection")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: storybook [flags] [story]")
 		flag.PrintDefaults()
@@ -78,8 +73,7 @@ func main() {
 		}
 		th = t
 	}
-	keys := editKeys{copy: keyList(*copyFlag), cut: keyList(*cutFlag), paste: keyList(*pasteFlag),
-		undo: keyList(*undoFlag), redo: keyList(*redoFlag)}
+	keys := *keysFlag
 	if *doc {
 		if err := printHTML(os.Stdout, args, th); err != nil {
 			fmt.Fprintln(os.Stderr, "storybook:", err)
@@ -111,7 +105,7 @@ func main() {
 	}
 }
 
-func run(list, plain bool, stream, outPath, rend string, th theme.Theme, keys editKeys, args []string) error {
+func run(list, plain bool, stream, outPath, rend string, th theme.Theme, keys string, args []string) error {
 	if list {
 		for _, st := range story.All() {
 			fmt.Printf("%s\t%s\n", st.Name, st.Title)
@@ -162,7 +156,7 @@ func run(list, plain bool, stream, outPath, rend string, th theme.Theme, keys ed
 // interactive runs the storybook in the terminal: /dev/tty when stdin
 // is the stream or stdout carries the actions, as with an agent on both
 // ends of a pipe.
-func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Theme, keys editKeys, out func(a2ui.Outbound)) error {
+func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Theme, keys string, out func(a2ui.Outbound)) error {
 	termIn, termOut := os.Stdin, os.Stdout
 	if in == os.Stdin || !term.IsTerminal(os.Stdin.Fd()) || !term.IsTerminal(os.Stdout.Fd()) {
 		tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
@@ -185,7 +179,7 @@ func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Th
 		source = "stdin"
 	}
 	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th,
-		CopyKeys: keys.copy, CutKeys: keys.cut, PasteKeys: keys.paste, UndoKeys: keys.undo, RedoKeys: keys.redo})
+		Keys: keys})
 	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)), tea.WithoutSignalHandler())
 	m.s.Attach(p.Send)
 	endOnSignal(p)
@@ -194,18 +188,6 @@ func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Th
 	}
 	_, err := p.Run()
 	return err
-}
-
-// editKeys are the keys that copy, cut, paste, undo and redo in cells
-// (-copy, -cut, -paste, -undo, -redo).
-type editKeys struct{ copy, cut, paste, undo, redo []string }
-
-// keyList is a flag's comma-separated keys; none for "".
-func keyList(flag string) []string {
-	if flag == "" {
-		return []string{}
-	}
-	return strings.Split(flag, ",")
 }
 
 // output is where the renderer's messages go: a JSON line each.

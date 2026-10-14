@@ -1136,52 +1136,64 @@ renditions drops it in the others when one is pressed
 (`Rendition.Deselect`), as a page has one selection. Shift with a drag is
 the terminal's own selection, which a program leaves to it.
 
+**The edit keys** are a keymap's, in cells as on a host (SPEC §10.2,
+§10.4): the default keymap binds `copy`, `cut`, `paste`, `undo`, `redo`
+and `select-all` to the host's edit shortcuts, `Mod+c`, `Mod+x`,
+`Mod+v`, `Mod+z`, `Mod+Z` and `Mod+a`, and `Control+y` to `redo` too
+where `Mod` is Control. `Mod` is the platform's command modifier, Meta
+(Command) on a Mac and Control elsewhere: the controller's `Platform`
+(`hotty.PlatformOf` the host's caps), Control's where no host says, as
+over SSH from a terminal that is not a host. Only one of Control+c and
+Command+c is bound, so a Mac's Control+c, Control+z and Control+a keep
+their terminal and Cocoa meanings. A program overrides any of them as it
+overrides a field's keys, with its keymap (`Rendition.SetKeys`, the
+storybook's `-keys`) or a component's (`io_neuroplast_hotty.keys`), the
+same in both renditions: `Mod+c=program` keeps the key for the program,
+even with something selected.
+
 **Copying** is a page's. Letting go of a selection puts it in the
 primary selection, which a middle click pastes, as a browser does on
-Linux; macOS has none, and its terminals drop it. A copy key puts what is
-selected on the clipboard and leaves it selected: the selection in the
-text control that has the keyboard, else a Text's; a password field's
-copies nothing. The copy keys are `Control+c` and `Meta+c` (Command+c)
-by default (`cells.DefaultCopyKeys`), and a program sets its own, or none
-(`Rendition.SetCopyKeys`). With nothing selected they do what they did:
-`Control+c` interrupts, or quits the storybook. Either way the program
-takes the clip once (`Rendition.Copied`) and writes it to the terminal
-with OSC 52 (`cells.Clip.OSC52`: `c` for the clipboard, `p` for the
-primary selection), as the storybook does; its `-copy` flag sets the
-keys. Command+c reaches a program only from a terminal that doesn't keep
-it for itself, through the kitty keyboard protocol.
+Linux; macOS has none, and its terminals drop it. A key bound to `copy`
+puts what is selected on the clipboard and leaves it selected: the
+selection in the text control that has the keyboard, by its keymap, else
+a Text's, by the keymap of the element it starts in (SPEC §11); a
+password field's copies nothing. With nothing selected the key does what
+it did: `Control+c` interrupts, or quits the storybook. Either way the
+program takes the clip once (`Rendition.Copied`) and writes it to the
+terminal with OSC 52 (`cells.Clip.OSC52`: `c` for the clipboard, `p` for
+the primary selection), as the storybook does.
 
 **Cutting and pasting** are a text control's, as on a page. In the one
-that has the keyboard, a cut key puts what is selected on the clipboard,
-as a copy key does, and deletes it; with nothing selected there, or in a
-password field, the key is the program's. A paste key asks for the
+that has the keyboard, `cut` puts what is selected on the clipboard, as
+`copy` does, and deletes it; with nothing selected there, or in a
+password field, the key is the program's. `paste` asks for the
 clipboard: the program takes the ask once (`Rendition.PasteWanted`),
 sends OSC 52's query (`cells.OSC52Query`, Bubble Tea's
 `tea.ReadClipboard`), and gives the answer to `Rendition.Paste`, which
 types it in place of what is selected. A terminal may ask the user before
-it answers, or not answer at all; its own paste (Control+Shift+v, or
-Command+v on a Mac), which comes as a bracketed paste, goes to `Paste`
-too. A one-line field takes a paste without its line breaks, and a number
-field only what a number has. The keys are `Control+x` and `Meta+x`, and
-`Control+v` and `Meta+v`, by default (`cells.DefaultCutKeys`,
-`cells.DefaultPasteKeys`); a program sets its own, or none
-(`Rendition.SetCutKeys`, `SetPasteKeys`), and the storybook's `-cut` and
-`-paste` flags set them. A middle click does not paste the primary
-selection yet.
+it answers, or not answer at all; its own paste, which comes as a
+bracketed paste, goes to `Paste` too. A one-line field takes a paste
+without its line breaks, and a number field only what a number has. A
+middle click does not paste the primary selection yet.
+
+**Edit commands** come from a host that reports `edit` (SPEC §10.6): the
+program takes them (`hotty.Edit`, all six for the storybook), and the
+host then sends each edit shortcut, and its Edit and context menus'
+items, as a `command` in place of the key. `Rendition.Command` does a
+paste with the clipboard's text the command brings, with no query and no
+prompt, and a menu's command, which has no key, where it can; any other
+command is its key, which the program gives to `Key` as any key, so that
+the keymap decides and Control+c with nothing selected still quits.
 
 **Undoing** is a text control's too, each with a history of its own, as
 on a page. A run of typing is one step, and so is a run of deleting a
 character at a time, while nothing moves the caret between; a cut, a
-paste and any other edit is a step of its own. An undo key takes the
-last step back, value and selection: an undone cut comes back selected.
-A redo key does it again, until an edit drops what could be redone. A
-value set from outside, by the agent or by another control on the same
-data, drops the history, as a script setting an input's value does. The
-control takes the keys with nothing to undo or redo too. The undo keys
-are `Control+z` and `Meta+z`, and the redo keys `Control+Shift+z`,
-`Control+y` and `Meta+Shift+z` (`cells.DefaultUndoKeys`,
-`DefaultRedoKeys`); a program sets its own (`Rendition.SetUndoKeys`,
-`SetRedoKeys`), as the storybook's `-undo` and `-redo` do. Without the
+paste and any other edit is a step of its own. `undo` takes the last
+step back, value and selection: an undone cut comes back selected.
+`redo` does it again, until an edit drops what could be redone. A value
+set from outside, by the agent or by another control on the same data,
+drops the history, as a script setting an input's value does. The
+control takes the keys with nothing to undo or redo too. Without the
 kitty keyboard protocol a terminal sends Control+Shift+z as Control+z,
 and `Control+y` redoes. A history keeps 100 steps.
 
@@ -1328,15 +1340,19 @@ terminal implements them. In cells the renderer does, by the same rules:
   (Control+e, Alt+b and Alt+f, Control+w, Control+k, Control+u…), which
   cells shows with a block cursor. Either way a field keeps a GUI's
   muscle memory:
-  Shift with any move selects from where the caret was, Control+a selects
+  Shift with any move selects from where the caret was, `Mod+a` selects
   all (in `TerminalKeys` too, where Home goes to the line's start), and
-  typing or deleting replaces the selection. macOS's Command keys come as
-  Meta and do what they do in a Mac field: Meta+ArrowLeft and
-  Meta+ArrowRight go to the line's ends, Meta+ArrowUp and Meta+ArrowDown to
-  the input's, Meta+Backspace deletes to the line's start and Meta+a
-  selects all. The full key help lists them after the others. A component's `keys` (§6.5) overrides it key by key for
-  the fields inside. The cells rendition resolves the same keymap
-  (`hotty.Resolve`), so a key does the same in both.
+  typing or deleting replaces the selection. On a Mac, where `Mod` is
+  Meta (SPEC §10.4, §3.7's edit keys), the Command keys do what they do
+  in a Mac field: Meta+ArrowLeft and Meta+ArrowRight go to the line's
+  ends, Meta+ArrowUp and Meta+ArrowDown to the input's, Meta+Backspace
+  deletes to the line's start and Meta+a selects all, and Control+a,
+  Control+e and the rest are Cocoa's moves; elsewhere none of those
+  Meta keys is bound. The full key help shows `Mod`'s keys as the
+  platform's, Command's after the others. A component's `keys` (§6.5)
+  overrides it key by key for the fields inside. The cells rendition
+  resolves the same keymap (`hotty.Resolve`, with the controller's
+  `Platform`), so a key does the same in both.
 - **HottyShortcuts** (§6.1) take the keys that reach the program, for the
   surface that is active: the one that has the keyboard, or when none has
   it, the one the program says is current.
