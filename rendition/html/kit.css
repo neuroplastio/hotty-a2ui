@@ -746,6 +746,13 @@ textarea.k-resize-none { resize: none; }
 .k-col > .k-drop-after::after { bottom: calc(var(--k-2) / -2 - 1px); }
 .k-row > .k-drop-before::before { top: 0; bottom: 0; left: calc(var(--k-3) / -2 - 1px); width: 2px; height: auto; }
 .k-row > .k-drop-after::after { top: 0; bottom: 0; left: auto; right: calc(var(--k-3) / -2 - 1px); width: 2px; height: auto; }
+/* At a List's ends the line goes just inside its first or last item:
+   outside, the List's own box would clip it (k-overflow), and a drop
+   into a column, after its last card, would show nothing. */
+.k-col > .k-drop-before:first-child::before { top: 0; }
+.k-col > .k-drop-after:last-child::after { bottom: 0; }
+.k-row > .k-drop-before:first-child::before { left: 0; }
+.k-row > .k-drop-after:last-child::after { right: 0; }
 .k-table tr.k-drop-before > td::before { top: -1px; right: -1px; }
 .k-table tr.k-drop-after > td::after { bottom: -1px; right: -1px; }
 .k-tree .k-node.k-drop-into { background: var(--k-accent); color: var(--k-on-accent); }
