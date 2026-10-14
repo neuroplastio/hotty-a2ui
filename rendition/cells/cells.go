@@ -52,6 +52,9 @@ type Rendition struct {
 	cutKeys     []string             // the keys that cut a text control's selection (SetCutKeys)
 	pasteKeys   []string             // the keys that paste into a text control (SetPasteKeys)
 	wantPaste   bool                 // a paste key asked for the clipboard, until PasteWanted says so
+	undoKeys    []string             // the keys that undo a text control's last edit (SetUndoKeys)
+	redoKeys    []string             // the keys that redo what an undo key undid (SetRedoKeys)
+	history     map[string]*history  // each text control's edits, to undo and redo
 	sized       map[string]fieldSize // what each longText's grip resized it to
 	knob        int                  // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
 	anchor      int                  // where in the text control the press was, which a drag selects from
@@ -84,7 +87,8 @@ type box struct{ x, y, w, h int }
 func New(c *view.Controller) *Rendition {
 	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
 		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, copyKeys: keyNames(DefaultCopyKeys),
-		cutKeys: keyNames(DefaultCutKeys), pasteKeys: keyNames(DefaultPasteKeys), Clock: time.Now}
+		cutKeys: keyNames(DefaultCutKeys), pasteKeys: keyNames(DefaultPasteKeys),
+		undoKeys: keyNames(DefaultUndoKeys), redoKeys: keyNames(DefaultRedoKeys), history: map[string]*history{}, Clock: time.Now}
 }
 
 // Animating is how soon the last Draw's frame changes by itself: the

@@ -62,7 +62,7 @@ type barePane struct {
 	press bool
 }
 
-func runBare(st *story.Story, th theme.Theme, keys clipKeys) error {
+func runBare(st *story.Story, th theme.Theme, keys editKeys) error {
 	if st == nil {
 		return errors.New("-bare shows one story: name it (storybook -list)")
 	}
@@ -76,6 +76,8 @@ func runBare(st *story.Story, th theme.Theme, keys clipKeys) error {
 		r.SetCopyKeys(keys.copy...)
 		r.SetCutKeys(keys.cut...)
 		r.SetPasteKeys(keys.paste...)
+		r.SetUndoKeys(keys.undo...)
+		r.SetRedoKeys(keys.redo...)
 		m.panes = append(m.panes, &barePane{s: s, r: r})
 	}
 	_, err = tea.NewProgram(m).Run()

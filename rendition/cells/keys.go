@@ -13,7 +13,8 @@ import (
 // "Space", "Enter", "Shift+Tab", "Control+s" (profile §5). A copy key
 // with something selected copies it (CopyKey); in a text control with the
 // keyboard, a cut key cuts what is selected and a paste key asks for the
-// clipboard (PasteWanted). While the surface has the
+// clipboard (PasteWanted), and an undo or a redo key undoes or redoes its
+// last edit (SetUndoKeys). While the surface has the
 // keyboard, the focused element takes the keys it uses: a
 // text control those its keymap names, and the characters it types (SPEC
 // §10.2, editKey); another kind those of SPEC §10.2's table, unmodified or
@@ -39,6 +40,9 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	}
 	if r.pasteKey(key) {
 		return true, nil
+	}
+	if ok, err := r.undoKey(key); ok {
+		return true, err
 	}
 	if key == "Escape" {
 		// A selection goes, and Escape does what it does.
@@ -226,9 +230,11 @@ func (r *Rendition) editKey(e *view.Element, key string) (ok bool, err error) {
 	case hotty.Submit:
 		return true, r.c.Enter(e.ID)
 	}
-	_, changed := f.Key(km, key)
+	before := stateOf(f)
+	a, changed := f.Key(km, key)
 	r.cursor[e.ID] = f.Caret
 	if changed {
+		r.record(e, before, stateOf(f), runOf(a))
 		return true, r.c.SetValue(e.ID, f.Value)
 	}
 	return true, nil

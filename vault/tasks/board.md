@@ -58,7 +58,10 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   cuts a text control's selection, a paste key reads the clipboard with
   OSC 52's query, and a bracketed paste types too (`SetCutKeys`,
   `SetPasteKeys`, `-cut`, `-paste`). The host's cut and paste went to
-  hotty with its copy. Left: a middle click pasting the primary selection.
+  hotty with its copy. Undo and redo followed (journal 2026-10-14.2):
+  each text control has its own history, as on a page (`SetUndoKeys`,
+  `SetRedoKeys`, `-undo`, `-redo`). Left: a middle click pasting the
+  primary selection.
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [x] **KIT-DEF** — A cue for the default button (the maintainer, round

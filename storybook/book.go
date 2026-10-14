@@ -100,6 +100,10 @@ type Options struct {
 	// CopyKeys: nil for the defaults, an empty list for none. A paste
 	// key asks for the terminal's clipboard (PasteWanted).
 	CutKeys, PasteKeys []string
+	// UndoKeys and RedoKeys are the keys that undo and redo a text
+	// field's edits in cells (cells.Rendition.SetUndoKeys, SetRedoKeys),
+	// as CopyKeys.
+	UndoKeys, RedoKeys []string
 }
 
 // Book is the storybook. Its methods are for the program's Update and
@@ -930,6 +934,12 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 			}
 			if b.o.PasteKeys != nil {
 				p.cells.SetPasteKeys(b.o.PasteKeys...)
+			}
+			if b.o.UndoKeys != nil {
+				p.cells.SetUndoKeys(b.o.UndoKeys...)
+			}
+			if b.o.RedoKeys != nil {
+				p.cells.SetRedoKeys(b.o.RedoKeys...)
 			}
 		}
 		b.panes[name] = p

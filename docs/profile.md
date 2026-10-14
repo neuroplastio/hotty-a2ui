@@ -1166,6 +1166,22 @@ field only what a number has. The keys are `Control+x` and `Meta+x`, and
 `-paste` flags set them. A middle click does not paste the primary
 selection yet.
 
+**Undoing** is a text control's too, each with a history of its own, as
+on a page. A run of typing is one step, and so is a run of deleting a
+character at a time, while nothing moves the caret between; a cut, a
+paste and any other edit is a step of its own. An undo key takes the
+last step back, value and selection: an undone cut comes back selected.
+A redo key does it again, until an edit drops what could be redone. A
+value set from outside, by the agent or by another control on the same
+data, drops the history, as a script setting an input's value does. The
+control takes the keys with nothing to undo or redo too. The undo keys
+are `Control+z` and `Meta+z`, and the redo keys `Control+Shift+z`,
+`Control+y` and `Meta+Shift+z` (`cells.DefaultUndoKeys`,
+`DefaultRedoKeys`); a program sets its own (`Rendition.SetUndoKeys`,
+`SetRedoKeys`), as the storybook's `-undo` and `-redo` do. Without the
+kitty keyboard protocol a terminal sends Control+Shift+z as Control+z,
+and `Control+y` redoes. A history keeps 100 steps.
+
 **The wheel** over a HottyTree or a HottyTable with a `height` moves its
 rows, three a notch, while they can move that way, and leaves the
 selection where it is; a key that moves the selection brings it back

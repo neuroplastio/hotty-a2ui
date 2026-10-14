@@ -409,8 +409,10 @@ func (r *Rendition) cutKey(key string) (ok bool, err error) {
 		return false, nil
 	}
 	f := r.field(e)
+	before := stateOf(f)
 	f.Do(hotty.DeleteCharBackward)
 	r.cursor[e.ID] = f.Caret
+	r.record(e, before, stateOf(f), noRun)
 	r.clip = &Clip{Text: text}
 	return true, r.c.SetValue(e.ID, f.Value)
 }
@@ -467,10 +469,12 @@ func (r *Rendition) Paste(text string) (handled bool, err error) {
 		}, text)
 	}
 	f := r.field(e)
+	before := stateOf(f)
 	if !f.Type(text) {
 		return true, nil
 	}
 	r.cursor[e.ID] = f.Caret
+	r.record(e, before, stateOf(f), noRun)
 	return true, r.c.SetValue(e.ID, f.Value)
 }
 
