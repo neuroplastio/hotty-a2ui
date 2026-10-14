@@ -10,6 +10,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/rendition/cells"
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/story"
+	"github.com/neuroplastio/hotty-a2ui/storybook"
 )
 
 // -bare draws the story's surface alone, and Tab gives it the keyboard:
@@ -45,17 +46,27 @@ func TestBare(t *testing.T) {
 	if !strings.Contains(m.frame, "A") {
 		t.Fatalf("the field did not take a key:\n%s", m.frame)
 	}
-	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	if !m.quitAsked || !strings.Contains(m.frame, "Ctrl+C again to quit") {
+	ctrlC := tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}
+	m.Update(ctrlC)
+	if m.quitAt.IsZero() || !strings.Contains(m.frame, "Ctrl+C again to quit") {
 		t.Fatalf("one Control+C did not ask for another:\n%s", m.frame)
 	}
 	m.Update(tea.KeyPressMsg{Code: 'B', Text: "B"})
-	if m.quitAsked || strings.Contains(m.frame, "again to quit") {
+	if !m.quitAt.IsZero() || strings.Contains(m.frame, "again to quit") {
 		t.Fatal("another key did not end the ask")
 	}
-	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	if _, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}); cmd == nil || m.quitAsked {
-		t.Fatal("Control+C twice does not quit")
+	m.Update(ctrlC)
+	m.Update(bareQuitEnd{m.quitAt})
+	if !m.quitAt.IsZero() || strings.Contains(m.frame, "again to quit") {
+		t.Fatal("the window's end did not end the ask")
+	}
+	m.Update(ctrlC)
+	m.quitAt = m.quitAt.Add(-2 * storybook.QuitWindow)
+	if m.Update(ctrlC); m.quitAt.IsZero() {
+		t.Fatal("a second Control+C after the window quit")
+	}
+	if _, cmd := m.Update(ctrlC); cmd == nil || !m.quitAt.IsZero() {
+		t.Fatal("a quick second Control+C does not quit")
 	}
 }
 

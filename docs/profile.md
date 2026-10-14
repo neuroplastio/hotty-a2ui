@@ -1160,9 +1160,10 @@ a Text's, by the keymap of the element it starts in (SPEC §11); a
 password field's copies nothing. With nothing selected the key does what
 it did: `Control+c` is the program's, to interrupt or quit. Since a text
 control's press with nothing to copy reaches the program, a program
-with text controls doesn't quit on one press: the storybook asks for a
-second one in a row on its bar, and any other key or a click ends the
-ask (the maintainer, 2026-10-14). Either way the
+with text controls doesn't quit on one press: the storybook asks on its
+bar for a quick second one, within a second (`storybook.QuitWindow`),
+and any other key, a click, or the second passing ends the ask (the
+maintainer, 2026-10-14). Either way the
 program takes the clip once (`Rendition.Copied`) and writes it to the
 terminal with OSC 52 (`cells.Clip.OSC52`: `c` for the clipboard, `p` for
 the primary selection), as the storybook does.

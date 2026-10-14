@@ -133,9 +133,11 @@ type Book struct {
 	last   *pane   // the pane that had it last: Tab goes on from there
 	cursor *tea.Cursor
 	status string
-	// quitAsked is a Control+c nothing took, which asked for a second one
-	// to quit (key); any other key, or a click, ends the ask.
-	quitAsked bool
+	// quitAt is when a Control+c nothing took asked for a second one to
+	// quit (key), zero while none did; quitDue is its timer, which Tick
+	// starts. Another key, a click, or QuitWindow passing ends the ask.
+	quitAt  time.Time
+	quitDue bool
 	// pressed is the cells pane the primary button went down on, which
 	// the pointer's moves and the release go to until it is let go.
 	pressed *pane
@@ -170,6 +172,18 @@ type Book struct {
 // tickMsg is the frame clock's tick: Tick sends it, and Update takes it.
 type tickMsg struct{}
 
+// QuitWindow is how soon a second Control+c must follow the first that
+// nothing took for a program to quit: only a quick second press is the
+// way out (the maintainer, 2026-10-14).
+const QuitWindow = time.Second
+
+// quitAsk is what the bar says while a Control+c asks for another.
+const quitAsk = "Ctrl+C again to quit"
+
+// quitEnd is the end of the ask a Control+c made at at (QuitWindow): Tick
+// sends it, and Update takes the ask off the bar if it is still that one.
+type quitEnd struct{ at time.Time }
+
 // New is a Book. It starts once the terminal is known: on the Session's
 // ReadyMsg, or at the first View after it.
 func New(o Options) *Book {
@@ -203,6 +217,10 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 		b.takeEdit(h)
 	case tickMsg:
 		b.ticking = false
+	case quitEnd:
+		if msg.at.Equal(b.quitAt) {
+			b.endAsk()
+		}
 	case hottytea.EventMsg:
 		switch ev := msg.Event; {
 		case ev.Kind == hotty.EventCommand && ev.Command != nil:
@@ -226,9 +244,7 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	case tea.ClipboardMsg:
 		b.paste(msg.Content)
 	case tea.MouseClickMsg:
-		if b.quitAsked {
-			b.quitAsked, b.status = false, ""
-		}
+		b.endAsk()
 		if msg.Button == tea.MouseLeft {
 			b.click(msg.X-b.at.X, msg.Y-b.at.Y, msg.Mod&tea.ModShift != 0)
 		}
@@ -393,8 +409,20 @@ func (b *Book) copyKey(k string) bool {
 // program returns it with each View's commands, after the session's
 // Layout, which sends a new surface's document, as cmd/storybook does. It is nil while nothing moves, and
 // while a tick is on its way. The ticks fall where the frames change
-// (view.UntilStep).
+// (view.UntilStep). It also times a Control+c's ask (QuitWindow), whose
+// end, given to Update, takes it off the bar.
 func (b *Book) Tick() tea.Cmd {
+	var end tea.Cmd
+	if b.quitDue {
+		b.quitDue = false
+		at := b.quitAt
+		end = tea.Tick(QuitWindow, func(time.Time) tea.Msg { return quitEnd{at} })
+	}
+	return tea.Batch(b.frameTick(), end)
+}
+
+// frameTick is Tick's frame clock.
+func (b *Book) frameTick() tea.Cmd {
 	d := b.anim
 	for _, r := range b.shown {
 		if a := r.Animating(); a > 0 && (d == 0 || a < d) {
@@ -533,14 +561,14 @@ func (p *pane) chrome(b *Book) bool {
 // the storybook's own keys, Control+c's quit among them.
 //
 // A Control+c that nothing copied with quits only when it follows another
-// such: the first asks for it on the bar. Text controls use Control+c, and
-// one with nothing to copy (a password field's, any with nothing
-// selected) leaves the key to the program, as a host does, so one press
-// is never the way out (the maintainer, 2026-10-14).
+// such within QuitWindow: the first asks for it on the bar. Text controls
+// use Control+c, and one with nothing to copy (a password field's, any
+// with nothing selected) leaves the key to the program, as a host does,
+// so one press is never the way out (the maintainer, 2026-10-14).
 func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 	b.status = ""
-	asked := b.quitAsked
-	b.quitAsked = false
+	asked := !b.quitAt.IsZero() && time.Since(b.quitAt) < QuitWindow
+	b.quitAt = time.Time{}
 	if b.copyKey(k) {
 		return false
 	}
@@ -551,7 +579,7 @@ func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 		if asked {
 			return true
 		}
-		b.quitAsked, b.status = true, "Ctrl+C again to quit"
+		b.quitAt, b.quitDue, b.status = time.Now(), true, quitAsk
 		return false
 	}
 	if b.ch == nil {
@@ -778,6 +806,18 @@ func (b *Book) command(c hotty.Command, h *hottytea.Session) (quit bool) {
 		return false
 	}
 	return b.key(c.Key, h)
+}
+
+// endAsk ends a Control+c's ask for another (key), and takes it off the
+// bar.
+func (b *Book) endAsk() {
+	if b.quitAt.IsZero() {
+		return
+	}
+	b.quitAt, b.quitDue = time.Time{}, false
+	if b.status == quitAsk {
+		b.status = ""
+	}
 }
 
 // click is a primary click on the cells, in the Book: a list open on the

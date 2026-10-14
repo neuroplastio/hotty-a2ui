@@ -71,9 +71,9 @@ func TestCopyOrQuit(t *testing.T) {
 }
 
 // TestQuitTwice: a Control+c that nothing copied with asks on the bar for
-// another, and the second in a row quits: in a password field, which
-// never copies, one press does not. Another key, or a click, ends the
-// ask; Control+q quits at once.
+// another, and a quick second one quits: in a password field, which never
+// copies, one press does not. Another key, a click, or QuitWindow passing
+// ends the ask; Control+q quits at once.
 func TestQuitTwice(t *testing.T) {
 	s := hottytea.New()
 	s.Mode = hottytea.Text
@@ -124,9 +124,25 @@ func TestQuitTwice(t *testing.T) {
 	if bar, _ := b.View(hottytea.Rect{W: 120, H: 24}, s); strings.Contains(bar, "again to quit") {
 		t.Errorf("a click left the ask on the bar:\n%s", bar)
 	}
-	asks("after a click")
+	if b.Tick() == nil {
+		t.Fatal("no timer for the ask")
+	}
+	b.Update(quitEnd{b.quitAt}, s)
+	if bar, _ := b.View(hottytea.Rect{W: 120, H: 24}, s); strings.Contains(bar, "again to quit") {
+		t.Errorf("the window's end left the ask on the bar:\n%s", bar)
+	}
+	asks("after the window")
+	old := b.quitAt
+	b.key("x", s)
+	asks("after another ask")
+	b.Update(quitEnd{old}, s)
+	if bar, _ := b.View(hottytea.Rect{W: 120, H: 24}, s); !strings.Contains(bar, "again to quit") {
+		t.Errorf("an earlier ask's end took a later one off the bar:\n%s", bar)
+	}
+	b.quitAt = b.quitAt.Add(-2 * QuitWindow)
+	asks("a second press after the window")
 	if !b.key("Control+c", s) {
-		t.Error("a second Control+c in a row did not quit")
+		t.Error("a quick second Control+c did not quit")
 	}
 	if !b.key("Control+q", s) {
 		t.Error("Control+q did not quit")

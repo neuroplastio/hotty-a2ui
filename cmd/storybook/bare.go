@@ -45,9 +45,10 @@ type bareModel struct {
 	frame  string
 	cur    *tea.Cursor
 	err    string
-	// quitAsked is a Control+C nothing took, which asked for a second one
-	// to quit; any other key, or a click, ends the ask.
-	quitAsked bool
+	// quitAt is when a Control+C nothing took asked for a second one to
+	// quit, zero while none did. Another key, a click, or
+	// storybook.QuitWindow passing ends the ask (bareQuitEnd).
+	quitAt time.Time
 	// anim is how often the frame wants drawing again, 0 when nothing in
 	// it moves; ticking is a tick on its way.
 	anim    time.Duration
@@ -56,6 +57,9 @@ type bareModel struct {
 
 // bareTick is the frame clock's tick (bareModel.tick).
 type bareTick struct{}
+
+// bareQuitEnd is the end of the ask a Control+C made at at.
+type bareQuitEnd struct{ at time.Time }
 
 type barePane struct {
 	s     *story.Surface
@@ -103,18 +107,24 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.w, m.h = msg.Width, msg.Height
 	case bareTick:
 		m.ticking = false
+	case bareQuitEnd:
+		if msg.at.Equal(m.quitAt) {
+			m.quitAt = time.Time{}
+		}
 	case tea.KeyPressMsg:
 		k := hottytea.KeyName(msg.Key())
 		if k == "" {
 			break
 		}
-		asked := m.quitAsked
-		m.quitAsked = false
+		asked := !m.quitAt.IsZero() && time.Since(m.quitAt) < storybook.QuitWindow
+		m.quitAt = time.Time{}
 		if m.copyKey(k) {
 			break
 		}
 		if k == "Control+c" && !asked {
-			m.quitAsked = true
+			at := time.Now()
+			m.quitAt = at
+			px = tea.Batch(px, tea.Tick(storybook.QuitWindow, func(time.Time) tea.Msg { return bareQuitEnd{at} }))
 			break
 		}
 		if k == "Control+c" || k == "q" && m.keyboard() == nil {
@@ -126,7 +136,7 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.ClipboardMsg:
 		m.paste(msg.Content)
 	case tea.MouseClickMsg:
-		m.quitAsked = false
+		m.quitAt = time.Time{}
 		p, row := m.at(msg.Y)
 		if msg.Button != tea.MouseLeft {
 			break
@@ -345,7 +355,7 @@ func (m *bareModel) draw() {
 		fmt.Fprintf(&b, "\n\n%s", m.err)
 		top += 2
 	}
-	if m.quitAsked {
+	if !m.quitAt.IsZero() {
 		b.WriteString("\n\nCtrl+C again to quit")
 		top += 2
 	}
