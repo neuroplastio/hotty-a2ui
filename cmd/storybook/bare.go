@@ -62,7 +62,7 @@ type barePane struct {
 	press bool
 }
 
-func runBare(st *story.Story, th theme.Theme, copyKeys []string) error {
+func runBare(st *story.Story, th theme.Theme, keys clipKeys) error {
 	if st == nil {
 		return errors.New("-bare shows one story: name it (storybook -list)")
 	}
@@ -73,7 +73,9 @@ func runBare(st *story.Story, th theme.Theme, copyKeys []string) error {
 	m := &bareModel{run: run, th: th, plain: os.Getenv("NO_COLOR") != ""}
 	for _, s := range run.Surfaces() {
 		r := cells.New(s.C)
-		r.SetCopyKeys(copyKeys...)
+		r.SetCopyKeys(keys.copy...)
+		r.SetCutKeys(keys.cut...)
+		r.SetPasteKeys(keys.paste...)
 		m.panes = append(m.panes, &barePane{s: s, r: r})
 	}
 	_, err = tea.NewProgram(m).Run()
@@ -112,6 +114,10 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Sequence(m.px.off(), m.ptr.off(), tea.Quit)
 		}
 		m.key(k)
+	case tea.PasteMsg:
+		m.paste(msg.Content)
+	case tea.ClipboardMsg:
+		m.paste(msg.Content)
 	case tea.MouseClickMsg:
 		p, row := m.at(msg.Y)
 		if msg.Button != tea.MouseLeft {
@@ -185,6 +191,10 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// A selection let go, or a copy key: to the terminal.
 			px = tea.Batch(px, tea.Raw(c.OSC52()))
 		}
+		if p.r.PasteWanted() {
+			// A paste key: the terminal's clipboard, for paste.
+			px = tea.Batch(px, tea.ReadClipboard)
+		}
 	}
 	m.draw()
 	return m, tea.Batch(px, m.tick())
@@ -202,6 +212,15 @@ func (m *bareModel) copyKey(k string) bool {
 		}
 	}
 	return false
+}
+
+// paste pastes into the text field that has the keyboard: the clipboard
+// a paste key asked for, or the terminal's own paste.
+func (m *bareModel) paste(text string) {
+	if p := m.keyboard(); p != nil {
+		_, err := p.r.Paste(text)
+		m.fail(err)
+	}
 }
 
 // tick asks for the next frame while something in this one moves (a

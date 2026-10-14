@@ -11,7 +11,9 @@ import (
 
 // Key is a key the user pressed, named as SPEC §10.4 has it: "a", "A",
 // "Space", "Enter", "Shift+Tab", "Control+s" (profile §5). A copy key
-// with something selected copies it (CopyKey). While the surface has the
+// with something selected copies it (CopyKey); in a text control with the
+// keyboard, a cut key cuts what is selected and a paste key asks for the
+// clipboard (PasteWanted). While the surface has the
 // keyboard, the focused element takes the keys it uses: a
 // text control those its keymap names, and the characters it types (SPEC
 // §10.2, editKey); another kind those of SPEC §10.2's table, unmodified or
@@ -30,6 +32,12 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	r.hush()
 	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
 	if r.CopyKey(key) {
+		return true, nil
+	}
+	if ok, err := r.cutKey(key); ok {
+		return true, err
+	}
+	if r.pasteKey(key) {
 		return true, nil
 	}
 	if key == "Escape" {
@@ -191,6 +199,9 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	return false, nil
 }
 
+// numberChars are what a number field takes, typed or pasted.
+const numberChars = "0123456789.,-+eE"
+
 // editKey edits a text control as a host edits a text field (SPEC
 // §10.2), with hottyedit: by its keymap, the surface's (SetKeys) and then
 // those of the components it is in, its own last (view.KeyChain), and
@@ -209,7 +220,7 @@ func (r *Rendition) editKey(e *view.Element, key string) (ok bool, err error) {
 		if strings.HasSuffix(key, "Space") {
 			ch = " "
 		}
-		if e.Kind == view.TextField && e.Variant == "number" && !strings.ContainsAny(ch, "0123456789.,-+eE") {
+		if e.Kind == view.TextField && e.Variant == "number" && !strings.ContainsAny(ch, numberChars) {
 			return true, nil
 		}
 	case hotty.Submit:

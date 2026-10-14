@@ -99,6 +99,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// A selection let go, or a copy key: to the terminal.
 		cmd = tea.Batch(cmd, tea.Raw(c.OSC52()))
 	}
+	if m.b.PasteWanted() {
+		// A paste key in a text field: the terminal's clipboard, for
+		// Book.Update to paste.
+		cmd = tea.Batch(cmd, tea.ReadClipboard)
+	}
 	return m, tea.Batch(cmd, m.draw(), m.b.Tick())
 }
 

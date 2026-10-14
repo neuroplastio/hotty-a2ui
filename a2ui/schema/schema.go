@@ -12,8 +12,10 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 	thirdparty "github.com/neuroplastio/hotty-a2ui/third_party"
@@ -61,10 +63,62 @@ func newCompiler() *jsonschema.Compiler {
 	c := jsonschema.NewCompiler()
 	c.DefaultDraft(jsonschema.Draft2020)
 	c.UseRegexpEngine(xid)
+	// A2UI tells a DateTimeInput's min and max apart by format (oneOf
+	// date, time and date-time), which only an asserted format can do.
+	c.AssertFormat()
+	for _, f := range isoFormats {
+		c.RegisterFormat(f)
+	}
 	if err := c.AddResource(commonTypesURL, mustDoc(thirdparty.CommonTypes)); err != nil {
 		panic(err)
 	}
 	return c
+}
+
+// isoFormats are date, time and date-time as a DateTimeInput's value
+// has them (view.Element.DateHint), and HTML's date, time and
+// datetime-local inputs: ISO 8601's extended forms, a time to the minute
+// or finer, with an offset or none. JSON Schema's own are RFC 3339's,
+// whose time has seconds and an offset, so that "09:00" would be no
+// format at all.
+var isoFormats = []*jsonschema.Format{
+	{Name: "date", Validate: isoFormat(true, false)},
+	{Name: "time", Validate: isoFormat(false, true)},
+	{Name: "date-time", Validate: isoFormat(true, true)},
+}
+
+var isoTime = regexp.MustCompile(`^(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:Z|[+-](\d{2}):(\d{2}))?$`)
+
+// isoFormat checks a string in ISO 8601's form of a date, a time of day,
+// or the two joined by T. A value that is no string is not the format's
+// to check.
+func isoFormat(date, clock bool) func(v any) error {
+	return func(v any) error {
+		s, ok := v.(string)
+		if !ok {
+			return nil
+		}
+		d, t := s, s
+		if date && clock {
+			if d, t, ok = strings.Cut(s, "T"); !ok {
+				return errors.New("no T between the date and the time")
+			}
+		}
+		if date {
+			if _, err := time.Parse(time.DateOnly, d); err != nil {
+				return fmt.Errorf("%q is not a date as YYYY-MM-DD", d)
+			}
+		}
+		if !clock {
+			return nil
+		}
+		m := isoTime.FindStringSubmatch(t)
+		n := func(i int) int { x, _ := strconv.Atoi(m[i]); return x }
+		if m == nil || n(1) > 23 || n(2) > 59 || n(3) > 59 || n(4) > 23 || n(5) > 59 {
+			return fmt.Errorf("%q is not a time of day as HH:MM", t)
+		}
+		return nil
+	}
 }
 
 func mustDoc(b []byte) any {

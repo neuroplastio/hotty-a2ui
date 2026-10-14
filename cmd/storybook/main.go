@@ -52,6 +52,8 @@ func main() {
 	out := flag.String("out", "", "write what the renderer sends the agent (actions, errors, function calls) to `file` as JSON lines (- for stdout)")
 	bare := flag.Bool("bare", false, "show one story's surfaces alone, in cells, on the whole screen: no list, pickers or panel")
 	copyFlag := flag.String("copy", strings.Join(cells.DefaultCopyKeys, ","), "the `keys` that copy a selection in cells, comma-separated, as HOTTY names them; \"\" for none. With nothing selected, Control+c quits")
+	cutFlag := flag.String("cut", strings.Join(cells.DefaultCutKeys, ","), "the `keys` that cut a text field's selection in cells, as -copy names them")
+	pasteFlag := flag.String("paste", strings.Join(cells.DefaultPasteKeys, ","), "the `keys` that paste into a text field in cells, as -copy names them; the terminal's own paste works too")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: storybook [flags] [story]")
 		flag.PrintDefaults()
@@ -74,10 +76,7 @@ func main() {
 		}
 		th = t
 	}
-	copyKeys := []string{}
-	if *copyFlag != "" {
-		copyKeys = strings.Split(*copyFlag, ",")
-	}
+	keys := clipKeys{copy: keyList(*copyFlag), cut: keyList(*cutFlag), paste: keyList(*pasteFlag)}
 	if *doc {
 		if err := printHTML(os.Stdout, args, th); err != nil {
 			fmt.Fprintln(os.Stderr, "storybook:", err)
@@ -97,19 +96,19 @@ func main() {
 		if len(args) == 1 {
 			st = story.Find(args[0])
 		}
-		if err := runBare(st, th, copyKeys); err != nil {
+		if err := runBare(st, th, keys); err != nil {
 			fmt.Fprintln(os.Stderr, "storybook:", err)
 			os.Exit(1)
 		}
 		return
 	}
-	if err := run(*list, *plain, *stream, *out, *rend, th, copyKeys, args); err != nil {
+	if err := run(*list, *plain, *stream, *out, *rend, th, keys, args); err != nil {
 		fmt.Fprintln(os.Stderr, "storybook:", err)
 		os.Exit(1)
 	}
 }
 
-func run(list, plain bool, stream, outPath, rend string, th theme.Theme, copyKeys, args []string) error {
+func run(list, plain bool, stream, outPath, rend string, th theme.Theme, keys clipKeys, args []string) error {
 	if list {
 		for _, st := range story.All() {
 			fmt.Printf("%s\t%s\n", st.Name, st.Title)
@@ -154,13 +153,13 @@ func run(list, plain bool, stream, outPath, rend string, th theme.Theme, copyKey
 	if outPath == "-" && stdoutTTY {
 		return errors.New("-out - writes to stdout, which is the terminal: pipe it, or name a file")
 	}
-	return interactive(st, in, stream, rend, th, copyKeys, w)
+	return interactive(st, in, stream, rend, th, keys, w)
 }
 
 // interactive runs the storybook in the terminal: /dev/tty when stdin
 // is the stream or stdout carries the actions, as with an agent on both
 // ends of a pipe.
-func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Theme, copyKeys []string, out func(a2ui.Outbound)) error {
+func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Theme, keys clipKeys, out func(a2ui.Outbound)) error {
 	termIn, termOut := os.Stdin, os.Stdout
 	if in == os.Stdin || !term.IsTerminal(os.Stdin.Fd()) || !term.IsTerminal(os.Stdout.Fd()) {
 		tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
@@ -182,7 +181,8 @@ func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Th
 	if source == "-" {
 		source = "stdin"
 	}
-	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th, CopyKeys: copyKeys})
+	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th,
+		CopyKeys: keys.copy, CutKeys: keys.cut, PasteKeys: keys.paste})
 	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)), tea.WithoutSignalHandler())
 	m.s.Attach(p.Send)
 	endOnSignal(p)
@@ -191,6 +191,18 @@ func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Th
 	}
 	_, err := p.Run()
 	return err
+}
+
+// clipKeys are the keys that copy, cut and paste in cells (-copy, -cut,
+// -paste).
+type clipKeys struct{ copy, cut, paste []string }
+
+// keyList is a flag's comma-separated keys; none for "".
+func keyList(flag string) []string {
+	if flag == "" {
+		return []string{}
+	}
+	return strings.Split(flag, ",")
 }
 
 // output is where the renderer's messages go: a JSON line each.

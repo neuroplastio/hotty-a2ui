@@ -322,17 +322,40 @@ func (r *Rendition) Copied() (c Clip, ok bool) {
 // on a Mac, which SPEC §10.4 names Meta+c.
 var DefaultCopyKeys = []string{"Control+c", "Meta+c"}
 
+// DefaultCutKeys are a page's keys that cut: Control+x, and Command+x on
+// a Mac (Meta+x).
+var DefaultCutKeys = []string{"Control+x", "Meta+x"}
+
+// DefaultPasteKeys are a page's keys that paste: Control+v, and Command+v
+// on a Mac (Meta+v).
+var DefaultPasteKeys = []string{"Control+v", "Meta+v"}
+
 // SetCopyKeys sets the keys that copy what is selected (CopyKey), in SPEC
 // §10.4's names. New starts with DefaultCopyKeys; with none, a key copies
 // nothing and the program has them all.
-func (r *Rendition) SetCopyKeys(keys ...string) {
-	r.copyKeys = r.copyKeys[:0]
+func (r *Rendition) SetCopyKeys(keys ...string) { r.copyKeys = keyNames(keys) }
+
+// SetCutKeys sets the keys that cut what is selected in a text control
+// (Key), as SetCopyKeys does the copy keys. New starts with
+// DefaultCutKeys.
+func (r *Rendition) SetCutKeys(keys ...string) { r.cutKeys = keyNames(keys) }
+
+// SetPasteKeys sets the keys that paste into a text control (Key,
+// PasteWanted), as SetCopyKeys does the copy keys. New starts with
+// DefaultPasteKeys.
+func (r *Rendition) SetPasteKeys(keys ...string) { r.pasteKeys = keyNames(keys) }
+
+// keyNames are keys named as hotty.ParseKey names them, so that a key
+// pressed matches however the program spelled it.
+func keyNames(keys []string) []string {
+	out := make([]string, 0, len(keys))
 	for _, k := range keys {
 		if p, ok := hotty.ParseKey(k); ok {
 			k = p
 		}
-		r.copyKeys = append(r.copyKeys, k)
+		out = append(out, k)
 	}
+	return out
 }
 
 // CopyKey copies what is selected (Selection) to the clipboard, when key
@@ -360,7 +383,7 @@ func (r *Rendition) CopyKey(key string) bool {
 // that has the keyboard, else in a Text. A password field's selection
 // copies nothing, as on a page.
 func (r *Rendition) Selection() string {
-	if e := r.c.V.Find(r.c.St.Focus); r.c.St.Keyboard && e != nil && isTextControl(e) {
+	if e := r.editing(); e != nil {
 		if text := r.fieldSelection(e); text != "" {
 			return text
 		}
@@ -369,6 +392,94 @@ func (r *Rendition) Selection() string {
 		return ""
 	}
 	return r.selText()
+}
+
+// cutKey cuts what is selected in the text control that has the
+// keyboard, on a cut key (SetCutKeys): it goes to the clipboard, as a
+// copy key puts it there, and out of the field. ok is false when nothing
+// is selected there, and the key is then the program's: on a page, a cut
+// key does nothing to a Text's selection, or to a password field's.
+func (r *Rendition) cutKey(key string) (ok bool, err error) {
+	e := r.editing()
+	if e == nil || !slices.Contains(r.cutKeys, key) {
+		return false, nil
+	}
+	text := r.fieldSelection(e)
+	if text == "" {
+		return false, nil
+	}
+	f := r.field(e)
+	f.Do(hotty.DeleteCharBackward)
+	r.cursor[e.ID] = f.Caret
+	r.clip = &Clip{Text: text}
+	return true, r.c.SetValue(e.ID, f.Value)
+}
+
+// pasteKey asks for the clipboard on a paste key (SetPasteKeys) while a
+// text control has the keyboard (PasteWanted); elsewhere the key is the
+// program's.
+func (r *Rendition) pasteKey(key string) bool {
+	if r.editing() == nil || !slices.Contains(r.pasteKeys, key) {
+		return false
+	}
+	r.wantPaste = true
+	return true
+}
+
+// OSC52Query asks the terminal for its clipboard: it answers with OSC 52
+// and the clipboard's text in base64, which Bubble Tea gives a program as
+// a tea.ClipboardMsg (tea.ReadClipboard sends this). A terminal may ask
+// the user first, or not answer.
+const OSC52Query = "\x1b]52;c;?\x1b\\"
+
+// PasteWanted reports, once, that a paste key asked for the clipboard.
+// The program reads it (OSC52Query) and gives what comes back to Paste.
+func (r *Rendition) PasteWanted() bool {
+	w := r.wantPaste
+	r.wantPaste = false
+	return w
+}
+
+// Paste types text into the text control that has the keyboard, in place
+// of what is selected there, as a page pastes: the clipboard a paste key
+// asked for (PasteWanted), or the terminal's own paste (bracketed paste:
+// Control+Shift+v, or Command+v on a Mac, by its default keys). A
+// one-line field takes it without its line breaks, and a number field
+// only what a number has, as each takes typing. handled is false when no
+// text control has the keyboard: the paste is the program's.
+func (r *Rendition) Paste(text string) (handled bool, err error) {
+	e := r.editing()
+	if e == nil {
+		return false, nil
+	}
+	r.wake()
+	r.hush()
+	text = strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(text)
+	if !isLongText(e) {
+		text = strings.ReplaceAll(text, "\n", "")
+	}
+	if e.Kind == view.TextField && e.Variant == "number" {
+		text = strings.Map(func(c rune) rune {
+			if strings.ContainsRune(numberChars, c) {
+				return c
+			}
+			return -1
+		}, text)
+	}
+	f := r.field(e)
+	if !f.Type(text) {
+		return true, nil
+	}
+	r.cursor[e.ID] = f.Caret
+	return true, r.c.SetValue(e.ID, f.Value)
+}
+
+// editing is the text control that has the keyboard; nil for none.
+func (r *Rendition) editing() *view.Element {
+	if e := r.c.V.Find(r.c.St.Focus); r.c.St.Keyboard && isTextControl(e) {
+		return e
+	}
+	return nil
 }
 
 // Deselect drops the selection in a Text, as a press anywhere else does.

@@ -53,7 +53,12 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   a copy key puts it on the clipboard (`SetCopyKeys`, the storybook's
   `-copy`). On a host the selection is the host's, so hotty-blitz,
   hottyterm and the addon carry it; that went to hotty. web wires the
-  site's storybook. Paste waits until the maintainer has tried copying.
+  site's storybook. Cut and paste followed in cells (journal 2026-10-14.1:
+  "Copy is working well, nice. Now, we need Cut and Paste"): a cut key
+  cuts a text control's selection, a paste key reads the clipboard with
+  OSC 52's query, and a bracketed paste types too (`SetCutKeys`,
+  `SetPasteKeys`, `-cut`, `-paste`). The host's cut and paste went to
+  hotty with its copy. Left: a middle click pasting the primary selection.
 - [x] **KIT-17c** — File picker, with the profile's rule for granted roots
   (L10).
 - [x] **KIT-DEF** — A cue for the default button (the maintainer, round

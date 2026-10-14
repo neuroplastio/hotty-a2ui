@@ -95,6 +95,11 @@ type Options struct {
 	// (cells.Rendition.SetCopyKeys); nil for cells.DefaultCopyKeys, and
 	// an empty list for none. With nothing selected, Control+c quits.
 	CopyKeys []string
+	// CutKeys and PasteKeys are the keys that cut and paste in a text
+	// field in cells (cells.Rendition.SetCutKeys, SetPasteKeys), as
+	// CopyKeys: nil for the defaults, an empty list for none. A paste
+	// key asks for the terminal's clipboard (PasteWanted).
+	CutKeys, PasteKeys []string
 }
 
 // Book is the storybook. Its methods are for the program's Update and
@@ -206,6 +211,10 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 		if k := hottytea.KeyName(msg.Key()); k != "" {
 			quit = b.key(k, h)
 		}
+	case tea.PasteMsg:
+		b.paste(msg.Content)
+	case tea.ClipboardMsg:
+		b.paste(msg.Content)
 	case tea.MouseClickMsg:
 		if msg.Button == tea.MouseLeft {
 			b.click(msg.X-b.at.X, msg.Y-b.at.Y, msg.Mod&tea.ModShift != 0)
@@ -325,6 +334,29 @@ func (b *Book) Selection() string {
 		}
 	}
 	return ""
+}
+
+// PasteWanted reports, once, that a paste key in a cells pane asked for
+// the terminal's clipboard (cells.Rendition.PasteWanted). The program
+// reads it (tea.ReadClipboard), and Update pastes what comes back.
+func (b *Book) PasteWanted() bool {
+	want := false
+	for _, p := range b.order {
+		if p.kind == asCells && p.cells.PasteWanted() {
+			want = true
+		}
+	}
+	return want
+}
+
+// paste pastes into the text field with the keyboard in the focused
+// cells pane: the clipboard a paste key asked for, or the terminal's own
+// paste.
+func (b *Book) paste(text string) {
+	if p := b.focus; p != nil && p.kind == asCells {
+		_, err := p.cells.Paste(text)
+		b.fail(err)
+	}
 }
 
 // copyKey copies the selection in the cells panes on a copy key
@@ -892,6 +924,12 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 			p.cells = cells.New(s.C)
 			if b.o.CopyKeys != nil {
 				p.cells.SetCopyKeys(b.o.CopyKeys...)
+			}
+			if b.o.CutKeys != nil {
+				p.cells.SetCutKeys(b.o.CutKeys...)
+			}
+			if b.o.PasteKeys != nil {
+				p.cells.SetPasteKeys(b.o.PasteKeys...)
 			}
 		}
 		b.panes[name] = p

@@ -6,7 +6,6 @@
 package cells
 
 import (
-	"slices"
 	"time"
 
 	"github.com/neuroplastio/hotty-go/hottyedit"
@@ -50,6 +49,9 @@ type Rendition struct {
 	texts       map[string][]textRow // each Text's rows, as the last Draw painted them
 	clip        *Clip                // what the last copy made, until Copied takes it
 	copyKeys    []string             // the keys that copy what is selected (SetCopyKeys)
+	cutKeys     []string             // the keys that cut a text control's selection (SetCutKeys)
+	pasteKeys   []string             // the keys that paste into a text control (SetPasteKeys)
+	wantPaste   bool                 // a paste key asked for the clipboard, until PasteWanted says so
 	sized       map[string]fieldSize // what each longText's grip resized it to
 	knob        int                  // which of a HottyRangeSlider's knobs the drag moves; -1 until its first move picks one
 	anchor      int                  // where in the text control the press was, which a drag selects from
@@ -81,7 +83,8 @@ type box struct{ x, y, w, h int }
 // New is a surface's rendition in cells.
 func New(c *view.Controller) *Rendition {
 	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
-		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, copyKeys: slices.Clone(DefaultCopyKeys), Clock: time.Now}
+		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, copyKeys: keyNames(DefaultCopyKeys),
+		cutKeys: keyNames(DefaultCutKeys), pasteKeys: keyNames(DefaultPasteKeys), Clock: time.Now}
 }
 
 // Animating is how soon the last Draw's frame changes by itself: the

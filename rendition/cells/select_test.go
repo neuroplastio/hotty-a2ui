@@ -232,6 +232,70 @@ func TestCopyField(t *testing.T) {
 	}
 }
 
+// TestCutPaste: in a text control with the keyboard, a cut key cuts what
+// is selected to the clipboard, and with nothing selected is the
+// program's; a paste key asks for the clipboard, once, and Paste types it
+// in place of the selection, a one-line field without its line breaks.
+// Elsewhere both keys are the program's, and so is a paste.
+func TestCutPaste(t *testing.T) {
+	c, data, _ := form(t)
+	r := New(c)
+	c.Focus("name")
+	r.Draw(40)
+	keys(t, r, "A", "d", "a", "Space", "L", "Shift+ArrowLeft", "Shift+ArrowLeft")
+	if ok, err := r.Key("Control+x"); !ok || err != nil {
+		t.Fatalf("Control+x on a selection: %v, %v", ok, err)
+	}
+	if got, _ := r.Copied(); got != (Clip{Text: " L"}) {
+		t.Errorf("cut %+v, want \" L\" on the clipboard", got)
+	}
+	if got := data()["name"]; got != "Ada" {
+		t.Errorf("after the cut the name is %q", got)
+	}
+	if ok, _ := r.Key("Control+x"); ok {
+		t.Error("Control+x with nothing selected was taken")
+	}
+	if r.PasteWanted() {
+		t.Error("a paste was wanted before a paste key")
+	}
+	if ok, _ := r.Key("Meta+v"); !ok || !r.PasteWanted() || r.PasteWanted() {
+		t.Error("Meta+v did not ask for the clipboard once")
+	}
+	keys(t, r, "Shift+ArrowLeft", "Shift+ArrowLeft")
+	if ok, err := r.Paste("ny\nthing"); !ok || err != nil {
+		t.Fatalf("Paste: %v, %v", ok, err)
+	}
+	if got := data()["name"]; got != "Anything" {
+		t.Errorf("pasting over \"da\" made %q", got)
+	}
+	c.Focus("note")
+	r.Draw(40)
+	if _, err := r.Paste("one\r\ntwo"); err != nil {
+		t.Fatal(err)
+	}
+	if got := data()["note"]; got != "one\ntwo" {
+		t.Errorf("pasting in a textarea made %q", got)
+	}
+	r.SetPasteKeys()
+	if ok, _ := r.Key("Control+v"); ok {
+		t.Error("Control+v was taken with no paste keys")
+	}
+	r.SetCutKeys("Shift+Control+x")
+	keys(t, r, "Shift+ArrowLeft")
+	if ok, _ := r.Key("Control+X"); !ok {
+		t.Error("Shift+Control+x did not cut once set")
+	}
+	c.Focus("go")
+	r.Draw(40)
+	r.SetPasteKeys(DefaultPasteKeys...)
+	if ok, _ := r.Key("Control+v"); ok || r.PasteWanted() {
+		t.Error("Control+v on a button was taken")
+	}
+	if ok, _ := r.Paste("x"); ok {
+		t.Error("a paste with no text control was taken")
+	}
+}
+
 // TestSelectWords: in a Text, a double click selects the word under it
 // and a triple click its paragraph, the rows a wrap made of one joined,
 // and each copies at once; a word on a wrapped row is selected as well,

@@ -1146,8 +1146,25 @@ takes the clip once (`Rendition.Copied`) and writes it to the terminal
 with OSC 52 (`cells.Clip.OSC52`: `c` for the clipboard, `p` for the
 primary selection), as the storybook does; its `-copy` flag sets the
 keys. Command+c reaches a program only from a terminal that doesn't keep
-it for itself, through the kitty keyboard protocol. Pasting is not there
-yet.
+it for itself, through the kitty keyboard protocol.
+
+**Cutting and pasting** are a text control's, as on a page. In the one
+that has the keyboard, a cut key puts what is selected on the clipboard,
+as a copy key does, and deletes it; with nothing selected there, or in a
+password field, the key is the program's. A paste key asks for the
+clipboard: the program takes the ask once (`Rendition.PasteWanted`),
+sends OSC 52's query (`cells.OSC52Query`, Bubble Tea's
+`tea.ReadClipboard`), and gives the answer to `Rendition.Paste`, which
+types it in place of what is selected. A terminal may ask the user before
+it answers, or not answer at all; its own paste (Control+Shift+v, or
+Command+v on a Mac), which comes as a bracketed paste, goes to `Paste`
+too. A one-line field takes a paste without its line breaks, and a number
+field only what a number has. The keys are `Control+x` and `Meta+x`, and
+`Control+v` and `Meta+v`, by default (`cells.DefaultCutKeys`,
+`cells.DefaultPasteKeys`); a program sets its own, or none
+(`Rendition.SetCutKeys`, `SetPasteKeys`), and the storybook's `-cut` and
+`-paste` flags set them. A middle click does not paste the primary
+selection yet.
 
 **The wheel** over a HottyTree or a HottyTable with a `height` moves its
 rows, three a notch, while they can move that way, and leaves the
