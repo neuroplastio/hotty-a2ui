@@ -1146,8 +1146,8 @@ where `Mod` is Control. `Mod` is the platform's command modifier, Meta
 over SSH from a terminal that is not a host. Only one of Control+c and
 Command+c is bound, so a Mac's Control+c, Control+z and Control+a keep
 their terminal and Cocoa meanings. A program overrides any of them as it
-overrides a field's keys, with its keymap (`Rendition.SetKeys`, the
-storybook's `-keys`) or a component's (`io_neuroplast_hotty.keys`), the
+overrides a field's keys, with its keymap (`Rendition.SetKeys`) or a
+component's (`io_neuroplast_hotty.keys`), the
 same in both renditions: `Mod+c=program` keeps the key for the program,
 even with something selected.
 

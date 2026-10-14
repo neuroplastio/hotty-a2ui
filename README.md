@@ -88,9 +88,8 @@ storybook -bare hotty/keys                       # a story's surfaces alone, in 
 | <kbd>F1</kbd> | hide the list, or show it again (or click <kbd>◂</kbd> at the top of its edge) |
 | <kbd>F2</kbd> | surfaces, cells, text, or surfaces beside cells |
 | <kbd>F3</kbd> | the next theme |
-| <kbd>F4</kbd> | the fields' keys: Bubble Tea's (<kbd>Ctrl</kbd>+<kbd>A</kbd>, <kbd>Alt</kbd>+<kbd>B</kbd>, <kbd>Ctrl</kbd>+<kbd>W</kbd>…), or HOTTY's defaults alone |
 | <kbd>F5</kbd> | the next tab: the preview, what the story is, its actions, its data model, its messages |
-| <kbd>Ctrl</kbd>+<kbd>C</kbd> | quit |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd> | copy what is selected; with nothing selected, twice quickly to quit |
 
 ## The storybook in your program
 

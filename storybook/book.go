@@ -91,11 +91,6 @@ type Options struct {
 	// Prefix goes before the name of every surface the Book places, so
 	// that they keep clear of the program's own.
 	Prefix string
-	// Keys are bindings over the keymap picked (F4), as data-keys has them
-	// (SPEC §10.2), in cells and on a host alike: "Mod+c=program" keeps
-	// Control+c, or Command+c on a Mac, for the storybook (twice, it
-	// quits) even with something selected.
-	Keys string
 }
 
 // Book is the storybook. Its methods are for the program's Update and
@@ -122,7 +117,6 @@ type Book struct {
 	run    *story.Run
 	stream *story.Run
 	rend   string
-	keys   string     // the keymap picked: keysTerminal or keysDefault
 	caps   hotty.Caps // the host's, with each caps event merged in
 	gen    int
 	seq    map[*a2ui.Surface]int
@@ -187,7 +181,7 @@ type quitEnd struct{ at time.Time }
 // New is a Book. It starts once the terminal is known: on the Session's
 // ReadyMsg, or at the first View after it.
 func New(o Options) *Book {
-	b := &Book{o: o, theme: o.Theme, keys: keysDefault, seq: map[*a2ui.Surface]int{}, panes: map[string]*pane{}}
+	b := &Book{o: o, theme: o.Theme, seq: map[*a2ui.Surface]int{}, panes: map[string]*pane{}}
 	if b.theme.Name == "" {
 		b.theme = theme.Default
 	}
@@ -455,7 +449,7 @@ func (b *Book) ready(mode hottytea.Mode) {
 		}
 	}
 	b.list = entries(b.stream != nil)
-	b.ch = newChrome(b.list, opts, b.rend, b.theme.Name, b.keys, mode == hottytea.Native)
+	b.ch = newChrome(b.list, opts, b.rend, b.theme.Name, mode == hottytea.Native)
 	b.open(cmp.Or(b.o.First, b.list[0].name))
 }
 
@@ -521,9 +515,6 @@ func (b *Book) settle() {
 	if t, ok := theme.ByName(b.ch.theme()); ok && t.Name != b.theme.Name {
 		b.theme = t
 		b.gen++
-	}
-	if k := b.ch.keys(); k != "" {
-		b.keys = k
 	}
 	if r := b.ch.rendition(); r != "" && r != b.rend {
 		b.rend = r
@@ -623,8 +614,6 @@ func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 		b.nextRendition()
 	case "F3":
 		b.nextTheme()
-	case "F4":
-		b.nextKeys()
 	case "F5":
 		b.ch.setTab(b.ch.tab() + 1)
 	case "q":
@@ -750,25 +739,6 @@ func (b *Book) toggleSidebar() {
 func (b *Book) nextTheme() {
 	delete(b.ch.sent, pickID+"/theme")
 	b.ch.set(pickID, "/theme", []any{theme.Next(b.theme).Name})
-}
-
-// nextKeys picks the other keymap in pick.
-func (b *Book) nextKeys() {
-	next := keysDefault
-	if b.keys == keysDefault {
-		next = keysTerminal
-	}
-	delete(b.ch.sent, pickID+"/keys")
-	b.ch.set(pickID, "/keys", []any{next})
-}
-
-// keymap is the surface keymap of the renditions (SetKeys): the one
-// picked, over SPEC §10.2's default.
-func (b *Book) keymap() string {
-	if b.keys == keysDefault {
-		return b.o.Keys
-	}
-	return hotty.TerminalKeys + " " + b.o.Keys
 }
 
 // takeEdit asks a host that sends edit commands (caps edit) for all of
@@ -1062,10 +1032,10 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		x := scr.put(0, 0, W, "HOTTY kit storybook", cells.Fg, cells.Bold)
 		scr.put(x, 0, W-x, " · "+b.cur+" · "+b.rend, cells.Muted, 0)
 		quit := "Ctrl+C twice to quit"
-		if hotty.Resolve(hotty.PlatformOf(b.caps), false, b.keymap()).Lookup("Control+c") == hotty.Copy {
+		if hotty.Resolve(hotty.PlatformOf(b.caps), false).Lookup("Control+c") == hotty.Copy {
 			quit = "Ctrl+C copy, twice to quit"
 		}
-		help := "Tab next · Esc leave · F1 sidebar · F2 rendition · F3 theme · F4 keys · F5 tab · " + quit
+		help := "Tab next · Esc leave · F1 sidebar · F2 rendition · F3 theme · F5 tab · " + quit
 		if b.status != "" {
 			help = b.status + " · " + help
 		}
@@ -1204,7 +1174,6 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	for _, p := range order {
 		switch p.kind {
 		case asCells:
-			p.cells.SetKeys(b.keymap())
 			p.frame = p.cells.Draw(p.rect.W)
 			if d := p.cells.Animating(); d > 0 && (b.anim == 0 || d < b.anim) {
 				b.anim = d
@@ -1221,7 +1190,6 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			}
 		case asSurface:
 			p.html.SetTheme(b.theme)
-			p.html.SetKeys(b.keymap())
 			p.html.SetSteps(b.steps)
 			fits := p == pick || p == panel && preview
 			p.html.SetFit(fits)

@@ -96,19 +96,13 @@ type logged struct {
 
 type renditionOption struct{ value, label string }
 
-// The keymaps the stories' text fields edit by (Book.keymap).
-const (
-	keysTerminal = "terminal" // hotty.TerminalKeys over SPEC §10.2's default
-	keysDefault  = "default"  // SPEC §10.2's default alone
-)
-
-// newChrome makes pick, nav and panel. pick is three selects, one over
+// newChrome makes pick, nav and panel. pick is two selects, one over
 // the other, and the filter; their options have icons on a host (native). nav is a
 // HottyTree: the stream, then the branches, the stories in them; the
 // story shown is the node selected, and selecting one shows it (Book.settle).
 // panel heads its tabs with the story's title, the A2UI names it is
 // about, and its description's first sentence (showing).
-func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, native bool) *chrome {
+func newChrome(entries []entry, rends []renditionOption, rend, th string, native bool) *chrome {
 	ch := &chrome{run: story.NewRun(), sent: map[string]string{}}
 	ch.run.Out = func(o a2ui.Outbound) {
 		if o.Action != nil {
@@ -152,11 +146,10 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 	pickers := []map[string]any{
 		picker("rend", "Rendition", "/rendition", rendOpts),
 		picker("theme_p", "Theme", "/theme", themeOpts),
-		picker("keys_p", "Keys", "/keys", [][3]string{{keysDefault, "Default", "keyboard"}, {keysTerminal, "Terminal", "terminal"}}),
 	}
 	pick = append(pick,
 		obj("id", "root", "component", "Column", "children", []any{"view"}),
-		obj("id", "view", "component", "Column", "children", map[bool][]any{true: {"rend_r", "keys_p_r", "theme_p_r", "find"}, false: {"rend", "keys_p", "theme_p", "find"}}[native]))
+		obj("id", "view", "component", "Column", "children", map[bool][]any{true: {"rend_r", "theme_p_r", "find"}, false: {"rend", "theme_p", "find"}}[native]))
 	pick = append(pick, pickers...)
 	pick = append(pick,
 		// The filter is nav's (Book.settle hands it over): here it stays
@@ -182,7 +175,7 @@ func newChrome(entries []entry, rends []renditionOption, rend, th, keys string, 
 		}
 	}
 	ch.feed(
-		create(pickID, map[string]any{"rendition": []any{rend}, "theme": []any{th}, "keys": []any{keys}, "q": ""}),
+		create(pickID, map[string]any{"rendition": []any{rend}, "theme": []any{th}, "q": ""}),
 		components(pickID, pick...),
 		create(navID, map[string]any{"cur": "", "open": open, "q": ""}),
 		components(navID,
@@ -349,9 +342,6 @@ func (ch *chrome) theme() string { return ch.picked("/theme") }
 
 // rendition is the rendition picked.
 func (ch *chrome) rendition() string { return ch.picked("/rendition") }
-
-// keys is the keymap picked: keysTerminal or keysDefault.
-func (ch *chrome) keys() string { return ch.picked("/keys") }
 
 // picked is the value a select of pick has, at its path.
 func (ch *chrome) picked(path string) string {

@@ -492,7 +492,7 @@ func TestTabsKeepTheStory(t *testing.T) {
 // it went and what it is, and a failed one is marked, with its error after
 // it. Each surface's data model is under its id.
 func TestPanelJSON(t *testing.T) {
-	ch := newChrome(entries(false), []renditionOption{{rendCells, "Cells"}}, rendCells, "Terminal", keysTerminal, false)
+	ch := newChrome(entries(false), []renditionOption{{rendCells, "Cells"}}, rendCells, "Terminal", false)
 	run := story.NewRun()
 	if err := run.Feed(json.RawMessage(`{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json","dataModel":{"n":1}}}`)); err != nil {
 		t.Fatal(err)
