@@ -271,8 +271,17 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		c.St.Keyboard, r.host.on = true, true
 		// The user moved the focus (SPEC §10.1): t names the element, the
 		// nearest one with an id. The program's own a=focus names none.
+		// The kit takes it as it is. Where the element itself has it, the
+		// part Update would give it (focusOn: a tree's selected node, a
+		// diff's hunk) goes to the host only once that part changes: a
+		// press focuses the box, as a click focuses nothing with no
+		// tabindex of 0 or more, and focus on the selected part would
+		// scroll the box under the pointer before the release, so that
+		// the click lands on another node (the maintainer, 2026-10-15).
+		// Tab into a box whose selection is out of sight scrolls to it at
+		// the first key that moves it.
 		if id, part, ok := viewID(ev.Target); ok && c.V.Find(id) != nil {
-			r.host.focus = id
+			r.host.focus = r.focusOn(id)
 			if part != "" {
 				r.host.focus = partID(id, part)
 			}

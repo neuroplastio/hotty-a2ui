@@ -1305,6 +1305,38 @@ func TestTreeScrollsOnHost(t *testing.T) {
 	x.check(r)
 }
 
+// A press on a HottyTree's box gives the host's focus to the box, not to a
+// node, which takes none from a click (SPEC §10.1), and the kit takes it as
+// it is: the host's focus does not go to the selected node, which would
+// scroll the box under the pointer before the release, and the click land
+// on another node. The node the click then selects has the host's focus.
+func TestTreeClickKeepsItsPlace(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"sel":"e"}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyTree","catalogId":"`+hottycat.ID+`","selected":{"@path":"/sel"},"height":2,
+  "items":[{"label":"a","value":"a"},{"label":"b","value":"b"},{"label":"c","value":"c"},{"label":"d","value":"d"},{"label":"e","value":"e"}]}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	node := func(i int) string { return partID("root", partNode+strconv.Itoa(i)) }
+	must(t, x.h.Emit(r.name, hotty.EventFocus, "root", nil))
+	x.pump()
+	if !r.C.St.Keyboard || r.C.St.Focus != "root" {
+		t.Fatalf("the box's focus: keyboard %v on %q", r.C.St.Keyboard, r.C.St.Focus)
+	}
+	if got := s.Focused(); got == node(4) {
+		t.Errorf("the box's focus moved the host's to the selected node")
+	}
+	must(t, x.h.Click(r.name, node(1)))
+	x.pump()
+	if got := r.C.S.Data.Value("/sel"); got != "b" || s.Focused() != node(1) {
+		t.Errorf("the click selected %v, the host's focus on %q", got, s.Focused())
+	}
+	x.check(r)
+}
+
 // A HottySwitch on a host is one button, role=switch, holding its pill and
 // its label: a click on either, Space and Enter flip it, by one attribute's
 // delta, and Enter on it in a HottyForm does not submit. A disabled one is
