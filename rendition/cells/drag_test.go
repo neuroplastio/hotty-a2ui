@@ -258,6 +258,54 @@ func TestDragKanban(t *testing.T) {
 	}
 }
 
+// A column holding a List whose cards move takes them anywhere in it
+// (view.Controller.DropTarget): under its last card, a card lands after
+// it, and over its heading before its first. An emptied List keeps a row,
+// so the line shows where a card would land, and takes one as its first.
+func TestDragKanbanColumn(t *testing.T) {
+	r, c, _ := dragging(t, "hotty/drag-kanban", 72)
+	r.Draw(72)
+	bottom := func(id string) (int, int) {
+		x, y, _, h, _ := r.Box(id)
+		return x + 1, y + h - 1
+	}
+	x, y, _, _, _ := r.Box("card[/board/doing/0]")
+	must(t, r.Click(x+1, y))
+	bx, by := bottom("done_c")
+	must(t, r.Drag(bx, by))
+	must(t, r.Release())
+	if got := order(c, "/board/done"); got != "c5 c4" {
+		t.Errorf("done, under its last card: %s", got)
+	}
+	f := r.Draw(72)
+	t.Logf("Doing emptied:\n%s", f.Plain())
+	if _, _, _, h, ok := r.Box("doing"); !ok || h != 1 {
+		t.Fatalf("the emptied List's box: %d rows, %v", h, ok)
+	}
+	x, y, _, _, _ = r.Box("card[/board/todo/0]")
+	must(t, r.Click(x+1, y))
+	bx, by = bottom("doing_c")
+	must(t, r.Drag(bx, by))
+	f = r.Draw(72)
+	t.Logf("over the emptied column:\n%s", marks(f))
+	if d := c.St.Drag; d == nil || d.Target != "doing" || d.At != -1 {
+		t.Fatalf("over the emptied column: %+v", d)
+	}
+	must(t, r.Release())
+	if got := order(c, "/board/doing"); got != "c1" {
+		t.Errorf("doing: %s", got)
+	}
+	r.Draw(72)
+	x, y, _, _, _ = r.Box("card[/board/todo/0]")
+	hx, hy, _, _, _ := r.Box("doing_h")
+	must(t, r.Click(x+1, y))
+	must(t, r.Drag(hx+1, hy))
+	must(t, r.Release())
+	if got := order(c, "/board/doing"); got != "c2 c1" {
+		t.Errorf("doing, over its heading: %s", got)
+	}
+}
+
 // Where the terminal says how far down its cell the pointer is (DragAt),
 // a row's top half is before it and its bottom half after it; a node that
 // takes children has thirds, its middle one into it. After an open

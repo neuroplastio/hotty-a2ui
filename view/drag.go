@@ -139,6 +139,13 @@ func (c *Controller) CancelDrag() {
 // child's index; else child is "" and item -1, and a rendition finds a
 // HottyList's, HottyTable's or HottyTree's item itself. target is "" when
 // nothing takes the drag there.
+//
+// Where nothing there takes it, a list whose items would move there takes
+// it from the nearest container around id that holds it (ListOf): a board's
+// column, with its heading and the room under its cards, is that list's
+// drop zone, and an emptied list keeps one (the maintainer, 2026-10-15).
+// item is then the list's count: past its last item, after which Over has
+// it land.
 func (c *Controller) DropTarget(id string) (target, child string, item int) {
 	d := c.St.Drag
 	e := c.V.Find(id)
@@ -156,7 +163,33 @@ func (c *Controller) DropTarget(id string) (target, child string, item int) {
 		}
 		return t.ID, "", -1
 	}
+	for k := len(path) - 1; k >= 0; k-- {
+		if l := ListOf(path[k]); l != nil {
+			if move, _ := c.takes(l, d); move {
+				return l.ID, "", c.count(l)
+			}
+		}
+	}
 	return "", "", -1
+}
+
+// ListOf is the list whose items move that a Stack holds as its only such
+// child, which takes a drag from anywhere in the Stack (DropTarget); nil
+// for any other element.
+func ListOf(e *Element) *Element {
+	if e == nil || e.Kind != Stack {
+		return nil
+	}
+	var l *Element
+	for _, k := range e.Children {
+		if moves(k) {
+			if l != nil {
+				return nil
+			}
+			l = k
+		}
+	}
+	return l
 }
 
 // takes reports whether an element would take a drag: as a move of its
@@ -209,6 +242,10 @@ func (c *Controller) Over(id string, item int, frac float64) {
 func (c *Controller) overMove(d *Drag, t *Element, item int, frac float64) {
 	same := t.ID == d.Source
 	n := c.count(t)
+	if item >= n && n > 0 {
+		// Past its last item (a list's container, DropTarget): after it.
+		item, frac = n-1, 1
+	}
 	if item < 0 || item >= n {
 		if n > 0 {
 			return

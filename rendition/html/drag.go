@@ -131,7 +131,8 @@ func (r *Rendition) over(ev hotty.Event) {
 	frac := -1.0
 	switch {
 	case e != nil && rows(e):
-		item = -1
+		// Over the list's own box, its item the host names; over its
+		// container, past its last (DropTarget's item; -1 elsewhere).
 		if e.ID == vid {
 			item = itemOf(e, part)
 		}
@@ -237,7 +238,10 @@ func (m *markup) drags(n *node, e *view.Element, item int) {
 			n.set("data-steps", steps)
 		}
 	}
-	if item < 0 && (len(e.Accepts) > 0 || e.Movable && (rows(e) || e.Kind == view.Stack)) {
+	if item < 0 && (len(e.Accepts) > 0 || e.Movable && (rows(e) || e.Kind == view.Stack) || view.ListOf(e) != nil) {
+		// A container of a list whose items move takes its drags too
+		// (view.Controller.DropTarget): the host names it where the
+		// pointer is over its heading or the room under the list.
 		opt(n, "drop")
 	}
 	d := m.drag

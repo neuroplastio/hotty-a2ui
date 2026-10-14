@@ -280,6 +280,41 @@ func TestDragKanbanOnHost(t *testing.T) {
 	x.check()
 }
 
+// On a host that names drop targets (caps drop), a column holding a List
+// whose cards move takes them anywhere in it (view.Controller.DropTarget):
+// over its heading, a card lands after the List's last; an emptied
+// column's List takes one as its first.
+func TestDragKanbanColumnOnHost(t *testing.T) {
+	x := dragStory(t, "hotty/drag-kanban", dropHost())
+	c := x.r.C
+	if on, _ := x.h.Surface("drag").Attr("doing_c", "data-on"); on != "drop" {
+		t.Fatalf("a column's data-on: %q", on)
+	}
+	card := DOMID("card[/board/doing/0]")
+	x.do(x.h.DragStart("drag", card, 30, 3))
+	x.do(x.h.DragMove(DOMID("todo_h"), 4, 1))
+	if got := x.classes(DOMID("card[/board/todo/2]")); !slices.Contains(got, "k-drop-after") {
+		t.Errorf("over To do's heading, the classes of its last card: %v", got)
+	}
+	x.do(x.h.DragEnd(DOMID("todo_h"), 4, 1))
+	if got := ids(c, "/board/todo"); got != "c1 c2 c3 c4" {
+		t.Errorf("todo: %s", got)
+	}
+	if got := ids(c, "/board/doing"); got != "" {
+		t.Fatalf("doing: %s", got)
+	}
+	x.do(x.h.DragStart("drag", DOMID("card[/board/todo/0]"), 4, 3))
+	x.do(x.h.DragMove(DOMID("doing_c"), 30, 8))
+	if got := x.classes("doing"); !slices.Contains(got, "k-drop-on") {
+		t.Errorf("over the emptied column, its List's classes: %v", got)
+	}
+	x.do(x.h.DragEnd(DOMID("doing_c"), 30, 8))
+	if got := ids(c, "/board/doing"); got != "c1" {
+		t.Errorf("doing: %s", got)
+	}
+	x.check()
+}
+
 // check is that the deltas the host had made the document a new one
 // would be.
 func (x *onHost) check() {

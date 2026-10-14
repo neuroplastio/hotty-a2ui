@@ -337,6 +337,12 @@ func (l *layout) measureHeight(e *view.Element, w int) int {
 	switch e.Kind {
 	case view.Stack:
 		kids := shown(e.Children)
+		if len(kids) == 0 && e.Movable {
+			// An empty List whose items move keeps a row, as a page keeps
+			// it a card's height, so that a drag has somewhere to land and
+			// its line shows.
+			return 1
+		}
 		if e.Dir != view.Horizontal {
 			return l.columnHeight(kids, e.Align, w)
 		}

@@ -1949,6 +1949,15 @@ as above; Lists with the same `type` take each other's items, a kanban's
 columns. Alt+ArrowUp and Alt+ArrowDown move the item the keyboard is in,
 a card's Button, and the keyboard goes with it.
 
+**A list's column.** Where nothing under the pointer takes a drag, the
+nearest container that holds one list whose items would move, and no
+other, takes it for that list: a kanban's column, its heading and the
+room under its cards. Over the room under the cards, an item lands after
+the last; over the heading, after the last on a host and before the
+first in cells, nearest it. An emptied list keeps a card's height on a
+host and a row in cells, so its column still takes a drop
+(the maintainer, 2026-10-15).
+
 **Drag sources and drop targets.** Any component:
 - `io_neuroplast_hotty.drag`, `{"type": "ticket", "value": {"@path":
   "id"}}`, makes it a drag source carrying `value`, resolved in its scope.
@@ -1969,7 +1978,8 @@ which the elements give the program (§2), and drags (SPEC.md §9.1):
 - What takes a drag has `drop` in its `data-on`, so the host names it as
   the pointer crosses it, though a press there drags nothing and its
   text stays selectable (SPEC.md §9.1): the box of a list whose items
-  move, a drop target, and each item that moves. An item has
+  move, the container of one (a list's column, above), a drop target,
+  and each item that moves. An item has
   `data-steps` too: its halves (`"0 1"`, `"1"` in a Row), or a HottyTree's
   node that takes children its before, into and after (`"0 2"`). The
   host says which the pointer is in (`tx`, `ty`), and the item lands as
