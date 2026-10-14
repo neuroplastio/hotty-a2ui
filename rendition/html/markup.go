@@ -624,7 +624,8 @@ func stackClass(e *view.Element) string {
 		c = append(c, "k-a-"+e.Align)
 	}
 	if e.Scroll {
-		c = append(c, "k-scroll")
+		// Not k-scroll, a HottyScrollView's box: a List only overflows.
+		c = append(c, "k-overflow")
 	}
 	if e.Dir == view.Horizontal && wraps(e) {
 		c = append(c, "k-wrap")

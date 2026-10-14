@@ -397,14 +397,38 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 	// Before a child's natural width is asked for, which its run's labels
 	// widen.
 	l.labelRuns(kids)
+	hs := make([]int, len(kids))
 	h := 0
 	for i, k := range kids {
-		h += l.height(k, l.columnWidth(k, align, w)) + separator(kids, i)
+		hs[i] = l.height(k, l.columnWidth(k, align, w))
+		h += hs[i]
+	}
+	for _, s := range separators(kids, hs) {
+		h += s
 	}
 	return h
 }
 
-// separator is the blank rows a Column puts before its child i: none
+// separators are the blank rows a Column puts before each of its
+// children, as tall as hs (separator): none before one that draws no
+// rows, such as an empty List, so that nothing is set apart from nothing,
+// and one that follows such a child is set apart from the child before.
+func separators(kids []*view.Element, hs []int) []int {
+	out := make([]int, len(kids))
+	prev := -1
+	for i, k := range kids {
+		if hs[i] == 0 {
+			continue
+		}
+		if prev >= 0 {
+			out[i] = separator(kids[prev], k)
+		}
+		prev = i
+	}
+	return out
+}
+
+// separator is the blank rows a Column puts between two children: none
 // between two fields, which their underlines part as a GUI form's
 // outlines do; one between a field and another control, as bubbles sets a
 // form's button apart, and between two other controls when either has a
@@ -418,11 +442,8 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 // a Button (or a Row of them) after a Text, as huh sets a question's
 // buttons apart (the maintainer, round 7); else none, so that a stack of
 // Buttons or of HottySpinners stays tight.
-func separator(kids []*view.Element, i int) int {
-	if i == 0 {
-		return 0
-	}
-	a, b := edge(kids[i-1], false), edge(kids[i], true)
+func separator(before, e *view.Element) int {
+	a, b := edge(before, false), edge(e, true)
 	if b.Kind == view.KeyHints || a.Kind == view.ScrollView || a.Kind == view.Listing || a.Kind == view.DiffView || a.Kind == view.Chart ||
 		a.Kind == view.Paginator || a.Kind == view.BigText && a.Label != "" {
 		return 1

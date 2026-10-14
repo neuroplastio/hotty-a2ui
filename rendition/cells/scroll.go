@@ -40,7 +40,9 @@ func scrollChild(e *view.Element) *view.Element {
 }
 
 // scrollLines are a HottyScrollView's lines as rows w columns wide: a row a
-// line, or with Wrap as many as each takes, cut between clusters.
+// line, or with Wrap as many as each takes, broken at spaces as a Text's
+// are (wrap), and a word longer than a row where the row ends, as the
+// HTML's pre-wrap and overflow-wrap break them.
 func scrollLines(e *view.Element, w int) [][]glyph {
 	rows := make([][]glyph, 0, len(e.Lines))
 	for _, s := range e.Lines {
@@ -49,16 +51,7 @@ func scrollLines(e *view.Element, w int) [][]glyph {
 			rows = append(rows, gs)
 			continue
 		}
-		for {
-			n, i := 0, 0
-			for ; i < len(gs) && n+gs[i].width <= max(w, 1); i++ {
-				n += gs[i].width
-			}
-			rows = append(rows, gs[:i])
-			if gs = gs[i:]; len(gs) == 0 {
-				break
-			}
-		}
+		rows = append(rows, wrap(gs, max(w, 1), nil, nil)...)
 	}
 	return rows
 }

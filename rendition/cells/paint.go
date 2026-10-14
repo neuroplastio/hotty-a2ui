@@ -324,12 +324,16 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 		ws[i] = l.columnWidth(k, align, w)
 		hs[i] = l.height(k, ws[i])
 		weights[i] = k.Weight
-		sum += hs[i] + separator(kids, i)
+		sum += hs[i]
+	}
+	seps := separators(kids, hs)
+	for _, s := range seps {
+		sum += s
 	}
 	gaps := l.spread(hs, weights, justify, h-sum)
 	yy := y
 	for i, k := range kids {
-		yy += gaps[i] + separator(kids, i)
+		yy += gaps[i] + seps[i]
 		dx := l.indent(k)
 		switch align {
 		case "center":

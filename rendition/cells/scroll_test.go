@@ -144,8 +144,9 @@ func TestScrollFollows(t *testing.T) {
 }
 
 // Lines that do not wrap are cut at the box, and ← and → scroll them six
-// columns; lines that wrap take the rows they need, and do not scroll
-// sideways.
+// columns; lines that wrap take the rows they need, broken between words
+// as the HTML's are and a word longer than a row where it ends, and do
+// not scroll sideways.
 func TestScrollSideways(t *testing.T) {
 	long := `["0123456789abcdefghijklmnopqrstuvwxyz","x"]`
 	r, c, _ := scrolling(t, `"lines":{"@path":"/log"},"height":2`, long)
@@ -180,6 +181,10 @@ func TestScrollSideways(t *testing.T) {
 	}
 	if ok, _ := r.Key("l"); ok {
 		t.Error("l scrolls lines that wrap")
+	}
+	r, _, _ = scrolling(t, `"lines":{"@path":"/log"},"height":2,"wrap":true`, `["a log line of words that wraps"]`)
+	if got := r.Draw(21).Plain(); got != " a log line of\n words that wraps" {
+		t.Errorf("words wrapped:\n%s", got)
 	}
 }
 
@@ -251,20 +256,29 @@ func must(t *testing.T, err error) {
 
 // A Column sets a blank row after a scroll view, whose box draws no edge
 // but its scrollbar, so that what follows does not read as its content;
-// its title above it stays on the row before it.
+// its title above it stays on the row before it. Something that draws no
+// rows, an empty List, is not set apart (plexos DIALOG-FIT-01): after the
+// log it adds no row, and what follows it is set apart from the log.
 func TestScrollSetApart(t *testing.T) {
-	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
-	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
-	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
-	 {"id":"root","component":"Column","children":["title","log","after"]},
-	 {"id":"title","component":"Text","text":"Log"},
-	 {"id":"log","component":"HottyScrollView","catalogId":"` + hotty.ID + `","lines":["one"],"height":1},
-	 {"id":"after","component":"Text","text":"After"}]}}]`
-	if err := p.ProcessJSON([]byte(msgs)); err != nil {
-		t.Fatal(err)
-	}
-	if got := New(view.NewController(p.Surface("s"))).Draw(20).Plain(); got != "Log\n one\n\nAfter" {
-		t.Errorf("got %q", got)
+	for _, tc := range []struct{ kids, want string }{
+		{`"title","log","after"`, "Log\n one\n\nAfter"},
+		{`"title","log","empty"`, "Log\n one"},
+		{`"title","log","empty","after"`, "Log\n one\n\nAfter"},
+	} {
+		p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+		msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+		{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+		 {"id":"root","component":"Column","children":[` + tc.kids + `]},
+		 {"id":"title","component":"Text","text":"Log"},
+		 {"id":"log","component":"HottyScrollView","catalogId":"` + hotty.ID + `","lines":["one"],"height":1},
+		 {"id":"empty","component":"List","children":[]},
+		 {"id":"after","component":"Text","text":"After"}]}}]`
+		if err := p.ProcessJSON([]byte(msgs)); err != nil {
+			t.Fatal(err)
+		}
+		if got := New(view.NewController(p.Surface("s"))).Draw(20).Plain(); got != tc.want {
+			t.Errorf("%s: got %q, want %q", tc.kids, got, tc.want)
+		}
 	}
 }
 

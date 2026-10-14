@@ -76,7 +76,7 @@
 /* A child a column does not stretch is still no wider than the column
    (Blitz gives it its max-content width otherwise), so its text wraps. */
 .k-col > * { max-width: 100%; box-sizing: border-box; }
-.k-scroll { overflow: auto; }
+.k-overflow { overflow: auto; }
 .k-wrap { flex-wrap: wrap; row-gap: var(--k-2); }
 .k-j-start { justify-content: flex-start; }
 .k-j-center { justify-content: center; }
@@ -753,7 +753,7 @@ textarea.k-resize-none { resize: none; }
 .k-drop-on { outline: 2px solid var(--k-accent); outline-offset: 2px; }
 /* A list's box takes it inside, past the outline: none a box that
    scrolls has. */
-.k-drop-on:is(.k-scroll, .k-scrolls, .k-rich, .k-table, .k-tree) { outline: 2px solid var(--k-accent); outline-offset: -2px; }
+.k-drop-on:is(.k-scroll, .k-scrolls, .k-overflow, .k-rich, .k-table, .k-tree) { outline: 2px solid var(--k-accent); outline-offset: -2px; }
 /* An empty List whose items move keeps a card's height, so that a drag
    has somewhere to land in it (drop, SPEC §9.1). */
 .k-stack[data-on~=drop]:empty { min-height: 2.5rem; }

@@ -1486,14 +1486,16 @@ func TestKeyHintsOnHost(t *testing.T) {
 // TestScrollViewOnHost: a HottyScrollView is a focusable box as many
 // rows tall as its height, which the host scrolls; its lines are a row
 // each, a log's a role=log, and a line that arrives is appended, not the
-// whole box sent again.
+// whole box sent again. A List, which scrolls too, is no such box.
 func TestScrollViewOnHost(t *testing.T) {
 	x := newHarness(t)
 	var msgs []any
 	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"log":["one","","three"]}}},
 {"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
- {"id":"root","component":"Column","children":["log","doc"]},
+ {"id":"root","component":"Column","children":["log","doc","items"]},
  {"id":"log","component":"HottyScrollView","catalogId":"`+hottycat.ID+`","lines":{"@path":"/log"},"height":4,"follow":true},
+ {"id":"items","component":"List","children":["item"]},
+ {"id":"item","component":"Text","text":"An item"},
  {"id":"doc","component":"HottyScrollView","catalogId":"`+hottycat.ID+`","child":"text","wrap":true},
  {"id":"text","component":"Text","text":"A document"}]}}]`), &msgs))
 	x.process(msgs...)
@@ -1507,6 +1509,9 @@ func TestScrollViewOnHost(t *testing.T) {
 	}
 	if role, ok := s.Attr("doc", "role"); ok {
 		t.Errorf("a document is a %q", role)
+	}
+	if class, _ := s.Attr("items", "class"); !strings.Contains(class, "k-overflow") || strings.Contains(class, "k-scroll") {
+		t.Errorf("a List's class is %q, want k-overflow and no scroll view's box", class)
 	}
 	// bubbles' letters scroll the box on a host (SPEC §10.2, Scrolling
 	// keys): each binding one a host keeps, h and l only where lines are
