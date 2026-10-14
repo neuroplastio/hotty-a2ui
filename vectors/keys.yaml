@@ -316,10 +316,9 @@
     - type: "<"
     - expect: {focused: t, data: {/t: "x <y"}}
 
-- name: macOS's Command keys, as Meta, go to the line's ends, delete to its start and select all, with Shift selecting (cells only, as hottytest reads every keymap as Control's)
+- name: macOS's Command keys, as Meta, go to the line's ends, delete to its start and select all, with Shift selecting
   keys: ""
   mod: Meta
-  renditions: [cells]
   messages: *field
   steps:
     - focus: t
