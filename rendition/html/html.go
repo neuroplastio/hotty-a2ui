@@ -59,12 +59,10 @@ type Rendition struct {
 	keys string
 	// fit: the program sizes the surface to its document (SetFit).
 	fit bool
-	// steps: the host says where in a dragged element the pointer is
-	// (SetSteps). drag is the Slider whose track such a drag is on, or the
-	// HottyRangeSlider a drag is on (with steps or not), knob the knob it
-	// moves (-1 until its first move picks one), and dragged the one whose
-	// drag just ended: the click after it is the drag's.
-	steps         bool
+	// drag is the Slider whose track a drag is on, or the HottyRangeSlider
+	// a drag is on, knob the knob it moves (-1 until its first move picks
+	// one), and dragged the one whose drag just ended: the click after it
+	// is the drag's.
 	drag, dragged string
 	knob          int
 	// pressed: a drag just started on a HottyRangeSlider's track, which
@@ -133,7 +131,7 @@ func (r *Rendition) markup() *markup {
 	timers := r.C.TickTimers(at)
 	toasts := r.C.TickToasts(at, r.heldToast)
 	short, full := r.C.KeyHints(r.keys, true)
-	m := &markup{list: r.openList(), now: at, short: short, full: full, steps: r.steps,
+	m := &markup{list: r.openList(), now: at, short: short, full: full,
 		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover), drag: r.C.St.Drag}
 	m.animate(toasts)
 	m.animate(timers)
@@ -160,13 +158,6 @@ func (r *Rendition) SetKeys(keys string) { r.keys = keys }
 // is then as tall as its content, where it otherwise fills the surface,
 // which would hold the fit at the surface's height.
 func (r *Rendition) SetFit(fit bool) { r.fit = fit }
-
-// SetSteps says, from the next Doc or Update on, whether the host says
-// where in a dragged element the pointer is (SPEC §9.1's steps, `steps` in
-// its capabilities). A Slider's track is then one element that a drag
-// moves wherever the pointer goes, its notches only for taps; without
-// steps, each notch is a drag target, and a drag off them stops.
-func (r *Rendition) SetSteps(steps bool) { r.steps = steps }
 
 // Name is the HOTTY surface's name.
 func (r *Rendition) Name() string { return r.name }
@@ -196,13 +187,21 @@ func (r *Rendition) Update() []string {
 	r.anim = m.anim
 	r.holdEdit(main)
 	r.resend()
-	out := diff(r.name, r.sent[0], main, nil)
-	out = diff(r.name, r.sent[1], layer, out)
-	out = diff(r.name, r.sent[2], ts, out)
+	// The surface's changes go as one delta, which the host applies as one
+	// (SDK §2.9).
+	var out []string
+	ops := diff(r.sent[0], main, nil)
+	ops = diff(r.sent[1], layer, ops)
+	ops = diff(r.sent[2], ts, ops)
+	if len(ops) > 0 {
+		out = append(out, hotty.Delta(r.name, ops))
+	}
 	r.sent = []*node{main, layer, ts}
 	if r.pop != nil {
 		if n := popover(r.C.V, r.theme, r.openList()); n != nil {
-			out = diff(r.PopoverName(), r.pop, n, out)
+			if ops := diff(r.pop, n, nil); len(ops) > 0 {
+				out = append(out, hotty.Delta(r.PopoverName(), ops))
+			}
 			r.pop = n
 		} else {
 			r.pop = nil
@@ -446,12 +445,11 @@ func (r *Rendition) Event(ev hotty.Event) error {
 	return nil
 }
 
-// slideSteps takes a drag of a Slider's track on a host with steps (SPEC
-// §9.1): dragstart names the track, and from then on x is the step under
-// the pointer along it, wherever the pointer is and whatever t says, until
-// dragend. The click a drag ends with, on the notch it was released on,
-// is the drag's, which set the value already. done reports that ev was
-// one of these.
+// slideSteps takes a drag of a Slider's track (SPEC §9.1): dragstart
+// names the track, and from then on x is the step under the pointer along
+// it, wherever the pointer is and whatever t says, until dragend. The
+// click a drag ends with, on the notch it was released on, is the drag's,
+// which set the value already. done reports that ev was one of these.
 func (r *Rendition) slideSteps(ev hotty.Event) (done bool, err error) {
 	dragged := r.dragged
 	r.dragged = ""

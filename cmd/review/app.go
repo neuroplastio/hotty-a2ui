@@ -199,8 +199,6 @@ func (a *app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		a.w, a.h = msg.Width, msg.Height
-	case hottytea.ReadyMsg:
-		a.r.SetSteps(msg.Caps.Steps)
 	case hottytea.EventMsg:
 		if msg.Surface == surfaceID {
 			a.fail(a.r.Event(msg.Event))

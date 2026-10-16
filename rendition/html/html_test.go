@@ -155,7 +155,7 @@ func (x *harness) check(r *Rendition) {
 	x.t.Helper()
 	got := x.h.Surface(r.name).HTML()
 	h2 := hottytest.New(x.t)
-	_, _ = io.WriteString(h2, hotty.Doc(r.name, (&Rendition{C: r.C, name: r.name, keys: r.keys, fit: r.fit, steps: r.steps, Clock: r.Clock}).Doc()))
+	_, _ = io.WriteString(h2, hotty.Doc(r.name, (&Rendition{C: r.C, name: r.name, keys: r.keys, fit: r.fit, Clock: r.Clock}).Doc()))
 	if want := h2.Surface(r.name).HTML(); got != want {
 		x.t.Errorf("%s: the deltas made\n%s\nthe document is\n%s", r.name, got, want)
 	}
@@ -511,10 +511,9 @@ func TestResend(t *testing.T) {
 	must(t, x.p.Process(set))
 	r.C.Rebuild()
 	cmds := r.Update()
-	for _, id := range []string{"f", "notes"} {
-		if !slices.Contains(cmds, hotty.SetAttr(r.name, id, "value", "")) {
-			t.Errorf("no value for %s in %q", id, cmds)
-		}
+	// Both fields in one delta, which the host applies as one.
+	if want := hotty.Delta(r.name, []hotty.Op{hotty.OpAttr("f", "value", ""), hotty.OpAttr("notes", "value", "")}); !slices.Contains(cmds, want) {
+		t.Errorf("no value for f and notes in %q", cmds)
 	}
 	x.send(cmds...)
 	for _, id := range []string{"f", "notes"} {
@@ -525,16 +524,14 @@ func TestResend(t *testing.T) {
 	x.check(r)
 }
 
-// TestSliderSteps: on a host with steps (SPEC §9.1) a Slider's track is
+// TestSliderSteps: a Slider's track (SPEC §9.1) is
 // the drag target, its notches' count less one as data-steps, and the
 // notches, each centred on its value, take taps alone. A drag sets the
 // value of the step under the pointer wherever the pointer goes: off the
 // track, where t is empty, or over another element. The click a drag ends
 // with is the drag's; a tap after it sets the value tapped.
 func TestSliderSteps(t *testing.T) {
-	caps := hottytest.DefaultCaps()
-	caps.Steps = true
-	x := newHarness(t, hottytest.Caps(caps))
+	x := newHarness(t)
 	var msgs []any
 	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"v":3}}},
 {"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
@@ -544,8 +541,6 @@ func TestSliderSteps(t *testing.T) {
 	}
 	x.process(msgs...)
 	r := x.rs["s"]
-	r.SetSteps(true)
-	x.send(hotty.Doc(r.name, r.Doc()))
 	s := x.h.Surface(r.name)
 	for _, a := range []struct{ id, attr, want string }{
 		{"v", "data-on", "drag"},
@@ -560,7 +555,7 @@ func TestSliderSteps(t *testing.T) {
 		}
 	}
 	// The host lays nothing out: the test says which step the pointer is
-	// at, as a host with steps measures it along the track.
+	// at, as a host measures it along the track.
 	for _, step := range []struct {
 		what string
 		do   func() error
@@ -899,9 +894,10 @@ func TestSliderAndDate(t *testing.T) {
 	x.check(r)
 
 	// A drag: pressed on a notch near the start, moved across the track
-	// to its last notch, past its end (nothing under the pointer), and let
-	// go there. 0..10 has 21 notches (a twentieth, 0.5, each).
-	if err := x.h.DragStart(r.name, partID("v", "k2"), 4, 2); err != nil {
+	// to its last step, past its end (nothing under the pointer), and let
+	// go there. 0..10 has 21 notches (a twentieth, 0.5, each), the steps
+	// of the track.
+	if err := x.h.DragStartStep(r.name, partID("v", "k2"), 4, 2, 2, 0); err != nil {
 		t.Fatal(err)
 	}
 	x.pump()
@@ -910,9 +906,10 @@ func TestSliderAndDate(t *testing.T) {
 	}
 	for _, step := range []struct {
 		id   string
+		x    int
 		want float64
-	}{{partID("v", "k9"), 4.5}, {partID("v", "k20"), 10}, {"", 10}} {
-		if err := x.h.DragMove(step.id, 30, 2); err != nil {
+	}{{partID("v", "k9"), 9, 4.5}, {partID("v", "k20"), 20, 10}, {"", 20, 10}} {
+		if err := x.h.DragMoveStep(step.id, 30, 2, step.x, 0); err != nil {
 			t.Fatal(err)
 		}
 		x.pump()
@@ -920,7 +917,7 @@ func TestSliderAndDate(t *testing.T) {
 			t.Errorf("dragged onto %q: %v, want %v", step.id, got, step.want)
 		}
 	}
-	if err := x.h.DragEnd("", 40, 2); err != nil {
+	if err := x.h.DragEndStep("", 40, 2, 20, 0); err != nil {
 		t.Fatal(err)
 	}
 	x.pump()
@@ -1038,7 +1035,7 @@ func TestProgressAndSpinnerMove(t *testing.T) {
 		}
 		x.now = time.Unix(0, at.tick*int64(view.ProgressInterval))
 		d := r.Update()
-		want := []string{hotty.SetAttr(r.name, "i", "style", "--k-at: "+at.left), hotty.SetText(r.name, frame, at.frame)}
+		want := []string{hotty.Delta(r.name, []hotty.Op{hotty.OpAttr("i", "style", "--k-at: "+at.left), hotty.OpText(frame, at.frame)})}
 		if strings.Join(d, "") != strings.Join(want, "") {
 			t.Errorf("tick %d: deltas %q, want %q", at.tick, d, want)
 		}
@@ -1389,8 +1386,8 @@ func TestSwitchOnHost(t *testing.T) {
 		t.Errorf("Enter on a switch in a HottyForm submitted it: %+v", x.actions)
 	}
 	must(t, r.C.Activate("push"))
-	if d := r.Update(); len(d) != 1 || !strings.Contains(d[0], "aria-checked") {
-		t.Errorf("a flip is %d deltas: %q", len(d), d)
+	if d := r.Update(); !slices.Equal(d, []string{hotty.Delta(r.name, []hotty.Op{hotty.OpAttr("push", "aria-checked", "true")})}) {
+		t.Errorf("a flip is %q", d)
 	} else {
 		x.send(d...)
 	}
@@ -1571,9 +1568,13 @@ func TestScrollViewOnHost(t *testing.T) {
 	x.check(r)
 	var ops []string
 	for _, m := range x.h.Commands()[before:] {
-		ops = append(ops, hotty.Get(m.Control, "op"))
+		list, err := hotty.DeltaOf(m)
+		must(t, err)
+		for _, op := range list {
+			ops = append(ops, op.Op)
+		}
 	}
-	if !slices.Equal(ops, []string{string(hotty.OpAppend)}) {
+	if !slices.Equal(ops, []string{"append"}) {
 		t.Errorf("a line arrived as %q", ops)
 	}
 	if !strings.Contains(s.TextOf("log"), "four") {

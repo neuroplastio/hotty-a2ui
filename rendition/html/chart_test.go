@@ -56,8 +56,8 @@ func TestChartOnHost(t *testing.T) {
 	before := x.deltas
 	x.process(set...)
 	x.check(r)
-	if n := x.deltas - before; n != 2 {
-		t.Errorf("a new point in a window made %d deltas, want the two lines' d", n)
+	if n := x.deltas - before; n != 1 {
+		t.Errorf("a new point in a window made %d deltas, want one for the two lines' d", n)
 	}
 	if got, _ := s.Attr(path("0"), "d"); got != "M0,60L160,40L320,20L480,40" {
 		t.Errorf("after a new point, the line is %q", got)

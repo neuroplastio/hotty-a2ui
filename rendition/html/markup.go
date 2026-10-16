@@ -21,9 +21,6 @@ import (
 // its label and its error, which have ids of their own so that a change
 // to them is a small delta.
 type markup struct {
-	// steps: the host says where in a dragged element the pointer is
-	// (Rendition.SetSteps).
-	steps bool
 	// forms is how many forms enclose the element: HTML cannot nest them,
 	// so an inner Form is a group, and Enter submits the outer one.
 	forms int
@@ -390,21 +387,13 @@ func (m *markup) element(e *view.Element) *node {
 		// where the knob stands at that value (half one at either end), so
 		// that a tap sets the value tapped: a tap is a click, which says
 		// what was tapped and not where on it. A drag of the track says
-		// where on it the pointer is on a host with steps (SPEC §9.1): the
-		// track is then the drag target, data-steps its notches' count
-		// less one, and a drag moves it wherever the pointer goes. Without
-		// steps a drag reports only the element under the pointer, so each
-		// notch is a drag target too: pressing one sets its value, crossing
-		// them moves it, and off them it stops. A finger drags along the
-		// track, whose touch-action (kit.css) leaves only vertical pans.
-		k := notches(e)
-		notch := "drag click"
-		if m.steps {
-			n.set("data-on", "drag")
-			n.set("data-steps", strconv.Itoa(k-1))
-			notch = "click"
-		}
-		n.add(notchSpans(e, notch)...)
+		// where on it the pointer is (SPEC §9.1): the track is the drag
+		// target, data-steps its notches' count less one, and a drag moves
+		// it wherever the pointer goes. A finger drags along the track,
+		// whose touch-action (kit.css) leaves only vertical pans.
+		n.set("data-on", "drag")
+		n.set("data-steps", strconv.Itoa(notches(e)-1))
+		n.add(notchSpans(e, "click")...)
 		less := el("button", "id", partID(e.ID, partLess), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "less").add(txt("−"))
 		more := el("button", "id", partID(e.ID, partMore), "type", "button", "class", "k-step", "tabindex", "-1", "aria-label", "more").add(txt("+"))
 		out := el("output", "id", partID(e.ID, partOutput), "for", id, "style", "min-width: "+strconv.Itoa(e.SliderWidth())+"ch").add(txt(a2ui.NumberString(f)))

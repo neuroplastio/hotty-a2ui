@@ -345,11 +345,9 @@ const surface = "story"
 
 func newHostPlayer(t *testing.T, c *view.Controller, keys string) *hostPlayer {
 	caps := hottytest.DefaultCaps()
-	caps.Steps = true
 	caps.Mod = c.Platform.Mod
 	p := &hostPlayer{t: t, h: hottytest.New(t, hottytest.Caps(caps)), r: html.New(c, surface)}
 	p.r.SetKeys(keys)
-	p.r.SetSteps(true)
 	p.send(hotty.Doc(surface, p.r.Doc()), hotty.Place(surface, hotty.Placement{Cols: 80, Rows: 24}))
 	p.settle()
 	return p

@@ -44,3 +44,12 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 )
+
+// Local hotty-go 0.3 stands until it is pushed and pinned.
+replace (
+	github.com/neuroplastio/hotty-go => ../../hotty-go/v0.3
+	github.com/neuroplastio/hotty-go/hottyedit => ../../hotty-go/v0.3/hottyedit
+	github.com/neuroplastio/hotty-go/hottytea => ../../hotty-go/v0.3/hottytea
+	github.com/neuroplastio/hotty-go/hottyterm => ../../hotty-go/v0.3/hottyterm
+	github.com/neuroplastio/hotty-go/hottytest => ../../hotty-go/v0.3/hottytest
+)

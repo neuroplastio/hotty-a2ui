@@ -25,12 +25,11 @@ import (
 // data-steps, its halves ("0 1"), or a tree's node that takes children
 // its before, into and after ("0 2"), and the host says which the
 // pointer is in (tx, ty), which the view's halves and thirds take
-// (view.Controller.Over); a host that does not, or a step of no item,
-// leaves the item to take the place of the one it is over, as in cells
-// without pixels. The release drops it there; Escape cancels it (Key). A
-// press that never left its item is a click, which the host sends after
-// dragend; one that lifted and came back to it is not: that click is the
-// drag's.
+// (view.Controller.Over); no step, or a step of no item, leaves the item
+// to take the place of the one it is over, as in cells without pixels.
+// The release drops it there; Escape cancels it (Key). A press that never
+// left its item is a click, which the host sends after dragend; one that
+// lifted and came back to it is not: that click is the drag's.
 
 // press is a drag armed or under way: the DOM id its dragstart named,
 // what it drags (an element's item, as Lift has it), and whether the item

@@ -6,39 +6,39 @@ import (
 	"github.com/neuroplastio/hotty-go"
 )
 
-// diff appends the deltas that make the host's element o into n, in the
-// surface named name (SPEC §6), as small as the ids allow: attr and unattr
-// for attributes, text for an element whose content is one text, a
-// recursion into children that keep their ids and order, append for
-// children added after those, and inner, which morphs the children, for
-// any other change below. o and n have the same id.
-func diff(name string, o, n *node, out []string) []string {
+// diff appends the ops that make the host's element o into n (SPEC §6), as
+// small as the ids allow: attr and unattr for attributes, text for an
+// element whose content is one text, a recursion into children that keep
+// their ids and order, append for children added after those, and inner,
+// which morphs the children, for any other change below. o and n have the
+// same id.
+func diff(o, n *node, out []hotty.Op) []hotty.Op {
 	if o.tag != n.tag || o.id != n.id {
-		return append(out, hotty.MorphTo(name, o.id, n.html()))
+		return append(out, hotty.OpMorph(o.id, n.html()))
 	}
 	for _, a := range o.attrs {
 		if _, ok := n.attr(a.k); !ok {
-			out = append(out, hotty.RemoveAttr(name, n.id, a.k))
+			out = append(out, hotty.OpUnattr(n.id, a.k))
 		}
 	}
 	for _, a := range n.attrs {
 		if v, ok := o.attr(a.k); !ok || v != a.v {
-			out = append(out, hotty.SetAttr(name, n.id, a.k, a.v))
+			out = append(out, hotty.OpAttr(n.id, a.k, a.v))
 		}
 	}
 	switch {
 	case o.raw || n.raw:
 		if o.raw != n.raw || o.text != n.text {
-			out = append(out, inner(name, n))
+			out = append(out, inner(n))
 		}
 	case textOnly(o) && textOnly(n):
 		if textOf(o) != textOf(n) {
-			out = append(out, hotty.SetText(name, n.id, textOf(n)))
+			out = append(out, hotty.OpText(n.id, textOf(n)))
 		}
 	case sameShape(o, n):
 		for i, k := range n.kids {
 			if k.id != "" {
-				out = diff(name, o.kids[i], k, out)
+				out = diff(o.kids[i], k, out)
 			}
 		}
 	case len(n.kids) > len(o.kids) && sameShape(o, &node{kids: n.kids[:len(o.kids)]}) && n.id != "":
@@ -46,22 +46,22 @@ func diff(name string, o, n *node, out []string) []string {
 		// are appended, and the rest is diffed as it is.
 		for i, k := range n.kids[:len(o.kids)] {
 			if k.id != "" {
-				out = diff(name, o.kids[i], k, out)
+				out = diff(o.kids[i], k, out)
 			}
 		}
 		var added strings.Builder
 		for _, k := range n.kids[len(o.kids):] {
 			added.WriteString(k.html())
 		}
-		out = append(out, hotty.Delta(name, hotty.OpAppend, n.id, "", []byte(added.String())))
+		out = append(out, hotty.OpAppend(n.id, added.String()))
 	default:
-		out = append(out, inner(name, n))
+		out = append(out, inner(n))
 	}
 	return out
 }
 
-func inner(name string, n *node) string {
-	return hotty.Delta(name, hotty.OpInner, n.id, "", []byte(n.innerHTML()))
+func inner(n *node) hotty.Op {
+	return hotty.OpInner(n.id, n.innerHTML())
 }
 
 // textOnly: the element holds one text, or nothing.

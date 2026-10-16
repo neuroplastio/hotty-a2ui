@@ -50,7 +50,7 @@ func TestTimer(t *testing.T) {
 	}{
 		{50, nil},
 		{500, []string{hotty.SetText(r.name, lap, "500ms")}},
-		{1000, []string{hotty.SetText(r.name, tea, "1s"), hotty.SetText(r.name, lap, "1s")}},
+		{1000, []string{hotty.Delta(r.name, []hotty.Op{hotty.OpText(tea, "1s"), hotty.OpText(lap, "1s")})}},
 	} {
 		x.now = time.Unix(0, at.ms*int64(time.Millisecond))
 		d := r.Update()

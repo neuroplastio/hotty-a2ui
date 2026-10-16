@@ -5,25 +5,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neuroplastio/hotty-go"
-	"github.com/neuroplastio/hotty-go/hottytest"
-
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	hottycat "github.com/neuroplastio/hotty-a2ui/catalog/hotty"
 )
 
 // rangesOnHost is a Price HottyRangeSlider from 0 to 100 in steps of 5,
 // bound at 20 to 70, a Rating Slider that fills from its end, and a
-// disabled HottyRangeSlider, on a host with steps (SPEC §9.1) or without.
-func rangesOnHost(t *testing.T, steps bool) (*harness, *Rendition) {
+// disabled HottyRangeSlider, on a host.
+func rangesOnHost(t *testing.T) (*harness, *Rendition) {
 	t.Helper()
-	var opts []hottytest.Option
-	if steps {
-		caps := hottytest.DefaultCaps()
-		caps.Steps = true
-		opts = append(opts, hottytest.Caps(caps))
-	}
-	x := newHarness(t, opts...)
+	x := newHarness(t)
 	h := `"catalogId":"` + hottycat.ID + `"`
 	var msgs []any
 	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"lo":20,"hi":70}}},
@@ -35,10 +26,6 @@ func rangesOnHost(t *testing.T, steps bool) (*harness, *Rendition) {
  {"id":"year","component":"HottyRangeSlider",`+h+`,"label":"Year","start":2,"end":4,"max":10,"disabled":true}]}}]`), &msgs))
 	x.process(msgs...)
 	r := x.rs["s"]
-	if steps {
-		r.SetSteps(true)
-		x.send(hotty.Doc(r.name, r.Doc()))
-	}
 	return x, r
 }
 
@@ -48,7 +35,7 @@ func rangesOnHost(t *testing.T, steps bool) (*harness, *Rendition) {
 // with fill "end" fills from its knob to max. A disabled one's knobs are
 // disabled buttons, its notches take nothing, and it is faint throughout.
 func TestRangeSliderMarkup(t *testing.T) {
-	x, r := rangesOnHost(t, false)
+	x, r := rangesOnHost(t)
 	s := x.h.Surface(r.name)
 	k0, k1 := DOMID("price/knob/0"), DOMID("price/knob/1")
 	for _, a := range []struct{ id, attr, want string }{
@@ -60,12 +47,11 @@ func TestRangeSliderMarkup(t *testing.T) {
 		{k0, "aria-valuemax", "70"},
 		{k0, "aria-valuenow", "20"},
 		{k0, "style", "left: 20.00%"},
-		{k0, "data-on", "drag"},
 		{k1, "aria-label", "Price, end"},
 		{k1, "aria-valuemin", "20"},
 		{k1, "aria-valuemax", "100"},
 		{k1, "aria-valuenow", "70"},
-		{partID("price", partNotch+"4"), "data-on", "drag click"},
+		{partID("price", partNotch+"4"), "data-on", "click"},
 		{partID("price", partOutput), "for", k0 + " " + k1},
 		{DOMID("year/knob/0"), "aria-valuenow", "2"},
 	} {
@@ -105,7 +91,7 @@ func TestRangeSliderMarkup(t *testing.T) {
 // knob, which takes the keyboard back from the terminal, where the tap
 // left it.
 func TestRangeSliderKeysOnHost(t *testing.T) {
-	x, r := rangesOnHost(t, false)
+	x, r := rangesOnHost(t)
 	s := x.h.Surface(r.name)
 	data := func(p string) any { return r.C.S.Data.Value(p) }
 	key := func(k string) {
@@ -160,44 +146,14 @@ func TestRangeSliderKeysOnHost(t *testing.T) {
 	x.check(r)
 }
 
-// Without steps, a knob is the drag target, and the notches it crosses say
-// where it goes; the click it ends with on itself moves nothing.
-func TestRangeSliderDragOnHost(t *testing.T) {
-	x, r := rangesOnHost(t, false)
-	s := x.h.Surface(r.name)
-	data := func(p string) any { return r.C.S.Data.Value(p) }
-	must(t, x.h.DragStart(r.name, DOMID("price/knob/1"), 30, 0))
-	x.pump()
-	if r.C.St.Focus != "price/knob/1" || s.Focused() != DOMID("price/knob/1") {
-		t.Errorf("pressed on the end: focus %q, the host's %q", r.C.St.Focus, s.Focused())
-	}
-	must(t, x.h.DragMove(partID("price", partNotch+"18"), 40, 0))
-	x.pump()
-	if data("/hi") != 90.0 {
-		t.Errorf("dragged onto notch 18: %v", data("/hi"))
-	}
-	must(t, x.h.DragMove(partID("price", partNotch+"1"), 10, 0))
-	x.pump()
-	if data("/hi") != 20.0 || data("/lo") != 20.0 {
-		t.Errorf("dragged past the start: %v–%v", data("/lo"), data("/hi"))
-	}
-	must(t, x.h.DragMove(DOMID("price/knob/1"), 12, 0))
-	must(t, x.h.DragEnd(DOMID("price/knob/1"), 12, 0))
-	x.pump()
-	if data("/hi") != 20.0 || x.h.Dragging() {
-		t.Errorf("let go on the knob: %v", data("/hi"))
-	}
-	x.check(r)
-}
-
-// With steps (SPEC §9.1), the track is the drag target: a press moves the
+// The track (SPEC §9.1) is the drag target: a press moves the
 // nearer knob to the step under the pointer and gives it the keyboard,
 // which the host's blur after the press (the track takes no focus) does
 // not take away; each step after moves it. Where the knobs meet, the first
 // move picks the one it goes towards. A tap on a notch moves the nearer
 // knob there.
 func TestRangeSliderStepsOnHost(t *testing.T) {
-	x, r := rangesOnHost(t, true)
+	x, r := rangesOnHost(t)
 	s := x.h.Surface(r.name)
 	data := func(p string) any { return r.C.S.Data.Value(p) }
 	for _, a := range []struct{ id, attr, want string }{
@@ -210,7 +166,7 @@ func TestRangeSliderStepsOnHost(t *testing.T) {
 		}
 	}
 	if on, ok := s.Attr(DOMID("price/knob/0"), "data-on"); ok {
-		t.Errorf("a knob takes %q on a host with steps", on)
+		t.Errorf("a knob takes %q", on)
 	}
 	// The keyboard is on the rating first, so that the press's blur shows.
 	must(t, x.h.Click(r.name, DOMID("rating")))

@@ -50,7 +50,7 @@ func toastHost(t *testing.T) (h *hottytest.Host, r *Rendition, now *time.Time, p
 			}
 		}
 	}
-	send(hotty.Doc("toast", r.Doc()), hotty.Place("toast", hotty.Placement{Cols: 80, Rows: 24, Hover: true}))
+	send(hotty.Doc("toast", r.Doc()), hotty.Place("toast", hotty.Placement{Cols: 80, Rows: 24, Hover: hotty.On}))
 	pump()
 	return h, r, &at, pump
 }

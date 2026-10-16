@@ -417,7 +417,7 @@ func TestTabsAndSidebarOnHost(t *testing.T) {
 	h.Type("\x1b[15~") // F5: About
 	eventually(t, "About over the whole column, the story hidden", func() bool {
 		p, s := h.Surface("sb-panel"), story()
-		return s != nil && !s.Placed() && p.Placement().Rows == 39 && !p.Placement().Fit && strings.Contains(p.Text(), st.Title)
+		return s != nil && !s.Placed() && p.Placement().Rows == 39 && p.Placement().Fit != hotty.On && strings.Contains(p.Text(), st.Title)
 	})
 	for range 4 {
 		h.Type("\x1b[15~") // round to the preview

@@ -103,9 +103,6 @@ type Book struct {
 	// term is what the terminal said of its own colours (TerminalColours),
 	// which cells tint and blend from where the theme leaves a role to it.
 	term theme.Terminal
-	// steps: the host says where in a dragged element the pointer is
-	// (html.Rendition.SetSteps).
-	steps bool
 	// hovers: the host says where the pointer is (SPEC §9.4), which the
 	// Book asks for on the story's surfaces, for their toasts and
 	// tooltips (html.Rendition's hover).
@@ -205,7 +202,7 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	}
 	switch msg := msg.(type) {
 	case hottytea.ReadyMsg:
-		b.steps, b.hovers = msg.Caps.Steps, hotty.Hovers(msg.Caps)
+		b.hovers = hotty.HasFeature(msg.Caps, hotty.FeatureHover)
 		b.caps = msg.Caps
 		b.ready(msg.Mode)
 		b.takeEdit(h)
@@ -1190,7 +1187,6 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			}
 		case asSurface:
 			p.html.SetTheme(b.theme)
-			p.html.SetSteps(b.steps)
 			fits := p == pick || p == panel && preview
 			p.html.SetFit(fits)
 			p.html.Away = b.focus != nil && b.focus != p && b.focus.s == p.s

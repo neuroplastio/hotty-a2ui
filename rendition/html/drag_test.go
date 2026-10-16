@@ -134,7 +134,7 @@ func TestDragOnHost(t *testing.T) {
 	if c.St.Drag != nil {
 		t.Fatalf("lifted on the press: %+v", *c.St.Drag)
 	}
-	x.do(x.h.DragMove(item("list", 2), 4, 5))
+	x.do(x.h.DragOver(item("list", 2), 4, 5, 0, 1)) // its bottom half
 	if d := c.St.Drag; d == nil || d.Target != "list" || d.At != 2 || d.Where != view.After {
 		t.Fatalf("over Water the ferns: %+v, want after it", d)
 	}
@@ -220,7 +220,7 @@ func TestDragTreeAndTableOnHost(t *testing.T) {
 		return partID("tree", partNode+strconv.Itoa(i))
 	}
 	x.do(x.h.DragStart("drag", at("README.md"), 4, 9))
-	x.do(x.h.DragMove(at("archive"), 4, 8))
+	x.do(x.h.DragOver(at("archive"), 4, 8, 0, 1)) // its middle step
 	if d := c.St.Drag; d == nil || d.Target != "tree" || d.Where != view.Into {
 		t.Fatalf("over archive: %+v, want into it", d)
 	}
@@ -280,12 +280,12 @@ func TestDragKanbanOnHost(t *testing.T) {
 	x.check()
 }
 
-// On a host that names drop targets (caps drop), a column holding a List
+// A host names drop targets (SPEC §9.1): a column holding a List
 // whose cards move takes them anywhere in it (view.Controller.DropTarget):
 // over its heading, a card lands after the List's last; an emptied
 // column's List takes one as its first.
 func TestDragKanbanColumnOnHost(t *testing.T) {
-	x := dragStory(t, "hotty/drag-kanban", dropHost())
+	x := dragStory(t, "hotty/drag-kanban")
 	c := x.r.C
 	if on, _ := x.h.Surface("drag").Attr("doing_c", "data-on"); on != "drop" {
 		t.Fatalf("a column's data-on: %q", on)
@@ -347,19 +347,11 @@ func TestDoubleClickOnHost(t *testing.T) {
 	}
 }
 
-// dropHost is a host that names a target that is not draggable and says
-// where in it the pointer is (SPEC §9.1, caps drop).
-func dropHost() hottytest.Option {
-	caps := hottytest.DefaultCaps()
-	caps.Drop = true
-	return hottytest.Caps(caps)
-}
-
-// On a host with drop, an item's halves say where it lands: its top half
+// An item's halves say where it lands: its top half
 // before it, its bottom half after; a folder's middle step into it, its
 // first before and its last after.
 func TestDragHalvesOnHost(t *testing.T) {
-	x := dragStory(t, "hotty/drag-todo", dropHost())
+	x := dragStory(t, "hotty/drag-todo")
 	c := x.r.C
 	x.do(x.h.DragStart("drag", item("list", 0), 4, 3))
 	x.do(x.h.DragOver(item("list", 3), 4, 6, 0, 0))
@@ -375,7 +367,7 @@ func TestDragHalvesOnHost(t *testing.T) {
 		t.Errorf("dropped before Renew the passport: %s", got)
 	}
 
-	x = dragStory(t, "hotty/drag-files", dropHost())
+	x = dragStory(t, "hotty/drag-files")
 	c = x.r.C
 	tree := c.V.Find("tree")
 	at := func(label string) string {
@@ -405,12 +397,12 @@ func TestDragHalvesOnHost(t *testing.T) {
 	}
 }
 
-// On a host with drop, a card goes into an empty column, by the column's
+// A card goes into an empty column, by the column's
 // box, and onto a person, a drop target that is no drag source: the
 // person ringed while it would, then written to /assigning and assign
 // sent, the card staying where it was.
 func TestDropOnlyOnHost(t *testing.T) {
-	x := dragStory(t, "hotty/drag-kanban", dropHost())
+	x := dragStory(t, "hotty/drag-kanban")
 	c := x.r.C
 	if on, _ := x.h.Surface("drag").Attr("ada", "data-on"); on != "drop" {
 		t.Fatalf("Ada's data-on: %q", on)

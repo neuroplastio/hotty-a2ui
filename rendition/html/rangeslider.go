@@ -14,11 +14,10 @@ import (
 // fill between its knobs, the notches a tap sets a knob by (a Slider's),
 // and its two knobs, each a button role=slider and a Tab stop, whose
 // arrows reach the program (SPEC §10.2), which moves it (Key). On a host
-// with steps (SPEC §9.1) the track is the drag target, as a Slider's is,
-// and a press anywhere on it, a knob included, moves the nearer knob
-// (view.Controller.PressKnob); the notches take taps alone. Without
-// steps, each notch and each knob is a drag target. A disabled one takes
-// neither. A finger drags along the track (touch-action, kit.css).
+// (SPEC §9.1) the track is the drag target, as a Slider's is, and a press
+// anywhere on it, a knob included, moves the nearer knob
+// (view.Controller.PressKnob); the notches take taps alone. A disabled one
+// takes neither. A finger drags along the track (touch-action, kit.css).
 func (m *markup) rangeSlider(e *view.Element) *node {
 	at := func(v float64) float64 {
 		if e.Max <= e.Min {
@@ -31,15 +30,13 @@ func (m *markup) rangeSlider(e *view.Element) *node {
 		el("span", "class", "k-rail"),
 		el("span", "class", "k-fill", "style", "left: "+pct(at(lo))+"; width: "+pct(at(hi)-at(lo))),
 	)
-	notch := "drag click"
-	switch {
-	case e.Disabled:
+	notch := "click"
+	if e.Disabled {
 		notch = ""
 		n.set("aria-disabled", "true")
-	case m.steps:
+	} else {
 		n.set("data-on", "drag")
 		n.set("data-steps", strconv.Itoa(notches(e)-1))
-		notch = "click"
 	}
 	n.add(notchSpans(e, notch)...)
 	// Each knob's own range is up to the other, as a multi-thumb slider
@@ -54,9 +51,6 @@ func (m *markup) rangeSlider(e *view.Element) *node {
 		b := el("button", "id", domID(k.ID), "type", "button", "class", "k-thumb", "role", "slider", "aria-label", k.Label,
 			"aria-valuemin", a2ui.NumberString(vmin), "aria-valuemax", a2ui.NumberString(vmax), "aria-valuenow", a2ui.NumberString(v),
 			"style", "left: "+pct(at(v))).flag("disabled", e.Disabled)
-		if !e.Disabled && !m.steps {
-			b.set("data-on", "drag")
-		}
 		n.add(b)
 	}
 	return n
@@ -81,37 +75,25 @@ func notchSpans(e *view.Element, on string) []*node {
 }
 
 // rangeDrag takes a drag of a HottyRangeSlider (SPEC §9.1). Its dragstart
-// picks the knob the drag moves: on the track, the nearer one, which takes
-// the keyboard and goes to the pointer (view.Controller.PressKnob); on a
-// knob, as a host without steps reports one, that knob, where it is. Each
-// drag after moves it (DragKnob), to the step under the pointer on a host
-// with steps, else to the notch it is over, until dragend. The click the
+// picks the knob the drag moves: the nearer one to the step under the
+// pointer, which takes the keyboard and goes there
+// (view.Controller.PressKnob). Each drag after moves it (DragKnob), to the
+// step under the pointer, until dragend. The click the
 // drag ends with is the drag's (slideSteps). done reports that ev was one
 // of these.
 func (r *Rendition) rangeDrag(ev hotty.Event) (done bool, err error) {
 	c := r.C
 	switch ev.Kind {
 	case hotty.EventDragStart:
-		id, part, ok := viewID(ev.Target)
+		id, _, ok := viewID(ev.Target)
 		e := c.V.Find(id)
 		if !ok || e == nil {
-			return false, nil
-		}
-		if e.Kind == view.Knob {
-			if anc := c.Ancestors(id); len(anc) > 0 && anc[len(anc)-1].Kind == view.RangeSlider {
-				rg := anc[len(anc)-1]
-				r.drag, r.knob = rg.ID, e.Selected
-				if lo, hi := rg.Range(); lo == hi {
-					r.knob = -1
-				}
-				return true, nil
-			}
 			return false, nil
 		}
 		if e.Kind != view.RangeSlider {
 			return false, nil
 		}
-		v, has := rangeAt(e, part, ev)
+		x, has := stepX(ev)
 		if !has {
 			return true, nil
 		}
@@ -119,7 +101,7 @@ func (r *Rendition) rangeDrag(ev hotty.Event) (done bool, err error) {
 		// a track being no element that takes focus (SPEC §10.1): the knob
 		// gets it back (Event, Update).
 		r.drag, r.pressed = id, true
-		r.knob, err = c.PressKnob(id, v)
+		r.knob, err = c.PressKnob(id, notchValue(e, x))
 		return true, err
 	case hotty.EventDrag, hotty.EventDragEnd:
 		e := c.V.Find(r.drag)
@@ -132,23 +114,12 @@ func (r *Rendition) rangeDrag(ev hotty.Event) (done bool, err error) {
 				r.dragged = e.ID
 			}
 		}
-		_, part, _ := viewID(ev.Target)
-		if v, has := rangeAt(e, part, ev); has {
-			r.knob, err = c.DragKnob(e.ID, r.knob, v)
+		if x, has := stepX(ev); has {
+			r.knob, err = c.DragKnob(e.ID, r.knob, notchValue(e, x))
 		}
 		return true, err
 	}
 	return false, nil
-}
-
-// rangeAt is the value a drag of a HottyRangeSlider points at: the step
-// under the pointer on a host with steps, else the notch it is over (part,
-// "k3"). ok is false where it is neither.
-func rangeAt(e *view.Element, part string, ev hotty.Event) (v float64, ok bool) {
-	if x, has := stepX(ev); has {
-		return notchValue(e, x), true
-	}
-	return notchAt(e, part)
 }
 
 // notchAt is the value of the notch of a track part names ("k3"); ok is
