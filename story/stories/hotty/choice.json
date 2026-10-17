@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "ChoicePicker, io_neuroplast_hotty.cycle",
   "icon": "radio_button_checked",
-  "description": "The four ways a ChoicePicker draws. Environment is a cycle (io_neuroplast_hotty.cycle): its options stepped through in place, ‹ staging ›, the value centred between the arrows; the arrows, or a click on its ‹ and ›, step it round from either end, and Home and End go to the ends. Region is a select, which picks one from a list that opens. Strategy is chips that pick one, radio buttons in cells. Notify picks several, as checkboxes. Each pick is written to the data model.",
+  "description": "The four ways a ChoicePicker draws. Environment is a cycle (io_neuroplast_hotty.cycle): its options stepped through in place, ‹ staging ›, the value centred between the arrows; the arrows, or a click on its ‹ and ›, step it round from either end, and Home and End go to the ends. Region is a select, which picks one from a list that opens. Replicas is a Slider, whose track starts in the column the values above start in. Strategy is chips that pick one, radio buttons in cells. Notify picks several, as checkboxes. Each pick is written to the data model.",
   "messages": [
     {
       "version": "v1.0",
@@ -22,7 +22,8 @@
           ],
           "notify": [
             "slack"
-          ]
+          ],
+          "replicas": 3
         }
       }
     },
@@ -38,6 +39,7 @@
               "title",
               "env",
               "region",
+              "replicas",
               "strategy",
               "notify",
               "hints"
@@ -99,6 +101,16 @@
                 "value": "ap-southeast-2"
               }
             ]
+          },
+          {
+            "id": "replicas",
+            "component": "Slider",
+            "label": "Replicas",
+            "value": {
+              "@path": "/replicas"
+            },
+            "min": 1,
+            "max": 10
           },
           {
             "id": "strategy",

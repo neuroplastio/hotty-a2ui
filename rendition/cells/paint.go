@@ -525,25 +525,37 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	l.paintError(cv, e, x, row, w)
 }
 
-// paintSlider paints "label ━━━━■⎯⎯⎯⎯ 50": the track fills the room the
-// label and the value leave, the knob where the value is, a square, as a
+// sliderTrack is where a Slider's or a HottyRangeSlider's track starts,
+// in columns past its box's start (past the gutter), and how long it is
+// in a box of w: past its label, padded to its run's widest, a space and
+// the inset, as a one-line field's input is (labelRuns), and before a
+// space and its value; past nothing where its label would leave the track
+// fewer than 3 columns.
+func (l *layout) sliderTrack(e *view.Element, w int) (start, n int) {
+	vw := sliderValueWidth(e)
+	if e.Label != "" {
+		start = l.labelWidth(e) + 1 + inset
+		if n = w - start - 1 - vw; n >= 3 {
+			return start, n
+		}
+	}
+	return 0, w - 1 - vw
+}
+
+// paintSlider paints "label  ━━━━■⎯⎯⎯⎯ 50": the track fills the room the
+// label and the value leave (sliderTrack), the knob where the value is, a square, as a
 // HottySwitch's: it sits on the line's middle, where a circle sits low in
 // some fonts. The rest of the track is ⎯, as a HottySwitch's thin line
 // is, which a font draws, as it does the knob, where ─ is the terminal's.
 // One that fills from its end (io_neuroplast_hotty.fill) is "⎯⎯⎯⎯■━━━━".
 func (l *layout) paintSlider(cv *canvas, e *view.Element, x, y, w int) {
 	v, _ := e.Value.(float64)
-	vw := sliderValueWidth(e)
-	label := e.Label
-	n := w - 1 - vw - Width(label) - 1
-	if label == "" || n < 3 {
-		label, n = "", w-1-vw
-	}
+	start, n := l.sliderTrack(e, w)
 	focused := l.r.focused(e.ID)
-	col := x
-	if label != "" {
-		col += cv.write(col, y, w, line(label+" ", titleStyle(focused)))
+	if start > 0 {
+		cv.write(x, y, start, line(e.Label, titleStyle(focused)))
 	}
+	col := x + start
 	if n >= 1 {
 		k := trackCol(e, v, n)
 		done, knob, rest := style{}, style{}, style{role: Border}
@@ -573,7 +585,7 @@ func trackCol(e *view.Element, v float64, n int) int {
 	return min(max(k, 0), n-1)
 }
 
-// paintRange paints a HottyRangeSlider, "label ⎯⎯■━━━━■⎯⎯ 20–70": a
+// paintRange paints a HottyRangeSlider, "label  ⎯⎯■━━━━■⎯⎯ 20–70": a
 // Slider's row with two knobs, the start's and the end's, each where its
 // value is, the range between them ━ and the rest ⎯ in border. The range
 // is in the accent while either knob has the keyboard, and so is that
@@ -585,12 +597,7 @@ func trackCol(e *view.Element, v float64, n int) int {
 // first.
 func (l *layout) paintRange(cv *canvas, e *view.Element, x, y, w int) {
 	lo, hi := e.Range()
-	vw := sliderValueWidth(e)
-	label := e.Label
-	n := w - 1 - vw - Width(label) - 1
-	if label == "" || n < 3 {
-		label, n = "", w-1-vw
-	}
+	start, n := l.sliderTrack(e, w)
 	knobs := rangeKnobs(e)
 	var on [2]bool
 	for i, k := range knobs {
@@ -598,14 +605,14 @@ func (l *layout) paintRange(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	focused := on[0] || on[1]
 	dim := style{role: Muted, attr: Faint}
-	col := x
-	if label != "" {
+	if start > 0 {
 		st := titleStyle(focused)
 		if e.Disabled {
 			st = style{role: Muted, attr: Bold | Faint}
 		}
-		col += cv.write(col, y, w, line(label+" ", st))
+		cv.write(x, y, start, line(e.Label, st))
 	}
+	col := x + start
 	if n >= 2 {
 		k0, k1 := trackCol(e, lo, n), trackCol(e, hi, n)
 		if k1 <= k0 {

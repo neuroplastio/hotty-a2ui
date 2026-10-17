@@ -89,3 +89,26 @@ func TestCycle(t *testing.T) {
 		t.Error("a cycle opened a list")
 	}
 }
+
+// A Slider's label joins its run (labelRuns): in a Column of a cycle and
+// a Slider, the track starts where the cycle's input does, past the run's
+// widest label, a space and the inset.
+func TestSliderInRun(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"env":["prod"]}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["env","n"]},
+	 {"id":"env","component":"ChoicePicker","label":"Environment","value":{"@path":"/env"},
+	  "options":[{"label":"production","value":"prod"},{"label":"staging","value":"stage"}],
+	  "metadata":{"extensions":{"io_neuroplast_hotty":{"cycle":true}}}},
+	 {"id":"n","component":"Slider","label":"Replicas","min":1,"max":10,"value":6}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	r := New(view.NewController(p.Surface("s")))
+	rows := strings.Split(r.Draw(40).Plain(), "\n")
+	at := gutter + len("Environment") + 1 + inset
+	if !strings.HasPrefix(rows[0][at:], "‹") || !strings.HasPrefix(rows[1], "  Replicas    ") || strings.HasPrefix(rows[1][at:], " ") {
+		t.Errorf("the track starts at %d, as the cycle's input does:\n%s", at, strings.Join(rows, "\n"))
+	}
+}

@@ -18,7 +18,10 @@ proposals of KIT-11c (2026-10-10.9) and KIT-13c (2026-10-10.10).
 KIT-24's look question left (2026-10-10.29): GitHub's colours as the
 default palette. From the dev-server leg (2026-10-11): the hover look's
 strength in cells and on a host, the grip's `◢` (a full-cell wedge in
-hottyterm, a small triangle in xterm.js), and the selection's colour. (Live-looking controls, round 7 kept: "should look
+hottyterm, a small triangle in xterm.js), and the selection's colour.
+From hotty-web's tour form (2026-10-17.2): chips that pick one on their
+label's row when they fit (`Strategy   (•) Canary   ( ) Blue/green`),
+against a row each. (Live-looking controls, round 7 kept: "should look
 usable". A heading level for tab titles and the page's origin, the docs
 answered: `PageOptions`, 2026-10-11.1.)
 Phase 1 is a go
@@ -81,6 +84,9 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   between the arrows: `io_neuroplast_hotty.cycle` on a ChoicePicker, in
   cells and on a host; story `hotty/choice` (journal 2026-10-17.1). Its
   look points wait for the next feedback round.
+- [x] **KIT-SLIDERUN** — A Slider's and a HottyRangeSlider's labels join
+  a run of one-line fields' in cells, their tracks starting where the
+  inputs do (hotty-web, 2026-10-17; journal 2026-10-17.2).
 
 ## Phase 2 — The HOTTY layer
 

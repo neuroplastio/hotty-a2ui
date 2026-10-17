@@ -59,10 +59,12 @@ func rolesOf(f *Frame, row, col, n int) string {
 // muted and faint.
 func TestRangeSliderDraws(t *testing.T) {
 	r, c := ranges(t)
-	want := "  Price ⎯⎯⎯■━━━━━■⎯⎯⎯⎯ 20–70\n" +
-		"  Rating ⎯⎯⎯⎯⎯⎯⎯⎯■━━━━━━━ 3\n" +
-		"  Year ⎯⎯■━━■⎯⎯⎯⎯⎯⎯⎯ 2–4"
-	f := r.Draw(30)
+	// Their labels are a run's (labelRuns): the tracks start in one
+	// column.
+	want := "  Price   ⎯⎯⎯■━━━━━■⎯⎯⎯⎯ 20–70\n" +
+		"  Rating  ⎯⎯⎯⎯⎯⎯⎯⎯■━━━━━━━━ 3\n" +
+		"  Year    ⎯⎯■━■⎯⎯⎯⎯⎯⎯⎯ 2–4"
+	f := r.Draw(32)
 	if got := f.Plain(); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
 	}
@@ -72,22 +74,22 @@ func TestRangeSliderDraws(t *testing.T) {
 		row, col int
 		roles    string
 	}{
-		{"price", "", 0, 8, "bbb.......bbbb"},
-		{"rating", "", 1, 9, "bbbbbbbb........"},
-		{"rating focused", "rating", 1, 9, "bbbbbbbbAAAAAAAA"},
-		{"price's start focused", "price/knob/0", 0, 8, "bbbAAAAAA.bbbb.AA..."},
-		{"price's end focused", "price/knob/1", 0, 8, "bbb.AAAAAAbbbb....AA"},
-		{"year, disabled", "", 2, 2, "ffffffffffffffffff.fff"},
+		{"price", "", 0, 10, "bbb.......bbbb"},
+		{"rating", "", 1, 10, "bbbbbbbb........"},
+		{"rating focused", "rating", 1, 10, "bbbbbbbbAAAAAAAA"},
+		{"price's start focused", "price/knob/0", 0, 10, "bbbAAAAAA.bbbb.AA..."},
+		{"price's end focused", "price/knob/1", 0, 10, "bbb.AAAAAAbbbb....AA"},
+		{"year, disabled", "", 2, 2, "ffff....ffffffffffff.fff"},
 	} {
 		c.Focus(tc.focus)
-		f = r.Draw(30)
+		f = r.Draw(32)
 		if got := rolesOf(f, tc.row, tc.col, len(tc.roles)); got != tc.roles {
 			t.Errorf("%s: roles %s, want %s", tc.name, got, tc.roles)
 		}
 	}
 	c.Focus("price/knob/1")
-	f = r.Draw(30)
-	if num, dash := f.Cells[0][26], f.Cells[0][25]; num.Attr&Bold == 0 || dash.Attr&Bold != 0 {
+	f = r.Draw(32)
+	if num, dash := f.Cells[0][28], f.Cells[0][27]; num.Attr&Bold == 0 || dash.Attr&Bold != 0 {
 		t.Errorf("the end's focused, its number %q %v, the dash %q %v", num.Text, num.Attr, dash.Text, dash.Attr)
 	}
 	// Where the knobs meet, the end's stands a column right of the
@@ -108,9 +110,9 @@ func TestRangeSliderDraws(t *testing.T) {
 			t.Fatal(err)
 		}
 		c.Rebuild()
-		f = r.Draw(30)
+		f = r.Draw(32)
 		var got strings.Builder
-		for _, cell := range f.Cells[0][8:22] {
+		for _, cell := range f.Cells[0][10:24] {
 			got.WriteString(cell.Text)
 		}
 		if got.String() != tc.want {
@@ -125,7 +127,7 @@ func TestRangeSliderDraws(t *testing.T) {
 // range takes neither.
 func TestRangeSliderClicks(t *testing.T) {
 	r, c := ranges(t)
-	r.Draw(30)
+	r.Draw(32)
 	data := func(p string) any { return c.S.Data.Value(p) }
 	at := func(id string, v float64) (int, int) {
 		t.Helper()
@@ -140,14 +142,14 @@ func TestRangeSliderClicks(t *testing.T) {
 		if err := r.Click(at(id, v)); err != nil {
 			t.Fatal(err)
 		}
-		r.Draw(30)
+		r.Draw(32)
 	}
 	drag := func(id string, v float64) {
 		t.Helper()
 		if err := r.Drag(at(id, v)); err != nil {
 			t.Fatal(err)
 		}
-		r.Draw(30)
+		r.Draw(32)
 	}
 	click("price", 85)
 	if data("/hi") != 85.0 || data("/lo") != 20.0 || c.St.Focus != "price/knob/1" || !c.St.Keyboard {
@@ -187,7 +189,7 @@ func TestRangeSliderClicks(t *testing.T) {
 // A Slider with fill "end" takes a click as any Slider does.
 func TestSliderFillEndClick(t *testing.T) {
 	r, c := ranges(t)
-	r.Draw(30)
+	r.Draw(32)
 	col, row, ok := r.TrackCell("rating", 5)
 	if !ok {
 		t.Fatal("no track for rating")
@@ -198,7 +200,7 @@ func TestSliderFillEndClick(t *testing.T) {
 	if v := c.V.Find("rating").Value; v != 5.0 {
 		t.Errorf("a click at the track's end: %v", v)
 	}
-	if got := r.Draw(30).Plain(); !strings.Contains(got, "Rating ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯■ 5") {
+	if got := r.Draw(32).Plain(); !strings.Contains(got, "Rating  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯■ 5") {
 		t.Errorf("at 5:\n%s", got)
 	}
 }

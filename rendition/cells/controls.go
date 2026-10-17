@@ -31,15 +31,20 @@ const gutter = 2
 const inset = 1
 
 // inlineRow reports whether a field's label is on its value's row: a
-// one-line text field's, a DateTime's or a select's, the labels of a run
-// of them in a Column padded to the widest (labelRuns). A longText's and
-// a Choice's options' labels are on a title row above.
+// one-line text field's, a DateTime's, a select's, a Slider's or a
+// HottyRangeSlider's, the labels of a run of them in a Column padded to
+// the widest (labelRuns), so that a form's inputs and tracks start in one
+// column. A longText's and a Choice's options' labels are on a title row
+// above.
 func inlineRow(e *view.Element) bool {
 	if e == nil || e.Label == "" {
 		return false
 	}
-	return isOneLine(e)
+	return isOneLine(e) || isSlider(e)
 }
+
+// isSlider reports whether a control is a Slider or a HottyRangeSlider.
+func isSlider(e *view.Element) bool { return e.Kind == view.Slider || e.Kind == view.RangeSlider }
 
 // isOneLine reports whether a field has an input on one row: a one-line
 // text field, a DateTime or a select.
@@ -51,9 +56,12 @@ func isOneLine(e *view.Element) bool {
 // at most the room it is given: a text field's textInput; a DateTime's,
 // its value's form or its value, whichever is wider, and a column for the
 // caret after it; a select's, its widest option, a space and "▾"; a
-// cycle's, its widest option between "‹ " and " ›".
+// cycle's, its widest option between "‹ " and " ›"; a Slider's, its
+// track, a space and its value.
 func inputWidth(e *view.Element) int {
 	switch {
+	case isSlider(e):
+		return trackWidth + 1 + sliderValueWidth(e)
 	case isSelect(e) && e.Cycle:
 		return width(cycleValue(e, noWrap, false))
 	case isSelect(e):
@@ -172,11 +180,8 @@ func controlWidth(e *view.Element) int {
 	case view.Option:
 		return Width(e.Label) + 4
 	case view.Slider, view.RangeSlider:
-		n := trackWidth + 1 + sliderValueWidth(e)
-		if e.Label != "" {
-			n += Width(e.Label) + 1
-		}
-		return gutter + n
+		// One with a label is measured as a one-line field (inlineRow).
+		return gutter + inputWidth(e)
 	case view.Progress:
 		return max(Width(e.Label), progressWidth+percentWidth)
 	case view.Spinner:
