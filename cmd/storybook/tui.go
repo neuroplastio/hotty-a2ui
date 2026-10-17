@@ -50,6 +50,7 @@ type model struct {
 func newModel(o storybook.Options) *model {
 	o.Bars = true
 	o.Plain = os.Getenv("NO_COLOR") != ""
+	o.Mouse = true // View has the terminal report the mouse
 	return &model{s: hottytea.New(), b: storybook.New(o)}
 }
 
@@ -76,7 +77,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case streamEnd:
 		m.b.End(msg.err)
 	case endSignal:
-		return m, tea.Sequence(m.s.Close(), m.px.off(), m.ptr.off(), tea.Quit)
+		return m.quit()
 	case tea.MouseMotionMsg:
 		if msg.Button == tea.MouseNone {
 			// Hover: the pointer's shape changes, and the frame only when
@@ -88,11 +89,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Batch(cmd, m.ptr.set(m.b.Pointer(msg.X, msg.Y)), m.draw(), m.b.Tick())
 		}
 		if m.b.Update(msg, m.s) {
-			return m, tea.Sequence(m.s.Close(), m.px.off(), m.ptr.off(), tea.Quit)
+			return m.quit()
 		}
 	default:
 		if m.b.Update(msg, m.s) {
-			return m, tea.Sequence(m.s.Close(), m.px.off(), m.ptr.off(), tea.Quit)
+			return m.quit()
 		}
 	}
 	if c, ok := m.b.Copied(); ok {
@@ -105,6 +106,14 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = tea.Batch(cmd, tea.ReadClipboard)
 	}
 	return m, tea.Batch(cmd, m.draw(), m.b.Tick())
+}
+
+// quit ends the program: the Book's touch areas taken back and its
+// surfaces deleted, then the terminal's pixels, pointer and Shift given
+// back.
+func (m *model) quit() (tea.Model, tea.Cmd) {
+	m.b.Quit(m.s)
+	return m, tea.Sequence(m.s.Close(), m.px.off(), m.ptr.off(), tea.Quit)
 }
 
 func (m *model) View() tea.View {

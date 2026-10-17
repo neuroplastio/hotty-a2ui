@@ -1132,6 +1132,20 @@ HottyTable's row, a HottyList's item, a HottyTree's node or a HottyDiff's
 hunk on `--k-surface`; never on what has the keyboard, which keeps its
 own look.
 
+**A finger** (vault KIT-TOUCH) drags in cells where the program names the
+cells to the host (SPEC.md §9.6); elsewhere its drag scrolls the
+terminal, and only a tap reaches the program, as a click. The cells a
+finger drags across (`Rendition.TouchAreas`, `"x"`) are each Slider's and
+HottyRangeSlider's track that is not disabled, as much of it as the
+frame shows, none under an open Modal. On a host, where the program has
+the terminal report the mouse (`storybook.Options.Mouse`), the storybook
+names them where it shows each frame (`hotty.Touch`), whenever they
+move, the screen changes size or is drawn anew, or the program comes
+back to it, and none once no track is in cells (the story in surfaces
+or text, a narrow screen); on its way out it takes them back. A finger
+that moves along a track is then the mouse's button, pressed, moved and
+released, and one that moves up or down scrolls.
+
 **Selecting text** (vault KIT-12c): a press on a Text's or a
 HottyMarkdown's text where no click acts (not a link in it), then a drag,
 selects from there to the pointer, as a page's text is selected, within

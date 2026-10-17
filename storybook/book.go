@@ -91,6 +91,14 @@ type Options struct {
 	// Prefix goes before the name of every surface the Book places, so
 	// that they keep clear of the program's own.
 	Prefix string
+	// Mouse: the program has the terminal report the mouse's buttons
+	// (Bubble Tea's MouseModeCellMotion or MouseModeAllMotion), and hands
+	// the Book their presses, moves and releases. On a HOTTY host the Book
+	// then names the cells of each Slider's track it draws in cells
+	// (hotty.Touch, SPEC §9.6), so that a finger drags it as the mouse
+	// does, where it would scroll the terminal otherwise; Quit takes them
+	// back.
+	Mouse bool
 }
 
 // Book is the storybook. Its methods are for the program's Update and
@@ -158,6 +166,14 @@ type Book struct {
 	// shown is the HOTTY surfaces the last View placed, which want
 	// updating as often as their renditions say (Tick).
 	shown []*html.Rendition
+
+	// touched is the cells, on the screen, the Book last named to the host
+	// as where a finger drags as the mouse (Options.Mouse, SPEC §9.6);
+	// retouch, that the screen may have dropped them (it was drawn anew,
+	// changed size, or the program came back to it), so that the next View
+	// names them again (touch).
+	touched []hotty.TouchArea
+	retouch bool
 }
 
 // tickMsg is the frame clock's tick: Tick sends it, and Update takes it.
@@ -255,9 +271,60 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 			b.fail(p.cells.Release())
 			b.took(p)
 		}
+	case hottytea.RelayoutMsg, tea.WindowSizeMsg, tea.ResumeMsg:
+		// The screen drawn anew, of another size, or the program back on
+		// it from a suspend: the touch areas go again.
+		b.retouch = true
 	}
 	b.settle()
 	return quit
+}
+
+// Quit is for the program's way out, before the Session's Close: the Book
+// takes back the cells it named where a finger drags (Options.Mouse, SPEC
+// §9.6), as a program that ends does. A program that shows the Book in a
+// part of its screen calls it too when it stops showing it; the next View
+// names them again.
+func (b *Book) Quit(h *hottytea.Session) {
+	if b.touched != nil {
+		h.Send(hotty.Touch(nil))
+		b.touched = nil
+	}
+}
+
+// touch names the cells where a finger drags as the mouse to the host
+// (SPEC §9.6), areas, on the screen, when they are not what it was last
+// told, or the screen may have dropped them (retouch): on a host, while
+// the program reads the mouse (Options.Mouse), and none otherwise. Past
+// hotty.TouchMax, the first are named.
+func (b *Book) touch(h *hottytea.Session, areas []hotty.TouchArea) {
+	if h.Mode != hottytea.Native || !b.o.Mouse || len(areas) == 0 {
+		areas = nil
+	}
+	areas = areas[:min(len(areas), hotty.TouchMax)]
+	again := b.retouch && areas != nil
+	b.retouch = false
+	if slices.Equal(areas, b.touched) && !again {
+		return
+	}
+	b.touched = areas
+	h.Send(hotty.Touch(areas))
+}
+
+// paneTouch is where a finger drags in a cells pane's frame
+// (cells.Rendition.TouchAreas), on the screen: moved to where the pane
+// shows the frame, the Book being at r, and cut to the pane.
+func paneTouch(p *pane, r hottytea.Rect) []hotty.TouchArea {
+	var out []hotty.TouchArea
+	for _, a := range p.cells.TouchAreas() {
+		top := a.R - p.scroll.Top
+		x0, y0 := max(a.C, 0), max(top, 0)
+		x1, y1 := min(a.C+a.W, p.rect.W), min(top+a.H, p.rect.H)
+		if x1 > x0 && y1 > y0 {
+			out = append(out, hotty.TouchArea{C: r.X + p.rect.X + x0, R: r.Y + p.rect.Y + y0, W: x1 - x0, H: y1 - y0, Drag: a.Drag})
+		}
+	}
+	return out
 }
 
 // DragMsg is the pointer moved with the primary button down, where the
@@ -1008,6 +1075,9 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 // its own (Session.Layout), then calls LaidOut. The surfaces' deltas are
 // sent already.
 func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Surface) {
+	if r != b.at {
+		b.retouch = true // moved or resized: the touch areas go again
+	}
 	b.at, b.cursor, b.anim, b.shown = r, nil, 0, nil
 	b.ready(h.Mode)
 	if b.ch == nil {
@@ -1019,6 +1089,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		minH = 12
 	}
 	if W < 40 || H < minH {
+		b.touch(h, nil)
 		return fmt.Sprintf("The storybook needs 40×%d at least.", minH), nil
 	}
 	scr := newScreen(W, H)
@@ -1168,6 +1239,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	}
 
 	var want []hottytea.Surface
+	var touch []hotty.TouchArea
 	for _, p := range order {
 		switch p.kind {
 		case asCells:
@@ -1178,6 +1250,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			now, ok := SightOf(p.s.C, p.cells, p.follow)
 			p.scroll.Keep(now, ok, p.rect.H, p.frame.Rows)
 			scr.blit(p.frame, p.rect, p.scroll.Top)
+			touch = append(touch, paneTouch(p, r)...)
 		case asText:
 			lines := strings.Split(strings.TrimRight(text.Render(p.s.C.V), "\n"), "\n")
 			for i, l := range lines {
@@ -1207,6 +1280,8 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			}
 		}
 	}
+	// A finger drags each Slider drawn in cells as the mouse does.
+	b.touch(h, touch)
 	th := b.theme
 	th.Term = b.term
 	if f := b.focus; f != nil && f.kind == asCells && f.s.C.St.Keyboard && f.frame != nil {

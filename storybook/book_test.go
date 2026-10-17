@@ -56,7 +56,7 @@ func (m *host) View() tea.View {
 	return v
 }
 
-func run(t *testing.T, h *hottytest.Host, o Options) {
+func run(t *testing.T, h *hottytest.Host, o Options) *tea.Program {
 	t.Helper()
 	m := &host{s: hottytea.New(), b: New(o)}
 	p := tea.NewProgram(m, tea.WithInput(h), tea.WithOutput(m.s.Watch(h)), tea.WithWindowSize(120, 40),
@@ -73,6 +73,7 @@ func run(t *testing.T, h *hottytest.Host, o Options) {
 		p.Quit()
 		<-done
 	})
+	return p
 }
 
 // navNode is the DOM id of nav's node i, in pre-order: 0 is Components,
