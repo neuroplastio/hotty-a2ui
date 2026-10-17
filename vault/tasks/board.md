@@ -224,7 +224,16 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
 - [ ] **KIT-SIZE** — A program carries only the components it uses: the
   renditions split into nested Go modules (the maintainer, 2026-10-11:
   "optimize later with nested go.mod modules"). Not before the kit's
-  components settle.
+  components settle. Measured by hotty-web, 2026-10-17: a form in the
+  site's TinyGo main module (cells, html, view) took it from 6.9 MB to
+  8.9 MB raw, with chroma and regexp2, icons, qr, diff, fuzzy and uax29
+  linked though the form uses none.
+- [ ] **KIT-STACK** — A form's first key or click (cells `Key`, or html
+  `Event` then `Update`) overflows TinyGo's 64 KB goroutine stack (hotty-web,
+  2026-10-17); the site's main module runs it at `-stack-size=128KB`.
+  Find the deep path (the html diff or the cells layout, hotty-web
+  guesses) and make it lighter, so the site can drop the flag. Waits for
+  the maintainer's word (token preservation).
 - [ ] **KIT-CAT** — A composite catalog: basic's definitions verbatim plus
   the hotty catalog, generated, so an agent can use it as the surface
   default (L1). Do it when the agent integration starts, which the
