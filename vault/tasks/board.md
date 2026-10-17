@@ -245,8 +245,10 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   and the addon (`Touch` on the cells) alike, so the program hears wheel
   reports, and only a tap as a click. Waits on HOTTY: cells that take a
   touch drag, as `touch-action` lets an element on a surface (§9.1).
-  Proposed for HOTTY 0.4 (hotty-0.4 6ca9fa9, vault/tasks/0.4.md), for the
-  maintainer to decide; no kit workaround.
+  Accepted 2026-10-17 as HOTTY 0.4's V4-02, SPEC §9.6 "Touch in the
+  cells" (`a=touch` areas; hotty e3f1c41 on hotty-0.4). The hotty agent
+  builds it, the kit's Slider areas included, in the hotty-0.4 worktree;
+  leave that worktree alone until it reports back.
 - [ ] **KIT-CAT** — A composite catalog: basic's definitions verbatim plus
   the hotty catalog, generated, so an agent can use it as the surface
   default (L1). Do it when the agent integration starts, which the
