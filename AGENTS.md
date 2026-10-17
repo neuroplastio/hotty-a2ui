@@ -1,7 +1,7 @@
 # For agents
 
-This repository is the proof of concept of HOTTY's UI kit on A2UI (gov
-NEIO-11): an A2UI v1.0 core in Go, a HOTTY renderer and a storybook.
+This repository is the proof of concept of hotty's UI kit on A2UI (gov
+NEIO-11): an A2UI v1.0 core in Go, a hotty renderer and a storybook.
 
 - **The vault is where the work comes from.** `vault/README.md` maps it:
   the roadmap, the board, feedback and questions.
@@ -12,7 +12,7 @@ NEIO-11): an A2UI v1.0 core in Go, a HOTTY renderer and a storybook.
   extensions under `io_neuroplast_hotty`. Never fork a basic component.
 - **Nothing goes upstream to A2UI** (no issue, PR, proposal or discussion)
   until the maintainer says so.
-- **HOTTY's SPEC.md doesn't change for this.** If the kit needs the wire to
+- **hotty's SPEC.md doesn't change for this.** If the kit needs the wire to
   change, that lands in `hotty` first, as any wire change does.
 - **hotty-go stays protocol-only.** This repository depends on it, never the
   other way round.

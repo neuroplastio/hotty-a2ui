@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// An element's DOM id is its view id, encoded for HOTTY: a control value
+// An element's DOM id is its view id, encoded for hotty: a control value
 // is printable ASCII without ':', ';' and '=' (SPEC §3.2), and a node's
 // key has brackets and '#' ("row[/items/0]#2"). Letters, digits and
 // "-_./" stay; every other byte is "~" and two upper-case hex digits.

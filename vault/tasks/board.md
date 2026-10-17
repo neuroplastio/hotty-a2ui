@@ -32,7 +32,7 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 
 - `KIT-NN` is a gap ([gap-analysis](../knowledge/gap-analysis.md)). The
   number is its priority.
-- `c` is its cells leg (phase 1), and `h` its HOTTY leg (phase 2).
+- `c` is its cells leg (phase 1), and `h` its hotty leg (phase 2).
 - The sections below list the legs in the order they're built. The first
   open leg that nothing blocks is next.
 
@@ -63,7 +63,7 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   `SetPasteKeys`, `-cut`, `-paste`). The host's cut and paste went to
   hotty with its copy. Undo and redo followed (journal 2026-10-14.2):
   each text control has its own history, as on a page (`SetUndoKeys`,
-  `SetRedoKeys`, `-undo`, `-redo`). Then the keys moved onto HOTTY's
+  `SetRedoKeys`, `-undo`, `-redo`). Then the keys moved onto hotty's
   keymap (journal 2026-10-14.4, hotty 9f534fc): the edit actions are
   keymap actions bound to `Mod`, the controller's `Platform` says what
   `Mod` is (Control's where no host says), a host's edit commands arrive
@@ -88,7 +88,7 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   a run of one-line fields' in cells, their tracks starting where the
   inputs do (hotty-web, 2026-10-17; journal 2026-10-17.2).
 
-## Phase 2 — The HOTTY layer
+## Phase 2 — The hotty layer
 
 ### The host
 
@@ -206,13 +206,13 @@ Asked by web on 2026-10-10, on the maintainer's go-ahead. The maintainer
 OK'd them for the kit "as long as it fits the framework": A2UI's extension
 points only (no forked basic component), SPEC changes through hotty first,
 hotty-go protocol-only (AGENTS.md). Every project's docs site draws its
-components with the kit, as a plain web page, as HOTTY surfaces (xterm.js
+components with the kit, as a plain web page, as hotty surfaces (xterm.js
 with the addon) and in cells (NEIO-14, a draft, *On the kit*; web's pilot
 is its branch `docs-pilot`). None of these blocks the
 docs: until the kit has a piece, the docs module draws it and switches when
 it lands. The docs also wait on KIT-09h, KIT-05h and KIT-01h. They wanted
 Terminal to play an asciicast, which is parked (KIT-18): until it comes
-back, their own player draws screencasts and one-frame HOTTY snapshots
+back, their own player draws screencasts and one-frame hotty snapshots
 through hotty-go's `hottyvt` (web's `shared/screencast`).
 
 - [ ] **KIT-24p** — A page host, split from KIT-24: the addon's surface
@@ -238,7 +238,7 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   guesses) and make it lighter, so the site can drop the flag. Waits for
   the maintainer's word (token preservation).
 - [ ] **KIT-REDRAW** — cells `Draw` lays a long HottyMarkdown out whole on
-  every draw, a hover's too (docs, 2026-10-17): on HOTTY's SPEC page at
+  every draw, a hover's too (docs, 2026-10-17): on hotty's SPEC page at
   ~100 columns a link's hover draw is 93 ms of wasm in Chromium, natively
   ~100 ms and 180 MB allocated, 85% in layout.measureHeight/lines
   (runGlyphs, wrapConts, glyphs, splitLines), about half of the wasm time
@@ -278,7 +278,7 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   with mnemonic accelerators (`_U_ndo`, `_R_edo`, `Cu_t_`, `_C_opy`, `_P_aste`,
   `_D_elete`, `Select _A_ll`) and dynamic disabled/enabled states based on
   selection, clipboard content, and field mutability. Must work both in cells
-  (drawn popup overlay box) and on a HOTTY host (surface/overlay at a higher z)
+  (drawn popup overlay box) and on a hotty host (surface/overlay at a higher z)
   without relying on native browser context menus when running in an xterm.js /
   web terminal addon. Reference shot: `vault/knowledge/context-menu.png`.
 - [ ] **KIT-29** — Horizontal scroll support: lateral scrolling and indicator
@@ -300,7 +300,7 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   - Overflowing `Row` and `Tabs`: horizontal strips that pan when items exceed
     container width.
   Supports Shift+Wheel, horizontal mouse wheel / trackpad gestures, keyboard
-  navigation, and drawn horizontal scrollbars across cells and HOTTY host renditions.
+  navigation, and drawn horizontal scrollbars across cells and hotty host renditions.
 - [ ] **KIT-17a** — The file picker for apps: what bubbles' filepicker and
   huh's field give an app that HottyFilePicker doesn't (the gap analysis of
   2026-10-13, against bubbles v2.2.1 and huh v2.0.3). All of it is props
@@ -349,7 +349,7 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   line or keystrokes, and sees the exit status, the output only if the
   program shares it. Open for the host leg: a VT grid in an HTML surface
   may be heavy for full-screen apps, and drawing it natively is a SPEC
-  question; a HOTTY app inside the pane would need its surfaces relayed, as
+  question; a hotty app inside the pane would need its surfaces relayed, as
   vt-apps does. Pick up the docs' frame format (web docs-pilot
   `internal/view`: a Cast, then a Frame per change) for the player.
 - **KIT-21** — 3D and audio. These are not for a terminal UI kit. Media is
@@ -372,7 +372,7 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   code in a HottyScrollView,
   nothing marking the document focused after a jump. The two hottytest
   findings were hottytest bugs, fixed in hotty-go a4025c0, and with
-  HOTTY 0.2 (4b74875, journal 2026-10-11.6) the key vector that was
+  hotty 0.2 (4b74875, journal 2026-10-11.6) the key vector that was
   cells-only runs on hottytest too. Since 2026-10-11, for the docs' own contents: every
   heading's box in cells (`view.HeadingID`) and `Controller.GoTo`. For
   the maintainer: in cells a link with a scheme is no Tab stop (the

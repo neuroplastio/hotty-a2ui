@@ -15,7 +15,7 @@ sounds good"). Applied in KIT-00.
   `hotty_icons` and the like would pass that rule; they weren't chosen.
 - The catalog id is `https://hotty.neuroplast.io/a2ui/v1/catalog` since
   2026-10-10. The maintainer judged `https://neuroplast.io/hotty/a2ui/v1/catalog.json`
-  wrong: it put HOTTY under a path of the company's site, not HOTTY's own
+  wrong: it put hotty under a path of the company's site, not hotty's own
   domain, and `.json` made a name look like a file to fetch. A2UI's ids are
   names ("not a resolvable URI"), so nothing is served at either. `v1` is
   the catalog's major version; `protocolVersion` carries A2UI's.

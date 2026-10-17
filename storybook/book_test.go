@@ -187,7 +187,7 @@ func TestSpinnersMove(t *testing.T) {
 	}
 }
 
-// TestSpinnersMoveOnHost: on a HOTTY host the clock ticks for the story's
+// TestSpinnersMoveOnHost: on a hotty host the clock ticks for the story's
 // surface as for cells: the Line spinner's frame changes by deltas.
 func TestSpinnersMoveOnHost(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))

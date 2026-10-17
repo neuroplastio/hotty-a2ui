@@ -104,7 +104,7 @@ interaction handlers.
 - This is supported, so it isn't a limit.
 
 **L9. The agent doesn't know the rendition.** Capabilities list catalogs only.
-Nothing tells an agent "cells, 80×24" or "a HOTTY host".
+Nothing tells an agent "cells, 80×24" or "a hotty host".
 - This is by design, and it matches the profile: one tree, three renditions.
 - Every component has to make sense in cells, so phase 1 is the floor.
 

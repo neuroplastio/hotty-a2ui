@@ -3,7 +3,7 @@
   "kind": "behaviour",
   "component": "TextField (longText)",
   "icon": "open_in_full",
-  "description": "A longText resizes from its corner, as a web textarea does: drag the grip (◢ in cells, the host's corner on a HOTTY host). The resize extension says along which axes: both, the default, vertical, horizontal or none.",
+  "description": "A longText resizes from its corner, as a web textarea does: drag the grip (◢ in cells, the host's corner on a hotty host). The resize extension says along which axes: both, the default, vertical, horizontal or none.",
   "messages": [
     {
       "version": "v1.0",

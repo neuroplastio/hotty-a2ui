@@ -1,4 +1,4 @@
-/* hotty-a2ui: the kit's look on a HOTTY host. A surface is a web page in
+/* hotty-a2ui: the kit's look on a hotty host. A surface is a web page in
    the terminal, so it is set in web type, not the grid's: a proportional
    face, a type scale, spacing in rem (the host's root size, which follows
    the terminal's font). Colours come from the host's palette (SPEC §8)

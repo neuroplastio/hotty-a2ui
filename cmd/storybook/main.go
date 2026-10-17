@@ -1,4 +1,4 @@
-// Command storybook shows A2UI surfaces in a terminal, as the HOTTY kit
+// Command storybook shows A2UI surfaces in a terminal, as the hotty kit
 // renders them (NEIO-11): A2UI's basic examples, the hotty catalog's
 // stories, and the fallbacks; or A2UI streamed from a file or stdin, by
 // an agent, with what the user does written back.
@@ -43,7 +43,7 @@ import (
 func main() {
 	list := flag.Bool("list", false, "list the stories")
 	plain := flag.Bool("text", false, "print plain text, with no terminal (as when stdout is not one)")
-	doc := flag.Bool("html", false, "print each surface as the HTML document a HOTTY host gets")
+	doc := flag.Bool("html", false, "print each surface as the HTML document a hotty host gets")
 	page := flag.Bool("page", false, "print a web page of the stories' surfaces (or -stream's), in page mode: the kit's stylesheet once, then each surface")
 	themeName := flag.String("theme", "", "paint in this `theme`: "+themeNames())
 	stream := flag.String("stream", "", "read A2UI from `file` (- for stdin) instead of a story")

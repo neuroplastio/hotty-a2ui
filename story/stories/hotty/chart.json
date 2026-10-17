@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyChart",
   "icon": "show_chart",
-  "description": "A line chart of two series bound to the data model, /cpu and /mem, with a time a point in /t and a legend; the slider under it moves the newest CPU value, /cpu/19, as an agent writes a point (an index each; the data model has no append), and the axis grows to fit. Deploys a day as bars, two series side by side. A balance that goes below 0, its bars hanging from the axis's 0. A chart whose values are bound to a path not set yet, which has no data. In cells the lines are braille dots and the bars eighths of a row; on a HOTTY host, a line and boxes.",
+  "description": "A line chart of two series bound to the data model, /cpu and /mem, with a time a point in /t and a legend; the slider under it moves the newest CPU value, /cpu/19, as an agent writes a point (an index each; the data model has no append), and the axis grows to fit. Deploys a day as bars, two series side by side. A balance that goes below 0, its bars hanging from the axis's 0. A chart whose values are bound to a path not set yet, which has no data. In cells the lines are braille dots and the bars eighths of a row; on a hotty host, a line and boxes.",
   "messages": [
     {
       "version": "v1.0",

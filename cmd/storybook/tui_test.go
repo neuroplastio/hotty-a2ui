@@ -74,7 +74,7 @@ func eventually(t *testing.T, what string, cond func() bool) {
 }
 
 // TestOnHost: on a host, the storybook's own surfaces and the story's are
-// HOTTY surfaces. A click in nav opens a story; the user's typing and
+// hotty surfaces. A click in nav opens a story; the user's typing and
 // Enter reach the agent as the Form's action, and the panel's Actions tab
 // lists it.
 func TestOnHost(t *testing.T) {
@@ -132,7 +132,7 @@ func TestInCells(t *testing.T) {
 	sent := runBook(t, h, "hotty/shortcut-press", false)
 	eventually(t, "the story in cells", func() bool { return strings.Contains(h.Screen(), "A note") })
 	screen := h.Screen()
-	for _, want := range []string{"HOTTY kit storybook", "Rendition", "Actions"} {
+	for _, want := range []string{"hotty kit storybook", "Rendition", "Actions"} {
 		if !strings.Contains(screen, want) {
 			t.Errorf("the screen lacks %q:\n%s", want, screen)
 		}

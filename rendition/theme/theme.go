@@ -1,6 +1,6 @@
 // Package theme is the colours a rendition paints with: one set of roles
 // (NEIO-4's names) for the cells, and the same colours as the kit's CSS
-// variables on a HOTTY host. A theme's empty colour keeps the terminal's
+// variables on a hotty host. A theme's empty colour keeps the terminal's
 // (or the host's) own.
 package theme
 

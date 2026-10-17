@@ -1,4 +1,4 @@
-# Motion on a HOTTY host: CSS animations in hotty-blitz
+# Motion on a hotty host: CSS animations in hotty-blitz
 
 As of 2026-10-09: hotty-blitz main and its Blitz fork (patches 0001–0023),
 in hottyterm 1.3.2-hottyterm+78a44228. It was checked live in a headless

@@ -44,12 +44,12 @@ As of 2026-10-09: hotty-a2ui 18b5b87, A2UI at `third_party/a2ui/REV` (ae466ff).
 
 Each gap has a ticket. Its two legs are on the board:
 - `c`, the cells rendition (phase 1);
-- `h`, the HOTTY layer (phase 2).
+- `h`, the hotty layer (phase 2).
 
 The number gives the gap's priority. The board gives the order in which
 they're built.
 
-| Ticket | Gap | Reference | Priority | Cells (phase 1) | HOTTY (phase 2) |
+| Ticket | Gap | Reference | Priority | Cells (phase 1) | hotty (phase 2) |
 | --- | --- | --- | --- | --- | --- |
 | KIT-01 | **Table** | bubbles table, lipgloss table, OpenTUI TextTable | High | Header row, column widths from the content and the hints, alignment, a highlighted row moved by ↑ ↓ PgUp PgDn Home End, a sticky header while the body scrolls, cut text ending in `…` | A real table in proportional type, a sticky header, the row under the mouse, sorting by a click on a header |
 | KIT-02 | **Progress** | bubbles progress | High | A bar filled in eighths (`▏`…`█`), a percentage, lipgloss's gradient, and an indeterminate segment that moves | A smooth bar with its label, animated where the host animates |

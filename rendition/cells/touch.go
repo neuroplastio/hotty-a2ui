@@ -13,7 +13,7 @@ import (
 // a tap is a click. They are the frame's cells, from its top left, in the
 // order painted; under an open Modal there are none.
 //
-// A program on a HOTTY host that has the terminal report the mouse names
+// A program on a hotty host that has the terminal report the mouse names
 // them, moved to where it shows the frame (hotty.Touch), so that a finger
 // drags a slider in cells as the mouse does, where it would scroll the
 // terminal otherwise.

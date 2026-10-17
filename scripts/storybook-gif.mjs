@@ -1,4 +1,4 @@
-// The README's GIF: the storybook in xterm.js with the HOTTY addon
+// The README's GIF: the storybook in xterm.js with the hotty addon
 // (neuroplastio/xterm-addon-hotty, its serve.py running the storybook on a
 // pty), driven with Playwright, recorded as video and made a GIF with
 // ffmpeg. `make gif` builds the storybook and runs this from the addon's

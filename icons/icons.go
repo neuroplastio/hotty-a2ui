@@ -1,4 +1,4 @@
-// Package icons is the shapes the kit draws its icons with on a HOTTY
+// Package icons is the shapes the kit draws its icons with on a hotty
 // host, and the glyphs it draws them with in cells (gov R-4).
 //
 // The basic catalog's 59 names are Material Symbols, Sharp, filled

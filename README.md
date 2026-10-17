@@ -4,16 +4,16 @@
 
 **Describe a UI once. Get it as HTML in the terminal, in cells, or as plain text.**
 
-HOTTY's UI kit on [A2UI](https://github.com/google/A2UI) v1.0, in Go.
+hotty's UI kit on [A2UI](https://github.com/google/A2UI) v1.0, in Go.
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Go 1.26](https://img.shields.io/badge/go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
 [![A2UI v1.0](https://img.shields.io/badge/A2UI-v1.0-7b61ff.svg)](https://github.com/google/A2UI)
-[![HOTTY](https://img.shields.io/badge/HOTTY-HTML%20over%20the%20TTY-ff5f87.svg)](https://github.com/neuroplastio/hotty)
+[![hotty](https://img.shields.io/badge/hotty-HTML%20over%20the%20TTY-ff5f87.svg)](https://github.com/neuroplastio/hotty)
 [![Status: proof of concept](https://img.shields.io/badge/status-proof%20of%20concept-orange.svg)](#status)
 
 [**▶ Try it in your browser**](https://hotty.neuroplast.io/storybook) ·
-[The HOTTY profile of A2UI](docs/profile.md) ·
+[The hotty profile of A2UI](docs/profile.md) ·
 [hottyterm](https://github.com/neuroplastio/hottyterm)
 
 <img src="docs/storybook.gif" width="960" alt="The storybook: A2UI's examples as HTML surfaces in a terminal; a login form typed into, its action in the panel; the same surface beside its cells; the themes; and the storybook all in cells">
@@ -29,7 +29,7 @@ state:
 
 | | Rendition | Where | What you get |
 | --- | --- | --- | --- |
-| 🖥️ | **Surfaces** | a [HOTTY](https://github.com/neuroplastio/hotty) host: [hottyterm](https://github.com/neuroplastio/hottyterm), or xterm.js with [xterm-addon-hotty](https://github.com/neuroplastio/xterm-addon-hotty) | real HTML the terminal lays out among its cells, kept current with small deltas; keys, focus and clicks come back as the user's actions |
+| 🖥️ | **Surfaces** | a [hotty](https://github.com/neuroplastio/hotty) host: [hottyterm](https://github.com/neuroplastio/hottyterm), or xterm.js with [xterm-addon-hotty](https://github.com/neuroplastio/xterm-addon-hotty) | real HTML the terminal lays out among its cells, kept current with small deltas; keys, focus and clicks come back as the user's actions |
 | 🔲 | **Cells** | any terminal | the same tree laid out and painted in character cells, with the keyboard and the mouse |
 | 📄 | **Text** | a pipe | plain text, for logs and for agents that read |
 
@@ -44,7 +44,7 @@ and the cells beside it follow, and the other way round.
   agent (`a2ui/schema`). It runs A2UI's own conformance suites.
 - 🧩 **Every basic component, in every rendition.** A2UI's 40-odd examples
   are the storybook's stories.
-- ⌨️ **Keys and focus as HOTTY's SPEC §10**: one set of vectors runs against
+- ⌨️ **Keys and focus as hotty's SPEC §10**: one set of vectors runs against
   both the cells and the HTML rendition.
 - 🔌 **A hotty catalog**, through A2UI's extension points only:
   `HottyShortcut`, `HottyForm`, `HottyProgress`, `HottySpinner`,
@@ -76,7 +76,7 @@ storybook basic/36_modal                         # one story (storybook -list na
 storybook -theme dracula                         # in a theme
 storybook -text basic/36_modal                   # as plain text
 agent | storybook -stream - -out actions.jsonl   # what an agent streams, and the user's actions back
-storybook -html basic/06_music-player            # the document a HOTTY host gets
+storybook -html basic/06_music-player            # the document a hotty host gets
 storybook -page basic/24_recipe-card > page.html # stories as an ordinary web page (page mode)
 storybook -bare hotty/keys                       # a story's surfaces alone, in cells
 ```
@@ -93,7 +93,7 @@ storybook -bare hotty/keys                       # a story's surfaces alone, in 
 
 ## The storybook in your program
 
-The storybook is a package too. A Bubble Tea program that speaks HOTTY with
+The storybook is a package too. A Bubble Tea program that speaks hotty with
 [hotty-go](https://github.com/neuroplastio/hotty-go) shows it in a part of its
 screen, as [hotty-demo](https://hotty.neuroplast.io/apps) does:
 
@@ -113,7 +113,7 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 
 | Path | What |
 | --- | --- |
-| [`docs/profile.md`](docs/profile.md) | the HOTTY profile of A2UI, a draft: renditions, keys and focus, the hotty catalog, fallbacks |
+| [`docs/profile.md`](docs/profile.md) | the hotty profile of A2UI, a draft: renditions, keys and focus, the hotty catalog, fallbacks |
 | [`a2ui/`](a2ui) | an A2UI v1.0 core in Go: the data model, expressions and functions, catalogs, node resolution, and the message processor with the agent's function calls |
 | [`a2ui/schema/`](a2ui/schema) | the agent's messages, components and calls checked against the spec's JSON Schemas (`schema.NewProcessor`), for a renderer whose agent is another program; one that is its own agent leaves it out, and jsonschema with it |
 | [`catalog/basic/`](catalog/basic) | A2UI's basic catalog, its functions implemented (en-US formatting) |
@@ -122,7 +122,7 @@ book.LaidOut(session) // a surface's autofocus, once its document is out
 | [`highlight/`](highlight) | code as lines of tokens of a few kinds, which the renditions colour by role: chroma's lexers for the languages agents write most ([`lexers/`](highlight/lexers), `make lexers`), and all of chroma's with [`highlight/all`](highlight/all) |
 | [`diff/`](diff) | a change as files of hunks, from a patch or from two texts, each line highlighted and its changed words marked |
 | [`qr/`](qr) | QR codes for `HottyQRCode`: rsc.io/qr's coding, with the version, the level and the mask chosen as ISO/IEC 18004 has them |
-| [`rendition/html/`](rendition/html) | surfaces on a HOTTY host: a document, then deltas, and the host's events back as the user's acts; and in an ordinary web page, with no program behind it (page mode, profile §2.1) |
+| [`rendition/html/`](rendition/html) | surfaces on a hotty host: a document, then deltas, and the host's events back as the user's acts; and in an ordinary web page, with no program behind it (page mode, profile §2.1) |
 | [`rendition/cells/`](rendition/cells) | cells in a terminal that is not a host, laid out by the profile's rules (§3), with keys and clicks as SPEC §10 has them |
 | [`rendition/text/`](rendition/text) | plain text for a pipe |
 | [`rendition/theme/`](rendition/theme) | the themes both renditions paint with: colours by role, and the shapes on a host |
@@ -168,7 +168,7 @@ with Playwright, from a checkout of
 ## Status
 
 A proof of concept: a draft with no release, whose API changes freely. The
-[HOTTY profile](docs/profile.md) it proves is a draft as well.
+[hotty profile](docs/profile.md) it proves is a draft as well.
 
 ## License
 

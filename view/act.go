@@ -474,7 +474,7 @@ func (c *Controller) Shortcut(key string) (ok bool, err error) {
 	return false, nil
 }
 
-// SameKey compares two keys as HOTTY names them (SPEC §10.4), read as a
+// SameKey compares two keys as hotty names them (SPEC §10.4), read as a
 // host reads a key a program writes: modifiers in any order and case, a
 // physical key as its W3C code value or in snake case, a letter in either
 // case, so that Control+S is ctrl+s and PageDown is page_down. A key that

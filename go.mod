@@ -1,4 +1,4 @@
-// hotty-a2ui: HOTTY's UI kit on A2UI, the proof of concept of gov NEIO-11.
+// hotty-a2ui: hotty's UI kit on A2UI, the proof of concept of gov NEIO-11.
 module github.com/neuroplastio/hotty-a2ui
 
 go 1.26.0

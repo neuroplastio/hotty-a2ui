@@ -1,4 +1,4 @@
-// Package hotty is HOTTY's catalog for A2UI (NEIO-11): what a terminal
+// Package hotty is hotty's catalog for A2UI (NEIO-11): what a terminal
 // adds to the basic catalog. HottyShortcut binds a key, HottyForm submits
 // its fields, hottyFocus and hottyBlur move the keyboard, hottyScrollTo
 // scrolls a HottyScrollView, hottyExpandAll and hottyCollapseAll fold a

@@ -1,4 +1,4 @@
-// Package view is what the HOTTY renditions draw: a surface's resolved
+// Package view is what the hotty renditions draw: a surface's resolved
 // A2UI nodes, with the renderer's own state (the tab shown, the modal
 // open, a control's unbound value), made into a tree of a few kinds of
 // element. Each rendition (html, cells, text) draws those kinds, so a

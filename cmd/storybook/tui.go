@@ -54,7 +54,7 @@ func newModel(o storybook.Options) *model {
 	return &model{s: hottytea.New(), b: storybook.New(o)}
 }
 
-// Init finds out whether the terminal is a HOTTY host, and asks it for its
+// Init finds out whether the terminal is a hotty host, and asks it for its
 // colours, which the cells tint and blend from once it answers (profile
 // §3.6; the Book takes the answers).
 func (m *model) Init() tea.Cmd {
@@ -128,7 +128,7 @@ func (m *model) View() tea.View {
 // draw draws the Book, and lays its surfaces out.
 func (m *model) draw() tea.Cmd {
 	if m.w == 0 {
-		m.frame = "Finding out whether the terminal is a HOTTY host…"
+		m.frame = "Finding out whether the terminal is a hotty host…"
 		return nil
 	}
 	var want []hottytea.Surface

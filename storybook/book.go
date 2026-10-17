@@ -1,4 +1,4 @@
-// Package storybook is the HOTTY kit's storybook (NEIO-11): every story in
+// Package storybook is the hotty kit's storybook (NEIO-11): every story in
 // the rendition picked, live, with its actions, data model and messages;
 // or what an agent streams. cmd/storybook runs it on the whole screen. A
 // Bubble Tea program with screens of its own (hotty-demo) shows it in a
@@ -27,7 +27,7 @@ import (
 )
 
 // The renditions a story is shown in. Surfaces and side by side need a
-// HOTTY host.
+// hotty host.
 const (
 	rendSurfaces = "surfaces"
 	rendCells    = "cells"
@@ -39,14 +39,14 @@ const (
 type kind int
 
 const (
-	asSurface kind = iota // a HOTTY surface: HTML the host lays out
+	asSurface kind = iota // a hotty surface: HTML the host lays out
 	asCells               // cells the storybook paints
 	asText                // plain text
 )
 
 // pane is one surface on the screen, in one rendition.
 type pane struct {
-	name  string // the HOTTY surface's name, and the pane's key
+	name  string // the hotty surface's name, and the pane's key
 	s     *story.Surface
 	kind  kind
 	html  *html.Rendition
@@ -93,7 +93,7 @@ type Options struct {
 	Prefix string
 	// Mouse: the program has the terminal report the mouse's buttons
 	// (Bubble Tea's MouseModeCellMotion or MouseModeAllMotion), and hands
-	// the Book their presses, moves and releases. On a HOTTY host the Book
+	// the Book their presses, moves and releases. On a hotty host the Book
 	// then names the cells of each Slider's track it draws in cells
 	// (hotty.Touch, SPEC §9.6), so that a finger drags it as the mouse
 	// does, where it would scroll the terminal otherwise; Quit takes them
@@ -163,7 +163,7 @@ type Book struct {
 	// moves; ticking is a tick on its way (Tick).
 	anim    time.Duration
 	ticking bool
-	// shown is the HOTTY surfaces the last View placed, which want
+	// shown is the hotty surfaces the last View placed, which want
 	// updating as often as their renditions say (Tick).
 	shown []*html.Rendition
 
@@ -1081,7 +1081,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	b.at, b.cursor, b.anim, b.shown = r, nil, 0, nil
 	b.ready(h.Mode)
 	if b.ch == nil {
-		return "Finding out whether the terminal is a HOTTY host…", nil
+		return "Finding out whether the terminal is a hotty host…", nil
 	}
 	W, H := r.W, r.H
 	minH := 10
@@ -1097,7 +1097,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 
 	top, bodyH := 0, H
 	if b.o.Bars {
-		x := scr.put(0, 0, W, "HOTTY kit storybook", cells.Fg, cells.Bold)
+		x := scr.put(0, 0, W, "hotty kit storybook", cells.Fg, cells.Bold)
 		scr.put(x, 0, W-x, " · "+b.cur+" · "+b.rend, cells.Muted, 0)
 		quit := "Ctrl+C twice to quit"
 		if hotty.Resolve(hotty.PlatformOf(b.caps), false).Lookup("ctrl+c") == hotty.Copy {

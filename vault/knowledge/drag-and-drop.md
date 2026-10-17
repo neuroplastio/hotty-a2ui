@@ -1,4 +1,4 @@
-# Drag and drop: what A2UI and HOTTY give, the stories, the models
+# Drag and drop: what A2UI and hotty give, the stories, the models
 
 As of 2026-10-10. The maintainer asked for drag and drop to be first-class
 behaviour of lists, tables, trees and the like (KIT-23). This note lays out
@@ -21,7 +21,7 @@ its value as it is dragged. So a drop the kit handles is a write to bound
 data, an action, or both. All of it is the kit's, under
 `io_neuroplast_hotty`, as the icons are.
 
-**HOTTY has drags (SPEC §9.1).** `dragstart`, `drag` and `dragend` on an
+**hotty has drags (SPEC §9.1).** `dragstart`, `drag` and `dragend` on an
 element with `drag` in its `data-on`. A `drag` names the element under the
 pointer each time it changes, and every event carries the surface's cell
 and the keys held. The pointer is the surface's until the release. That

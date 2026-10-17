@@ -1,6 +1,6 @@
 # Roadmap
 
-The goal: the kit looks nice in a plain terminal first, and awesome on a HOTTY
+The goal: the kit looks nice in a plain terminal first, and awesome on a hotty
 host. Gaps are closed in two phases. Every component goes through phase 1
 before any goes through phase 2. The gaps and their tickets are in
 [knowledge/gap-analysis.md](knowledge/gap-analysis.md), and the build order is
@@ -21,7 +21,7 @@ A phase-1 leg (`KIT-NNc`) is done when it has all of these:
 - **Renditions.**
   - It draws in cells.
   - It draws in text.
-  - On a HOTTY host, the html rendition draws a plain but correct baseline,
+  - On a hotty host, the html rendition draws a plain but correct baseline,
     so no story shows `! Type`.
 - **A story** under `story/stories/hotty/` that shows its states: focused,
   disabled, empty, loading and error, where it has them.
@@ -36,9 +36,9 @@ A phase-1 leg (`KIT-NNc`) is done when it has all of these:
 Exit: every phase-1 leg on the board is ticked, and the maintainer has seen
 each side-by-side shot.
 
-## Phase 2 — The HOTTY layer
+## Phase 2 — The hotty layer
 
-The same components on a HOTTY host, using what HTML gives:
+The same components on a hotty host, using what HTML gives:
 - proportional type;
 - SVG;
 - real tables;

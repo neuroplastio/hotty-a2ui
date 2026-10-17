@@ -2,7 +2,7 @@
 //
 // The reference for HottyBigText (vault KIT-19): OpenTUI's ASCIIFont, with
 // the content of the kit's story hotty/bigtext, so that a shot of one can be
-// set beside a shot of the other (scripts/ref-shot.sh): HOTTY in its
+// set beside a shot of the other (scripts/ref-shot.sh): hotty in its
 // "block" font, centred over a caption, the score in "tiny", and the
 // sizes' line in "tiny" (2 rows) and "block" (6 rows, with a shadow); the
 // wrapped line has no equivalent, since ASCIIFont does not wrap: a line
@@ -22,7 +22,7 @@ const big = (text: string, font: "tiny" | "block") => new ASCIIFontRenderable(re
 
 page.add(text("Big text"))
 const splash = new BoxRenderable(renderer, { flexDirection: "column", alignItems: "center", width: "100%" })
-splash.add(big("HOTTY", "block"))
+splash.add(big("hotty", "block"))
 splash.add(text("HTML over the TTY"))
 page.add(splash)
 page.add(text("Score, bound to the data model"))

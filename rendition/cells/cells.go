@@ -1,4 +1,4 @@
-// Package cells is the rendition on a terminal that is not a HOTTY host:
+// Package cells is the rendition on a terminal that is not a hotty host:
 // a surface laid out and painted in cells, identically in every
 // implementation (docs/profile.md §3). The renderer does what a host would
 // do with the surface's document: it takes keys and clicks, and turns them

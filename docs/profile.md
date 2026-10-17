@@ -1,17 +1,17 @@
-# The HOTTY profile of A2UI
+# The hotty profile of A2UI
 
     Status:   Draft, proved by this repository (gov NEIO-11).
     A2UI:     v1.0 (candidate), pinned at third_party/a2ui/REV.
-    HOTTY:    SPEC.md 0.1, unchanged.
+    hotty:    SPEC.md 0.4, unchanged.
 
 A2UI describes a UI as a flat list of components and a data model. This
 profile says how a renderer shows an A2UI surface in a terminal, in the three
-renditions of HOTTY's SDK.md §2.5, and what it adds to A2UI to do so. It adds
+renditions of hotty's SDK.md §2.5, and what it adds to A2UI to do so. It adds
 only through A2UI's own extension points: a catalog of its own (the hotty
 catalog), mixed with the basic catalog component by component; renderer
 functions; and one extension key prefix, `io_neuroplast_hotty`.
 
-Nothing here changes A2UI or HOTTY. Where this draft and either of them
+Nothing here changes A2UI or hotty. Where this draft and either of them
 disagree, they are right.
 
 ## 1. Renditions
@@ -19,7 +19,7 @@ disagree, they are right.
 One A2UI surface has three renditions, and a renderer chooses one as SDK.md
 §2.5 does:
 
-- **Surfaces**, on a HOTTY host: the surface is one HOTTY surface, an HTML
+- **Surfaces**, on a hotty host: the surface is one hotty surface, an HTML
   document, changed by deltas (§2). Its markup also goes into an ordinary
   web page, with no program behind it (§2.1).
 - **Cells**, on a terminal that is not a host: the renderer lays the surface
@@ -33,7 +33,7 @@ surface is shown keeps it.
 
 ## 2. Surfaces
 
-On a host, an A2UI surface is one HOTTY surface. The reference is
+On a host, an A2UI surface is one hotty surface. The reference is
 `rendition/html`.
 
 **The document.** It holds the kit's stylesheet and three elements: the
@@ -67,7 +67,7 @@ surface lays out as a page, the same components in the same order.
   stays text.
 
 **Elements.** Each component is one element, whose `id` is the
-component's node key encoded for HOTTY. A node key is the component's id,
+component's node key encoded for hotty. A node key is the component's id,
 with a template item's path in brackets (`row[/items/0]`). Letters,
 digits and `-_./` stay; every other byte is `~` and two upper-case hex
 digits, so an id is always a valid control value (SPEC.md §3.2). The
@@ -258,7 +258,7 @@ to be read. It is not part of this.
 ## 3. Cells
 
 In cells the renderer lays the surface out on a grid a given number of
-columns wide and as many rows tall as it takes (HOTTY's `r=auto`), and
+columns wide and as many rows tall as it takes (hotty's `r=auto`), and
 paints every cell. The rules here make that grid the same in every
 implementation. The reference is `rendition/cells`, and the vectors (§3.9)
 are the test.
@@ -1016,7 +1016,7 @@ In the output:
     (past a line's end, its last word; an obscured value is one word); a
     triple click selects its line, the whole value in a one-line field;
     the cursor goes to the selection's end, and the button held drags
-    nothing. A terminal's mouse reports carry no count (a HOTTY host's
+    nothing. A terminal's mouse reports carry no count (a hotty host's
     count is a surface's clicks', not the terminal's), so the rendition
     counts: presses on one cell 500 ms apart or less are a run (`Click`);
   - a select opens or closes its list, and a click on a row of the open
@@ -1356,7 +1356,7 @@ reference is `rendition/text`.
 
 ## 5. Keys and focus
 
-Keys and focus are HOTTY SPEC.md §10 in both renditions. On a host the
+Keys and focus are hotty SPEC.md §10 in both renditions. On a host the
 terminal implements them. In cells the renderer does, by the same rules:
 
 - **Who has the keyboard.** A surface has it when the user clicks a
@@ -1436,7 +1436,7 @@ onto the same view, and this one is deprecated (`deprecated`,
 
 ### 6.1 HottyShortcut
 
-Binds a key to its surface, and draws nothing. `key` is a key as HOTTY
+Binds a key to its surface, and draws nothing. `key` is a key as hotty
 SPEC.md §10.4 names it, as myelin key names 0.1 do: its modifiers (`super`,
 `ctrl`, `alt`, `shift`, in that order, and `mod`, the platform's command
 modifier, first), each followed by `+`, then a physical key in snake case
@@ -1458,7 +1458,7 @@ or bind the key to `program` for the fields (§6.5).
 ### 6.2 HottyForm
 
 A container whose `onSubmit` runs on Enter in a text field inside it (on a
-host, HOTTY's `submit`). It runs only when the HottyForm's own checks and those
+host, hotty's `submit`). It runs only when the HottyForm's own checks and those
 of every control inside pass; otherwise each failing control shows its
 error, and nothing goes to the agent. A control's error shows once the
 user has changed it, or tried its HottyForm. Fields commit first (§5), so

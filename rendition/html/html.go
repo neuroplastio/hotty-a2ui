@@ -1,4 +1,4 @@
-// Package html is the rendition on a HOTTY host: a surface's view as an
+// Package html is the rendition on a hotty host: a surface's view as an
 // HTML document, which the host lays out, paints, and runs the keyboard
 // in (SPEC §10), and then as deltas (SPEC §6) as the surface changes. The
 // host's events come back as the user's acts on the view's Controller.
@@ -158,7 +158,7 @@ func (r *Rendition) SetKeys(keys string) { r.keys = keys }
 // which would hold the fit at the surface's height.
 func (r *Rendition) SetFit(fit bool) { r.fit = fit }
 
-// Name is the HOTTY surface's name.
+// Name is the hotty surface's name.
 func (r *Rendition) Name() string { return r.name }
 
 // Doc is the whole document of the view as it is now, for a=doc; the host

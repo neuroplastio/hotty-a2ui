@@ -118,7 +118,7 @@ var outOfScope = map[string]string{
 	"agent_to_renderer.yaml agent_to_renderer_schema": "an SDK's schema generated from its models; this core embeds the spec's",
 	"common_types.yaml common_types_schema":           "an SDK's schema generated from its models; this core embeds the spec's",
 	"catalog.yaml catalog_schema":                     "an SDK serialising its catalog model",
-	"accessibility.yaml accessibility_check":          "a renderer's accessibility tree; the HOTTY renditions' business, not the core's",
+	"accessibility.yaml accessibility_check":          "a renderer's accessibility tree; the hotty renditions' business, not the core's",
 }
 
 // covered are the suites and actions the tests here run.

@@ -34,7 +34,7 @@ type shot struct {
 
 // app is review on the whole screen. It is the A2UI agent and the
 // renderer in one: it sends the surface's messages to the run, the kit
-// renders them as a HOTTY surface, and what the user does comes back as
+// renders them as a hotty surface, and what the user does comes back as
 // the run's actions and data model.
 type app struct {
 	s     *hottytea.Session
@@ -310,10 +310,10 @@ func (a *app) fail(err error) {
 func (a *app) draw() tea.Cmd {
 	switch {
 	case a.s.Mode == hottytea.Detecting || a.w == 0:
-		a.frame = "Finding out whether the terminal is a HOTTY host…"
+		a.frame = "Finding out whether the terminal is a hotty host…"
 		return nil
 	case a.s.Mode == hottytea.Text:
-		a.frame = "review shows pictures on a HOTTY host, such as hottyterm, and this terminal is not one.\n\nq quits."
+		a.frame = "review shows pictures on a hotty host, such as hottyterm, and this terminal is not one.\n\nq quits."
 		return nil
 	}
 	// A space, not nothing: Bubble Tea erases the screen (ED 2) for an

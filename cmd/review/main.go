@@ -1,5 +1,5 @@
 // Command review shows pictures one at a time, beside a box for feedback
-// on each, on a HOTTY host: an A2UI surface that the kit renders, with the
+// on each, on a hotty host: an A2UI surface that the kit renders, with the
 // pictures sent to the host in band (SPEC §7.1) and shown by cid: URLs.
 // The feedback is kept in a Markdown file, a section for each picture,
 // where whoever asked for it reads it. Whoever asks says what to look for
