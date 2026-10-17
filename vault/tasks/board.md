@@ -227,7 +227,10 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   components settle. Measured by hotty-web, 2026-10-17: a form in the
   site's TinyGo main module (cells, html, view) took it from 6.9 MB to
   8.9 MB raw, with chroma and regexp2, icons, qr, diff, fuzzy and uax29
-  linked though the form uses none.
+  linked though the form uses few of them (a HottyCode, so chroma). Served
+  (TinyGo, wasm-opt -Oz, brotli -q 11): 1,645,197 bytes without the kit,
+  2,166,970 with it, +0.52 MB (+32%), for a cycle, a Slider, chips, two
+  Buttons, Text and a HottyScrollView of HottyCode.
 - [ ] **KIT-STACK** — A form's first key or click (cells `Key`, or html
   `Event` then `Update`) overflows TinyGo's 64 KB goroutine stack (hotty-web,
   2026-10-17); the site's main module runs it at `-stack-size=128KB`.
