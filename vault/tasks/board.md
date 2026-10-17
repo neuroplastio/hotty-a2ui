@@ -237,6 +237,15 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   Find the deep path (the html diff or the cells layout, hotty-web
   guesses) and make it lighter, so the site can drop the flag. Waits for
   the maintainer's word (token preservation).
+- [ ] **KIT-TOUCH** — A finger drags a Slider in cells (the maintainer,
+  via hotty-web, 2026-10-17: "in cell mode slider touch dragging doesn't
+  work in xterm and in hottyterm"). The mouse drag works
+  (cmd/storybook TestSliderDragInCells, SGR reports). A touch drag over
+  the cells is the terminal's scroll (SPEC §9), in hottyterm (patch 0014)
+  and the addon (`Touch` on the cells) alike, so the program hears wheel
+  reports, and only a tap as a click. Waits on HOTTY: cells that take a
+  touch drag, as `touch-action` lets an element on a surface (§9.1).
+  Raised with the hotty agent; no kit workaround.
 - [ ] **KIT-CAT** — A composite catalog: basic's definitions verbatim plus
   the hotty catalog, generated, so an agent can use it as the surface
   default (L1). Do it when the agent integration starts, which the
