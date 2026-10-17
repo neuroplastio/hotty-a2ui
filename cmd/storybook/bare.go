@@ -24,12 +24,12 @@ import (
 //
 // The surfaces are drawn one under another, a row apart, and scroll on
 // the screen as one page where they are taller than it (storybook.Scroll):
-// the wheel, Page Down and Space, Page Up and Shift+Space, the element
+// the wheel, Page Down and space, Page Up and shift+space, the element
 // with the keyboard kept in sight, a heading a link went to at the top.
 // Keys go to the surface that has the keyboard; while none has it, Tab
 // gives it to the first, and q quits. Escape that the surface does not
 // take gives the keyboard back. A copy key copies what is selected, as on
-// a page (cells.Rendition.CopyKey); with nothing selected, Control+C asks
+// a page (cells.Rendition.CopyKey); with nothing selected, ctrl+c asks
 // for another, and the second in a row quits, as the Book has it.
 type bareModel struct {
 	run   *story.Run
@@ -45,7 +45,7 @@ type bareModel struct {
 	frame  string
 	cur    *tea.Cursor
 	err    string
-	// quitAt is when a Control+C nothing took asked for a second one to
+	// quitAt is when a ctrl+c nothing took asked for a second one to
 	// quit, zero while none did. Another key, a click, or
 	// storybook.QuitWindow passing ends the ask (bareQuitEnd).
 	quitAt time.Time
@@ -58,7 +58,7 @@ type bareModel struct {
 // bareTick is the frame clock's tick (bareModel.tick).
 type bareTick struct{}
 
-// bareQuitEnd is the end of the ask a Control+C made at at.
+// bareQuitEnd is the end of the ask a ctrl+c made at at.
 type bareQuitEnd struct{ at time.Time }
 
 type barePane struct {
@@ -119,13 +119,13 @@ func (m *bareModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.copyKey(k) {
 			break
 		}
-		if k == "Control+c" && !asked {
+		if k == "ctrl+c" && !asked {
 			at := time.Now()
 			m.quitAt = at
 			px = tea.Batch(px, tea.Tick(storybook.QuitWindow, func(time.Time) tea.Msg { return bareQuitEnd{at} }))
 			break
 		}
-		if k == "Control+c" || k == "q" && m.keyboard() == nil {
+		if k == "ctrl+c" || k == "q" && m.keyboard() == nil {
 			return m, tea.Sequence(m.px.off(), m.ptr.off(), tea.Quit)
 		}
 		m.key(k)
@@ -255,9 +255,9 @@ func (m *bareModel) tick() tea.Cmd {
 func (m *bareModel) key(k string) {
 	p := m.keyboard()
 	if p == nil {
-		if (k == "Tab" || k == "Shift+Tab") && len(m.panes) > 0 {
+		if (k == "tab" || k == "shift+tab") && len(m.panes) > 0 {
 			p = m.panes[0]
-			p.s.C.FocusNext(k == "Shift+Tab")
+			p.s.C.FocusNext(k == "shift+tab")
 			return
 		}
 		m.scroll.Page(k, m.h, m.rows)
@@ -267,7 +267,7 @@ func (m *bareModel) key(k string) {
 	m.fail(err)
 	switch {
 	case ok:
-	case k == "Escape":
+	case k == "escape":
 		p.s.C.Focus("")
 	default:
 		m.scroll.Page(k, m.h, m.rows)

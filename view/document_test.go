@@ -216,7 +216,7 @@ func TestFollowLink(t *testing.T) {
 
 // Tab from a heading a link in place went to goes on from there: to the
 // next link after it in its document, else to what follows the document;
-// Shift+Tab to the one before.
+// shift+tab to the one before.
 func TestFocusAfterJump(t *testing.T) {
 	for _, tc := range []struct {
 		link string

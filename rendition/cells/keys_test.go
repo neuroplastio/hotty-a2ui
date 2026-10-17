@@ -37,7 +37,7 @@ func form(t *testing.T) (c *view.Controller, data func() map[string]any, actions
 	  {"label":"Small","value":"s"},{"label":"Medium","value":"m"},{"label":"Large","value":"l"}]},
 	 {"id":"go","component":"Button","child":"go_t","action":{"event":{"name":"go"}}},
 	 {"id":"go_t","component":"Text","text":"Go"},
-	 {"id":"save","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"Control+s","press":"go"},
+	 {"id":"save","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"ctrl+s","press":"go"},
 	 {"id":"quit","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"q","action":{"event":{"name":"quit"}}}]}}]`
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
@@ -66,15 +66,15 @@ func TestTyping(t *testing.T) {
 	r := New(c)
 	c.Focus("name")
 	r.Draw(40)
-	keys(t, r, "A", "d", "a", "Space", "L")
+	keys(t, r, "shift+a", "d", "a", "space", "shift+l")
 	if got := data()["name"]; got != "Ada L" {
 		t.Fatalf("name %q", got)
 	}
-	keys(t, r, "Backspace", "Backspace")
+	keys(t, r, "backspace", "backspace")
 	if got := data()["name"]; got != "Ada" {
 		t.Fatalf("after Backspace: %q", got)
 	}
-	keys(t, r, "ArrowLeft", "ArrowLeft", "Shift+L", "Home", "Delete", "End", "!")
+	keys(t, r, "arrow_left", "arrow_left", "shift+l", "home", "delete", "end", "!")
 	if got := data()["name"]; got != "Lda!" {
 		t.Fatalf("after editing: %q", got)
 	}
@@ -89,7 +89,7 @@ func TestTyping(t *testing.T) {
 	}
 }
 
-// TestFieldSelection: Shift with a move and Control+a select (SPEC §10.2),
+// TestFieldSelection: Shift with a move and ctrl+a select (SPEC §10.2),
 // and the field shows what is selected on the selection colour, reversed
 // where the theme can't tint. Under the default keymap the cursor is a
 // line, the terminal's; under a terminal's it is a block, the cell
@@ -117,21 +117,21 @@ func TestFieldSelection(t *testing.T) {
 			t.Errorf("%s: a cursor %v, a block %v", when, ok, f.BlockCursor())
 		}
 	}
-	keys(t, r, "a", "b", "c", "Shift+ArrowLeft", "Shift+ArrowLeft")
-	shows("Shift+ArrowLeft twice", []bool{false, true, true, false}, -1)
+	keys(t, r, "a", "b", "c", "shift+arrow_left", "shift+arrow_left")
+	shows("shift+arrow_left twice", []bool{false, true, true, false}, -1)
 	if col, _, ok := r.Draw(40).Cursor(); !ok || col != nameAt+1 {
 		t.Errorf("the cursor at %d %v, want %d", col, ok, nameAt+1)
 	}
-	keys(t, r, "End")
-	shows("End", []bool{false, false, false, false}, -1)
-	keys(t, r, "Control+a")
-	shows("Control+a", []bool{true, true, true, false}, -1)
+	keys(t, r, "end")
+	shows("end", []bool{false, false, false, false}, -1)
+	keys(t, r, "ctrl+a")
+	shows("ctrl+a", []bool{true, true, true, false}, -1)
 
 	r.SetKeys(hottygo.TerminalKeys)
-	keys(t, r, "End")
+	keys(t, r, "end")
 	shows("End, in the terminal keymap", []bool{false, false, false, false}, 3)
-	keys(t, r, "Shift+Home")
-	shows("Shift+Home, in the terminal keymap", []bool{true, true, true, false}, -1)
+	keys(t, r, "shift+home")
+	shows("shift+home, in the terminal keymap", []bool{true, true, true, false}, -1)
 }
 
 // TestFieldMouseSelection: a press in a field's value puts the caret
@@ -171,7 +171,7 @@ func TestFieldMouseSelection(t *testing.T) {
 	must(r.Click(nameAt+2, 0))
 	must(r.Drag(0, 0))
 	r.Release()
-	keys(t, r, "Delete")
+	keys(t, r, "delete")
 	if got := data()["name"]; got != "" {
 		t.Errorf("a drag from the end to left of the value, and Delete: %q", got)
 	}
@@ -215,7 +215,7 @@ func TestFieldShiftClick(t *testing.T) {
 	r := New(c)
 	c.Focus("name")
 	r.Draw(40)
-	keys(t, r, "a", "b", "c", "d", "Home")
+	keys(t, r, "a", "b", "c", "d", "home")
 	// "┃ Name  abcd" on row 0: d is at column nameAt+3.
 	if err := r.ShiftClick(nameAt+3, 0); err != nil {
 		t.Fatal(err)
@@ -225,7 +225,7 @@ func TestFieldShiftClick(t *testing.T) {
 	if got := data()["name"]; got != "xd" {
 		t.Fatalf("Shift with a press from the caret, then x: %q", got)
 	}
-	keys(t, r, "End")
+	keys(t, r, "end")
 	for _, col := range []int{nameAt, nameAt + 1} {
 		if err := r.ShiftClick(col, 0); err != nil {
 			t.Fatal(err)
@@ -397,7 +397,7 @@ func TestLongText(t *testing.T) {
 	r := New(c)
 	c.Focus("note")
 	r.Draw(40)
-	keys(t, r, "a", "b", "Enter", "c", "ArrowUp", "x", "PageDown", "y")
+	keys(t, r, "a", "b", "enter", "c", "arrow_up", "x", "page_down", "y")
 	if got := data()["note"]; got != "axb\ncy" {
 		t.Fatalf("note %q", got)
 	}
@@ -411,7 +411,7 @@ func TestTabOrder(t *testing.T) {
 	c.Focus(want[0])
 	for {
 		r.Draw(40)
-		if ok, err := r.Key("Tab"); !ok || err != nil {
+		if ok, err := r.Key("tab"); !ok || err != nil {
 			t.Fatalf("Tab: %v %v", ok, err)
 		}
 		if !c.St.Keyboard {
@@ -423,8 +423,8 @@ func TestTabOrder(t *testing.T) {
 		t.Errorf("Tab order %v, focusables %v", ids, want)
 	}
 	c.Focus(want[len(want)-1])
-	if _, err := r.Key("Shift+Tab"); err != nil || c.St.Focus != want[len(want)-2] {
-		t.Errorf("Shift+Tab went to %s", c.St.Focus)
+	if _, err := r.Key("shift+tab"); err != nil || c.St.Focus != want[len(want)-2] {
+		t.Errorf("shift+tab went to %s", c.St.Focus)
 	}
 }
 
@@ -432,7 +432,7 @@ func TestEnterSubmits(t *testing.T) {
 	c, _, actions := form(t)
 	r := New(c)
 	c.Focus("name")
-	keys(t, r, "x", "Enter")
+	keys(t, r, "x", "enter")
 	if !slices.Equal(*actions, []string{"send"}) {
 		t.Errorf("actions %v", *actions)
 	}
@@ -442,11 +442,11 @@ func TestSpaceToggles(t *testing.T) {
 	c, data, _ := form(t)
 	r := New(c)
 	c.Focus("agree")
-	keys(t, r, " ")
+	keys(t, r, "space")
 	if data()["agree"] != true {
 		t.Fatal("Space did not tick the CheckBox")
 	}
-	keys(t, r, "Space")
+	keys(t, r, "space")
 	if data()["agree"] != false {
 		t.Fatal("Space did not untick it")
 	}
@@ -459,9 +459,9 @@ func TestShortcutPresses(t *testing.T) {
 	c, _, actions := form(t)
 	r := New(c)
 	c.Focus("name")
-	keys(t, r, "Control+s")
+	keys(t, r, "ctrl+s")
 	c.Focus("")
-	keys(t, r, "Control+s")
+	keys(t, r, "ctrl+s")
 	if !slices.Equal(*actions, []string{"go", "go"}) {
 		t.Errorf("actions %v", *actions)
 	}
@@ -471,7 +471,7 @@ func TestPrintableNeverReachesShortcut(t *testing.T) {
 	c, data, actions := form(t)
 	r := New(c)
 	c.Focus("name")
-	keys(t, r, "q", "Shift+Q")
+	keys(t, r, "q", "shift+q")
 	if data()["name"] != "qQ" || len(*actions) != 0 {
 		t.Fatalf("name %q, actions %v", data()["name"], *actions)
 	}
@@ -480,10 +480,10 @@ func TestPrintableNeverReachesShortcut(t *testing.T) {
 	if !slices.Equal(*actions, []string{"quit"}) {
 		t.Errorf("q on a Button: actions %v", *actions)
 	}
-	if ok, _ := r.Key("Escape"); ok {
+	if ok, _ := r.Key("escape"); ok {
 		t.Error("Escape was taken with no Modal open")
 	}
-	if ok, _ := r.Key("F5"); ok {
+	if ok, _ := r.Key("f5"); ok {
 		t.Error("F5 was taken")
 	}
 }
@@ -493,7 +493,7 @@ func TestSelect(t *testing.T) {
 	r := New(c)
 	c.Focus("size")
 	r.Draw(40)
-	keys(t, r, "ArrowDown")
+	keys(t, r, "arrow_down")
 	if got := data()["size"]; !slices.Equal(got.([]any), []any{"l"}) {
 		t.Fatalf("ArrowDown: size %v", got)
 	}
@@ -501,7 +501,7 @@ func TestSelect(t *testing.T) {
 	if got := data()["size"]; !slices.Equal(got.([]any), []any{"s"}) {
 		t.Fatalf("s: size %v", got)
 	}
-	keys(t, r, "Enter", "ArrowDown")
+	keys(t, r, "enter", "arrow_down")
 	f := r.Draw(40).Plain()
 	// The input is a text field's, after the label and the inset, as wide
 	// as the widest option and the chevron; the list's labels under the
@@ -509,7 +509,7 @@ func TestSelect(t *testing.T) {
 	if !strings.Contains(f, "┃ Size  Small  ▾\n") || !strings.Contains(f, "┃     ● Small\n┃   > ○ Medium") {
 		t.Fatalf("open list:\n%s", f)
 	}
-	keys(t, r, " ")
+	keys(t, r, "space")
 	if got := data()["size"]; !slices.Equal(got.([]any), []any{"m"}) {
 		t.Fatalf("pick: size %v", got)
 	}
@@ -565,7 +565,7 @@ func TestModalPanel(t *testing.T) {
 		t.Error("a click outside the panel left the Modal open")
 	}
 	openModal(t, c)
-	if ok, err := r.Key("Escape"); !ok || err != nil || c.V.Overlay != nil {
+	if ok, err := r.Key("escape"); !ok || err != nil || c.V.Overlay != nil {
 		t.Error("Escape left the Modal open")
 	}
 }
@@ -686,7 +686,7 @@ func TestSliderDrag(t *testing.T) {
 	if err := r.Drag(tr.x+tr.n-1, b.y); err != nil || v() != 0.0 {
 		t.Fatalf("a move after the release: %v %v", err, v())
 	}
-	keys(t, r, "ArrowRight", "ArrowRight")
+	keys(t, r, "arrow_right", "arrow_right")
 	if v() != 1.0 {
 		t.Errorf("two steps right of 0: %v", v())
 	}

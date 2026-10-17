@@ -19,31 +19,31 @@ func TestUndo(t *testing.T) {
 			t.Fatalf("the name is %q, want %q", got, v)
 		}
 	}
-	keys(t, r, "A", "d", "a", "Space", "L", "o", "Backspace", "Backspace")
+	keys(t, r, "shift+a", "d", "a", "space", "shift+l", "o", "backspace", "backspace")
 	want("Ada ")
-	keys(t, r, "Control+z")
+	keys(t, r, "ctrl+z")
 	want("Ada Lo")
-	keys(t, r, "Control+z")
+	keys(t, r, "ctrl+z")
 	want("")
-	keys(t, r, "Control+z") // nothing to undo: the field takes it still
+	keys(t, r, "ctrl+z") // nothing to undo: the field takes it still
 	want("")
-	keys(t, r, "Control+y")
+	keys(t, r, "ctrl+y")
 	want("Ada Lo")
-	keys(t, r, "Shift+Control+z")
+	keys(t, r, "ctrl+shift+z")
 	want("Ada ")
-	keys(t, r, "Control+z", "x")
+	keys(t, r, "ctrl+z", "x")
 	want("Ada Lox")
-	keys(t, r, "Control+y")
+	keys(t, r, "ctrl+y")
 	want("Ada Lox")
-	keys(t, r, "ArrowLeft", "y", "z")
+	keys(t, r, "arrow_left", "y", "z")
 	want("Ada Loyzx")
-	keys(t, r, "Control+z")
+	keys(t, r, "ctrl+z")
 	want("Ada Lox")
 
-	keys(t, r, "End", "Shift+ArrowLeft", "Shift+ArrowLeft")
-	keys(t, r, "Control+x")
+	keys(t, r, "end", "shift+arrow_left", "shift+arrow_left")
+	keys(t, r, "ctrl+x")
 	want("Ada L")
-	keys(t, r, "Control+z")
+	keys(t, r, "ctrl+z")
 	want("Ada Lox")
 	if got := r.Selection(); got != "ox" {
 		t.Errorf("undoing the cut selected %q, want \"ox\"", got)
@@ -52,31 +52,31 @@ func TestUndo(t *testing.T) {
 		t.Fatal(err)
 	}
 	want("Ada L!")
-	keys(t, r, "Control+z")
+	keys(t, r, "ctrl+z")
 	want("Ada Lox")
 
 	if err := c.SetValue("name", "Grace"); err != nil {
 		t.Fatal(err)
 	}
 	r.Draw(40)
-	keys(t, r, "Control+z")
+	keys(t, r, "ctrl+z")
 	want("Grace")
 
 	c.Focus("note")
 	r.Draw(40)
-	keys(t, r, "h", "i", "Control+z")
+	keys(t, r, "h", "i", "ctrl+z")
 	if got := data()["note"]; got != "" {
 		t.Errorf("the note after an undo: %q", got)
 	}
 	want("Grace")
 
-	r.SetKeys("Mod+z=program")
-	if ok, _ := r.Key("Control+z"); ok {
-		t.Error("Control+z bound to program was taken")
+	r.SetKeys("mod+z=program")
+	if ok, _ := r.Key("ctrl+z"); ok {
+		t.Error("ctrl+z bound to program was taken")
 	}
 	c.Focus("go")
 	r.Draw(40)
-	if ok, _ := r.Key("Control+y"); ok {
-		t.Error("Control+y on a button was taken")
+	if ok, _ := r.Key("ctrl+y"); ok {
+		t.Error("ctrl+y on a button was taken")
 	}
 }

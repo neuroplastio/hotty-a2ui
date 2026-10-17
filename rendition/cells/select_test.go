@@ -134,7 +134,7 @@ func TestSelectStaysInText(t *testing.T) {
 	if r.Selection() == "" {
 		t.Fatal("no selection")
 	}
-	r.Key("Escape")
+	r.Key("escape")
 	if got := r.Selection(); got != "" {
 		t.Errorf("after Escape: %q", got)
 	}
@@ -149,16 +149,16 @@ func TestOSC52(t *testing.T) {
 	}
 }
 
-// TestCopyKeys: the keymap's copy, Mod+c, copies a Text's selection to
-// the clipboard and leaves it selected: Control+c where Mod is Control,
-// the default, and Meta+c (Command+c) where the host says Meta, the other
+// TestCopyKeys: the keymap's copy, mod+c, copies a Text's selection to
+// the clipboard and leaves it selected: ctrl+c where Mod is ctrl,
+// the default, and super+c (Command+c) where the host says super, the other
 // then not bound. With nothing selected the key is the program's, as it
 // is once the keymap binds it to program, and another key bound to copy
 // copies instead (SPEC §10.2, §10.4).
 func TestCopyKeys(t *testing.T) {
 	r, c := sidePage(t, selPage)
-	if ok, _ := r.Key("Control+c"); ok {
-		t.Fatal("Control+c with nothing selected was taken")
+	if ok, _ := r.Key("ctrl+c"); ok {
+		t.Fatal("ctrl+c with nothing selected was taken")
 	}
 	selectDrag(t, r, "one item", "one item")
 	r.Copied()
@@ -171,27 +171,27 @@ func TestCopyKeys(t *testing.T) {
 		}
 		return copied
 	}
-	if !copies("Control+c") || copies("Meta+c") {
-		t.Error("where Mod is Control, Control+c copies and Meta+c does not")
+	if !copies("ctrl+c") || copies("super+c") {
+		t.Error("where Mod is ctrl, ctrl+c copies and super+c does not")
 	}
 	if got := r.Selection(); got != "one item" {
 		t.Errorf("the selection after a copy: %q", got)
 	}
-	c.Platform = hottygo.Platform{Mod: "Meta"}
-	if !copies("Meta+c") || copies("Control+c") {
-		t.Error("where Mod is Meta, Meta+c copies and Control+c does not")
+	c.Platform = hottygo.Platform{Mod: "super"}
+	if !copies("super+c") || copies("ctrl+c") {
+		t.Error("where Mod is super, super+c copies and ctrl+c does not")
 	}
 	c.Platform = hottygo.Platform{}
-	r.SetKeys("Mod+c=program")
-	if copies("Control+c") {
-		t.Error("Control+c bound to program copied")
+	r.SetKeys("mod+c=program")
+	if copies("ctrl+c") {
+		t.Error("ctrl+c bound to program copied")
 	}
-	r.SetKeys("Control+C=copy")
-	if !copies("Control+C") {
-		t.Error("Shift+Control+c, bound to copy, did not copy")
+	r.SetKeys("ctrl+shift+c=copy")
+	if !copies("ctrl+shift+c") {
+		t.Error("ctrl+shift+c, bound to copy, did not copy")
 	}
 	r.Deselect()
-	if ok, _ := r.Key("Control+C"); ok || r.Selection() != "" {
+	if ok, _ := r.Key("ctrl+shift+c"); ok || r.Selection() != "" {
 		t.Error("Deselect left a selection")
 	}
 }
@@ -204,16 +204,16 @@ func TestCopyField(t *testing.T) {
 	r := New(c)
 	c.Focus("name")
 	r.Draw(40)
-	keys(t, r, "A", "d", "a", "Space", "L", "Shift+ArrowLeft", "Shift+ArrowLeft")
-	if ok, _ := r.Key("Control+c"); !ok {
-		t.Fatal("Control+c on a selection in the field was not taken")
+	keys(t, r, "shift+a", "d", "a", "space", "shift+l", "shift+arrow_left", "shift+arrow_left")
+	if ok, _ := r.Key("ctrl+c"); !ok {
+		t.Fatal("ctrl+c on a selection in the field was not taken")
 	}
 	if got, _ := r.Copied(); got != (Clip{Text: " L"}) {
 		t.Errorf("copied %+v, want \" L\"", got)
 	}
-	keys(t, r, "ArrowRight")
-	if ok, _ := r.Key("Control+c"); ok {
-		t.Error("Control+c with nothing selected in the field was taken")
+	keys(t, r, "arrow_right")
+	if ok, _ := r.Key("ctrl+c"); ok {
+		t.Error("ctrl+c with nothing selected in the field was taken")
 	}
 	now := time.Unix(0, 0)
 	r.Clock = func() time.Time { return now }
@@ -238,9 +238,9 @@ func TestCopyField(t *testing.T) {
 	r = New(c)
 	c.Focus("root")
 	r.Draw(40)
-	keys(t, r, "Control+a")
-	if ok, _ := r.Key("Control+c"); ok {
-		t.Error("Control+c copied from a password field")
+	keys(t, r, "ctrl+a")
+	if ok, _ := r.Key("ctrl+c"); ok {
+		t.Error("ctrl+c copied from a password field")
 	}
 }
 
@@ -254,9 +254,9 @@ func TestCutPaste(t *testing.T) {
 	r := New(c)
 	c.Focus("name")
 	r.Draw(40)
-	keys(t, r, "A", "d", "a", "Space", "L", "Shift+ArrowLeft", "Shift+ArrowLeft")
-	if ok, err := r.Key("Control+x"); !ok || err != nil {
-		t.Fatalf("Control+x on a selection: %v, %v", ok, err)
+	keys(t, r, "shift+a", "d", "a", "space", "shift+l", "shift+arrow_left", "shift+arrow_left")
+	if ok, err := r.Key("ctrl+x"); !ok || err != nil {
+		t.Fatalf("ctrl+x on a selection: %v, %v", ok, err)
 	}
 	if got, _ := r.Copied(); got != (Clip{Text: " L"}) {
 		t.Errorf("cut %+v, want \" L\" on the clipboard", got)
@@ -264,16 +264,16 @@ func TestCutPaste(t *testing.T) {
 	if got := data()["name"]; got != "Ada" {
 		t.Errorf("after the cut the name is %q", got)
 	}
-	if ok, _ := r.Key("Control+x"); ok {
-		t.Error("Control+x with nothing selected was taken")
+	if ok, _ := r.Key("ctrl+x"); ok {
+		t.Error("ctrl+x with nothing selected was taken")
 	}
 	if r.PasteWanted() {
 		t.Error("a paste was wanted before a paste key")
 	}
-	if ok, _ := r.Key("Control+v"); !ok || !r.PasteWanted() || r.PasteWanted() {
-		t.Error("Control+v did not ask for the clipboard once")
+	if ok, _ := r.Key("ctrl+v"); !ok || !r.PasteWanted() || r.PasteWanted() {
+		t.Error("ctrl+v did not ask for the clipboard once")
 	}
-	keys(t, r, "Shift+ArrowLeft", "Shift+ArrowLeft")
+	keys(t, r, "shift+arrow_left", "shift+arrow_left")
 	if ok, err := r.Paste("ny\nthing"); !ok || err != nil {
 		t.Fatalf("Paste: %v, %v", ok, err)
 	}
@@ -288,19 +288,19 @@ func TestCutPaste(t *testing.T) {
 	if got := data()["note"]; got != "one\ntwo" {
 		t.Errorf("pasting in a textarea made %q", got)
 	}
-	r.SetKeys("Mod+v=program Control+X=cut")
-	if ok, _ := r.Key("Control+v"); ok {
-		t.Error("Control+v bound to program was taken")
+	r.SetKeys("mod+v=program ctrl+shift+x=cut")
+	if ok, _ := r.Key("ctrl+v"); ok {
+		t.Error("ctrl+v bound to program was taken")
 	}
-	keys(t, r, "Shift+ArrowLeft")
-	if ok, _ := r.Key("Control+X"); !ok {
-		t.Error("Shift+Control+x, bound to cut, did not cut")
+	keys(t, r, "shift+arrow_left")
+	if ok, _ := r.Key("ctrl+shift+x"); !ok {
+		t.Error("ctrl+shift+x, bound to cut, did not cut")
 	}
 	c.Focus("go")
 	r.Draw(40)
 	r.SetKeys("")
-	if ok, _ := r.Key("Control+v"); ok || r.PasteWanted() {
-		t.Error("Control+v on a button was taken")
+	if ok, _ := r.Key("ctrl+v"); ok || r.PasteWanted() {
+		t.Error("ctrl+v on a button was taken")
 	}
 	if ok, _ := r.Paste("x"); ok {
 		t.Error("a paste with no text control was taken")

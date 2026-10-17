@@ -106,7 +106,7 @@ func TestTreeKeysAndClicks(t *testing.T) {
 	if got := c.S.Data.Value("/sel"); got != "docs/profile.md" {
 		t.Fatalf("selected %v, want docs/profile.md", got)
 	}
-	keys(t, r, "Enter")
+	keys(t, r, "enter")
 	if len(*actions) != 1 || (*actions)[0] != "open:docs/profile.md" {
 		t.Fatalf("actions %v", *actions)
 	}

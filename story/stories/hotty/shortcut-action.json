@@ -3,7 +3,7 @@
   "kind": "behaviour",
   "component": "HottyShortcut",
   "icon": "bolt",
-  "description": "Control+r asks the agent to refresh, with no Button: the HottyShortcut's own action.",
+  "description": "ctrl+r asks the agent to refresh, with no Button: the HottyShortcut's own action.",
   "messages": [
     {
       "version": "v1.0",
@@ -70,14 +70,14 @@
           {
             "id": "help",
             "component": "Text",
-            "text": "Control+r refreshes.",
+            "text": "ctrl+r refreshes.",
             "variant": "caption"
           },
           {
             "id": "refresh_key",
             "component": "HottyShortcut",
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-            "key": "Control+r",
+            "key": "ctrl+r",
             "label": "Refresh",
             "action": {
               "event": {

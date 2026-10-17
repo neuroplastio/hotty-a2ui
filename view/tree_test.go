@@ -134,14 +134,14 @@ func TestTreeKeys(t *testing.T) {
 		{"l", "src/view/tree.go", []any{"src", "src/view"}}, // its first child
 		{"h", "src/view", []any{"src", "src/view"}},         // to the parent
 		{"h", "src/view", []any{"src"}},                     // closes it
-		{"G", "README.md", []any{"src"}},
+		{"shift+g", "README.md", []any{"src"}},
 		{"k", "docs", []any{"src"}},
-		{"Enter", "docs", []any{"src", "docs"}}, // a branch opens
+		{"enter", "docs", []any{"src", "docs"}}, // a branch opens
 		{"j", "docs/profile.md", []any{"src", "docs"}},
-		{"ArrowUp", "docs", []any{"src", "docs"}},
-		{"Space", "docs", []any{"src"}}, // and closes
-		{"Home", "src", []any{"src"}},
-		{"ArrowLeft", "src", []any{}},
+		{"arrow_up", "docs", []any{"src", "docs"}},
+		{"space", "docs", []any{"src"}}, // and closes
+		{"home", "src", []any{"src"}},
+		{"arrow_left", "src", []any{}},
 	} {
 		key(step.key)
 		if got := data("/sel"); got != step.sel {
@@ -151,8 +151,8 @@ func TestTreeKeys(t *testing.T) {
 			t.Errorf("after %s: open %v, want %v", step.key, got, step.open)
 		}
 	}
-	key("End")
-	key("Enter")
+	key("end")
+	key("enter")
 	if len(*actions) != 1 || (*actions)[0].Name != "open" || (*actions)[0].Context["file"] != "README.md" {
 		t.Errorf("actions %+v, want open README.md", *actions)
 	}

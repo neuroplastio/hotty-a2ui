@@ -88,16 +88,16 @@ func (s *Scroll) Keep(now Sight, ok bool, rows, frameRows int) int {
 
 // Page scrolls a frame taller than its window as a browser scrolls a
 // page, with a key the element with the keyboard left: Page Down and
-// Space a page down, Page Up and Shift+Space a page up, as a
+// space a page down, Page Up and shift+space a page up, as a
 // HottyScrollView pages. Keep holds it within the frame.
 func (s *Scroll) Page(k string, rows, frameRows int) bool {
 	if frameRows <= rows {
 		return false
 	}
 	switch k {
-	case "PageDown", "Space":
+	case "page_down", "space":
 		s.Top += rows
-	case "PageUp", "Shift+Space":
+	case "page_up", "shift+space":
 		s.Top -= rows
 	default:
 		return false

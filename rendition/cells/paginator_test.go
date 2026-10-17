@@ -132,7 +132,7 @@ func TestPaginatorKeysAndClicks(t *testing.T) {
 		r.Draw(30)
 	}
 	c.Focus("pager")
-	key("ArrowRight")
+	key("arrow_right")
 	key("l")
 	if got := c.S.Data.Value("/page"); got != 3.0 || len(*actions) != 2 {
 		t.Errorf("→ l: /page %v, %d actions", got, len(*actions))

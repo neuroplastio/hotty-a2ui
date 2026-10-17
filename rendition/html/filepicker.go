@@ -10,7 +10,7 @@ import (
 // its selection and navigation (view.Controller.FileKey): the arrows, Page
 // Up, Page Down, Home and End, Enter, Backspace and Escape, and bubbles'
 // letters (j, k, h, l, g, G).
-const fileKeys = tableKeys + " ArrowLeft=program ArrowRight=program Backspace=program Escape=program k=program j=program h=program l=program g=program G=program"
+const fileKeys = tableKeys + " arrow_left=program arrow_right=program backspace=program escape=program k=program j=program h=program l=program g=program shift+g=program"
 
 // filePicker is a HottyFilePicker on a host (profile §2, §6.31): a focusable
 // box holding its title (the directory path from the root; in a

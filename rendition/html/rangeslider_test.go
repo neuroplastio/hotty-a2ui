@@ -109,7 +109,7 @@ func TestRangeSliderKeysOnHost(t *testing.T) {
 	if s.Focused() != DOMID("price/knob/0") {
 		t.Fatalf("the program's focus: the host's %q", s.Focused())
 	}
-	key("ArrowRight")
+	key("arrow_right")
 	if data("/lo") != 25.0 {
 		t.Errorf("ArrowRight on the start: %v", data("/lo"))
 	}
@@ -119,16 +119,16 @@ func TestRangeSliderKeysOnHost(t *testing.T) {
 	if v, _ := s.Attr(DOMID("price/knob/1"), "aria-valuemin"); v != "25" {
 		t.Errorf("the end's aria-valuemin %q", v)
 	}
-	key("End")
+	key("end")
 	if data("/lo") != 70.0 {
 		t.Errorf("End on the start stops at the end: %v", data("/lo"))
 	}
-	key("Tab")
-	key("Home")
+	key("tab")
+	key("home")
 	if data("/hi") != 70.0 || s.Focused() != DOMID("price/knob/1") {
 		t.Errorf("Home on the end stops at the start: %v, focus %q", data("/hi"), s.Focused())
 	}
-	key("End")
+	key("end")
 	x.check(r)
 
 	// A tap on notch 2 (10): the start's is nearer.

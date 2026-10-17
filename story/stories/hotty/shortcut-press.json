@@ -3,7 +3,7 @@
   "kind": "behaviour",
   "component": "HottyShortcut",
   "icon": "ads_click",
-  "description": "Control+s presses Save, as a click would, and only when Save's checks pass. It works from the field too: the field commits first.",
+  "description": "ctrl+s presses Save, as a click would, and only when Save's checks pass. It works from the field too: the field commits first.",
   "messages": [
     {
       "version": "v1.0",
@@ -83,14 +83,14 @@
           {
             "id": "help",
             "component": "Text",
-            "text": "Control+s saves.",
+            "text": "ctrl+s saves.",
             "variant": "caption"
           },
           {
             "id": "save_key",
             "component": "HottyShortcut",
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-            "key": "Control+s",
+            "key": "ctrl+s",
             "press": "save",
             "label": "Save"
           }

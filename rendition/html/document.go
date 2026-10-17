@@ -15,8 +15,8 @@ import (
 // role note, its title row its icon and its title, in its tone (kit.css).
 
 // linkKeys is a link in place's keymap: Enter reaches the program, which
-// follows the link. Space stays the surface's, which scrolls with it.
-const linkKeys = "Enter=program"
+// follows the link. space stays the surface's, which scrolls with it.
+const linkKeys = "enter=program"
 
 // document is a HottyMarkdown's HTML.
 func document(e *view.Element) string {

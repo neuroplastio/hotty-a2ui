@@ -67,7 +67,7 @@ func TestDiffKey(t *testing.T) {
 	}
 	c := view.NewController(p.Surface("s"))
 	for _, step := range []struct{ key, want string }{
-		{"k", "1"}, {"ArrowDown", "9"}, {"j", "20"}, {"j", "20"}, {"Home", "1"}, {"G", "20"}, {"ArrowUp", "9"}, {"g", "1"}, {"End", "20"},
+		{"k", "1"}, {"arrow_down", "9"}, {"j", "20"}, {"j", "20"}, {"home", "1"}, {"shift+g", "20"}, {"arrow_up", "9"}, {"g", "1"}, {"end", "20"},
 	} {
 		if ok, err := c.DiffKey("root", step.key); !ok || err != nil {
 			t.Fatalf("%s: %v %v", step.key, ok, err)
@@ -76,10 +76,10 @@ func TestDiffKey(t *testing.T) {
 			t.Errorf("after %s: %v, want %s", step.key, got, step.want)
 		}
 	}
-	if ok, _ := c.DiffKey("root", "PageDown"); ok {
+	if ok, _ := c.DiffKey("root", "page_down"); ok {
 		t.Error("PageDown is the diff's")
 	}
-	if ok, err := c.DiffKey("root", "Enter"); !ok || err != nil || !slices.Equal(acts, []string{"20"}) {
+	if ok, err := c.DiffKey("root", "enter"); !ok || err != nil || !slices.Equal(acts, []string{"20"}) {
 		t.Errorf("Enter: %v %v, acted on %q", ok, err, acts)
 	}
 }

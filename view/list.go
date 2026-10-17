@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/neuroplastio/hotty-go"
 	"github.com/sahilm/fuzzy"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -156,28 +157,29 @@ func (c *Controller) ListKey(id, key string) (ok bool, err error) {
 	q := e.Query
 	if q.Editing {
 		switch key {
-		case "Enter":
+		case "enter":
 			// A filter that leaves nothing is dropped, as bubbles' is.
 			if len(e.Shown) == 0 {
 				q.Text = ""
 			}
 			return true, c.setQuery(e, Query{Text: q.Text})
-		case "Escape":
+		case "escape":
 			return true, c.setQuery(e, Query{})
-		case "Backspace":
+		case "backspace":
 			if r := []rune(q.Text); len(r) > 0 {
 				q.Text = string(r[:len(r)-1])
 			}
 			return true, c.setQuery(e, q)
-		case "Space":
+		case "space":
 			q.Text += " "
 			return true, c.setQuery(e, q)
-		case "ArrowUp", "ArrowDown":
+		case "arrow_up", "arrow_down":
 		default:
-			if !typed(key) {
+			text, ok := hotty.KeyText(key)
+			if !ok || !typed(text) {
 				return false, nil
 			}
-			q.Text += key
+			q.Text += text
 			return true, c.setQuery(e, q)
 		}
 	}
@@ -188,35 +190,35 @@ func (c *Controller) ListKey(id, key string) (ok bool, err error) {
 	}
 	to := cur
 	switch key {
-	case "Enter":
+	case "enter":
 		return true, c.Activate(id)
 	case "/":
 		if !e.Filter {
 			return false, nil
 		}
 		return true, c.setQuery(e, Query{Text: q.Text, Editing: true})
-	case "Escape":
+	case "escape":
 		if q.Text == "" {
 			return false, nil
 		}
 		return true, c.setQuery(e, Query{})
-	case "ArrowUp", "k":
+	case "arrow_up", "k":
 		to = cur - 1
-	case "ArrowDown", "j":
+	case "arrow_down", "j":
 		to = cur + 1
-	case "PageUp", "ArrowLeft", "h":
+	case "page_up", "arrow_left", "h":
 		// To the same place a page back, as bubbles turns a page; none
 		// before the first.
 		if to = cur - page; cur < page {
 			to = cur
 		}
-	case "PageDown", "ArrowRight", "l":
+	case "page_down", "arrow_right", "l":
 		if pages, at := e.Pages(); at < pages-1 {
 			to = min(cur+page, last)
 		}
-	case "Home", "g":
+	case "home", "g":
 		to = 0
-	case "End", "G":
+	case "end", "shift+g":
 		to = last
 	default:
 		return false, nil

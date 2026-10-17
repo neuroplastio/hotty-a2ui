@@ -63,7 +63,7 @@ func TestKeyHintsLine(t *testing.T) {
 }
 
 // ? opens the full view, in columns four apart, each a group: the list's
-// moves, its filter and Enter, then Tab, Shift+Tab and ?; ? again closes
+// moves, its filter and Enter, then Tab, shift+tab and ?; ? again closes
 // it. While the list's
 // filter or a field is typed, ? is typed.
 func TestKeyHintsFull(t *testing.T) {

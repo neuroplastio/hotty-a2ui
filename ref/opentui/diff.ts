@@ -7,7 +7,7 @@
 // selection: the story's first file, unified, then its Python change,
 // split.
 //
-//	bun ref/opentui/diff.ts      Control+C quits
+//	bun ref/opentui/diff.ts      ctrl+c quits
 //
 // Bubble Tea has no diff, so this reference is OpenTUI's, a Bun package of
 // its own (package.json), out of the kit's go.mod and ref/'s.

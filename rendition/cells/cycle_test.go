@@ -56,11 +56,11 @@ func TestCycle(t *testing.T) {
 	for _, step := range []struct {
 		key, want, face string
 	}{
-		{"ArrowRight", "prev", "‹  preview   ›"},
-		{"ArrowRight", "prod", "‹ production ›"},
-		{"ArrowLeft", "prev", "‹  preview   ›"},
-		{"Enter", "prod", "‹ production ›"},
-		{"Space", "stage", "‹  staging   ›"},
+		{"arrow_right", "prev", "‹  preview   ›"},
+		{"arrow_right", "prod", "‹ production ›"},
+		{"arrow_left", "prev", "‹  preview   ›"},
+		{"enter", "prod", "‹ production ›"},
+		{"space", "stage", "‹  staging   ›"},
 	} {
 		keys(t, r, step.key)
 		f = r.Draw(40)

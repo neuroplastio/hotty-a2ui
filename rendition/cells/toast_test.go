@@ -213,7 +213,7 @@ func TestTooltipRow(t *testing.T) {
 		t.Errorf("email hovered: %q", got)
 	}
 	// A key hides it: the keyboard's shows, until the pointer leaves.
-	if _, err := r.Key("Tab"); err != nil {
+	if _, err := r.Key("tab"); err != nil {
 		t.Fatal(err)
 	}
 	f = r.Draw(80)

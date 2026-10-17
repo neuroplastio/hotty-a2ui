@@ -220,7 +220,7 @@ const controls = `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId
  {"id":"go_t","component":"Text","text":"Go"},
  {"id":"tabs","component":"Tabs","tabs":[{"title":"A","child":"ta"},{"title":"B","child":"tb"}]},
  {"id":"ta","component":"Text","text":"in A"},{"id":"tb","component":"Text","text":"in B"},
- {"id":"key","component":"HottyShortcut","catalogId":"` + hottycat.ID + `","key":"Control+Enter","press":"go"},
+ {"id":"key","component":"HottyShortcut","catalogId":"` + hottycat.ID + `","key":"ctrl+enter","press":"go"},
  {"id":"more","component":"Modal","trigger":"more_b","content":"more_t"},
  {"id":"more_b","component":"Button","child":"more_bt","action":{"event":{"name":"noop"}}},
  {"id":"more_bt","component":"Text","text":"More"},
@@ -285,7 +285,7 @@ func TestControlsOnHost(t *testing.T) {
 	// Button runs on the value typed; the keyboard comes back.
 	must(t, x.h.Fill(name, "name", "Grace"))
 	x.pump()
-	cmds, ok, err := r.Key("Control+Enter")
+	cmds, ok, err := r.Key("ctrl+enter")
 	if !ok || err != nil || len(cmds) != 1 || !strings.Contains(cmds[0], "a=blur") {
 		t.Fatalf("Key: %q %v %v", cmds, ok, err)
 	}
@@ -308,7 +308,7 @@ func TestControlsOnHost(t *testing.T) {
 	if _, inert := x.h.Surface(name).Attr(surfaceID, "inert"); !inert {
 		t.Error("the surface is not inert under the modal")
 	}
-	if _, ok, _ := r.Key("Escape"); !ok {
+	if _, ok, _ := r.Key("escape"); !ok {
 		t.Error("Escape did not close the modal")
 	}
 	x.send(r.Update()...)
@@ -811,12 +811,12 @@ func TestSelect(t *testing.T) {
 	if s.Focused() != "" || !r.C.St.Keyboard {
 		t.Errorf("open, the host's keyboard is on %q, the controller's %v", s.Focused(), r.C.St.Keyboard)
 	}
-	key("ArrowDown")
+	key("arrow_down")
 	if got, want := hi(), partID("size", partOption+"2"); got != want {
 		t.Errorf("ArrowDown: highlight %q, want %q", got, want)
 	}
 	key("s")
-	key("Enter")
+	key("enter")
 	if size() != "s" {
 		t.Errorf("s and Enter picked %v", size())
 	}
@@ -826,7 +826,7 @@ func TestSelect(t *testing.T) {
 	}
 	x.check(r)
 
-	key("ArrowDown")
+	key("arrow_down")
 	if size() != "m" {
 		t.Errorf("ArrowDown on the closed select picked %v", size())
 	}
@@ -837,8 +837,8 @@ func TestSelect(t *testing.T) {
 
 	must(t, x.h.Click(r.name, "size"))
 	x.pump()
-	key("Home")
-	key("Escape")
+	key("home")
+	key("escape")
 	closed("after Escape")
 	if size() != "l" {
 		t.Errorf("Escape picked %v", size())
@@ -912,7 +912,7 @@ func TestCycle(t *testing.T) {
 	shows("after the clicks", "preview")
 
 	for _, step := range []struct{ key, want string }{
-		{"ArrowRight", "prod"}, {"ArrowLeft", "prev"}, {"Home", "prod"}, {"End", "prev"}, {"s", "stage"},
+		{"arrow_right", "prod"}, {"arrow_left", "prev"}, {"home", "prod"}, {"end", "prev"}, {"s", "stage"},
 	} {
 		if x.h.Key(step.key) {
 			t.Errorf("the host used %s", step.key)
@@ -925,7 +925,7 @@ func TestCycle(t *testing.T) {
 			t.Errorf("%s: taken %v, env %s, want %s", step.key, ok, env(), step.want)
 		}
 	}
-	if !x.h.Key("Enter") {
+	if !x.h.Key("enter") {
 		t.Error("the host did not click the cycle on Enter")
 	}
 	x.pump()
@@ -1178,7 +1178,7 @@ func TestTableOnHost(t *testing.T) {
 	if len(x.actions) != 1 || x.actions[0].Name != "open" || x.actions[0].Context["row"] != "b" {
 		t.Fatalf("a second click: %+v", x.actions)
 	}
-	if _, ok, err := r.Key("ArrowDown"); !ok || err != nil {
+	if _, ok, err := r.Key("arrow_down"); !ok || err != nil {
 		t.Fatalf("ArrowDown: %v %v", ok, err)
 	}
 	x.update(r)
@@ -1243,7 +1243,7 @@ func TestListOnHost(t *testing.T) {
 		x.update(r)
 		x.check(r)
 	}
-	key("ArrowDown")
+	key("arrow_down")
 	if _, ok := s.Element(item(0)); ok || r.C.S.Data.Value("/sel") != "nuts" {
 		t.Errorf("ArrowDown: the first page still shows, or %v is selected", r.C.S.Data.Value("/sel"))
 	}
@@ -1259,7 +1259,7 @@ func TestListOnHost(t *testing.T) {
 	if !strings.Contains(s.HTML(), `<span class="k-match">Nu</span>`) {
 		t.Errorf("the matched characters are not marked:\n%s", s.HTML())
 	}
-	key("Escape")
+	key("escape")
 	if got := s.TextOf(partID("root", partTitle)); got != "Snacks" {
 		t.Errorf("Escape left the title as %q", got)
 	}
@@ -1315,7 +1315,7 @@ func TestTreeOnHost(t *testing.T) {
 		x.update(r)
 		x.check(r)
 	}
-	key("ArrowDown")
+	key("arrow_down")
 	if got := r.C.S.Data.Value("/sel"); got != "main" {
 		t.Errorf("ArrowDown selected %v", got)
 	}
@@ -1366,7 +1366,7 @@ func TestTreeScrollsOnHost(t *testing.T) {
 	if got := s.Focused(); got != partID("root", partNode+"4") {
 		t.Errorf("the host's focus is on %q, want e's node", got)
 	}
-	if _, ok, err := r.Key("Home"); !ok || err != nil {
+	if _, ok, err := r.Key("home"); !ok || err != nil {
 		t.Fatalf("Home: %v %v", ok, err)
 	}
 	x.update(r)
@@ -1449,7 +1449,7 @@ func TestSwitchOnHost(t *testing.T) {
 	if v, _ := s.Attr("wifi", "aria-checked"); v != "false" {
 		t.Errorf("after the click, aria-checked is %q", v)
 	}
-	for _, k := range []string{"Space", "Enter"} {
+	for _, k := range []string{"space", "enter"} {
 		was := r.C.S.Data.Value("/wifi")
 		if !x.h.Key(k) {
 			t.Fatalf("the host did not take %s on the switch", k)
@@ -1519,7 +1519,7 @@ func TestConfirmOnHost(t *testing.T) {
 		t.Fatalf("the host's focus starts on %q", s.Focused())
 	}
 	keys, _ := s.Attr("answers", "data-keys")
-	if km := hotty.ParseKeymap(hotty.Platform{}, keys); !km.Program("ArrowLeft") || !km.Program("ArrowRight") {
+	if km := hotty.ParseKeymap(hotty.Platform{}, keys); !km.Program("arrow_left") || !km.Program("arrow_right") {
 		t.Errorf("the Row's keys %q leave the arrows to the host", keys)
 	}
 	key := func(k, focused string) {
@@ -1537,10 +1537,10 @@ func TestConfirmOnHost(t *testing.T) {
 			t.Errorf("after %s the host's focus is %q, the program's %q, want %q", k, s.Focused(), r.C.St.Focus, focused)
 		}
 	}
-	key("ArrowLeft", "yes")
-	key("ArrowRight", "no")
+	key("arrow_left", "yes")
+	key("arrow_right", "no")
 	key("y", "no")
-	key("ArrowLeft", "yes")
+	key("arrow_left", "yes")
 	key("n", "yes")
 	var names []string
 	for _, e := range run.Actions() {
@@ -1564,7 +1564,7 @@ func TestKeyHintsOnHost(t *testing.T) {
  {"id":"root","component":"Column","children":["l","help","save_key"]},
  {"id":"l","component":"HottyList","catalogId":"`+hottycat.ID+`","filterable":true,"items":[{"label":"Nutella"},{"label":"Nuts"}]},
  {"id":"help","component":"HottyKeyHints","catalogId":"`+hottycat.ID+`"},
- {"id":"save_key","component":"HottyShortcut","catalogId":"`+hottycat.ID+`","key":"Control+s","action":{"event":{"name":"save"}},"label":"save"}]}}]`), &msgs))
+ {"id":"save_key","component":"HottyShortcut","catalogId":"`+hottycat.ID+`","key":"ctrl+s","action":{"event":{"name":"save"}},"label":"save"}]}}]`), &msgs))
 	x.process(msgs...)
 	r := x.rs["s"]
 	s := x.h.Surface(r.name)
@@ -1684,7 +1684,7 @@ func TestTableKeepsWidth(t *testing.T) {
 	must(t, x.h.Click(r.name, partID("root", partRow+"0")))
 	x.pump()
 	for range 3 {
-		if _, ok, err := r.Key("ArrowDown"); !ok || err != nil {
+		if _, ok, err := r.Key("arrow_down"); !ok || err != nil {
 			t.Fatalf("ArrowDown: %v %v", ok, err)
 		}
 		x.update(r)

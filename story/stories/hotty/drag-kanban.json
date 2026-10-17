@@ -4,7 +4,7 @@
   "topic": "Drag and drop",
   "component": "List, io_neuroplast_hotty.reorder, io_neuroplast_hotty.drop",
   "icon": "view_kanban",
-  "description": "Three Lists of cards, each a template's, with the extension's reorder of one type: drag a card within its column or to another one, or press Alt+ArrowUp or Alt+ArrowDown on it to move it a place in its column. Each move writes the columns' lists and the move to /moved, then sends moved. Drop a card on a person below to assign it: the person is a drop target that accepts cards, so the card is written to /assigning and assign is sent with its id, and the card stays where it was. A click on a card sends open.",
+  "description": "Three Lists of cards, each a template's, with the extension's reorder of one type: drag a card within its column or to another one, or press alt+arrow_up or alt+arrow_down on it to move it a place in its column. Each move writes the columns' lists and the move to /moved, then sends moved. Drop a card on a person below to assign it: the person is a drop target that accepts cards, so the card is written to /assigning and assign is sent with its id, and the card stays where it was. A click on a card sends open.",
   "messages": [
     {
       "version": "v1.0",

@@ -66,7 +66,7 @@ func TestPaginatorOnHost(t *testing.T) {
 	for _, step := range []struct {
 		key  string
 		page float64
-	}{{"ArrowLeft", 2}, {"Home", 1}, {"l", 2}, {"End", 3}, {"h", 2}, {"ArrowRight", 3}} {
+	}{{"arrow_left", 2}, {"home", 1}, {"l", 2}, {"end", 3}, {"h", 2}, {"arrow_right", 3}} {
 		// The host leaves the key to the program, as the program reads it.
 		if x.h.Key(step.key) {
 			t.Fatalf("the host used %s", step.key)

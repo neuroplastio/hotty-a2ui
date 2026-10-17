@@ -10,7 +10,7 @@
 // whatever the terminal's colours, level M. It has no label, so the labels
 // are text under the codes; nothing is bound, so the URL's field is text.
 //
-//	bun ref/opentui/qr.ts      Control+C quits
+//	bun ref/opentui/qr.ts      ctrl+c quits
 import { BoxRenderable, TextRenderable, createCliRenderer } from "@opentui/core"
 import { ErrorCorrectionLevel, QRCodeRenderable } from "@opentui/qrcode"
 

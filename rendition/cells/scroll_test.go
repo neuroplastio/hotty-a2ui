@@ -76,8 +76,8 @@ func TestScrollKeys(t *testing.T) {
 	for _, step := range []struct {
 		key string
 		top int
-	}{{"j", 1}, {"ArrowDown", 2}, {"G", 3}, {"ArrowDown", 3}, {"k", 2}, {"g", 0}, {"f", 3}, {"b", 0}, {"Space", 3},
-		{"PageUp", 0}, {"d", 1}, {"Control+d", 2}, {"u", 1}, {"Control+u", 0}, {"End", 3}, {"Home", 0}} {
+	}{{"j", 1}, {"arrow_down", 2}, {"shift+g", 3}, {"arrow_down", 3}, {"k", 2}, {"g", 0}, {"f", 3}, {"b", 0}, {"space", 3},
+		{"page_up", 0}, {"d", 1}, {"ctrl+d", 2}, {"u", 1}, {"ctrl+u", 0}, {"end", 3}, {"home", 0}} {
 		if ok, err := r.Key(step.key); !ok || err != nil {
 			t.Fatalf("%s: %v %v", step.key, ok, err)
 		}
@@ -98,7 +98,7 @@ func TestScrollKeys(t *testing.T) {
 	if r.Wheel(5, 3, 0, -1) {
 		t.Error("the wheel below the box was taken")
 	}
-	if ok, _ := r.Key("ArrowRight"); ok {
+	if ok, _ := r.Key("arrow_right"); ok {
 		t.Error("→ scrolls lines that all fit")
 	}
 }
@@ -127,7 +127,7 @@ func TestScrollFollows(t *testing.T) {
 	if got := first(r.Draw(20)); !strings.HasPrefix(got, " line 4") {
 		t.Fatalf("scrolled up, a line arrived: %q", got)
 	}
-	keys(t, r, "End")
+	keys(t, r, "end")
 	add(9)
 	if got := first(r.Draw(20)); !strings.HasPrefix(got, " line 7") {
 		t.Errorf("back at the end, a line arrived: %q", got)
@@ -165,7 +165,7 @@ func TestScrollSideways(t *testing.T) {
 		}
 		return first(r.Draw(21))
 	}
-	if got := at21("l", "ArrowRight"); got != " cdefghijklmnopqrst" {
+	if got := at21("l", "arrow_right"); got != " cdefghijklmnopqrst" {
 		t.Errorf("12 columns right: %q", got)
 	}
 	if got := at21("l", "l", "l"); got != " ijklmnopqrstuvwxyz" {
@@ -232,7 +232,7 @@ func TestScrollChild(t *testing.T) {
 	}
 	must(t, r.Click(2, 1))
 	c.Focus("root")
-	keys(t, r, "G")
+	keys(t, r, "shift+g")
 	if got := first(r.Draw(20)); !strings.HasPrefix(got, "  B4 ") {
 		t.Fatalf("at the end: %q", got)
 	}

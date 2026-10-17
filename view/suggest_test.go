@@ -112,13 +112,13 @@ func TestSuggestMatches(t *testing.T) {
 // nothing to take, and → before the end, are not the suggestions'.
 func TestSuggestTake(t *testing.T) {
 	c, sent := suggesting(t, "ber", "Berlin", "Bern")
-	if key(t, c, "ArrowRight", false) {
+	if key(t, c, "arrow_right", false) {
 		t.Error("→ before the end took a suggestion")
 	}
-	if !key(t, c, "Tab", true) || c.S.Data.Value("/q") != "Berlin" {
+	if !key(t, c, "tab", true) || c.S.Data.Value("/q") != "Berlin" {
 		t.Fatalf("Tab: /q is %v", c.S.Data.Value("/q"))
 	}
-	if l, _ := shown(c); l != nil || key(t, c, "Tab", true) {
+	if l, _ := shown(c); l != nil || key(t, c, "tab", true) {
 		t.Errorf("after Tab it shows %q, and takes Tab", l)
 	}
 	if len(*sent) != 1 || (*sent)[0]["query"] != "Berlin" {
@@ -131,7 +131,7 @@ func TestSuggestTake(t *testing.T) {
 	if l, _ := shown(c); !slices.Equal(l, []string{"Berlin", "Bern"}) {
 		t.Errorf("after an edit it shows %q", l)
 	}
-	if !key(t, c, "ArrowRight", true) || c.S.Data.Value("/q") != "Berlin" {
+	if !key(t, c, "arrow_right", true) || c.S.Data.Value("/q") != "Berlin" {
 		t.Errorf("→ at the end: /q is %v", c.S.Data.Value("/q"))
 	}
 	if len(*sent) != 3 {
@@ -146,18 +146,18 @@ func TestSuggestTake(t *testing.T) {
 	}
 }
 
-// The arrows and Control+n and Control+p move the highlight round the
+// The arrows and ctrl+n and ctrl+p move the highlight round the
 // list from nothing highlighted; Enter picks it and Escape shuts the list,
 // which ArrowDown opens again at its first. Enter with nothing highlighted
 // and Escape with nothing shown are not the suggestions'.
 func TestSuggestMove(t *testing.T) {
 	c, _ := suggesting(t, "b", "Berlin", "Bern", "Bergen")
-	if key(t, c, "Enter", true) {
+	if key(t, c, "enter", true) {
 		t.Error("Enter took a suggestion with none highlighted")
 	}
 	for _, step := range []struct{ key, hi string }{
-		{"ArrowDown", "Berlin"}, {"Control+n", "Bern"}, {"ArrowDown", "Bergen"}, {"ArrowDown", "Berlin"},
-		{"ArrowUp", "Bergen"}, {"Control+p", "Bern"},
+		{"arrow_down", "Berlin"}, {"ctrl+n", "Bern"}, {"arrow_down", "Bergen"}, {"arrow_down", "Berlin"},
+		{"arrow_up", "Bergen"}, {"ctrl+p", "Bern"},
 	} {
 		if !key(t, c, step.key, true) {
 			t.Fatalf("%s not taken", step.key)
@@ -175,19 +175,19 @@ func TestSuggestMove(t *testing.T) {
 	if _, hi := shown(c); hi != "Bern" {
 		t.Errorf("rewritten, %q highlighted", hi)
 	}
-	if !key(t, c, "Escape", true) {
+	if !key(t, c, "escape", true) {
 		t.Fatal("Escape not taken")
 	}
-	if l, _ := shown(c); l != nil || key(t, c, "Escape", true) || key(t, c, "ArrowUp", true) {
+	if l, _ := shown(c); l != nil || key(t, c, "escape", true) || key(t, c, "arrow_up", true) {
 		t.Errorf("shut, it shows %q, or takes Escape or ArrowUp", l)
 	}
-	if !key(t, c, "ArrowDown", true) {
+	if !key(t, c, "arrow_down", true) {
 		t.Fatal("ArrowDown did not open it again")
 	}
 	if l, hi := shown(c); len(l) != 2 || hi != "Bergen" {
 		t.Errorf("opened again: %q, %q highlighted", l, hi)
 	}
-	if !key(t, c, "Enter", true) || c.S.Data.Value("/q") != "Bergen" {
+	if !key(t, c, "enter", true) || c.S.Data.Value("/q") != "Bergen" {
 		t.Errorf("Enter: /q is %v", c.S.Data.Value("/q"))
 	}
 }
@@ -199,11 +199,11 @@ func TestSuggestWindow(t *testing.T) {
 	if e := c.V.Find("f"); e.Height != view.SuggestRows || e.Top != 0 || len(e.Shown) != 7 {
 		t.Fatalf("height %d top %d of %d", e.Height, e.Top, len(e.Shown))
 	}
-	key(t, c, "ArrowUp", true)
+	key(t, c, "arrow_up", true)
 	if e := c.V.Find("f"); e.Selected != 6 || e.Top != 2 {
 		t.Errorf("at the last: selected %d top %d", e.Selected, e.Top)
 	}
-	key(t, c, "ArrowDown", true)
+	key(t, c, "arrow_down", true)
 	if e := c.V.Find("f"); e.Selected != 0 || e.Top != 0 {
 		t.Errorf("round to the first: selected %d top %d", e.Selected, e.Top)
 	}

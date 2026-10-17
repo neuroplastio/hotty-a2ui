@@ -11,7 +11,7 @@ import (
 // (view.Controller.CycleKey): the arrows, Home and End, which a host that
 // scrolls would take. A focused button uses no letters, and the host
 // clicks it on Space and Enter, which steps it on.
-const cycleKeys = "ArrowLeft=program ArrowRight=program ArrowUp=program ArrowDown=program Home=program End=program"
+const cycleKeys = "arrow_left=program arrow_right=program arrow_up=program arrow_down=program home=program end=program"
 
 // cycle is a cycle on a host (io_neuroplast_hotty.cycle, profile §2): a
 // field as wide as its widest option (box), holding its value, a button

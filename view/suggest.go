@@ -165,11 +165,11 @@ func (e *Element) SuggestionParts(i int) (typed, rest string) {
 
 // SuggestKey works a text field's suggestions by a key, named as SPEC
 // §10.4 has it, before the field's keymap (profile §3.7): Tab takes the
-// suggestion, and so does ArrowRight at the value's end (atEnd: the caret
-// there, nothing selected); ArrowDown and Control+n highlight the next one
-// and ArrowUp and Control+p the one before, round from either end, as
+// suggestion, and so does arrow_right at the value's end (atEnd: the caret
+// there, nothing selected); arrow_down and ctrl+n highlight the next one
+// and arrow_up and ctrl+p the one before, round from either end, as
 // bubbles' keys move through them; Enter picks the highlighted one; Escape
-// closes the list. ArrowDown and Control+n open a closed list again. A
+// closes the list. arrow_down and ctrl+n open a closed list again. A
 // taken suggestion is the field's value, as written, and closes the list
 // until the next edit. ok reports whether the key was the suggestions'.
 // Tab with nothing to take, Enter with nothing highlighted and Escape with
@@ -182,15 +182,15 @@ func (c *Controller) SuggestKey(id, key string, atEnd bool) (ok bool, err error)
 	v, _ := e.Value.(string)
 	n := len(e.Shown)
 	switch key {
-	case "Tab":
+	case "tab":
 		if s := e.Suggestion(); s != "" && s != v {
 			return true, c.takeSuggestion(e, s)
 		}
-	case "ArrowRight":
+	case "arrow_right":
 		if atEnd && e.Ghost() != "" {
 			return true, c.takeSuggestion(e, e.Suggestion())
 		}
-	case "ArrowDown", "Control+n":
+	case "arrow_down", "ctrl+n":
 		if n == 0 {
 			if m := matchSuggestions(e.Suggestions, v); len(m) > 0 {
 				c.highlight(e, e.Suggestions[m[0]])
@@ -200,7 +200,7 @@ func (c *Controller) SuggestKey(id, key string, atEnd bool) (ok bool, err error)
 		}
 		c.highlight(e, e.Suggestions[e.Shown[(e.Selected+1)%n]])
 		return true, nil
-	case "ArrowUp", "Control+p":
+	case "arrow_up", "ctrl+p":
 		if n == 0 {
 			return false, nil
 		}
@@ -210,11 +210,11 @@ func (c *Controller) SuggestKey(id, key string, atEnd bool) (ok bool, err error)
 		}
 		c.highlight(e, e.Suggestions[e.Shown[i]])
 		return true, nil
-	case "Enter":
+	case "enter":
 		if e.Selected >= 0 && e.Selected < n {
 			return true, c.takeSuggestion(e, e.Suggestions[e.Shown[e.Selected]])
 		}
-	case "Escape":
+	case "escape":
 		if n > 0 {
 			c.St.Suggest[id] = Suggest{At: v, Closed: true}
 			c.Rebuild()

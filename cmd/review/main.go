@@ -17,8 +17,8 @@
 //	                        a feedback box for each side of a blind pair
 //
 // The list picks the picture; Enter on it goes to the feedback box.
-// Control+s saves, and so does moving to another picture or quitting.
-// Control+c quits, as does q with nothing focused.
+// ctrl+s saves, and so does moving to another picture or quitting.
+// ctrl+c quits, as does q with nothing focused.
 package main
 
 import (
@@ -164,7 +164,7 @@ func find(args []string) (shots []shot, dir string, err error) {
 // endSignal is a signal to end (endOnSignal).
 type endSignal struct{}
 
-// endOnSignal ends the program on TERM, HUP or INT as Control+C does: the
+// endOnSignal ends the program on TERM, HUP or INT as ctrl+c does: the
 // feedback saved and the surface deleted first, where Bubble Tea's own
 // handling would leave it on the host (SPEC §5.4).
 func endOnSignal(p *tea.Program) {

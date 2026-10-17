@@ -12,7 +12,7 @@ import (
 // selection (Rendition.Key): the arrows, Home and End, which a host would
 // scroll with, and k, j, g and G, which a HottyScrollView around it binds
 // to scroll actions (SPEC §10.2). Enter reaches the program anyway.
-const diffKeys = "ArrowUp=program ArrowDown=program Home=program End=program k=program j=program g=program G=program"
+const diffKeys = "arrow_up=program arrow_down=program home=program end=program k=program j=program g=program shift+g=program"
 
 // diffView is a HottyDiff on a host (profile §2): a focusable box in the
 // terminal's font whose keys reach the program (diffKeys), holding for

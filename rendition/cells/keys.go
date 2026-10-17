@@ -9,19 +9,19 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
-// Key is a key the user pressed, named as SPEC §10.4 has it: "a", "A",
-// "Space", "Enter", "Shift+Tab", "Control+s" (profile §5). A copy key
-// with something selected copies it (CopyKey); in a text control with the
-// keyboard, its keymap's cut cuts what is selected, paste asks for the
+// Key is a key the user pressed, named as SPEC §10.4 has it: "a",
+// "shift+a", "space", "enter", "shift+tab", "ctrl+s" (profile §5). A copy
+// key with something selected copies it (CopyKey); in a text control with
+// the keyboard, its keymap's cut cuts what is selected, paste asks for the
 // clipboard (PasteWanted), and undo and redo take its last edit back or do
-// it again. While the surface has the
-// keyboard, the focused element takes the keys it uses: a
-// text control those its keymap names, and the characters it types (SPEC
-// §10.2, editKey); another kind those of SPEC §10.2's table, unmodified or
-// with Shift only. Tab and Shift+Tab move focus. Any other key, Escape
-// among them, goes to the surface's Shortcuts; without the keyboard only
-// they are tried. Then ? switches a HottyKeyHints' views, and, as
-// rendition/html does, Escape closes an open Modal. handled reports whether the surface took the key: when it did
+// it again. While the surface has the keyboard, the focused element takes
+// the keys it uses: a text control those its keymap names, and the
+// characters it types (SPEC §10.2, editKey); another kind those of SPEC
+// §10.2's table, unmodified or with shift only. tab and shift+tab move
+// focus. Any other key, escape among them, goes to the surface's
+// Shortcuts; without the keyboard only they are tried. Then ? switches a
+// HottyKeyHints' views, and, as rendition/html does, escape closes an open
+// Modal. handled reports whether the surface took the key: when it did
 // not, the key is the program's.
 func (r *Rendition) Key(key string) (handled bool, err error) {
 	if k, ok := hotty.ParseKey(key); ok {
@@ -31,15 +31,20 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	c := r.c
 	r.wake()
 	r.hush()
-	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "Shift"
+	shiftOnly := len(mods) == 0 || len(mods) == 1 && mods[0] == "shift"
+	// An element takes a key by its name without shift, but for a
+	// character: shift+g is not g (SPEC §10.2).
+	if len(mods) == 1 && shiftOnly && printable(name) {
+		name = key
+	}
 	if r.CopyKey(key) {
 		return true, nil
 	}
-	if key == "Escape" {
+	if key == "escape" {
 		// A selection goes, and Escape does what it does.
 		r.sel = nil
 	}
-	if key == "Escape" && r.cancelDrag() {
+	if key == "escape" && r.cancelDrag() {
 		return true, nil
 	}
 	if c.St.Keyboard {
@@ -64,7 +69,7 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 		if ok, err := c.MoveKey(c.St.Focus, key); ok {
 			return true, err
 		}
-		if name == "Tab" && shiftOnly {
+		if name == "tab" && shiftOnly {
 			r.list = ""
 			if c.FocusNext(len(mods) == 1) {
 				delete(r.cursor, c.St.Focus)
@@ -79,14 +84,14 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 	if name == "?" && shiftOnly && c.ToggleHints() {
 		return true, nil
 	}
-	if key == "Escape" && c.St.Modal != "" {
+	if key == "escape" && c.St.Modal != "" {
 		r.list = ""
 		c.CloseModal()
 		return true, nil
 	}
 	// Then it dismisses the newest toast, as it does one whose action has
 	// the keyboard (elementKey).
-	if key == "Escape" && c.DismissNewest() {
+	if key == "escape" && c.DismissNewest() {
 		return true, nil
 	}
 	return false, nil
@@ -106,7 +111,7 @@ func splitKey(key string) (mods []string, name string) {
 }
 
 // printable reports whether a key value is a character: one grapheme
-// cluster, not a control.
+// cluster, not a control (a physical key, "space" or "enter", is not).
 func printable(name string) bool {
 	cl := clusters(name)
 	return len(cl) == 1 && !isControl(cl[0]) && !isBreak(cl[0])
@@ -143,11 +148,11 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	// meets the other.
 	if e.Kind == view.Slider || e.Kind == view.Knob {
 		switch name {
-		case "ArrowLeft", "ArrowDown":
+		case "arrow_left", "arrow_down":
 			return true, r.c.StepSlider(e.ID, -1, "")
-		case "ArrowRight", "ArrowUp":
+		case "arrow_right", "arrow_up":
 			return true, r.c.StepSlider(e.ID, 1, "")
-		case "Home", "End":
+		case "home", "end":
 			return true, r.c.StepSlider(e.ID, 0, name)
 		}
 		return false, nil
@@ -156,9 +161,9 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 		// As a host takes them (SPEC §10.2, a checkbox): Space checks it,
 		// and Enter submits its HottyForm, or does nothing outside one.
 		switch name {
-		case "Space":
+		case "space":
 			return true, r.c.Activate(e.ID)
-		case "Enter":
+		case "enter":
 			return true, r.c.Enter(e.ID)
 		}
 		return false, nil
@@ -170,7 +175,7 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	case view.ToastAction:
 		// A button too; Escape, which reaches the program from it on a
 		// host, dismisses its toast.
-		if name == "Escape" {
+		if name == "escape" {
 			return r.c.DismissNewest(), nil
 		}
 	case view.Media:
@@ -180,7 +185,7 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	case view.Link:
 		// A HottyMarkdown's link in place, as a host's link takes it: Enter
 		// follows it (profile §6.27).
-		if name == "Enter" {
+		if name == "enter" {
 			return true, r.c.Activate(e.ID)
 		}
 		return false, nil
@@ -191,7 +196,7 @@ func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error
 	default:
 		return false, nil
 	}
-	if name == "Space" || name == "Enter" {
+	if name == "space" || name == "enter" {
 		return true, r.c.Activate(e.ID)
 	}
 	return false, nil
@@ -223,10 +228,7 @@ func (r *Rendition) editKey(e *view.Element, key string) (ok bool, err error) {
 	case hotty.Undo, hotty.Redo:
 		return true, r.undo(e, act == hotty.Undo)
 	case hotty.Insert:
-		ch := key
-		if strings.HasSuffix(key, "Space") {
-			ch = " "
-		}
+		ch, _ := hotty.KeyText(key)
 		if e.Kind == view.TextField && e.Variant == "number" && !strings.ContainsAny(ch, numberChars) {
 			return true, nil
 		}
@@ -288,28 +290,29 @@ func (r *Rendition) selectKey(e *view.Element, name string) (bool, error) {
 		return r.c.SetValue(e.ID, e.Options[i].Value)
 	}
 	switch name {
-	case "Space", "Enter":
+	case "space", "enter":
 		if open && n > 0 {
 			r.list = ""
 			return true, r.c.SetValue(e.ID, e.Options[r.hi].Value)
 		}
 		r.toggleList(e)
 		return true, nil
-	case "ArrowUp":
+	case "arrow_up":
 		return true, move(cur - 1)
-	case "ArrowDown":
+	case "arrow_down":
 		return true, move(cur + 1)
-	case "Home", "PageUp":
+	case "home", "page_up":
 		return true, move(0)
-	case "End", "PageDown":
+	case "end", "page_down":
 		return true, move(n - 1)
 	}
-	if !printable(name) {
+	text, _ := hotty.KeyText(name)
+	if !printable(text) {
 		return false, nil
 	}
 	for i := 1; i <= n; i++ {
 		j := (max(cur, -1) + i + n) % n
-		if hasPrefixFold(e.Options[j].Label, name) {
+		if hasPrefixFold(e.Options[j].Label, text) {
 			return true, move(j)
 		}
 	}

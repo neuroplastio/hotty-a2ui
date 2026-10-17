@@ -77,8 +77,8 @@ func TestSuggestDraws(t *testing.T) {
 		t.Errorf("the caret is at %d,%d %v, want after the value, on the ghost", col, row, ok)
 	}
 
-	r.Key("ArrowDown")
-	r.Key("ArrowDown")
+	r.Key("arrow_down")
+	r.Key("arrow_down")
 	f = drawn(t, r, "┃ Command  git checkout\n"+
 		"  Note   ╭─────────────────╮\n"+
 		"         │ git commit      │\n"+
@@ -96,8 +96,8 @@ func TestSuggestDraws(t *testing.T) {
 		t.Errorf("highlighted, col 9 is %v %v", cell.Role, cell.Attr)
 	}
 
-	r.Key("Backspace")
-	r.Key("Backspace")
+	r.Key("backspace")
+	r.Key("backspace")
 	drawn(t, r, "┃ Command  git status\n"+
 		"  Note   ╭─────────────────╮\n"+
 		"         │ git status      │\n"+
@@ -108,8 +108,8 @@ func TestSuggestDraws(t *testing.T) {
 		"         │ 1–5 of 7        │\n"+
 		"         ╰─────────────────╯")
 
-	r.Key("Tab")
-	r.Key("Tab")
+	r.Key("tab")
+	r.Key("tab")
 	drawn(t, r, "  Command  git status\n"+
 		"┃ Note")
 	if c.St.Focus != "note" {
@@ -167,8 +167,8 @@ func TestSuggestGhostOnly(t *testing.T) {
 	r, _ := suggesting(t, `"list":false`)
 	drawn(t, r, "┃ Command  git commit\n"+
 		"  Note")
-	r.Key("ArrowDown")
-	r.Key("ArrowDown")
+	r.Key("arrow_down")
+	r.Key("arrow_down")
 	drawn(t, r, "┃ Command  git checkout\n"+
 		"  Note")
 }

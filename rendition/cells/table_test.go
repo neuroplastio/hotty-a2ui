@@ -113,7 +113,7 @@ func TestTableKeysAndClicks(t *testing.T) {
 	if len(*actions) != 1 || (*actions)[0] != "open:Delhi" {
 		t.Fatalf("a second click: %v", *actions)
 	}
-	keys(t, r, "ArrowDown")
+	keys(t, r, "arrow_down")
 	want := " Rank  City       Population\n" +
 		"──────────────────── 2–3 of 3 ─\n" +
 		"    2  Delhi      32,065,760  │\n" +
@@ -121,7 +121,7 @@ func TestTableKeysAndClicks(t *testing.T) {
 	if got := r.Draw(40).Plain(); got != want {
 		t.Fatalf("after ArrowDown:\n%s\nwant\n%s", got, want)
 	}
-	keys(t, r, "Home", "Enter")
+	keys(t, r, "home", "enter")
 	if len(*actions) != 2 || (*actions)[1] != "open:Tokyo" {
 		t.Fatalf("Home, Enter: %v", *actions)
 	}
@@ -148,7 +148,7 @@ func TestTableWheel(t *testing.T) {
 		t.Error("the wheel down at the end: handled")
 	}
 	c.Focus("root")
-	keys(t, r, "ArrowDown")
+	keys(t, r, "arrow_down")
 	if f = r.Draw(40); !strings.Contains(f.Plain(), "Delhi") || c.S.Data.Value("/sel") != "Delhi" {
 		t.Errorf("ArrowDown after the wheel, selected %v:\n%s", c.S.Data.Value("/sel"), f.Plain())
 	}

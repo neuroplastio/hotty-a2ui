@@ -5,7 +5,7 @@
 // tried by hand.
 //
 //	ref -list      the references, with the story each is held against
-//	ref form       one, on the whole screen; Control+C quits
+//	ref form       one, on the whole screen; ctrl+c quits
 //
 // It is a module of its own, so that bubbles, huh and lipgloss stay out of
 // the kit's go.mod.
@@ -62,7 +62,7 @@ func main() {
 }
 
 // screen is a model drawn on the alternate screen, which quits on
-// Control+C; what it holds draws the rest.
+// ctrl+c; what it holds draws the rest.
 type screen struct {
 	inner interface {
 		Init() tea.Cmd

@@ -3,7 +3,7 @@
   "kind": "behaviour",
   "component": "io_neuroplast_hotty.keys",
   "icon": "keyboard",
-  "description": "A field edits by its keymap (HOTTY SPEC §10.2), here the default one: the arrows, by words with Alt or Control, Home, End, Backspace, Delete, and on a Mac Command with the arrows to the ends and Cocoa's Control keys (Control+e, Control+k…). Shift with a move selects, and Control+a (Command+a on a Mac) selects all, as in a GUI's field. In Notes, up and down keep their place along the row. The password is one word. The HottyForm binds Control+s to submit and leaves Control+k to the program, whose HottyShortcut takes it.",
+  "description": "A field edits by its keymap (HOTTY SPEC §10.2), here the default one: the arrows, by words with Alt or Control, Home, End, Backspace, Delete, and on a Mac Command with the arrows to the ends and Cocoa's Control keys (ctrl+e, ctrl+k…). Shift with a move selects, and ctrl+a (Command+a on a Mac) selects all, as in a GUI's field. In Notes, up and down keep their place along the row. The password is one word. The HottyForm binds ctrl+s to submit and leaves ctrl+k to the program, whose HottyShortcut takes it.",
   "messages": [
     {
       "version": "v1.0",
@@ -69,7 +69,7 @@
             "metadata": {
               "extensions": {
                 "io_neuroplast_hotty": {
-                  "keys": "Control+s=submit Control+k=program"
+                  "keys": "ctrl+s=submit ctrl+k=program"
                 }
               }
             }
@@ -93,15 +93,15 @@
           {
             "id": "form_help",
             "component": "Text",
-            "text": "Here Control+s sends, and Control+k is the program's.",
+            "text": "Here ctrl+s sends, and ctrl+k is the program's.",
             "variant": "caption"
           },
           {
             "id": "program_key",
             "component": "HottyShortcut",
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-            "key": "Control+k",
-            "label": "Control+k",
+            "key": "ctrl+k",
+            "label": "ctrl+k",
             "action": {
               "event": {
                 "name": "controlK",

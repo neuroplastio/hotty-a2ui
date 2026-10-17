@@ -181,7 +181,7 @@ func TestDragOrClickOnHost(t *testing.T) {
 
 	x.do(x.h.DragStart("drag", item("list", 1), 4, 4))
 	x.do(x.h.DragMove(item("list", 3), 4, 6))
-	if _, ok, _ := x.r.Key("Escape"); !ok || c.St.Drag != nil {
+	if _, ok, _ := x.r.Key("escape"); !ok || c.St.Drag != nil {
 		t.Fatalf("Escape: took it %v, drag %+v", ok, c.St.Drag)
 	}
 	x.do(x.h.DragMove(item("list", 4), 4, 7))

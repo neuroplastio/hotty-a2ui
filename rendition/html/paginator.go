@@ -11,7 +11,7 @@ import (
 // and Page Down, Home and End, which a host that scrolls would take. A
 // focused box uses no keys (SPEC §10.2), so h and l reach the program
 // without a binding.
-const pagerKeys = "ArrowLeft=program ArrowRight=program PageUp=program PageDown=program Home=program End=program"
+const pagerKeys = "arrow_left=program arrow_right=program page_up=program page_down=program home=program end=program"
 
 // paginator is a HottyPaginator on a host (profile §2), a baseline: a
 // focusable box, as a HottyList's, holding its child, which the view gave

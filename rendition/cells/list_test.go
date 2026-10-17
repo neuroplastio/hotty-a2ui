@@ -123,7 +123,7 @@ func TestListFilterLine(t *testing.T) {
 			t.Errorf("row %d, column %d underlined: %v", at.row, at.col, got)
 		}
 	}
-	keys(t, r, "Enter")
+	keys(t, r, "enter")
 	if got := r.Draw(30).Plain(); got[:len("   Snacks\n\n  “nu” 2 items • 2 filtered")] != "   Snacks\n\n  “nu” 2 items • 2 filtered" {
 		t.Errorf("applied:\n%s", got)
 	}
@@ -145,7 +145,7 @@ func TestListClicks(t *testing.T) {
 	if err := r.Click(4, 7); err != nil || len(*actions) != 1 || (*actions)[0] != "eat:melon" {
 		t.Fatalf("a second click: %v %v", err, *actions)
 	}
-	keys(t, r, "ArrowRight")
+	keys(t, r, "arrow_right")
 	if got := c.S.Data.Value("/sel"); got != "nuts" {
 		t.Fatalf("→ turned to %v, want the second page's second item", got)
 	}

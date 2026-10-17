@@ -75,13 +75,13 @@ func TestRangeSliderSteps(t *testing.T) {
 		lo, hi float64
 	}{
 		{"price/knob/0", 1, "", 25, 70},
-		{"price/knob/1", 0, "Home", 25, 25},
+		{"price/knob/1", 0, "home", 25, 25},
 		{"price/knob/1", -1, "", 25, 25},
 		{"price/knob/0", 1, "", 25, 25},
-		{"price/knob/0", 0, "End", 25, 25},
+		{"price/knob/0", 0, "end", 25, 25},
 		{"price/knob/0", -2, "", 15, 25},
-		{"price/knob/1", 0, "End", 15, 100},
-		{"price/knob/0", 0, "Home", 0, 100},
+		{"price/knob/1", 0, "end", 15, 100},
+		{"price/knob/0", 0, "home", 0, 100},
 	} {
 		if err := c.StepSlider(s.knob, s.n, s.to); err != nil {
 			t.Fatal(err)
@@ -144,14 +144,14 @@ func TestRangeSliderPress(t *testing.T) {
 	if k, _ = c.DragKnob("price", -1, 80); k != 0 || data("/lo") != 80.0 || data("/hi") != 90.0 || c.St.Focus != "price/knob/0" {
 		t.Errorf("a drag down from where they meet: knob %d, %v–%v, focus %q", k, data("/lo"), data("/hi"), c.St.Focus)
 	}
-	if err := c.StepSlider("price/knob/0", 0, "End"); err != nil {
+	if err := c.StepSlider("price/knob/0", 0, "end"); err != nil {
 		t.Fatal(err)
 	}
 	if k, _ = c.DragKnob("price", -1, 100); k != 1 || data("/hi") != 100.0 {
 		t.Errorf("a drag up from where they meet: knob %d, %v", k, data("/hi"))
 	}
 	// Meeting at the max, the start's takes the keyboard.
-	if err := c.StepSlider("price/knob/0", 0, "End"); err != nil {
+	if err := c.StepSlider("price/knob/0", 0, "end"); err != nil {
 		t.Fatal(err)
 	}
 	if k, _ = c.PressKnob("price", 100); k != -1 || c.St.Focus != "price/knob/0" {

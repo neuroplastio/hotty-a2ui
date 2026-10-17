@@ -3,6 +3,8 @@ package view
 import (
 	"strings"
 	"unicode/utf8"
+
+	"github.com/neuroplastio/hotty-go"
 )
 
 // A select's pick, and a cycle's steps (io_neuroplast_hotty.cycle,
@@ -40,11 +42,11 @@ func (c *Controller) StepChoice(id string, n int) error {
 	return c.SetValue(id, e.Options[((i+n)%k+k)%k].Value)
 }
 
-// CycleKey works a cycle by a key, named as SPEC §10.4 has it: ArrowLeft
-// and ArrowUp pick the option before, ArrowRight, ArrowDown, Space and
-// Enter the one after, round from either end, as its arrows and a click
-// on it do (on a host it is a button, which Space and Enter click); Home
-// and End the first and the last; a character the next option whose label
+// CycleKey works a cycle by a key, named as SPEC §10.4 has it: arrow_left
+// and arrow_up pick the option before, arrow_right, arrow_down, space and
+// enter the one after, round from either end, as its arrows and a click
+// on it do (on a host it is a button, which Space and Enter click); home
+// and end the first and the last; a character the next option whose label
 // starts with it, case aside, wrapping. ok reports whether it took the
 // key: a character too, matched or not, as a select takes it.
 func (c *Controller) CycleKey(id, key string) (ok bool, err error) {
@@ -53,24 +55,25 @@ func (c *Controller) CycleKey(id, key string) (ok bool, err error) {
 		return false, nil
 	}
 	switch key {
-	case "ArrowLeft", "ArrowUp":
+	case "arrow_left", "arrow_up":
 		return true, c.StepChoice(id, -1)
-	case "ArrowRight", "ArrowDown", "Space", "Enter":
+	case "arrow_right", "arrow_down", "space", "enter":
 		return true, c.StepChoice(id, 1)
-	case "Home":
+	case "home":
 		return true, c.SetValue(id, e.Options[0].Value)
-	case "End":
+	case "end":
 		return true, c.SetValue(id, e.Options[len(e.Options)-1].Value)
 	}
-	if i := e.NextByLetter(e.Picked(), key); i >= 0 {
+	text, _ := hotty.KeyText(key)
+	if i := e.NextByLetter(e.Picked(), text); text != "" && i >= 0 {
 		return true, c.SetValue(id, e.Options[i].Value)
 	}
-	return utf8.RuneCountInString(key) == 1, nil
+	return utf8.RuneCountInString(text) == 1, nil
 }
 
 // NextByLetter is a Choice's next option after from, wrapping, whose label
-// starts with key, a character (case aside); -1 if none does, or key is
-// not one.
+// starts with key, the text a key types (hotty.KeyText; case aside); -1
+// if none does, or key is not one character.
 func (e *Element) NextByLetter(from int, key string) int {
 	n := len(e.Options)
 	if utf8.RuneCountInString(key) != 1 {

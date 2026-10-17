@@ -8,7 +8,7 @@
 // wrapped line has no equivalent, since ASCIIFont does not wrap: a line
 // wider than the terminal is cut.
 //
-//	bun ref/opentui/bigtext.ts      Control+C quits
+//	bun ref/opentui/bigtext.ts      ctrl+c quits
 //
 // Bubble Tea has no big text, so this reference is OpenTUI's. Its fonts are
 // cfonts' (GPL-3.0), which the kit neither copies nor ships: it draws its

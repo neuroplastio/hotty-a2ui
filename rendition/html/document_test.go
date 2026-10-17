@@ -91,10 +91,10 @@ func TestDocumentOnHost(t *testing.T) {
 		t.Errorf("the host's focus is on %q", s.Focused())
 	}
 	// Enter is the program's, which follows the link again.
-	if x.h.Key("Enter") {
+	if x.h.Key("enter") {
 		t.Fatal("the host took Enter")
 	}
-	if _, ok, err := r.Key("Enter"); !ok || err != nil {
+	if _, ok, err := r.Key("enter"); !ok || err != nil {
 		t.Fatalf("Enter: %v %v", ok, err)
 	}
 	x.update(r)

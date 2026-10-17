@@ -22,7 +22,7 @@ type (
 )
 
 // endOnSignal ends the program on TERM (kill's), HUP (the terminal gone)
-// or INT (Control+C with no terminal to make it a key) as Control+C does:
+// or INT (ctrl+c with no terminal to make it a key) as ctrl+c does:
 // its surfaces deleted first. Bubble Tea's own handling quits at once and
 // leaves them on the host, where they stay until something deletes them
 // (SPEC.md §5.4). A second signal ends the program as it would without

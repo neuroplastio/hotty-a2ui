@@ -5,10 +5,10 @@
 # A vector is a story (story: a name, or messages: inline), the keymap of
 # its text fields (keys: a data-keys value, or "terminal" for
 # hotty.TerminalKeys; the default keymap alone when not given, as the
-# renditions start), the host's Mod (mod: Meta for a Mac's keys, SPEC
-# §10.4; Control when not given) and steps:
-#   key: a key, as SPEC §10.4 names it ("Tab", "Shift+Tab", "Space", "Control+s")
-#   type: characters, one key each
+# renditions start), the host's Mod (mod: super for a Mac's keys, SPEC
+# §10.4; ctrl when not given) and steps:
+#   key: a key, as SPEC §10.4 names it ("tab", "shift+tab", "space", "ctrl+s")
+#   type: characters, one key each (a capital is shift with its letter)
 #   focus: the program gives the keyboard at an element (by view id)
 #   blur: the program takes it back
 #   click: the user clicks an element (by view id)
@@ -48,30 +48,30 @@
   steps:
     - focus: name
     - expect: {focused: name}
-    - key: Tab
+    - key: tab
     - expect: {focused: agree}
-    - key: Tab
+    - key: tab
     - expect: {focused: size/option/0}
-    - key: Tab
+    - key: tab
     - expect: {focused: size/option/1}
-    - key: Tab
+    - key: tab
     - expect: {focused: tabs/tab/0}
-    - key: Tab
+    - key: tab
     - expect: {focused: tabs/tab/1}
-    - key: Tab
+    - key: tab
     - expect: {focused: go}
-    - key: Tab
+    - key: tab
     - expect: {focused: level}
-    - key: Tab
+    - key: tab
     - expect: {focused: null}
 
-- name: Shift+Tab goes back, and out before the first
+- name: shift+tab goes back, and out before the first
   messages: *controls
   steps:
     - focus: agree
-    - key: Shift+Tab
+    - key: shift+tab
     - expect: {focused: name}
-    - key: Shift+Tab
+    - key: shift+tab
     - expect: {focused: null}
 
 - name: Space and Enter on a Button run it; Space on a CheckBox and a chip toggles it
@@ -79,55 +79,55 @@
   steps:
     - focus: name
     - type: Ada
-    - key: Tab
-    - key: Space
+    - key: tab
+    - key: space
     - expect: {focused: agree, data: {/agree: true, /name: Ada}}
-    - key: Tab
-    - key: Space
-    - key: Tab
-    - key: Enter
+    - key: tab
+    - key: space
+    - key: tab
+    - key: enter
     - expect: {focused: size/option/1, data: {/size: [s, m]}}
     - focus: go
-    - key: Enter
+    - key: enter
     - expect: {actions: [go], context: {name: Ada, agree: true}}
-    - key: Space
+    - key: space
     - expect: {focused: go, actions: [go, go]}
 
 - name: Enter and Space on a tab show it; its content then joins the Tab order
   messages: *controls
   steps:
     - focus: tabs/tab/1
-    - key: Enter
+    - key: enter
     - expect: {focused: tabs/tab/1}
-    - key: Tab
+    - key: tab
     - expect: {focused: two}
-    - key: Space
+    - key: space
     - expect: {actions: [inTwo]}
 
 - name: A HottyShortcut presses its Button, with the field just typed in current, and the field keeps the keyboard
   story: hotty/shortcut-press
   steps:
-    - key: Control+s
+    - key: ctrl+s
     - expect: {actions: []}
     - focus: note
     - type: hello
-    - key: Control+s
+    - key: ctrl+s
     - expect: {focused: note, actions: [save], context: {note: hello}}
 
 - name: A HottyShortcut presses its Button only when the Button's checks pass
   story: hotty/shortcut-press
   steps:
     - focus: note
-    - key: Control+s
+    - key: ctrl+s
     - expect: {focused: note, actions: []}
 
 - name: A HottyShortcut runs its own Action, the keyboard anywhere or nowhere
   story: hotty/shortcut-action
   steps:
-    - key: Control+r
+    - key: ctrl+r
     - expect: {focused: null, actions: [refresh], context: {shown: 3}}
     - focus: filter/option/1
-    - key: Control+r
+    - key: ctrl+r
     - expect: {focused: filter/option/1, actions: [refresh, refresh]}
 
 - name: A bare key is the field's while a text control has the keyboard, else the HottyShortcut's
@@ -146,10 +146,10 @@
     - focus: q
     - type: "why?"
     - expect: {focused: q, actions: [], data: {/q: "why?"}}
-    - key: Tab
+    - key: tab
     - key: "?"
     - expect: {focused: go, actions: [help]}
-    - key: Enter
+    - key: enter
     - expect: {actions: [help, search], context: {q: "why?"}}
 
 - name: Enter in a field submits its HottyForm, which runs only when every check inside passes
@@ -157,16 +157,16 @@
   steps:
     - focus: name
     - type: Ada
-    - key: Enter
+    - key: enter
     - expect: {focused: name, actions: []}
-    - key: Tab
+    - key: tab
     - type: ada@example.com
-    - key: Enter
+    - key: enter
     - expect: {actions: []}
     - focus: agree
-    - key: Space
+    - key: space
     - focus: email
-    - key: Enter
+    - key: enter
     - expect: {focused: email, actions: [signUp], context: {name: Ada, email: ada@example.com, plan: [free]}}
 
 - name: Space on a CheckBox toggles it, and Enter submits its HottyForm, as a host takes a checkbox
@@ -177,49 +177,49 @@
     - focus: email
     - type: ada@example.com
     - focus: agree
-    - key: Enter
+    - key: enter
     - expect: {focused: agree, actions: [], data: {/agree: false}}
-    - key: Space
+    - key: space
     - expect: {focused: agree, data: {/agree: true}}
-    - key: Enter
+    - key: enter
     - expect: {focused: agree, actions: [signUp], data: {/agree: true}}
 
 - name: Enter on a CheckBox outside a HottyForm does nothing
   messages: *controls
   steps:
     - focus: agree
-    - key: Enter
+    - key: enter
     - expect: {focused: agree, actions: [], data: {/agree: false}}
 
 - name: arrows step a focused Slider, Home and End go to its ends
   messages: *controls
   steps:
     - focus: level
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {focused: level, data: {/level: 3.5}}
-    - key: ArrowLeft
-    - key: ArrowDown
+    - key: arrow_left
+    - key: arrow_down
     - expect: {focused: level, data: {/level: 2.5}}
-    - key: End
+    - key: end
     - expect: {data: {/level: 10}}
-    - key: ArrowUp
+    - key: arrow_up
     - expect: {data: {/level: 10}}
-    - key: Home
+    - key: home
     - expect: {focused: level, data: {/level: 0}}
 
 - name: hottyFocus and hottyBlur move the keyboard; autofocus takes it at the start
   story: hotty/focus-blur
   steps:
     - expect: {focused: name}
-    - key: Tab
-    - key: Tab
+    - key: tab
+    - key: tab
     - expect: {focused: to_city}
-    - key: Enter
+    - key: enter
     - expect: {focused: city}
-    - key: Tab
-    - key: Tab
+    - key: tab
+    - key: tab
     - expect: {focused: done}
-    - key: Space
+    - key: space
     - expect: {focused: null}
     - focus: city
     - expect: {focused: city}
@@ -243,28 +243,28 @@
   steps:
     - focus: t
     - type: foo bar baz
-    - key: Control+w
+    - key: ctrl+w
     - expect: {data: {/t: "foo bar "}}
-    - key: Alt+b
+    - key: alt+b
     - type: x
     - expect: {data: {/t: "foo xbar "}}
-    - key: Home
+    - key: home
     - type: "<"
-    - key: Control+e
+    - key: ctrl+e
     - type: ">"
     - expect: {data: {/t: "<foo xbar >"}}
-    - key: Alt+b
-    - key: Alt+b
-    - key: Control+k
+    - key: alt+b
+    - key: alt+b
+    - key: ctrl+k
     - expect: {data: {/t: "<foo "}}
-    - key: Control+b
-    - key: Control+b
-    - key: Control+u
+    - key: ctrl+b
+    - key: ctrl+b
+    - key: ctrl+u
     - expect: {data: {/t: "o "}}
-    - key: Control+f
-    - key: Control+h
+    - key: ctrl+f
+    - key: ctrl+h
     - type: z
-    - key: Control+d
+    - key: ctrl+d
     - expect: {focused: t, data: {/t: "z"}}
 
 - name: with Shift a move selects from where the caret was, and typing or deleting replaces the selection; a key the keymap does not name is the program's
@@ -272,67 +272,67 @@
   steps:
     - focus: t
     - type: abc
-    - key: Shift+ArrowLeft
+    - key: shift+arrow_left
     - type: x
     - expect: {data: {/t: "abx"}}
-    - key: ArrowLeft
-    - key: Shift+Home
-    - key: Backspace
+    - key: arrow_left
+    - key: shift+home
+    - key: backspace
     - expect: {data: {/t: "x"}}
     - type: "yz"
-    - key: Shift+Alt+ArrowLeft
+    - key: alt+shift+arrow_left
     - type: "!"
-    - key: Control+g
+    - key: ctrl+g
     - key: F5
     - expect: {focused: t, data: {/t: "!x"}}
 
-- name: Control+a selects all, in the terminal keymap as in the default, and Home still goes to the line's start
+- name: ctrl+a selects all, in the terminal keymap as in the default, and Home still goes to the line's start
   keys: terminal
   messages: *field
   steps:
     - focus: t
     - type: foo bar
-    - key: Control+a
+    - key: ctrl+a
     - type: x
     - expect: {data: {/t: "x"}}
     - type: yz
-    - key: Home
+    - key: home
     - type: "<"
-    - key: Control+a
-    - key: Delete
+    - key: ctrl+a
+    - key: delete
     - expect: {focused: t, data: {/t: ""}}
 
-- name: the default keymap alone selects all with Control+a and moves by words with Control and the arrows, leaving Alt+b to the program
+- name: the default keymap alone selects all with ctrl+a and moves by words with Control and the arrows, leaving alt+b to the program
   keys: ""
   messages: *field
   steps:
     - focus: t
     - type: ab cd
-    - key: Control+a
+    - key: ctrl+a
     - type: x
-    - key: Alt+b
+    - key: alt+b
     - type: " y"
-    - key: Control+ArrowLeft
+    - key: ctrl+arrow_left
     - type: "<"
     - expect: {focused: t, data: {/t: "x <y"}}
 
 - name: macOS's Command keys, as Meta, go to the line's ends, delete to its start and select all, with Shift selecting
   keys: ""
-  mod: Meta
+  mod: super
   messages: *field
   steps:
     - focus: t
     - type: ab cd
-    - key: Meta+ArrowLeft
+    - key: super+arrow_left
     - type: "<"
-    - key: Meta+ArrowRight
+    - key: super+arrow_right
     - type: ">"
     - expect: {data: {/t: "<ab cd>"}}
-    - key: Meta+Backspace
+    - key: super+backspace
     - type: x
-    - key: Meta+a
+    - key: super+a
     - type: "yz"
-    - key: Shift+Meta+ArrowLeft
+    - key: super+shift+arrow_left
     - type: "!"
     - expect: {focused: t, data: {/t: "!"}}
 
@@ -349,24 +349,24 @@
   steps:
     - focus: t
     - type: abcdef
-    - key: Enter
+    - key: enter
     - type: ab
-    - key: Enter
+    - key: enter
     - type: abcdef
-    - key: ArrowUp
+    - key: arrow_up
     - type: "1"
     - expect: {data: {/t: "abcdef\nab1\nabcdef"}}
-    - key: End
-    - key: Control+n
+    - key: end
+    - key: ctrl+n
     - type: "2"
     - expect: {data: {/t: "abcdef\nab1\nabc2def"}}
-    - key: ArrowUp
-    - key: ArrowUp
+    - key: arrow_up
+    - key: arrow_up
     - type: "3"
     - expect: {data: {/t: "abcd3ef\nab1\nabc2def"}}
-    - key: Alt+>
+    - key: alt+>
     - type: "4"
-    - key: Alt+<
+    - key: alt+<
     - type: "5"
     - expect: {focused: t, data: {/t: "5abcd3ef\nab1\nabc2def4"}}
 
@@ -383,12 +383,12 @@
   steps:
     - focus: p
     - type: correct horse
-    - key: Alt+b
+    - key: alt+b
     - type: "<"
-    - key: Alt+f
+    - key: alt+f
     - type: ">"
     - expect: {data: {/p: "<correct horse>"}}
-    - key: Control+w
+    - key: ctrl+w
     - expect: {focused: p, data: {/p: ""}}
 
 - name: a component's keymap overrides the surface's key by key, its fields' own last
@@ -405,27 +405,27 @@
             catalogId: "https://hotty.neuroplast.io/a2ui/v1/catalog"
             child: fields
             onSubmit: {event: {name: send, context: {name: {"@path": /name}}}}
-            metadata: {extensions: {io_neuroplast_hotty: {keys: "Control+s=submit Control+k=program"}}}
+            metadata: {extensions: {io_neuroplast_hotty: {keys: "ctrl+s=submit ctrl+k=program"}}}
           - {id: fields, component: Column, children: [name, note]}
           - {id: name, component: TextField, label: Name, value: {"@path": /name}}
           - id: note
             component: TextField
             label: Note
             value: {"@path": /note}
-            metadata: {extensions: {io_neuroplast_hotty: {keys: "Control+k=delete-to-line-end"}}}
-          - {id: clear, component: HottyShortcut, catalogId: "https://hotty.neuroplast.io/a2ui/v1/catalog", key: Control+k, action: {event: {name: clear}}}
+            metadata: {extensions: {io_neuroplast_hotty: {keys: "ctrl+k=delete-to-line-end"}}}
+          - {id: clear, component: HottyShortcut, catalogId: "https://hotty.neuroplast.io/a2ui/v1/catalog", key: ctrl+k, action: {event: {name: clear}}}
   steps:
     - focus: name
     - type: Ada
-    - key: Control+a
-    - key: Control+k
+    - key: ctrl+a
+    - key: ctrl+k
     - expect: {actions: [clear], data: {/name: Ada}}
-    - key: Control+s
+    - key: ctrl+s
     - expect: {actions: [clear, send], context: {name: Ada}}
     - focus: note
     - type: hi there
-    - key: Alt+b
-    - key: Control+k
+    - key: alt+b
+    - key: ctrl+k
     - expect: {focused: note, actions: [clear, send], data: {/note: "hi "}}
 
 - name: A HottyTable's keys move its selection to the bound path, and Enter acts on the row selected
@@ -433,19 +433,19 @@
   steps:
     - focus: table
     - expect: {focused: table, data: {/selected: Tokyo}}
-    - key: ArrowDown
+    - key: arrow_down
     - expect: {focused: table, data: {/selected: Delhi}}
-    - key: PageDown
+    - key: page_down
     - expect: {data: {/selected: Mumbai}}
-    - key: End
+    - key: end
     - expect: {data: {/selected: Karachi}}
-    - key: ArrowDown
+    - key: arrow_down
     - expect: {data: {/selected: Karachi}}
-    - key: Home
+    - key: home
     - expect: {data: {/selected: Tokyo}, actions: []}
-    - key: Enter
+    - key: enter
     - expect: {focused: table, actions: [openCity], context: {city: Tokyo}}
-    - key: Tab
+    - key: tab
     - expect: {focused: null}
 
 - name: A HottyList's keys move its selection and turn its pages; / types a filter, Enter applies it and acts, Escape drops it
@@ -453,21 +453,21 @@
   steps:
     - focus: things
     - expect: {focused: things, data: {/selected: raspberry-pis}}
-    - key: ArrowDown
+    - key: arrow_down
     - expect: {data: {/selected: nutella}}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {data: {/selected: plantasia-the-album}}
-    - key: End
+    - key: end
     - expect: {data: {/selected: business-school}}
-    - key: Home
+    - key: home
     - expect: {data: {/selected: raspberry-pis}}
     - type: /no
     - expect: {focused: things, data: {/selected: noguchi-lamps}, actions: []}
-    - key: Enter
+    - key: enter
     - expect: {data: {/selected: noguchi-lamps}, actions: []}
-    - key: Enter
+    - key: enter
     - expect: {focused: things, actions: [openThing], context: {thing: noguchi-lamps}}
-    - key: Escape
+    - key: escape
     - expect: {focused: things, data: {/selected: raspberry-pis}}
 
 - name: A HottyTree's keys move its selection and open and close its branches, Enter acts on a leaf, and a filter shows what matches
@@ -476,81 +476,81 @@
   steps:
     - focus: tree
     - expect: {focused: tree, data: {/selected: rendition/cells/tree.go}}
-    - key: ArrowDown
+    - key: arrow_down
     - expect: {data: {/selected: rendition/html, /expanded: [rendition, rendition/cells]}}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {data: {/selected: rendition/html, /expanded: [rendition, rendition/cells, rendition/html]}}
     - key: l
     - expect: {data: {/selected: rendition/html/html.go}}
     - key: h
     - key: h
     - expect: {data: {/selected: rendition/html, /expanded: [rendition, rendition/cells]}}
-    - key: G
-    - key: Enter
+    - key: shift+g
+    - key: enter
     - expect: {focused: tree, actions: [openFile], context: {file: README.md}}
-    - key: Home
-    - key: Enter
+    - key: home
+    - key: enter
     - expect: {data: {/selected: a2ui, /expanded: [a2ui, rendition, rendition/cells]}, actions: [openFile]}
     - focus: filter
     - type: kit
-    - key: Tab
-    - key: ArrowDown
+    - key: tab
+    - key: arrow_down
     - expect: {focused: tree, data: {/selected: rendition}}
     - key: j
     - key: j
-    - key: Enter
+    - key: enter
     - expect: {focused: tree, actions: [openFile, openFile], context: {file: rendition/html/kit.css}}
 
 - name: Space, Enter and a click flip a HottySwitch, Enter in a HottyForm too without submitting it; a disabled one neither flips nor takes the keyboard
   story: hotty/switch
   steps:
     - expect: {focused: wifi}
-    - key: Space
+    - key: space
     - expect: {focused: wifi, data: {/wifi: false}}
-    - key: Enter
+    - key: enter
     - expect: {focused: wifi, data: {/wifi: true}}
-    - key: Tab
-    - key: Tab
+    - key: tab
+    - key: tab
     - expect: {focused: hotspot}
     - focus: airplane
-    - key: Space
+    - key: space
     - expect: {data: {/airplane: true}}
-    - key: Tab
-    - key: Tab
-    - key: Tab
+    - key: tab
+    - key: tab
+    - key: tab
     - expect: {focused: dark}
     - click: bluetooth
     - expect: {focused: bluetooth, data: {/bluetooth: true}}
     - click: hotspot
     - expect: {focused: null, data: {/hotspot: false}}
     - focus: two_factor
-    - key: Enter
+    - key: enter
     - expect: {focused: two_factor, actions: [], data: {/twoFactor: true}}
-    - key: Enter
+    - key: enter
     - expect: {actions: [], data: {/twoFactor: false}}
     - focus: email
-    - key: Enter
+    - key: enter
     - expect: {focused: email, actions: []}
     - focus: two_factor
-    - key: Space
+    - key: space
     - focus: email
-    - key: Enter
+    - key: enter
     - expect: {actions: [saveAccount], context: {email: ada@example.com, twoFactor: true, digest: true}}
 
 - name: A Confirm of two Buttons and four HottyShortcuts starts on No; ArrowLeft and ArrowRight move between Yes and No, Enter presses the one with the keyboard, y and n press Yes and No, with the keyboard or without it
   story: hotty/confirm
   steps:
     - expect: {focused: no, actions: []}
-    - key: ArrowLeft
+    - key: arrow_left
     - expect: {focused: yes, actions: []}
-    - key: ArrowLeft
+    - key: arrow_left
     - expect: {focused: yes}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {focused: no}
-    - key: Enter
+    - key: enter
     - expect: {focused: no, actions: [keep]}
-    - key: ArrowLeft
-    - key: Space
+    - key: arrow_left
+    - key: space
     - expect: {focused: yes, actions: [keep, delete], context: {files: [notes.md, todo.md, draft.md]}}
     - key: n
     - expect: {focused: yes, actions: [keep, delete, keep]}
@@ -565,24 +565,24 @@
   steps:
     - expect: {focused: name}
     - type: y
-    - key: ArrowLeft
+    - key: arrow_left
     - key: n
     - expect: {focused: name, actions: [], data: {/name: hotty-kitny}}
-    - key: Tab
-    - key: Tab
+    - key: tab
+    - key: tab
     - expect: {focused: yes}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {focused: no}
     - key: n
     - expect: {focused: no, actions: [cancel]}
-    - key: ArrowLeft
-    - key: Enter
+    - key: arrow_left
+    - key: enter
     - expect: {focused: yes, actions: [cancel, create], context: {name: hotty-kitny, description: ""}}
     - focus: description
     - type: A kit
-    - key: Enter
+    - key: enter
     - expect: {focused: description, actions: [cancel, create, create], context: {name: hotty-kitny, description: A kit}}
-    - key: Tab
+    - key: tab
     - key: y
     - expect: {focused: yes, actions: [cancel, create, create, create], context: {description: A kit}}
 
@@ -590,29 +590,29 @@
   story: hotty/slider
   steps:
     - focus: rating
-    - key: Tab
+    - key: tab
     - expect: {focused: price/knob/0}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {focused: price/knob/0, data: {/price/start: 25, /price/end: 70}}
-    - key: Tab
+    - key: tab
     - expect: {focused: price/knob/1}
-    - key: ArrowLeft
+    - key: arrow_left
     - expect: {data: {/price/start: 25, /price/end: 65}}
-    - key: Home
+    - key: home
     - expect: {focused: price/knob/1, data: {/price/start: 25, /price/end: 25}}
-    - key: ArrowDown
+    - key: arrow_down
     - expect: {data: {/price/start: 25, /price/end: 25}}
-    - key: Shift+Tab
+    - key: shift+tab
     - expect: {focused: price/knob/0}
-    - key: End
+    - key: end
     - expect: {data: {/price/start: 25, /price/end: 25}}
-    - key: Home
+    - key: home
     - expect: {data: {/price/start: 0, /price/end: 25}}
-    - key: Tab
-    - key: Tab
+    - key: tab
+    - key: tab
     - expect: {focused: volume}
-    - key: Shift+Tab
-    - key: End
+    - key: shift+tab
+    - key: end
     - expect: {focused: price/knob/1, data: {/price/start: 0, /price/end: 100}}
 
 - name: A tap on a HottyRangeSlider's track moves the nearer knob there, which takes the keyboard; a click on a knob gives it the keyboard where it is
@@ -626,7 +626,7 @@
     - expect: {focused: price/knob/0, data: {/price/start: 45, /price/end: 85}}
     - click: price/knob/1
     - expect: {focused: price/knob/1, data: {/price/start: 45, /price/end: 85}}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {data: {/price/end: 90}}
     - tap: {on: rating, at: 5}
     - expect: {focused: rating, data: {/rating: 5}}
@@ -660,52 +660,52 @@
 # on a place, in a list whose items move; the items are written, the item
 # stays selected, the move is written and onMove runs. On a host the
 # element gives these keys to the program (data-keys ...=program).
-- name: Alt+ArrowUp and Alt+ArrowDown move a reorderable HottyList's selected item a place, and stay at the ends
+- name: alt+arrow_up and alt+arrow_down move a reorderable HottyList's selected item a place, and stay at the ends
   story: hotty/drag-todo
   steps:
     - focus: list
-    - key: Alt+ArrowDown
+    - key: alt+arrow_down
     - expect: {focused: list, actions: [moved], data: {/todos/0/value: plumber, /todos/1/value: milk, /selected: milk}, context: {move: {item: milk, from: {index: 0, path: /todos}, to: {index: 1, path: /todos}}}}
-    - key: Alt+ArrowUp
+    - key: alt+arrow_up
     - expect: {actions: [moved, moved], data: {/todos/0/value: milk, /todos/1/value: plumber}}
-    - key: Alt+ArrowUp
+    - key: alt+arrow_up
     - expect: {focused: list, actions: [moved, moved], data: {/todos/0/value: milk}}
-    - key: ArrowDown
-    - key: Alt+ArrowDown
+    - key: arrow_down
+    - key: alt+arrow_down
     - expect: {actions: [moved, moved, moved], data: {/todos/1/value: ferns, /todos/2/value: plumber, /selected: plumber}}
 
-- name: Alt+ArrowDown moves a reorderable HottyTable's selected row, and ArrowDown then goes on from it
+- name: alt+arrow_down moves a reorderable HottyTable's selected row, and ArrowDown then goes on from it
   story: hotty/drag-backlog
   steps:
     - focus: table
-    - key: Alt+ArrowDown
-    - key: Alt+ArrowDown
+    - key: alt+arrow_down
+    - key: alt+arrow_down
     - expect: {focused: table, actions: [reprioritized, reprioritized], data: {/backlog/2/key: KIT-31, /backlog/0/key: KIT-27, /selected: KIT-31}}
-    - key: ArrowDown
+    - key: arrow_down
     - expect: {data: {/selected: KIT-22}}
 
-- name: In a HottyTree, Alt+ArrowLeft moves a node out of its branch, after it, and Alt+ArrowRight into the node above, as its last child, an empty folder too
+- name: In a HottyTree, alt+arrow_left moves a node out of its branch, after it, and alt+arrow_right into the node above, as its last child, an empty folder too
   story: hotty/drag-files
   steps:
     - focus: tree
     - expect: {data: {/selected: main.go}}
-    - key: Alt+ArrowLeft
+    - key: alt+arrow_left
     - expect: {focused: tree, actions: [moved], data: {/files/2/value: main.go, /files/1/children/0/value: util, /selected: main.go}, context: {move: {item: main.go, from: {index: 0, parent: src, path: /files}, to: {index: 2, parent: null, path: /files}}}}
-    - key: Alt+ArrowRight
+    - key: alt+arrow_right
     - expect: {actions: [moved, moved], data: {/files/1/children/1/value: main.go, /files/2/value: archive}}
-    - key: End
-    - key: Alt+ArrowRight
+    - key: end
+    - key: alt+arrow_right
     - expect: {actions: [moved, moved, moved], data: {/files/2/children/0/value: README.md, /selected: README.md}}
-    - key: Alt+ArrowUp
+    - key: alt+arrow_up
     - expect: {actions: [moved, moved, moved], data: {/files/2/children/0/value: README.md}}
 
-- name: Alt+ArrowDown on a card moves it a place in its List, with the extension's reorder, and the keyboard goes with it
+- name: alt+arrow_down on a card moves it a place in its List, with the extension's reorder, and the keyboard goes with it
   story: hotty/drag-kanban
   steps:
     - focus: "card[/board/todo/0]"
-    - key: Alt+ArrowDown
+    - key: alt+arrow_down
     - expect: {focused: "card[/board/todo/1]", actions: [moved], data: {/board/todo/0/id: c2, /board/todo/1/id: c1}, context: {move: {item: {id: c1, title: Draft the release notes}, from: {index: 0, path: /board/todo}, to: {index: 1, path: /board/todo}}}}
-    - key: Enter
+    - key: enter
     - expect: {focused: "card[/board/todo/1]", actions: [moved, open], context: {card: c1}}
 
 # Suggestions (profile §6.22): io_neuroplast_hotty.suggestions on a
@@ -718,12 +718,12 @@
     - focus: country
     - type: Sw
     - expect: {focused: country, actions: [suggest, suggest], context: {query: Sw}, data: {/country: Sw}}
-    - key: Backspace
+    - key: backspace
     - type: x
     - expect: {actions: [suggest, suggest, suggest, suggest], context: {query: Sx}, data: {/country: Sx}}
-    - key: Tab
+    - key: tab
     - expect: {focused: city}
-    - key: Enter
+    - key: enter
     - expect: {actions: [suggest, suggest, suggest, suggest, go], context: {command: git c, country: Sx, city: Atlantis}}
 
 - name: Tab takes the suggestion after the caret, and so does ArrowRight at the value's end; once taken, Tab moves on (cells; a host keeps Tab, vault KIT-11h)
@@ -731,55 +731,55 @@
   renditions: [cells]
   steps:
     - expect: {focused: command}
-    - key: Tab
+    - key: tab
     - expect: {focused: command, data: {/command: git commit}}
-    - key: Tab
+    - key: tab
     - expect: {focused: country}
     - type: sw
-    - key: ArrowLeft
-    - key: ArrowRight
+    - key: arrow_left
+    - key: arrow_right
     - expect: {data: {/country: sw}}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {focused: country, actions: [suggest, suggest, suggest], context: {query: Sweden}, data: {/country: Sweden}}
-    - key: Tab
+    - key: tab
     - expect: {focused: city}
-    - key: Tab
+    - key: tab
     - expect: {focused: null}
 
-- name: ArrowDown and ArrowUp (Control+n, Control+p) move through the suggestions, round from either end; Enter picks the highlighted one; Escape closes the list, and Enter then submits (cells; vault KIT-11h)
+- name: ArrowDown and ArrowUp (ctrl+n, ctrl+p) move through the suggestions, round from either end; Enter picks the highlighted one; Escape closes the list, and Enter then submits (cells; vault KIT-11h)
   story: hotty/suggest
   renditions: [cells]
   steps:
-    - key: ArrowDown
-    - key: ArrowDown
-    - key: Control+n
-    - key: ArrowUp
-    - key: Enter
+    - key: arrow_down
+    - key: arrow_down
+    - key: ctrl+n
+    - key: arrow_up
+    - key: enter
     - expect: {focused: command, actions: [], data: {/command: git checkout}}
-    - key: Backspace
-    - key: ArrowUp
-    - key: Control+p
-    - key: Enter
+    - key: backspace
+    - key: arrow_up
+    - key: ctrl+p
+    - key: enter
     - expect: {actions: [], data: {/command: git checkout}}
-    - key: Backspace
-    - key: Backspace
-    - key: Backspace
+    - key: backspace
+    - key: backspace
+    - key: backspace
     - expect: {data: {/command: git check}}
-    - key: Escape
-    - key: Enter
+    - key: escape
+    - key: enter
     - expect: {actions: [go], context: {command: git check}}
-    - key: ArrowDown
-    - key: Enter
+    - key: arrow_down
+    - key: enter
     - expect: {actions: [go], data: {/command: git checkout}}
 
 - name: Escape dismisses the newest toast, from a text field too, which keeps the keyboard; a click on a toast dismisses it, and takes the keyboard, as a click on a box does on a host
   story: hotty/toast
   steps:
     - expect: {toasts: [toast-3, toast-2, toast-1, offline]}
-    - key: Escape
+    - key: escape
     - expect: {focused: null, toasts: [toast-2, toast-1, offline]}
     - focus: email
-    - key: Escape
+    - key: escape
     - expect: {focused: email, toasts: [toast-1, offline]}
     - click: "hottyToast:toast-1"
     - expect: {focused: null, toasts: [offline], actions: []}
@@ -788,16 +788,16 @@
   story: hotty/toast
   steps:
     - focus: notify
-    - key: Tab
+    - key: tab
     - expect: {focused: "hottyToast:offline/action/0"}
-    - key: Enter
+    - key: enter
     - expect: {focused: null, actions: [retry], toasts: [toast-3, toast-2, toast-1]}
 
 - name: Escape on a toast's action dismisses that toast, not the newest
   story: hotty/toast
   steps:
     - focus: "hottyToast:offline/action/0"
-    - key: Escape
+    - key: escape
     - expect: {focused: null, actions: [], toasts: [toast-3, toast-2, toast-1]}
 
 - name: A click on a toast's action sends its event, with the context read as the toast showed
@@ -824,25 +824,25 @@
   story: hotty/paginator
   steps:
     - focus: fruit
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {focused: fruit, data: {/fruitPage: 2}}
     - key: l
     - expect: {data: {/fruitPage: 3}}
     - key: h
     - expect: {data: {/fruitPage: 2}}
-    - key: End
+    - key: end
     - expect: {data: {/fruitPage: 6}}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {focused: fruit, data: {/fruitPage: 6}}
-    - key: Home
+    - key: home
     - expect: {data: {/fruitPage: 1}}
-    - key: ArrowLeft
+    - key: arrow_left
     - expect: {focused: fruit, data: {/fruitPage: 1}, actions: []}
-    - key: Tab
+    - key: tab
     - expect: {focused: results_pager}
-    - key: ArrowRight
+    - key: arrow_right
     - expect: {actions: [search], context: {query: paginator, page: 2}, data: {/results/page: 2}}
-    - key: Tab
+    - key: tab
     - expect: {focused: null}
 
 - name: A click on a HottyPaginator's dot shows its page and gives the paginator the keyboard
@@ -850,7 +850,7 @@
   steps:
     - tap: {on: fruit, at: 4}
     - expect: {focused: fruit, data: {/fruitPage: 4}}
-    - key: ArrowLeft
+    - key: arrow_left
     - expect: {data: {/fruitPage: 3}}
     - tap: {on: fruit, at: 6}
     - expect: {focused: fruit, data: {/fruitPage: 6}, actions: []}
@@ -865,18 +865,18 @@
   steps:
     - focus: page/link/0
     - expect: {focused: page/link/0}
-    - key: Enter
+    - key: enter
     - expect: {focused: page/link/0, actions: [open], context: {href: guide.md}, data: {/page/link: guide.md}}
-    - key: Tab
+    - key: tab
     - expect: {focused: page/link/1}
-    - key: Shift+Tab
+    - key: shift+tab
     - expect: {focused: page/link/0}
 
 - name: "Enter on a #fragment link in place takes the keyboard to its heading's document and sends nothing"
   story: hotty/markdown
   steps:
     - focus: page/link/1
-    - key: Enter
+    - key: enter
     - expect: {focused: page, actions: [], data: {/page/link: nothing yet}}
 
 - name: A click on a link in place follows it
@@ -891,13 +891,13 @@
   story: hotty/markdown
   steps:
     - focus: page/link/1
-    - key: Enter
+    - key: enter
     - expect: {focused: page}
-    - key: Tab
+    - key: tab
     - expect: {focused: page/link/3}
     - focus: page/link/1
-    - key: Enter
-    - key: Shift+Tab
+    - key: enter
+    - key: shift+tab
     - expect: {focused: page/link/2}
 
 # A HottyFilePicker (profile §6.31): arrow keys move, right arrow and Enter
@@ -908,13 +908,13 @@
   steps:
     - focus: fp
     - expect: {focused: fp}
-    - key: ArrowDown
-    - key: ArrowDown
-    - key: Enter
+    - key: arrow_down
+    - key: arrow_down
+    - key: enter
     - expect: {focused: fp, actions: [filePicked], data: {/picked: go.mod, /dir: ""}}
-    - key: Home
-    - key: Enter
+    - key: home
+    - key: enter
     - expect: {focused: fp, actions: [filePicked, dirChanged], data: {/dir: docs}}
-    - key: Escape
+    - key: escape
     - expect: {focused: fp, actions: [filePicked, dirChanged, dirChanged], data: {/dir: ""}}
 

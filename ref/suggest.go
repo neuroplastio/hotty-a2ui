@@ -22,7 +22,7 @@ func init() {
 // suggestions (ShowSuggestions, SetSuggestions), each under its title:
 // Command with "git c" typed and the keyboard, Country empty, City with
 // what none of its suggestions matches. Tab takes the suggestion, ↑ and ↓
-// (Control+p, Control+n) move through them, as bubbles binds them; bubbles
+// (ctrl+p, ctrl+n) move through them, as bubbles binds them; bubbles
 // draws only the ghost text, and no list. Tab with nothing to take moves
 // on, as the kit's does. The content is read from the story, so ref runs
 // from the repository's root, as scripts/ref-shot.sh runs it.

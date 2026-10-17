@@ -15,7 +15,7 @@ import (
 // a filter types; a host that scrolls would take them. A focused box uses
 // no keys (SPEC §10.2), so the characters a filter types, Backspace,
 // Enter and Escape reach the program without a binding.
-const listKeys = tableKeys + " ArrowLeft=program ArrowRight=program Space=program"
+const listKeys = tableKeys + " arrow_left=program arrow_right=program space=program"
 
 // richList is a HottyList on a host (profile §2): a focusable box, as a
 // Table is, holding its title (or its filter while typed, with a caret),

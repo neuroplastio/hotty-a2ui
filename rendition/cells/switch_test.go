@@ -88,20 +88,20 @@ func TestSwitchKeys(t *testing.T) {
 		r.Draw(30)
 	}
 	c.Focus("wifi")
-	key("Space")
+	key("space")
 	if got := c.S.Data.Value("/wifi"); got != false {
 		t.Errorf("Space: /wifi %v", got)
 	}
-	key("Enter")
+	key("enter")
 	if got := c.S.Data.Value("/wifi"); got != true || len(*actions) != 0 {
 		t.Errorf("Enter: /wifi %v, actions %v", got, *actions)
 	}
-	key("Tab")
-	key("Tab")
+	key("tab")
+	key("tab")
 	if c.St.Focus != "name" {
 		t.Errorf("Tab from Bluetooth went to %q, past the disabled switch to the field", c.St.Focus)
 	}
-	key("Enter")
+	key("enter")
 	if len(*actions) != 1 {
 		t.Errorf("Enter in the field: actions %v", *actions)
 	}

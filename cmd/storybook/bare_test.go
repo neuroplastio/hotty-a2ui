@@ -42,16 +42,16 @@ func TestBare(t *testing.T) {
 	if m.cur == nil {
 		t.Fatal("no cursor in the focused field")
 	}
-	m.Update(tea.KeyPressMsg{Code: 'A', Text: "A"})
+	m.Update(tea.KeyPressMsg{Code: 'a', Text: "A", Mod: tea.ModShift})
 	if !strings.Contains(m.frame, "A") {
 		t.Fatalf("the field did not take a key:\n%s", m.frame)
 	}
 	ctrlC := tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}
 	m.Update(ctrlC)
 	if m.quitAt.IsZero() || !strings.Contains(m.frame, "Ctrl+C again to quit") {
-		t.Fatalf("one Control+C did not ask for another:\n%s", m.frame)
+		t.Fatalf("one ctrl+c did not ask for another:\n%s", m.frame)
 	}
-	m.Update(tea.KeyPressMsg{Code: 'B', Text: "B"})
+	m.Update(tea.KeyPressMsg{Code: 'b', Text: "B", Mod: tea.ModShift})
 	if !m.quitAt.IsZero() || strings.Contains(m.frame, "again to quit") {
 		t.Fatal("another key did not end the ask")
 	}
@@ -63,10 +63,10 @@ func TestBare(t *testing.T) {
 	m.Update(ctrlC)
 	m.quitAt = m.quitAt.Add(-2 * storybook.QuitWindow)
 	if m.Update(ctrlC); m.quitAt.IsZero() {
-		t.Fatal("a second Control+C after the window quit")
+		t.Fatal("a second ctrl+c after the window quit")
 	}
 	if _, cmd := m.Update(ctrlC); cmd == nil || !m.quitAt.IsZero() {
-		t.Fatal("a quick second Control+C does not quit")
+		t.Fatal("a quick second ctrl+c does not quit")
 	}
 }
 

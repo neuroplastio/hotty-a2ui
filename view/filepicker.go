@@ -230,9 +230,9 @@ func (c *Controller) FileKey(id, key string) (ok bool, err error) {
 		page = len(e.Files)
 	}
 	switch key {
-	case "Enter", "ArrowRight", "l":
+	case "enter", "arrow_right", "l":
 		return true, c.fileOpen(e)
-	case "ArrowLeft", "Backspace", "h", "Escape":
+	case "arrow_left", "backspace", "h", "escape":
 		if e.FileDir == "" {
 			return false, nil
 		}
@@ -240,17 +240,17 @@ func (c *Controller) FileKey(id, key string) (ok bool, err error) {
 	}
 	to := e.Selected
 	switch key {
-	case "ArrowUp", "k":
+	case "arrow_up", "k":
 		to--
-	case "ArrowDown", "j":
+	case "arrow_down", "j":
 		to++
-	case "PageUp":
+	case "page_up":
 		to -= page
-	case "PageDown":
+	case "page_down":
 		to += page
-	case "Home", "g":
+	case "home", "g":
 		to = 0
-	case "End", "G":
+	case "end", "shift+g":
 		to = len(e.Files) - 1
 	default:
 		return false, nil

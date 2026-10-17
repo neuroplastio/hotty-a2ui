@@ -220,7 +220,7 @@ func TestFilePickerCellsModalEscape(t *testing.T) {
 	openModal(t, c)
 	c.Focus("fp")
 	r.Draw(40)
-	for _, key := range []string{"Enter", "Escape"} { // into src/, and out
+	for _, key := range []string{"enter", "escape"} { // into src/, and out
 		if ok, err := r.Key(key); !ok || err != nil {
 			t.Fatalf("%s: %v, %v", key, ok, err)
 		}
@@ -228,7 +228,7 @@ func TestFilePickerCellsModalEscape(t *testing.T) {
 	if got := c.S.Data.Value("/dir"); got != "" || c.V.Overlay == nil {
 		t.Fatalf("after Enter, Escape: /dir %v, Modal open %v; want the root, open", got, c.V.Overlay != nil)
 	}
-	if ok, err := r.Key("Escape"); !ok || err != nil || c.V.Overlay != nil {
+	if ok, err := r.Key("escape"); !ok || err != nil || c.V.Overlay != nil {
 		t.Errorf("Escape at the root left the Modal open (%v, %v)", ok, err)
 	}
 }

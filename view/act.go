@@ -21,7 +21,7 @@ type Controller struct {
 	V  *Surface
 	// Platform is how the host reads keymaps (SPEC §10.4): what Mod
 	// stands for and its edit shortcuts, hotty.PlatformOf its caps. The
-	// zero one is Control's, which a program keeps where no host says.
+	// zero one is ctrl's, which a program keeps where no host says.
 	Platform hotty.Platform
 }
 
@@ -277,7 +277,7 @@ func (c *Controller) SetValue(id string, v any) error {
 }
 
 // StepSlider moves a Slider, or a RangeSlider's knob, by n of its steps
-// (back when n < 0), or to an end: "Home" its Min, "End" its Max. A Slider
+// (back when n < 0), or to an end: "home" its Min, "end" its Max. A Slider
 // with no step moves by a twentieth of its range; a knob stops where it
 // meets the other. It does nothing to any other element.
 func (c *Controller) StepSlider(id string, n int, to string) error {
@@ -291,9 +291,9 @@ func (c *Controller) StepSlider(id string, n int, to string) error {
 	}
 	f, _ := e.Value.(float64)
 	switch to {
-	case "Home":
+	case "home":
 		f = s.Min
-	case "End":
+	case "end":
 		f = s.Max
 	default:
 		f += float64(n) * s.SliderStep()
@@ -331,19 +331,19 @@ func (c *Controller) TableKey(id, key string) (ok bool, err error) {
 	}
 	to := cur
 	switch key {
-	case "Enter":
+	case "enter":
 		return true, c.Activate(id)
-	case "ArrowUp", "k":
+	case "arrow_up", "k":
 		to = cur - 1
-	case "ArrowDown", "j":
+	case "arrow_down", "j":
 		to = cur + 1
-	case "PageUp":
+	case "page_up":
 		to = cur - page
-	case "PageDown":
+	case "page_down":
 		to = cur + page
-	case "Home", "g":
+	case "home", "g":
 		to = 0
-	case "End", "G":
+	case "end", "shift+g":
 		to = len(e.RowIDs) - 1
 	default:
 		return false, nil
@@ -445,12 +445,20 @@ func (c *Controller) Enter(id string) error {
 	return nil
 }
 
-// Shortcut runs the surface's Shortcut for a key ("Control+s"), if it has
-// one: it presses its Button, as a click would and only if the Button's
-// checks pass, or runs its action. ok reports whether one took the key.
+// HasShortcut reports whether one of the surface's Shortcuts is for a key,
+// as Shortcut reads them.
+func (c *Controller) HasShortcut(key string) bool {
+	return slices.ContainsFunc(c.V.Shortcuts, func(sc Shortcut) bool { return sameKey(c.Platform, sc.Key, key) })
+}
+
+// Shortcut runs the surface's Shortcut for a key ("ctrl+s"), if it has
+// one (its key read with the Platform, so that mod+s is ctrl+s or
+// super+s): it presses its Button, as a click would and only if the
+// Button's checks pass, or runs its action. ok reports whether one took
+// the key.
 func (c *Controller) Shortcut(key string) (ok bool, err error) {
 	for _, sc := range c.V.Shortcuts {
-		if !SameKey(sc.Key, key) {
+		if !sameKey(c.Platform, sc.Key, key) {
 			continue
 		}
 		if sc.Press != "" {
@@ -466,15 +474,23 @@ func (c *Controller) Shortcut(key string) (ok bool, err error) {
 	return false, nil
 }
 
-// SameKey compares two keys as HOTTY names them (SPEC §10.4): modifiers
-// in any order, and a character with Shift in itself, so that Control+S
-// is Control+Shift+s, and Space is " ". A key that is no name there is
-// only itself.
+// SameKey compares two keys as HOTTY names them (SPEC §10.4), read as a
+// host reads a key a program writes: modifiers in any order and case, a
+// physical key as its W3C code value or in snake case, a letter in either
+// case, so that Control+S is ctrl+s and PageDown is page_down. A key that
+// is no name there is only itself. mod is not a name here: a Shortcut's
+// key is read with the controller's Platform (Shortcut).
 func SameKey(a, b string) bool {
-	ca, oka := hotty.ParseKey(a)
-	cb, okb := hotty.ParseKey(b)
+	return sameKey(hotty.Platform{}, a, b)
+}
+
+// sameKey compares a key a program wrote, read as the Platform reads it, to
+// one pressed, which is never named with mod.
+func sameKey(p hotty.Platform, written, pressed string) bool {
+	ca, oka := p.ReadKey(written)
+	cb, okb := hotty.ParseKey(pressed)
 	if !oka || !okb {
-		return a == b
+		return written == pressed
 	}
 	return ca == cb
 }

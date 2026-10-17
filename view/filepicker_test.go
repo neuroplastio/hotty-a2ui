@@ -117,7 +117,7 @@ func TestFilePickerNavigation(t *testing.T) {
 	}
 
 	// ArrowDown moves selection
-	ok, err := c.FileKey("root", "ArrowDown")
+	ok, err := c.FileKey("root", "arrow_down")
 	if !ok || err != nil {
 		t.Fatalf("FileKey: %v, %v", ok, err)
 	}
@@ -127,7 +127,7 @@ func TestFilePickerNavigation(t *testing.T) {
 	}
 
 	// Enter opens directory "src"
-	ok, err = c.FileKey("root", "Enter")
+	ok, err = c.FileKey("root", "enter")
 	if !ok || err != nil {
 		t.Fatalf("FileKey: %v, %v", ok, err)
 	}
@@ -148,7 +148,7 @@ func TestFilePickerNavigation(t *testing.T) {
 	}
 
 	// Escape goes up to root
-	ok, err = c.FileKey("root", "Escape")
+	ok, err = c.FileKey("root", "escape")
 	if !ok || err != nil {
 		t.Fatalf("FileKey: %v, %v", ok, err)
 	}
@@ -163,7 +163,7 @@ func TestFilePickerNavigation(t *testing.T) {
 
 	// At the root, the keys that go up are not the picker's: they pass on
 	// (Escape to a Modal, say).
-	for _, key := range []string{"Escape", "ArrowLeft", "Backspace", "h"} {
+	for _, key := range []string{"escape", "arrow_left", "backspace", "h"} {
 		if ok, err := c.FileKey("root", key); ok || err != nil {
 			t.Errorf("FileKey(%s) at the root: %v, %v; want false", key, ok, err)
 		}
@@ -174,12 +174,12 @@ func TestFilePickerNavigation(t *testing.T) {
 
 	// Pick a file: End goes to the last one (README.md, case aside), Enter
 	// picks it.
-	c.FileKey("root", "End")
+	c.FileKey("root", "end")
 	e = c.V.Find("root")
 	if e.Selected != 4 {
 		t.Errorf("selected after End: %d, want 4", e.Selected)
 	}
-	c.FileKey("root", "Enter")
+	c.FileKey("root", "enter")
 	if got := c.S.Data.Value("/sel"); got != "README.md" {
 		t.Errorf("/sel = %v, want README.md", got)
 	}
@@ -339,7 +339,7 @@ func TestFilePickerAgentPath(t *testing.T) {
 		t.Fatal(err)
 	}
 	c.Rebuild()
-	if ok, err := c.FileKey("root", "Escape"); !ok || err != nil {
+	if ok, err := c.FileKey("root", "escape"); !ok || err != nil {
 		t.Fatalf("Escape: %v, %v", ok, err)
 	}
 	if e := c.V.Find("root"); e.FileDir != "src" || e.File().Name != "view" {

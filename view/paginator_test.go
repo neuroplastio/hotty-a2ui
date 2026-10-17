@@ -75,8 +75,8 @@ func TestPaginatorKeys(t *testing.T) {
 		page float64
 		sent int
 	}{
-		{"ArrowLeft", 1, 0}, {"ArrowRight", 2, 1}, {"l", 3, 2}, {"PageDown", 3, 2}, {"h", 2, 3}, {"Home", 1, 4},
-		{"End", 3, 5}, {"PageUp", 2, 6},
+		{"arrow_left", 1, 0}, {"arrow_right", 2, 1}, {"l", 3, 2}, {"page_down", 3, 2}, {"h", 2, 3}, {"home", 1, 4},
+		{"end", 3, 5}, {"page_up", 2, 6},
 	} {
 		if ok, err := c.PageKey("pager", step.key); !ok || err != nil {
 			t.Fatalf("%s: ok %v, %v", step.key, ok, err)
@@ -91,7 +91,7 @@ func TestPaginatorKeys(t *testing.T) {
 	if list := c.V.Find("list"); len(list.Children) != 5 || list.Children[0].Markdown != "Fig" {
 		t.Errorf("page 2 starts with %q", list.Children[0].Markdown)
 	}
-	if ok, _ := c.PageKey("pager", "ArrowUp"); ok {
+	if ok, _ := c.PageKey("pager", "arrow_up"); ok {
 		t.Error("the paginator took ArrowUp")
 	}
 	// The agent writes the page: the child follows.
@@ -102,7 +102,7 @@ func TestPaginatorKeys(t *testing.T) {
 	if list := c.V.Find("list"); len(list.Children) != 2 || list.Children[1].Markdown != "Nectarine" {
 		t.Errorf("page 3: %d items", len(list.Children))
 	}
-	if ok, err := c.PageKey("results", "Home"); !ok || err != nil {
+	if ok, err := c.PageKey("results", "home"); !ok || err != nil {
 		t.Fatal(ok, err)
 	}
 	if _, at := c.V.Find("results").Pages(); at != 0 || c.St.Local["results"] != 1.0 {

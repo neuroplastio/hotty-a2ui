@@ -142,7 +142,7 @@ func TestTooltipOnHost(t *testing.T) {
 	if got := s.TextOf(tip); got != "Where receipts go; nobody else sees it" {
 		t.Errorf("mute focused by the program: %q", got)
 	}
-	if !h.Key("Tab") {
+	if !h.Key("tab") {
 		t.Fatal("the host did not take Tab")
 	}
 	pump()

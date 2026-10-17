@@ -256,11 +256,11 @@ func (l *layout) paintScrollbar(cv *canvas, e *view.Element, x, y, page, total, 
 }
 
 // scrollKey works a focused scroll view by a key, as bubbles' viewport
-// takes them: ArrowUp and ArrowDown (k and j) a row, PageUp (b) and
-// PageDown (f, Space) a page, u and d (Control+u, Control+d) half a page,
-// Home and End (g and G) to its ends, and ArrowLeft and ArrowRight (h and
-// l) six columns, when its lines do not wrap. ok reports whether the key is
-// one of those.
+// takes them: arrow_up and arrow_down (k and j) a row, page_up (b) and
+// page_down (f, space) a page, u and d (ctrl+u, ctrl+d) half a page,
+// home and end (g and shift+g) to its ends, and arrow_left and arrow_right
+// (h and l) six columns, when its lines do not wrap. ok reports whether the
+// key is one of those.
 func (r *Rendition) scrollKey(e *view.Element, key string) (ok bool, err error) {
 	s, drawn := r.scrolls[e.ID]
 	if !drawn {
@@ -268,25 +268,25 @@ func (r *Rendition) scrollKey(e *view.Element, key string) (ok bool, err error) 
 	}
 	dy, dx := 0, 0
 	switch key {
-	case "ArrowUp", "k":
+	case "arrow_up", "k":
 		dy = -1
-	case "ArrowDown", "j":
+	case "arrow_down", "j":
 		dy = 1
-	case "PageUp", "b":
+	case "page_up", "b":
 		dy = -s.page
-	case "PageDown", "f", "Space":
+	case "page_down", "f", "space":
 		dy = s.page
-	case "u", "Control+u":
+	case "u", "ctrl+u":
 		dy = -s.page / 2
-	case "d", "Control+d":
+	case "d", "ctrl+d":
 		dy = s.page / 2
-	case "Home", "g":
+	case "home", "g":
 		dy = -s.rows
-	case "End", "G":
+	case "end", "shift+g":
 		dy = s.rows
-	case "ArrowLeft", "h":
+	case "arrow_left", "h":
 		dx = -sideCols
-	case "ArrowRight", "l":
+	case "arrow_right", "l":
 		dx = sideCols
 	default:
 		return false, nil

@@ -319,10 +319,9 @@ func (r *Rendition) Copied() (c Clip, ok bool) {
 }
 
 // The edit actions (SPEC §10.2) are a keymap's, as on a host: the default
-// keymap binds each to the host's edit shortcut, Mod+c copy, Mod+x cut,
-// Mod+v paste, Mod+z undo, Mod+Z redo (and Control+y where Mod is
-// Control), Mod being the controller's Platform's, Control where no host
-// says. A program overrides them with its keymap (SetKeys, a component's
+// keymap binds each to the host's edit shortcut, mod+c copy, mod+x cut,
+// mod+v paste, mod+z undo, mod+shift+z redo (and ctrl+y where mod is
+// ctrl), mod being the controller's Platform's, ctrl where no host says. A program overrides them with its keymap (SetKeys, a component's
 // keys), and binds one to program to keep its key.
 
 // CopyKey copies what is selected to the clipboard on a key the keymap
@@ -330,7 +329,7 @@ func (r *Rendition) Copied() (c Clip, ok bool) {
 // page's does. The selection is that of the text control that has the
 // keyboard, by its keymap, else a Text's, by the keymap of the element it
 // starts in (SPEC §11). With nothing selected, or the key bound to
-// program, the key is not the copy's: Control+c then interrupts or quits,
+// program, the key is not the copy's: ctrl+c then interrupts or quits,
 // as the program has it. Key does this first; a program calls it where a
 // selection may be in a rendition that doesn't have the keyboard.
 func (r *Rendition) CopyKey(key string) bool {
@@ -457,7 +456,7 @@ func (r *Rendition) Paste(text string) (handled bool, err error) {
 // where the key would have asked for the clipboard (PasteWanted). One from
 // the terminal's menu, with no key, does what it names where it can.
 // handled is false for the rest: the program gives c.Key to Key, as it
-// gives any key, and takes it as its own when Key does not, as Control+c
+// gives any key, and takes it as its own when Key does not, as ctrl+c
 // interrupts with nothing selected.
 func (r *Rendition) Command(c hotty.Command) (handled bool, err error) {
 	if c.Key == "" {

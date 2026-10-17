@@ -85,9 +85,9 @@ func TestListKeys(t *testing.T) {
 		key      string
 		sel, top int
 	}{
-		{"ArrowDown", 1, 0}, {"j", 2, 0}, {"k", 1, 0}, {"End", 11, 10}, {"PageDown", 11, 10},
-		{"PageUp", 6, 5}, {"h", 1, 0}, {"ArrowLeft", 1, 0}, {"l", 6, 5}, {"ArrowRight", 11, 10},
-		{"Home", 0, 0}, {"ArrowUp", 0, 0}, {"G", 11, 10}, {"g", 0, 0}, {"ArrowDown", 1, 0},
+		{"arrow_down", 1, 0}, {"j", 2, 0}, {"k", 1, 0}, {"end", 11, 10}, {"page_down", 11, 10},
+		{"page_up", 6, 5}, {"h", 1, 0}, {"arrow_left", 1, 0}, {"l", 6, 5}, {"arrow_right", 11, 10},
+		{"home", 0, 0}, {"arrow_up", 0, 0}, {"shift+g", 11, 10}, {"g", 0, 0}, {"arrow_down", 1, 0},
 	} {
 		if ok, err := c.ListKey("l", step.key); !ok || err != nil {
 			t.Fatalf("%s: %v %v", step.key, ok, err)
@@ -99,7 +99,7 @@ func TestListKeys(t *testing.T) {
 	if got := c.S.Data.Value("/sel"); got != "nutella" {
 		t.Errorf("the selection wrote %v", got)
 	}
-	if ok, err := c.ListKey("l", "Enter"); !ok || err != nil || len(*actions) != 1 || (*actions)[0].Context["thing"] != "nutella" {
+	if ok, err := c.ListKey("l", "enter"); !ok || err != nil || len(*actions) != 1 || (*actions)[0].Context["thing"] != "nutella" {
 		t.Fatalf("Enter: %v %v %+v", ok, err, *actions)
 	}
 	if err := c.S.Write("/sel", "linux"); err != nil {
@@ -140,13 +140,13 @@ func TestListFilter(t *testing.T) {
 	if e.SelectedRow() != 1 || !slices.Equal(e.Matched[0], []int{0}) || len(e.Matched) != 7 {
 		t.Errorf("selected %d, matched %v", e.SelectedRow(), e.Matched)
 	}
-	if e = keys("ArrowDown"); e.SelectedRow() != 3 || e.Query.Text != "n" {
+	if e = keys("arrow_down"); e.SelectedRow() != 3 || e.Query.Text != "n" {
 		t.Fatalf("ArrowDown while typing moves: item %d, %+v", e.SelectedRow(), e.Query)
 	}
 	if e = keys("j"); e.Query.Text != "nj" {
 		t.Fatalf("j while typing is typed: %+v", e.Query)
 	}
-	e = keys("Backspace", "Enter")
+	e = keys("backspace", "enter")
 	if e.Query.Editing || e.Query.Text != "n" || e.ListStatus() != "“n” 7 items • 5 filtered" {
 		t.Fatalf("applied: %+v %q", e.Query, e.ListStatus())
 	}
@@ -155,27 +155,27 @@ func TestListFilter(t *testing.T) {
 		t.Fatal(err)
 	}
 	c.Rebuild()
-	if ok, err := c.ListKey("l", "Enter"); !ok || err != nil || len(*actions) != 0 {
+	if ok, err := c.ListKey("l", "enter"); !ok || err != nil || len(*actions) != 0 {
 		t.Fatalf("Enter on a hidden item: %v %v %+v", ok, err, *actions)
 	}
-	if e = keys("Escape"); e.Query != (view.Query{}) || len(e.Shown) != 12 {
+	if e = keys("escape"); e.Query != (view.Query{}) || len(e.Shown) != 12 {
 		t.Fatalf("Escape: %+v, %d shown", e.Query, len(e.Shown))
 	}
-	if ok, _ := c.ListKey("l", "Escape"); ok {
+	if ok, _ := c.ListKey("l", "escape"); ok {
 		t.Error("Escape without a filter is the list's")
 	}
 	e = keys("/", "z", "z", "q")
 	if len(e.Shown) != 0 || e.ListStatus() != "Nothing matched • 12 filtered" {
 		t.Fatalf("zzq: %v %q", e.Shown, e.ListStatus())
 	}
-	if e = keys("Enter"); e.Query != (view.Query{}) || len(e.Shown) != 12 {
+	if e = keys("enter"); e.Query != (view.Query{}) || len(e.Shown) != 12 {
 		t.Fatalf("Enter on nothing matched: %+v", e.Query)
 	}
-	e = keys("/", "l", "i", "Space", "Escape")
+	e = keys("/", "l", "i", "space", "escape")
 	if e.Query != (view.Query{}) {
 		t.Fatalf("Escape while typing: %+v", e.Query)
 	}
-	if e = keys("/", "l", "i", "Enter"); !slices.Equal(e.Shown, []int{10, 6}) || e.SelectedRow() != 10 {
+	if e = keys("/", "l", "i", "enter"); !slices.Equal(e.Shown, []int{10, 6}) || e.SelectedRow() != 10 {
 		t.Errorf("li: shown %v, selected %d", e.Shown, e.SelectedRow())
 	}
 }

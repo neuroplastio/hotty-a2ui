@@ -138,12 +138,12 @@ func TestInCells(t *testing.T) {
 		}
 	}
 	// A click on the note's field gives it the keyboard; what is typed
-	// goes in it, and Control+s presses Save with the note current.
+	// goes in it, and ctrl+s presses Save with the note current.
 	row := lineOf(screen, "Note") + 1
 	h.Type("\x1b[<0;36;" + itoa(row+1) + "M\x1b[<0;36;" + itoa(row+1) + "m")
 	h.Type("hello")
 	eventually(t, "the typing in the field", func() bool { return strings.Contains(h.Screen(), "hello") })
-	h.Type("\x13") // Control+s
+	h.Type("\x13") // ctrl+s
 	eventually(t, "the save action", func() bool {
 		for _, o := range sent() {
 			if o.Action != nil && o.Action.Name == "save" && o.Action.Context["note"] == "hello" {
@@ -272,7 +272,7 @@ func pickRendition(t *testing.T, h *hottytest.Host, i int) {
 	}
 }
 
-// TestSignalDeletesSurfaces: kill's TERM ends the storybook as Control+C
+// TestSignalDeletesSurfaces: kill's TERM ends the storybook as ctrl+c
 // does, its surfaces deleted from the host first.
 func TestSignalDeletesSurfaces(t *testing.T) {
 	h := hottytest.New(t, hottytest.Size(120, 40))

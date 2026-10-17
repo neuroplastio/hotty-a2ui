@@ -726,7 +726,7 @@ func themeCSS(th theme.Theme) string {
 // tableKeys are the keys a Table gives the program, which works its
 // selection (Rendition.Key): on a host that scrolls a surface with them,
 // they would never reach it otherwise (SPEC §10.2, keys for the program).
-const tableKeys = "ArrowUp=program ArrowDown=program PageUp=program PageDown=program Home=program End=program"
+const tableKeys = "arrow_up=program arrow_down=program page_up=program page_down=program home=program end=program"
 
 // table is a Table: a focusable box holding a table, whose keys reach the
 // program (tableKeys; Enter reaches it anyway), and whose rows each report
@@ -814,9 +814,9 @@ func moveKeys(e *view.Element) string {
 	if !e.Movable {
 		return ""
 	}
-	keys := "Alt+ArrowUp=program Alt+ArrowDown=program"
+	keys := "alt+arrow_up=program alt+arrow_down=program"
 	if e.Kind == view.Tree {
-		keys += " Alt+ArrowLeft=program Alt+ArrowRight=program"
+		keys += " alt+arrow_left=program alt+arrow_right=program"
 	}
 	return keys
 }

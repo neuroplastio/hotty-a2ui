@@ -138,17 +138,17 @@ func TestCancelDrag(t *testing.T) {
 	}
 }
 
-// Alt+ArrowUp and Alt+ArrowDown move the selected item a place, and stay
+// alt+arrow_up and alt+arrow_down move the selected item a place, and stay
 // at the ends; other lists leave the keys.
 func TestMoveKeys(t *testing.T) {
 	c, actions := todos(t)
 	for _, step := range []struct{ key, want string }{
-		{"Alt+ArrowUp", "abcd"},
-		{"Alt+ArrowDown", "bacd"},
-		{"Alt+ArrowDown", "bcad"},
-		{"Alt+ArrowDown", "bcda"},
-		{"Alt+ArrowDown", "bcda"},
-		{"Alt+ArrowUp", "bcad"},
+		{"alt+arrow_up", "abcd"},
+		{"alt+arrow_down", "bacd"},
+		{"alt+arrow_down", "bcad"},
+		{"alt+arrow_down", "bcda"},
+		{"alt+arrow_down", "bcda"},
+		{"alt+arrow_up", "bcad"},
 	} {
 		if ok, err := c.MoveKey("root", step.key); !ok || err != nil {
 			t.Fatalf("%s: %v %v", step.key, ok, err)
@@ -160,10 +160,10 @@ func TestMoveKeys(t *testing.T) {
 	if c.S.Data.Value("/sel") != "a" || len(*actions) != 4 {
 		t.Errorf("selected %v, %d actions; want a, 4", c.S.Data.Value("/sel"), len(*actions))
 	}
-	if ok, _ := c.MoveKey("root", "Alt+ArrowLeft"); ok {
-		t.Error("a list took Alt+ArrowLeft")
+	if ok, _ := c.MoveKey("root", "alt+arrow_left"); ok {
+		t.Error("a list took alt+arrow_left")
 	}
-	if ok, _ := c.MoveKey("root", "ArrowDown"); ok {
+	if ok, _ := c.MoveKey("root", "arrow_down"); ok {
 		t.Error("MoveKey took ArrowDown")
 	}
 }
@@ -176,7 +176,7 @@ func TestMoveLiteral(t *testing.T) {
 	if err := c.SelectRow("root", 0); err != nil {
 		t.Fatal(err)
 	}
-	if ok, err := c.MoveKey("root", "Alt+ArrowDown"); !ok || err != nil {
+	if ok, err := c.MoveKey("root", "alt+arrow_down"); !ok || err != nil {
 		t.Fatal(ok, err)
 	}
 	if e := c.V.Find("root"); jsonOf(e.RowIDs) != `["y","x","z"]` || e.SelectedRow() != 1 {
@@ -284,17 +284,17 @@ func TestTreeMoveKeys(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, step := range []struct{ key, want string }{
-		{"Alt+ArrowUp", "docs [ docs/b.md docs/a.md ] src [ src/main.go ] empty README "},
-		{"Alt+ArrowUp", "docs [ docs/b.md docs/a.md ] src [ src/main.go ] empty README "},
-		{"Alt+ArrowLeft", "docs [ docs/a.md ] docs/b.md src [ src/main.go ] empty README "},
-		{"Alt+ArrowDown", "docs [ docs/a.md ] src [ src/main.go ] docs/b.md empty README "},
-		{"Alt+ArrowRight", "docs [ docs/a.md ] src [ src/main.go docs/b.md ] empty README "},
-		{"Alt+ArrowLeft", "docs [ docs/a.md ] src [ src/main.go ] docs/b.md empty README "},
-		{"Alt+ArrowDown", "docs [ docs/a.md ] src [ src/main.go ] empty docs/b.md README "},
-		{"Alt+ArrowRight", "docs [ docs/a.md ] src [ src/main.go ] empty [ docs/b.md ] README "},
-		{"Alt+ArrowLeft", "docs [ docs/a.md ] src [ src/main.go ] empty docs/b.md README "},
-		{"Alt+ArrowDown", "docs [ docs/a.md ] src [ src/main.go ] empty README docs/b.md "},
-		{"Alt+ArrowRight", "docs [ docs/a.md ] src [ src/main.go ] empty README docs/b.md "},
+		{"alt+arrow_up", "docs [ docs/b.md docs/a.md ] src [ src/main.go ] empty README "},
+		{"alt+arrow_up", "docs [ docs/b.md docs/a.md ] src [ src/main.go ] empty README "},
+		{"alt+arrow_left", "docs [ docs/a.md ] docs/b.md src [ src/main.go ] empty README "},
+		{"alt+arrow_down", "docs [ docs/a.md ] src [ src/main.go ] docs/b.md empty README "},
+		{"alt+arrow_right", "docs [ docs/a.md ] src [ src/main.go docs/b.md ] empty README "},
+		{"alt+arrow_left", "docs [ docs/a.md ] src [ src/main.go ] docs/b.md empty README "},
+		{"alt+arrow_down", "docs [ docs/a.md ] src [ src/main.go ] empty docs/b.md README "},
+		{"alt+arrow_right", "docs [ docs/a.md ] src [ src/main.go ] empty [ docs/b.md ] README "},
+		{"alt+arrow_left", "docs [ docs/a.md ] src [ src/main.go ] empty docs/b.md README "},
+		{"alt+arrow_down", "docs [ docs/a.md ] src [ src/main.go ] empty README docs/b.md "},
+		{"alt+arrow_right", "docs [ docs/a.md ] src [ src/main.go ] empty README docs/b.md "},
 	} {
 		if ok, err := c.MoveKey("root", step.key); !ok || err != nil {
 			t.Fatalf("%s: %v %v", step.key, ok, err)
@@ -364,7 +364,7 @@ func TestDragBetweenLists(t *testing.T) {
 	}
 	// The keys move the card the keyboard is on, in its List.
 	c.Focus("card[/doing/0]")
-	if ok, err := c.MoveKey("card[/doing/0]", "Alt+ArrowDown"); !ok || err != nil {
+	if ok, err := c.MoveKey("card[/doing/0]", "alt+arrow_down"); !ok || err != nil {
 		t.Fatal(ok, err)
 	}
 	if got := jsonOf(c.S.Data.Value("/doing")); got != `[{"id":"c3","title":"Three"},{"id":"c2","title":"Two"}]` || c.St.Focus != "card[/doing/1]" {

@@ -124,7 +124,7 @@ type Book struct {
 	last   *pane   // the pane that had it last: Tab goes on from there
 	cursor *tea.Cursor
 	status string
-	// quitAt is when a Control+c nothing took asked for a second one to
+	// quitAt is when a ctrl+c nothing took asked for a second one to
 	// quit (key), zero while none did; quitDue is its timer, which Tick
 	// starts. Another key, a click, or QuitWindow passing ends the ask.
 	quitAt  time.Time
@@ -163,15 +163,15 @@ type Book struct {
 // tickMsg is the frame clock's tick: Tick sends it, and Update takes it.
 type tickMsg struct{}
 
-// QuitWindow is how soon a second Control+c must follow the first that
+// QuitWindow is how soon a second ctrl+c must follow the first that
 // nothing took for a program to quit: only a quick second press is the
 // way out (the maintainer, 2026-10-14).
 const QuitWindow = time.Second
 
-// quitAsk is what the bar says while a Control+c asks for another.
+// quitAsk is what the bar says while a ctrl+c asks for another.
 const quitAsk = "Ctrl+C again to quit"
 
-// quitEnd is the end of the ask a Control+c made at at (QuitWindow): Tick
+// quitEnd is the end of the ask a ctrl+c made at at (QuitWindow): Tick
 // sends it, and Update takes the ask off the bar if it is still that one.
 type quitEnd struct{ at time.Time }
 
@@ -194,8 +194,8 @@ func New(o Options) *Book {
 
 // Update takes a message, as the Session's Update left it: the user's
 // keys and clicks, and the host's events. Its commands to the host go out
-// with the Session's next Flush. quit reports Control+C a second time in
-// a row (key), Control+Q, or q while no pane has the keyboard.
+// with the Session's next Flush. quit reports ctrl+c a second time in
+// a row (key), ctrl+q, or q while no pane has the keyboard.
 func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 	if TerminalColours(msg, &b.term) {
 		return false
@@ -338,7 +338,7 @@ func (b *Book) Copied() (c cells.Clip, ok bool) {
 
 // Selection is what is selected in the cells panes, which a copy key
 // copies (cells.Rendition.Selection): in the one with the keyboard, else a
-// Text's in any; "" for none. A program that keeps Control+c for itself,
+// Text's in any; "" for none. A program that keeps ctrl+c for itself,
 // as a way out, gives it to the Book while there is a selection.
 func (b *Book) Selection() string {
 	if p := b.focus; p != nil && p.kind == asCells {
@@ -400,7 +400,7 @@ func (b *Book) copyKey(k string) bool {
 // program returns it with each View's commands, after the session's
 // Layout, which sends a new surface's document, as cmd/storybook does. It is nil while nothing moves, and
 // while a tick is on its way. The ticks fall where the frames change
-// (view.UntilStep). It also times a Control+c's ask (QuitWindow), whose
+// (view.UntilStep). It also times a ctrl+c's ask (QuitWindow), whose
 // end, given to Update, takes it off the bar.
 func (b *Book) Tick() tea.Cmd {
 	var end tea.Cmd
@@ -546,11 +546,11 @@ func (p *pane) chrome(b *Book) bool {
 // key handles a key that reached the storybook: a copy key with a
 // selection in cells copies it, then the pane with the keyboard (on a
 // host, only what the surface left), then the story's Shortcuts, then
-// the storybook's own keys, Control+c's quit among them.
+// the storybook's own keys, ctrl+c's quit among them.
 //
-// A Control+c that nothing copied with quits only when it follows another
+// A ctrl+c that nothing copied with quits only when it follows another
 // such within QuitWindow: the first asks for it on the bar. Text controls
-// use Control+c, and one with nothing to copy (a password field's, any
+// use ctrl+c, and one with nothing to copy (a password field's, any
 // with nothing selected) leaves the key to the program, as a host does,
 // so one press is never the way out (the maintainer, 2026-10-14).
 func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
@@ -561,9 +561,9 @@ func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 		return false
 	}
 	switch k {
-	case "Control+q":
+	case "ctrl+q":
 		return true
-	case "Control+c":
+	case "ctrl+c":
 		if asked {
 			return true
 		}
@@ -580,9 +580,9 @@ func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 			handled, err := p.cells.Key(k)
 			b.fail(err)
 			if handled {
-				if had && !p.s.C.St.Keyboard && (k == "Tab" || k == "Shift+Tab") {
+				if had && !p.s.C.St.Keyboard && (k == "tab" || k == "shift+tab") {
 					b.focus = nil
-					b.cycle(k == "Shift+Tab", p)
+					b.cycle(k == "shift+tab", p)
 				}
 				return false
 			}
@@ -601,17 +601,17 @@ func (b *Book) key(k string, h *hottytea.Session) (quit bool) {
 		return false
 	}
 	switch k {
-	case "Tab", "Shift+Tab":
-		b.cycle(k == "Shift+Tab", cmp.Or(b.focus, b.last))
-	case "Escape":
+	case "tab", "shift+tab":
+		b.cycle(k == "shift+tab", cmp.Or(b.focus, b.last))
+	case "escape":
 		b.escape()
-	case "F1":
+	case "f1":
 		b.toggleSidebar()
-	case "F2":
+	case "f2":
 		b.nextRendition()
-	case "F3":
+	case "f3":
 		b.nextTheme()
-	case "F5":
+	case "f5":
 		b.ch.setTab(b.ch.tab() + 1)
 	case "q":
 		return b.focus == nil
@@ -751,7 +751,7 @@ func (b *Book) takeEdit(h *hottytea.Session) {
 // command is an edit command the host sent in place of its key (SPEC
 // §10.6): the cells pane with the keyboard does what it can
 // (cells.Rendition.Command), a paste with its text; else it is its key,
-// as the storybook takes keys (Control+c copies a selection, or twice
+// as the storybook takes keys (ctrl+c copies a selection, or twice
 // quits).
 // One from the terminal's menu, with no key, copies where a selection is.
 func (b *Book) command(c hotty.Command, h *hottytea.Session) (quit bool) {
@@ -775,7 +775,7 @@ func (b *Book) command(c hotty.Command, h *hottytea.Session) (quit bool) {
 	return b.key(c.Key, h)
 }
 
-// endAsk ends a Control+c's ask for another (key), and takes it off the
+// endAsk ends a ctrl+c's ask for another (key), and takes it off the
 // bar.
 func (b *Book) endAsk() {
 	if b.quitAt.IsZero() {
@@ -997,7 +997,7 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 		}
 		b.panes[name] = p
 	}
-	// The host's Mod and edit shortcuts, Control's where it says none.
+	// The host's Mod and edit shortcuts, ctrl's where it says none.
 	s.C.Platform = hotty.PlatformOf(b.caps)
 	p.rect = r
 	return p
@@ -1029,7 +1029,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 		x := scr.put(0, 0, W, "HOTTY kit storybook", cells.Fg, cells.Bold)
 		scr.put(x, 0, W-x, " · "+b.cur+" · "+b.rend, cells.Muted, 0)
 		quit := "Ctrl+C twice to quit"
-		if hotty.Resolve(hotty.PlatformOf(b.caps), false).Lookup("Control+c") == hotty.Copy {
+		if hotty.Resolve(hotty.PlatformOf(b.caps), false).Lookup("ctrl+c") == hotty.Copy {
 			quit = "Ctrl+C copy, twice to quit"
 		}
 		help := "Tab next · Esc leave · F1 sidebar · F2 rendition · F3 theme · F5 tab · " + quit

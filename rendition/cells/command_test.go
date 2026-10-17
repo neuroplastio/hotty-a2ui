@@ -26,13 +26,13 @@ func TestCommands(t *testing.T) {
 		r.Draw(40)
 		return ok
 	}
-	if !command("paste", "Control+v", "Ada", true) || data()["name"] != "Ada" || r.PasteWanted() {
+	if !command("paste", "ctrl+v", "Ada", true) || data()["name"] != "Ada" || r.PasteWanted() {
 		t.Fatalf("a paste with its text: %v, asked again %v", data()["name"], r.PasteWanted())
 	}
-	if !command("paste", "Control+v", "", false) || data()["name"] != "Ada" {
+	if !command("paste", "ctrl+v", "", false) || data()["name"] != "Ada" {
 		t.Errorf("a paste with no text changed the field: %v", data()["name"])
 	}
-	if command("copy", "Control+c", "", false) {
+	if command("copy", "ctrl+c", "", false) {
 		t.Error("copy with a key was not left to Key")
 	}
 	if !command("select-all", "", "", false) || r.Selection() != "Ada" {
@@ -50,29 +50,29 @@ func TestCommands(t *testing.T) {
 	if !command("undo", "", "", false) || data()["name"] != "Ada" {
 		t.Errorf("undo from the menu left %v", data()["name"])
 	}
-	r.SetKeys("Mod+v=program")
-	if command("paste", "Control+v", "x", true) || data()["name"] != "Ada" {
+	r.SetKeys("mod+v=program")
+	if command("paste", "ctrl+v", "x", true) || data()["name"] != "Ada" {
 		t.Error("a paste whose key is bound to program pasted")
 	}
 }
 
-// TestEditPlatform: where Mod is Meta (macOS), a field's edit keys are
-// Command's, and Control's are not edits: Control+z reaches the program.
+// TestEditPlatform: where Mod is super (macOS), a field's edit keys are
+// Command's, and Control's are not edits: ctrl+z reaches the program.
 func TestEditPlatform(t *testing.T) {
 	c, data, _ := form(t)
-	c.Platform = hottygo.Platform{Mod: "Meta"}
+	c.Platform = hottygo.Platform{Mod: "super"}
 	r := New(c)
 	c.Focus("name")
 	r.Draw(40)
-	keys(t, r, "A", "d", "a", "Meta+z")
+	keys(t, r, "shift+a", "d", "a", "super+z")
 	if got := data()["name"]; got != "" {
-		t.Errorf("Meta+z left %q", got)
+		t.Errorf("super+z left %q", got)
 	}
-	keys(t, r, "Meta+Z")
+	keys(t, r, "super+shift+z")
 	if got := data()["name"]; got != "Ada" {
-		t.Errorf("Meta+Shift+z left %q", got)
+		t.Errorf("super+shift+z left %q", got)
 	}
-	if ok, _ := r.Key("Control+z"); ok {
-		t.Error("Control+z was taken where Mod is Meta")
+	if ok, _ := r.Key("ctrl+z"); ok {
+		t.Error("ctrl+z was taken where Mod is super")
 	}
 }

@@ -456,7 +456,7 @@ func (e *Element) Focusable() bool {
 type Shortcut struct {
 	// ID is the Shortcut's own element id.
 	ID string `json:"id"`
-	// Key is a W3C key value after its modifiers: "Control+s".
+	// Key is a key as SPEC §10.4 names it: "ctrl+s", "mod+s".
 	Key string `json:"key"`
 	// Press is the id of the Button element it presses; empty when it
 	// runs its own action.

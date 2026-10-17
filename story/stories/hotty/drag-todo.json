@@ -4,7 +4,7 @@
   "topic": "Drag and drop",
   "component": "HottyList: reorderable, moved, onMove",
   "icon": "checklist",
-  "description": "A reorderable HottyList. Drag an item: it shows faint, and a line in the accent shows where it would land; let go there, or press Escape, or let go away from the list, to leave it where it was. Alt+ArrowUp and Alt+ArrowDown move the selected item a place. Each move writes the items to /todos and the move to /moved, then sends moved with it.",
+  "description": "A reorderable HottyList. Drag an item: it shows faint, and a line in the accent shows where it would land; let go there, or press Escape, or let go away from the list, to leave it where it was. alt+arrow_up and alt+arrow_down move the selected item a place. Each move writes the items to /todos and the move to /moved, then sends moved with it.",
   "messages": [
     {
       "version": "v1.0",

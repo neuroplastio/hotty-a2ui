@@ -110,13 +110,13 @@ func (c *Controller) PageKey(id, key string) (ok bool, err error) {
 	}
 	to := e.Selected
 	switch key {
-	case "ArrowLeft", "h", "PageUp":
+	case "arrow_left", "h", "page_up":
 		to--
-	case "ArrowRight", "l", "PageDown":
+	case "arrow_right", "l", "page_down":
 		to++
-	case "Home":
+	case "home":
 		to = 0
-	case "End":
+	case "end":
 		to = e.PageCount - 1
 	default:
 		return false, nil

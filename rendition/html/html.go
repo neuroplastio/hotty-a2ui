@@ -15,7 +15,6 @@ package html
 
 import (
 	_ "embed"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -529,21 +528,22 @@ func (r *Rendition) notch(e *view.Element, part string) error {
 }
 
 // Key is a key the program read while the surface is the one keys apply
-// to, named as SPEC §10.4 has it ("Control+s", "Escape", "Space"): one
+// to, named as SPEC §10.4 has it ("ctrl+s", "escape", "space"): one
 // the focused field did not use (its keymap, SetKeys), or any while the
-// surface does not have the keyboard. A Shortcut takes it. While the surface has the keyboard, a field may
-// hold an edit the host has not committed, so Key sends a=blur and the
-// Shortcut runs when the blur comes back (Event), after the field's
-// change; then the keyboard goes back to the surface. Else Escape closes
-// an open Modal, and ? switches a HottyKeyHints' views. ok reports whether the surface took the key.
+// surface does not have the keyboard. A Shortcut takes it. While the
+// surface has the keyboard, a field may hold an edit the host has not
+// committed, so Key sends a=blur and the Shortcut runs when the blur comes
+// back (Event), after the field's change; then the keyboard goes back to
+// the surface. Else escape closes an open Modal, and ? switches a
+// HottyKeyHints' views. ok reports whether the surface took the key.
 func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	if k, named := hotty.ParseKey(key); named {
 		key = k
 	}
 	c := r.C
 	r.hush()
-	if key == "Escape" && r.press != nil && r.press.lifted && !r.press.done {
-		// Escape cancels a drag under way; the rest of it is nothing.
+	if key == "escape" && r.press != nil && r.press.lifted && !r.press.done {
+		// escape cancels a drag under way; the rest of it is nothing.
 		r.press.done = true
 		c.CancelDrag()
 		return nil, true, nil
@@ -557,19 +557,19 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 			return nil, true, err
 		}
 	}
-	// Escape from a toast's action, a button the host leaves it to the
+	// escape from a toast's action, a button the host leaves it to the
 	// program from, dismisses the toast, before any Shortcut, as the cells
 	// rendition gives the focused element its keys first.
-	if e := c.V.Find(c.St.Focus); key == "Escape" && c.St.Keyboard && e != nil && e.Kind == view.ToastAction {
+	if e := c.V.Find(c.St.Focus); key == "escape" && c.St.Keyboard && e != nil && e.Kind == view.ToastAction {
 		return nil, c.DismissNewest(), nil
 	}
 	// Enter on a HottyMarkdown's link in place, which its keymap gives the
 	// program, follows it (profile §6.27), before any Shortcut, as the cells
 	// rendition gives the focused element its keys first.
-	if e := c.V.Find(c.St.Focus); key == "Enter" && c.St.Keyboard && e != nil && e.Kind == view.Link {
+	if e := c.V.Find(c.St.Focus); key == "enter" && c.St.Keyboard && e != nil && e.Kind == view.Link {
 		return nil, true, c.Activate(e.ID)
 	}
-	if slices.ContainsFunc(c.V.Shortcuts, func(sc view.Shortcut) bool { return view.SameKey(sc.Key, key) }) {
+	if c.HasShortcut(key) {
 		if c.St.Keyboard {
 			r.pending = key
 			return []string{hotty.Blur(r.name)}, true, nil
@@ -591,7 +591,7 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	}
 	// A focused HottyList is a box on the host too: it moves, turns pages
 	// and filters by the keys (view.Controller.ListKey). Its filter takes
-	// Escape before an open Modal does.
+	// escape before an open Modal does.
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.RichList {
 		if ok, err := c.ListKey(e.ID, key); ok {
 			return nil, true, err
@@ -604,12 +604,12 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 			return nil, true, err
 		}
 	}
-	if key == "Escape" && c.St.Modal != "" {
+	if key == "escape" && c.St.Modal != "" {
 		c.CloseModal()
 		return nil, true, nil
 	}
 	// Then it dismisses the newest toast.
-	if key == "Escape" && c.DismissNewest() {
+	if key == "escape" && c.DismissNewest() {
 		return nil, true, nil
 	}
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Cycle {
@@ -653,11 +653,11 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	// and End to the program (SPEC §10.2); so is a HottyRangeSlider's knob.
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && (e.Kind == view.Slider || e.Kind == view.Knob) {
 		switch key {
-		case "ArrowLeft", "ArrowDown":
+		case "arrow_left", "arrow_down":
 			return nil, true, c.StepSlider(e.ID, -1, "")
-		case "ArrowRight", "ArrowUp":
+		case "arrow_right", "arrow_up":
 			return nil, true, c.StepSlider(e.ID, 1, "")
-		case "Home", "End":
+		case "home", "end":
 			return nil, true, c.StepSlider(e.ID, 0, key)
 		}
 	}
@@ -782,33 +782,34 @@ func (r *Rendition) clickSelect(e *view.Element, part string, ev hotty.Event) er
 
 // listKey is a key while a list is open, which the program has: as in
 // cells, the arrows, Home, End, Page Up, Page Down and a letter move the
-// highlight, Space or Enter picks it, and Escape closes the list. Tab
+// highlight, space or enter picks it, and escape closes the list. tab
 // closes it and goes on.
 func (r *Rendition) listKey(l *list, key string) (bool, error) {
 	e := r.C.V.Find(l.id)
 	n := len(e.Options)
 	switch key {
-	case "ArrowUp":
+	case "arrow_up":
 		l.hi = max(l.hi-1, 0)
-	case "ArrowDown":
+	case "arrow_down":
 		l.hi = min(l.hi+1, n-1)
-	case "Home", "PageUp":
+	case "home", "page_up":
 		l.hi = 0
-	case "End", "PageDown":
+	case "end", "page_down":
 		l.hi = n - 1
-	case "Space", "Enter":
+	case "space", "enter":
 		r.list = nil
 		if l.hi < 0 || l.hi >= n {
 			return true, nil
 		}
 		return true, r.C.SetValue(e.ID, e.Options[l.hi].Value)
-	case "Escape":
+	case "escape":
 		r.list = nil
-	case "Tab", "Shift+Tab":
+	case "tab", "shift+tab":
 		r.list = nil
 		return false, nil
 	default:
-		if i := e.NextByLetter(l.hi, key); i >= 0 {
+		text, _ := hotty.KeyText(key)
+		if i := e.NextByLetter(l.hi, text); i >= 0 {
 			l.hi = i
 			return true, nil
 		}
@@ -829,17 +830,18 @@ func (r *Rendition) selectKey(e *view.Element, key string) (bool, error) {
 	cur := e.Picked()
 	i := -1
 	switch key {
-	case "ArrowUp":
+	case "arrow_up":
 		i = max(cur-1, 0)
-	case "ArrowDown":
+	case "arrow_down":
 		i = min(cur+1, n-1)
-	case "Home", "PageUp":
+	case "home", "page_up":
 		i = 0
-	case "End", "PageDown":
+	case "end", "page_down":
 		i = n - 1
 	default:
-		if i = e.NextByLetter(cur, key); i < 0 {
-			return utf8.RuneCountInString(key) == 1, nil
+		text, _ := hotty.KeyText(key)
+		if i = e.NextByLetter(cur, text); i < 0 {
+			return utf8.RuneCountInString(text) == 1, nil
 		}
 	}
 	if i == cur {

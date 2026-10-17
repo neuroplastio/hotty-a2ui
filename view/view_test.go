@@ -59,7 +59,7 @@ func TestControls(t *testing.T) {
 	 {"id":"go_t","component":"Text","text":"Go"},
 	 {"id":"tabs","component":"Tabs","tabs":[{"title":"A","child":"ta"},{"title":"B","child":"tb"}]},
 	 {"id":"ta","component":"Text","text":"in A"},{"id":"tb","component":"Text","text":"in B"},
-	 {"id":"key","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"Control+Enter","press":"go"}]}}]`
+	 {"id":"key","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"ctrl+enter","press":"go"}]}}]`
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +81,7 @@ func TestControls(t *testing.T) {
 	if err := c.Enter("name"); err != nil || len(actions) != 1 || actions[0].Name != "send" || actions[0].Context["name"] != "Ada" {
 		t.Fatalf("enter: %v %+v", err, actions)
 	}
-	if ok, err := c.Shortcut("Control+Enter"); !ok || err != nil || actions[1].Name != "go" {
+	if ok, err := c.Shortcut("ctrl+enter"); !ok || err != nil || actions[1].Name != "go" {
 		t.Fatalf("shortcut %v %v %+v", ok, err, actions)
 	}
 	_ = c.Activate("tabs/tab/1")
@@ -281,14 +281,14 @@ func TestTable(t *testing.T) {
 		t.Fatalf("selected %d, top %d before anything", e.SelectedRow(), e.Top)
 	}
 	c.Focus("t")
-	if ok, err := c.TableKey("t", "ArrowUp"); !ok || err != nil {
+	if ok, err := c.TableKey("t", "arrow_up"); !ok || err != nil {
 		t.Fatalf("ArrowUp: %v %v", ok, err)
 	}
 	for _, step := range []struct {
 		key      string
 		sel, top int
-	}{{"", 0, 0}, {"ArrowDown", 1, 0}, {"ArrowDown", 2, 1}, {"PageDown", 4, 3}, {"ArrowDown", 4, 3}, {"Home", 0, 0}, {"End", 4, 3},
-		{"g", 0, 0}, {"G", 4, 3}, {"k", 3, 3}, {"j", 4, 3}, {"PageUp", 2, 2}} {
+	}{{"", 0, 0}, {"arrow_down", 1, 0}, {"arrow_down", 2, 1}, {"page_down", 4, 3}, {"arrow_down", 4, 3}, {"home", 0, 0}, {"end", 4, 3},
+		{"g", 0, 0}, {"shift+g", 4, 3}, {"k", 3, 3}, {"j", 4, 3}, {"page_up", 2, 2}} {
 		if step.key != "" {
 			if ok, err := c.TableKey("t", step.key); !ok || err != nil {
 				t.Fatalf("%s: %v %v", step.key, ok, err)
@@ -302,10 +302,10 @@ func TestTable(t *testing.T) {
 	if got := c.S.Data.Value("/sel"); got != "c" {
 		t.Errorf("the selection wrote %v, want c", got)
 	}
-	if ok, _ := c.TableKey("t", "Space"); ok {
+	if ok, _ := c.TableKey("t", "space"); ok {
 		t.Error("Space is a Table's key")
 	}
-	if ok, err := c.TableKey("t", "Enter"); !ok || err != nil || len(actions) != 1 || actions[0].Name != "open" || actions[0].Context["row"] != "c" {
+	if ok, err := c.TableKey("t", "enter"); !ok || err != nil || len(actions) != 1 || actions[0].Name != "open" || actions[0].Context["row"] != "c" {
 		t.Fatalf("Enter: %v %v %+v", ok, err, actions)
 	}
 	// The agent moves the selection: the window follows it.
@@ -317,7 +317,7 @@ func TestTable(t *testing.T) {
 		t.Errorf("selected by the agent: row %d, top %d", e.SelectedRow(), e.Top)
 	}
 	// Without onActivate, or with nothing selected, Enter does nothing.
-	if ok, err := c.TableKey("plain", "Enter"); !ok || err != nil || len(actions) != 1 {
+	if ok, err := c.TableKey("plain", "enter"); !ok || err != nil || len(actions) != 1 {
 		t.Errorf("Enter on a table without onActivate: %v %v %+v", ok, err, actions)
 	}
 }

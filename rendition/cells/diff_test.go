@@ -218,7 +218,7 @@ func TestDiffKeysAndClicks(t *testing.T) {
 	if got := c.S.Data.Value("/h"); got != "x:1" {
 		t.Errorf("k: %v", got)
 	}
-	keys(t, r, "G", "Enter")
+	keys(t, r, "shift+g", "enter")
 	if got := c.S.Data.Value("/h"); got != "x:17" || len(*actions) != 2 || (*actions)[1] != "stage:x:17" {
 		t.Errorf("G, Enter: %v %v", got, *actions)
 	}
@@ -265,8 +265,8 @@ func TestDiffInScrollView(t *testing.T) {
 	r := New(c)
 	r.Draw(40)
 	c.Focus("d")
-	keys(t, r, "G")
-	keys(t, r, "G")
+	keys(t, r, "shift+g")
+	keys(t, r, "shift+g")
 	// Taller than the box: its start, the fold before it first.
 	if got := r.Draw(40).Plain(); !strings.HasPrefix(got, "  ⋯ 9 unchanged lines") || !strings.Contains(got, "@@ -23,7 +23,7 @@") {
 		t.Fatalf("G: the last hunk's start not at the top:\n%s", got)

@@ -134,10 +134,10 @@ func TestDocumentLinks(t *testing.T) {
 	if u := f.Cells[2][5]; u.Text != "u" || u.Role != Accent || u.Attr&Reverse == 0 {
 		t.Errorf("focused link: %+v", u)
 	}
-	if ok, _ := r.Key("Space"); ok {
+	if ok, _ := r.Key("space"); ok {
 		t.Error("Space followed the link")
 	}
-	if ok, err := r.Key("Enter"); !ok || err != nil {
+	if ok, err := r.Key("enter"); !ok || err != nil {
 		t.Fatalf("Enter: %v %v", ok, err)
 	}
 	f = r.Draw(30)

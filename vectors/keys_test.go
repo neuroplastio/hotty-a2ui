@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"unicode"
 
 	"go.yaml.in/yaml/v3"
 
@@ -27,8 +28,8 @@ type vector struct {
 	Messages []any  `yaml:"messages"`
 	// Keys is the surface's keymap, when given (SetKeys).
 	Keys *string `yaml:"keys"`
-	// Mod is the host's Mod (SPEC §10.4): "Meta" plays a Mac's keys,
-	// Control's when not given.
+	// Mod is the host's Mod (SPEC §10.4): "super" plays a Mac's keys,
+	// "ctrl" when not given.
 	Mod   string           `yaml:"mod"`
 	Steps []map[string]any `yaml:"steps"`
 	// Renditions, when given, are those it plays on (cells, host): what
@@ -137,7 +138,7 @@ func play(t *testing.T, v vector, rendition string) {
 			p.key(fmt.Sprint(st["key"]))
 		case st["type"] != nil:
 			for _, r := range fmt.Sprint(st["type"]) {
-				p.key(string(r))
+				p.key(typedKey(r))
 			}
 		case st["focus"] != nil:
 			p.focus(fmt.Sprint(st["focus"]))
@@ -456,4 +457,16 @@ func (p *hostPlayer) focused() string {
 		return "?" + dom
 	}
 	return id
+}
+
+// typedKey is the key that types a character (SPEC §10.4): space is
+// space, and a capital is shift with its letter.
+func typedKey(r rune) string {
+	switch {
+	case r == ' ':
+		return "space"
+	case unicode.IsUpper(r):
+		return "shift+" + string(unicode.ToLower(r))
+	}
+	return string(r)
 }

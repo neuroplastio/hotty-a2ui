@@ -35,12 +35,12 @@ func note(t *testing.T, toggle string) *view.Controller {
 	 {"id":"save","component":"Button","child":"save_t","action":{"event":{"name":"save"}}},
 	 {"id":"save_t","component":"Text","text":"Save"},
 	 {"id":"tags","component":"ChoicePicker","label":"Tags","value":{"@path":"/tags"},"variant":"multipleSelection","displayStyle":"chips",
-	  "options":[{"label":"Work","value":"work"},{"label":"Home","value":"home"}]},
+	  "options":[{"label":"Work","value":"work"},{"label":"home","value":"home"}]},
 	 {"id":"snacks","component":"HottyList","catalogId":"` + hotty.ID + `","filterable":true,"height":1,
 	  "items":[{"label":"Nutella"},{"label":"Nuts"}],"onActivate":{"event":{"name":"eat"}}},
 	 ` + hints + `,
-	 {"id":"save_key","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"Control+s","press":"save","label":"save"},
-	 {"id":"quiet_key","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"Control+q","action":{"event":{"name":"quiet"}}}]}}]`
+	 {"id":"save_key","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"ctrl+s","press":"save","label":"save"},
+	 {"id":"quiet_key","component":"HottyShortcut","catalogId":"` + hotty.ID + `","key":"ctrl+q","action":{"event":{"name":"quiet"}}}]}}]`
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func hintKeys(hs []view.Hint) []string {
 
 // The short hints are those of the element with the keyboard, then the
 // HottyShortcuts that have a label, then "? more"; the full ones the same
-// in groups, with Tab, Shift+Tab and ?, and a text field's editing keys,
+// in groups, with Tab, shift+tab and ?, and a text field's editing keys,
 // from the surface's keymap. On a host, only the keys of an element the
 // program works show.
 func TestKeyHints(t *testing.T) {
@@ -106,8 +106,8 @@ func TestKeyHints(t *testing.T) {
 		t.Errorf("while the filter is typed: %q", hintKeys(short))
 	}
 	// A field's keys are the surface's keymap's, with the components'
-	// over it, Mod's as the platform's: Control's where no host says, and
-	// on a Mac (Mod Meta) the Command keys, after the others.
+	// over it, Mod's as the platform's: ctrl's where no host says, and
+	// on a Mac (Mod super) the Command keys, after the others.
 	c.Focus("title")
 	_, full = c.KeyHints(hottygo.TerminalKeys, false)
 	if got := hintKeys(full[0]); !slices.Equal(got, []string{"←/ctrl+b character backward", "→/ctrl+f character forward",
@@ -120,12 +120,12 @@ func TestKeyHints(t *testing.T) {
 		"ctrl+u delete before cursor", "ctrl+k delete after cursor", "enter submit"}) {
 		t.Errorf("a field's edits: %q", got)
 	}
-	c.Platform = hottygo.Platform{Mod: "Meta"}
+	c.Platform = hottygo.Platform{Mod: "super"}
 	_, full = c.KeyHints(hottygo.TerminalKeys, false)
-	if got := hintKeys(full[0]); !slices.Contains(got, "home/ctrl+a line start") || !slices.Contains(got, "meta+a select all") {
+	if got := hintKeys(full[0]); !slices.Contains(got, "home/ctrl+a line start") || !slices.Contains(got, "super+a select all") {
 		t.Errorf("a Mac field's moves: %q", got)
 	}
-	if got := hintKeys(full[1]); !slices.Contains(got, "ctrl+u/meta+backspace delete before cursor") {
+	if got := hintKeys(full[1]); !slices.Contains(got, "ctrl+u/super+backspace delete before cursor") {
 		t.Errorf("a Mac field's edits: %q", got)
 	}
 	c.Platform = hottygo.Platform{}
@@ -189,11 +189,11 @@ func TestShortcutHints(t *testing.T) {
 	 {"id":"no","component":"Button","child":"no_t","action":{"event":{"name":"no"}}},
 	 {"id":"no_t","component":"Text","text":"No"},
 	 {"id":"hints","component":"HottyKeyHints",` + h + `},
-	 {"id":"left","component":"HottyShortcut",` + h + `,"key":"ArrowLeft","label":"move","action":` + focus("yes") + `},
-	 {"id":"right","component":"HottyShortcut",` + h + `,"key":"ArrowRight","label":"move","action":` + focus("no") + `},
+	 {"id":"left","component":"HottyShortcut",` + h + `,"key":"arrow_left","label":"move","action":` + focus("yes") + `},
+	 {"id":"right","component":"HottyShortcut",` + h + `,"key":"arrow_right","label":"move","action":` + focus("no") + `},
 	 {"id":"y","component":"HottyShortcut",` + h + `,"key":"y","press":"yes","label":"yes"},
 	 {"id":"n","component":"HottyShortcut",` + h + `,"key":"n","press":"no","label":"no"},
-	 {"id":"save_key","component":"HottyShortcut",` + h + `,"key":"Control+s","action":{"event":{"name":"save"}},"label":"save"}]}}]`
+	 {"id":"save_key","component":"HottyShortcut",` + h + `,"key":"ctrl+s","action":{"event":{"name":"save"}},"label":"save"}]}}]`
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
 	}
@@ -226,8 +226,8 @@ func TestShortcutHints(t *testing.T) {
 // KeyText writes keys as bubbles' help does.
 func TestKeyText(t *testing.T) {
 	for key, want := range map[string]string{
-		"Control+s": "ctrl+s", "ArrowUp": "↑", "Alt+ArrowLeft": "alt+←", "Escape": "esc", "PageDown": "pgdn",
-		"Shift+Tab": "shift+tab", "G": "G", "/": "/", "Control++": "ctrl++", "Enter": "enter", "F5": "f5",
+		"ctrl+s": "ctrl+s", "arrow_up": "↑", "alt+arrow_left": "alt+←", "escape": "esc", "page_down": "pgdn",
+		"shift+tab": "shift+tab", "shift+g": "G", "/": "/", "Control++": "ctrl++", "enter": "enter", "F5": "f5",
 	} {
 		if got := view.KeyText(key); got != want {
 			t.Errorf("%s: %q, want %q", key, got, want)
@@ -245,5 +245,24 @@ func TestDefault(t *testing.T) {
 	c := run.Surfaces()[0].C
 	if !c.V.Find("yes").Default || c.V.Find("no").Default {
 		t.Error("the default is not Yes alone")
+	}
+}
+
+// TestSameKey: a Shortcut's key is read as a host reads a written key, with
+// mod the Platform's, and a capital is the small letter (SPEC §10.4).
+func TestSameKey(t *testing.T) {
+	for _, c := range []struct {
+		written, pressed string
+		mod              string
+		same             bool
+	}{
+		{"mod+s", "ctrl+s", "", true}, {"mod+s", "ctrl+s", "ctrl", true}, {"mod+s", "super+s", "super", true},
+		{"mod+s", "ctrl+s", "super", false}, {"Control+S", "ctrl+s", "", true}, {"Control+S", "ctrl+shift+s", "", false},
+		{"ctrl+shift+s", "ctrl+shift+s", "", true}, {"PageDown", "page_down", "", true}, {"shift+g", "g", "", false},
+	} {
+		c0 := &view.Controller{Platform: hottygo.Platform{Mod: c.mod}, V: &view.Surface{Shortcuts: []view.Shortcut{{Key: c.written}}}}
+		if got := c0.HasShortcut(c.pressed); got != c.same {
+			t.Errorf("%q written, %q pressed, mod %q: %v", c.written, c.pressed, c.mod, got)
+		}
 	}
 }

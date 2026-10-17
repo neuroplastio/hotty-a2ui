@@ -4,7 +4,7 @@
   "topic": "Drag and drop",
   "component": "HottyTable: reorderable, moved, onMove",
   "icon": "low_priority",
-  "description": "A reorderable HottyTable: a backlog in the order to work on it. Drag a row to where the line shows, or select one and press Alt+ArrowUp or Alt+ArrowDown. Each move writes the rows to /backlog and the move to /moved, then sends reprioritized with it.",
+  "description": "A reorderable HottyTable: a backlog in the order to work on it. Drag a row to where the line shows, or select one and press alt+arrow_up or alt+arrow_down. Each move writes the rows to /backlog and the move to /moved, then sends reprioritized with it.",
   "messages": [
     {
       "version": "v1.0",

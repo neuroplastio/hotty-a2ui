@@ -10,7 +10,7 @@
 // Nothing reads keys: the kind is the bars' colour alone, and there is no
 // action.
 //
-//	bun ref/opentui/toast.ts      Control+C quits
+//	bun ref/opentui/toast.ts      ctrl+c quits
 import { BoxRenderable, TextAttributes, TextRenderable, createCliRenderer } from "@opentui/core"
 
 // The kinds' colours, in Catppuccin Mocha, the shot's theme, as the kit's

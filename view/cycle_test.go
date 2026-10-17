@@ -61,8 +61,8 @@ func TestCycleBuilds(t *testing.T) {
 func TestCycleKey(t *testing.T) {
 	c, value := cycles(t)
 	for _, step := range []struct{ key, want string }{
-		{"ArrowRight", "prev"}, {"ArrowRight", "prod"}, {"ArrowLeft", "prev"}, {"ArrowUp", "stage"},
-		{"ArrowDown", "prev"}, {"Space", "prod"}, {"Enter", "stage"}, {"Home", "prod"}, {"End", "prev"},
+		{"arrow_right", "prev"}, {"arrow_right", "prod"}, {"arrow_left", "prev"}, {"arrow_up", "stage"},
+		{"arrow_down", "prev"}, {"space", "prod"}, {"enter", "stage"}, {"home", "prod"}, {"end", "prev"},
 		{"p", "prod"}, {"p", "prev"}, {"S", "stage"},
 	} {
 		if ok, err := c.CycleKey("env", step.key); !ok || err != nil {
@@ -75,12 +75,12 @@ func TestCycleKey(t *testing.T) {
 	if ok, _ := c.CycleKey("env", "x"); !ok || value("/env") != "stage" {
 		t.Errorf("a letter no option starts with: taken %v, env %v", ok, value("/env"))
 	}
-	for _, k := range []string{"Tab", "Escape", "Control+a", "PageDown"} {
+	for _, k := range []string{"tab", "escape", "ctrl+a", "page_down"} {
 		if ok, _ := c.CycleKey("env", k); ok {
 			t.Errorf("%s was taken", k)
 		}
 	}
-	if ok, _ := c.CycleKey("chips", "ArrowRight"); ok {
+	if ok, _ := c.CycleKey("chips", "arrow_right"); ok {
 		t.Error("chips took a cycle's key")
 	}
 	if err := c.StepChoice("tier", -1); err != nil || value("/tier") != "prev" {

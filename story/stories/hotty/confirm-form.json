@@ -94,7 +94,7 @@
             "metadata": {
               "extensions": {
                 "io_neuroplast_hotty": {
-                  "keys": "ArrowLeft=program ArrowRight=program"
+                  "keys": "arrow_left=program arrow_right=program"
                 }
               }
             }
@@ -147,7 +147,7 @@
             "id": "left_key",
             "component": "HottyShortcut",
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-            "key": "ArrowLeft",
+            "key": "arrow_left",
             "label": "move",
             "action": {
               "functionCall": {
@@ -163,7 +163,7 @@
             "id": "right_key",
             "component": "HottyShortcut",
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-            "key": "ArrowRight",
+            "key": "arrow_right",
             "label": "move",
             "action": {
               "functionCall": {

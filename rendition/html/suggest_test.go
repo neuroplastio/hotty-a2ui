@@ -38,7 +38,7 @@ func TestSuggestionsOnHost(t *testing.T) {
 	}
 	r.C.Focus("city")
 	x.update(r)
-	for _, k := range []string{"B", "e"} {
+	for _, k := range []string{"shift+b", "e"} {
 		if !x.h.Key(k) {
 			t.Fatalf("the host did not type %s", k)
 		}

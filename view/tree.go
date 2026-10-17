@@ -220,21 +220,21 @@ func (c *Controller) TreeKey(id, key string) (ok bool, err error) {
 	}
 	to := cur
 	switch key {
-	case "Enter", "Space":
+	case "enter", "space":
 		return true, c.Activate(id)
-	case "ArrowUp", "k":
+	case "arrow_up", "k":
 		to = cur - 1
-	case "ArrowDown", "j":
+	case "arrow_down", "j":
 		to = cur + 1
-	case "PageUp":
+	case "page_up":
 		to = cur - page
-	case "PageDown":
+	case "page_down":
 		to = cur + page
-	case "Home", "g":
+	case "home", "g":
 		to = 0
-	case "End", "G":
+	case "end", "shift+g":
 		to = last
-	case "ArrowRight", "l":
+	case "arrow_right", "l":
 		if cur < 0 {
 			break
 		}
@@ -245,7 +245,7 @@ func (c *Controller) TreeKey(id, key string) (ok bool, err error) {
 		if cur < last && e.Nodes[e.Shown[cur+1]].Parent == i {
 			to = cur + 1
 		}
-	case "ArrowLeft", "h":
+	case "arrow_left", "h":
 		if cur < 0 {
 			break
 		}

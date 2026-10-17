@@ -67,15 +67,15 @@ func (c *Controller) DiffKey(id, key string) (ok bool, err error) {
 	cur := e.SelectedRow()
 	to := cur
 	switch key {
-	case "Enter":
+	case "enter":
 		return true, c.Activate(id)
-	case "ArrowUp", "k":
+	case "arrow_up", "k":
 		to = cur - 1
-	case "ArrowDown", "j":
+	case "arrow_down", "j":
 		to = cur + 1
-	case "Home", "g":
+	case "home", "g":
 		to = 0
-	case "End", "G":
+	case "end", "shift+g":
 		to = len(e.RowIDs) - 1
 	default:
 		return false, nil

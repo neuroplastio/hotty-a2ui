@@ -135,7 +135,7 @@ func TestDragCancels(t *testing.T) {
 	milk, ferns := rowOf(t, f, "Buy oat milk"), rowOf(t, f, "Water the ferns")
 	must(t, r.Click(4, milk))
 	must(t, r.Drag(4, ferns))
-	if ok, err := r.Key("Escape"); !ok || err != nil || c.St.Drag != nil {
+	if ok, err := r.Key("escape"); !ok || err != nil || c.St.Drag != nil {
 		t.Fatalf("Escape: %v %v %+v", ok, err, c.St.Drag)
 	}
 	must(t, r.Release())
@@ -181,11 +181,11 @@ func order(c *view.Controller, path string) string {
 func TestMoveKeysInCells(t *testing.T) {
 	r, c, run := dragging(t, "hotty/drag-backlog", 60)
 	c.Focus("table")
-	if ok, err := r.Key("Alt+ArrowDown"); !ok || err != nil {
-		t.Fatalf("Alt+ArrowDown: %v %v", ok, err)
+	if ok, err := r.Key("alt+arrow_down"); !ok || err != nil {
+		t.Fatalf("alt+arrow_down: %v %v", ok, err)
 	}
 	if got := order(c, "/backlog"); got != "KIT-27 KIT-31 KIT-35 KIT-22 KIT-40" {
-		t.Errorf("after Alt+ArrowDown: %s", got)
+		t.Errorf("after alt+arrow_down: %s", got)
 	}
 	if c.S.Data.Value("/selected") != "KIT-31" || len(sent(run)) != 1 {
 		t.Errorf("selected %v, sent %v", c.S.Data.Value("/selected"), sent(run))
@@ -324,7 +324,7 @@ func TestDragHalves(t *testing.T) {
 			t.Errorf("at %.1f down Water the ferns: %+v", tc.sub, *d)
 		}
 	}
-	_, _ = r.Key("Escape")
+	_, _ = r.Key("escape")
 	must(t, r.Release())
 
 	r, c, _ = dragging(t, "hotty/drag-files", 40)

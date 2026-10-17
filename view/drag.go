@@ -371,18 +371,18 @@ func (c *Controller) dropOn(t *Element, v any) error {
 }
 
 // MoveKey moves the item the keyboard is on a place by a key, as SPEC
-// §10.4 names it: Alt+ArrowUp and Alt+ArrowDown move a HottyList's,
+// §10.4 names it: alt+arrow_up and alt+arrow_down move a HottyList's,
 // HottyTable's or HottyTree's selected item, or a List's item that holds
 // the focused element, before the one above it or after the one below;
-// in a HottyTree, Alt+ArrowLeft moves the node out of its branch, after
-// it, and Alt+ArrowRight into the node above it among its siblings, as its
+// in a HottyTree, alt+arrow_left moves the node out of its branch, after
+// it, and alt+arrow_right into the node above it among its siblings, as its
 // last child, where that takes children. At an end it stays. ok reports
 // whether one of these took the key: a key of these on an element that
 // moves its items.
 func (c *Controller) MoveKey(id, key string) (ok bool, err error) {
 	dir := ""
-	for _, k := range []string{"ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"} {
-		if SameKey(key, "Alt+"+k) {
+	for _, k := range []string{"arrow_up", "arrow_down", "arrow_left", "arrow_right"} {
+		if SameKey(key, "alt+"+k) {
 			dir = k
 		}
 	}
@@ -400,7 +400,7 @@ func (c *Controller) MoveKey(id, key string) (ok bool, err error) {
 		}
 		return false, nil
 	}
-	if e.filtering() || e.Kind != Tree && (dir == "ArrowLeft" || dir == "ArrowRight") {
+	if e.filtering() || e.Kind != Tree && (dir == "arrow_left" || dir == "arrow_right") {
 		return false, nil
 	}
 	item := e.SelectedRow()
@@ -413,19 +413,19 @@ func (c *Controller) MoveKey(id, key string) (ok bool, err error) {
 	n := e.Nodes[item]
 	s := e.sibling(item)
 	switch dir {
-	case "ArrowUp":
+	case "arrow_up":
 		if s > 0 {
 			return true, c.move(e, item, e, n.Parent, s-1)
 		}
-	case "ArrowDown":
+	case "arrow_down":
 		if s < e.siblings(n.Parent)-1 {
 			return true, c.move(e, item, e, n.Parent, s+2)
 		}
-	case "ArrowLeft":
+	case "arrow_left":
 		if p := n.Parent; p >= 0 {
 			return true, c.move(e, item, e, e.Nodes[p].Parent, e.sibling(p)+1)
 		}
-	case "ArrowRight":
+	case "arrow_right":
 		if prev := e.previousSibling(item); prev >= 0 && e.Nodes[prev].Takes {
 			return true, c.move(e, item, e, prev, e.Nodes[prev].Kids)
 		}
@@ -437,11 +437,11 @@ func (c *Controller) MoveKey(id, key string) (ok bool, err error) {
 func (c *Controller) moveChild(e *Element, i int, dir string) (bool, error) {
 	n := c.count(e)
 	switch {
-	case i < 0, dir == "ArrowLeft", dir == "ArrowRight":
-		return dir == "ArrowUp" || dir == "ArrowDown", nil
-	case dir == "ArrowUp" && i > 0:
+	case i < 0, dir == "arrow_left", dir == "arrow_right":
+		return dir == "arrow_up" || dir == "arrow_down", nil
+	case dir == "arrow_up" && i > 0:
 		return true, c.move(e, i, e, -1, i-1)
-	case dir == "ArrowDown" && i < n-1:
+	case dir == "arrow_down" && i < n-1:
 		return true, c.move(e, i, e, -1, i+2)
 	}
 	return true, nil

@@ -53,10 +53,10 @@ func TestConfirm(t *testing.T) {
 		key, picked string
 		actions     int
 	}{
-		{"ArrowLeft", "yes", 0},
-		{"ArrowRight", "no", 0},
+		{"arrow_left", "yes", 0},
+		{"arrow_right", "no", 0},
 		{"y", "no", 1},
-		{"ArrowLeft", "yes", 1},
+		{"arrow_left", "yes", 1},
 		{"n", "yes", 2},
 	} {
 		if _, err := r.Key(step.key); err != nil {
@@ -91,7 +91,7 @@ func TestConfirm(t *testing.T) {
 	if got := r.Draw(64).Plain(); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
 	}
-	for _, k := range []string{"Tab", "Tab"} {
+	for _, k := range []string{"tab", "tab"} {
 		if _, err := r.Key(k); err != nil {
 			t.Fatal(err)
 		}
@@ -103,7 +103,7 @@ func TestConfirm(t *testing.T) {
 	if got := f.Plain(); !strings.HasSuffix(got, "\nenter press • ←/→ move • y yes • n no • ? more") {
 		t.Errorf("the hints on Yes:\n%s", got)
 	}
-	if _, err := r.Key("Tab"); err != nil {
+	if _, err := r.Key("tab"); err != nil {
 		t.Fatal(err)
 	}
 	if got := r.Draw(64).Plain(); !strings.Contains(got, "▏Yes   No") {

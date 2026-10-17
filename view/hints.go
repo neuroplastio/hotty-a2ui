@@ -34,7 +34,7 @@ func mapKeyHints(b *Builder, n *a2ui.Node) *Element {
 // element with the keyboard comes first, then the surface's
 // HottyShortcuts that have a label (those with the same label as one, and
 // none the text field with the keyboard takes), then, in the full view,
-// Tab, Shift+Tab and ?. Short ends with "? more" when ? shows the full
+// tab, shift+tab and ?. Short ends with "? more" when ? shows the full
 // view. keys is the surface's keymap (a rendition's SetKeys), which a text
 // field's components' keymaps override.
 //
@@ -68,14 +68,14 @@ func (c *Controller) KeyHints(keys string, host bool) (short []Hint, full [][]Hi
 	// a bubbles binding of several keys shows them: "←/→ move".
 	var shortcuts []Hint
 	for _, sc := range c.V.Shortcuts {
-		if sc.Label == "" || field != nil && field.Lookup(sc.Key) != "" {
+		if sc.Label == "" || field != nil && field.Lookup(c.readKey(sc.Key)) != "" {
 			continue
 		}
 		if i := slices.IndexFunc(shortcuts, func(h Hint) bool { return h.Desc == sc.Label }); i >= 0 {
-			shortcuts[i].Key += "/" + KeyText(sc.Key)
+			shortcuts[i].Key += "/" + c.shortcutText(sc.Key)
 			continue
 		}
-		shortcuts = append(shortcuts, Hint{KeyText(sc.Key), sc.Label})
+		shortcuts = append(shortcuts, Hint{c.shortcutText(sc.Key), sc.Label})
 	}
 	short = append(short, shortcuts...)
 	general := []Hint{{"tab", "next"}, {"shift+tab", "back"}}
@@ -92,6 +92,21 @@ func (c *Controller) KeyHints(keys string, host bool) (short []Hint, full [][]Hi
 		full = append(full, shortcuts)
 	}
 	return short, append(full, general)
+}
+
+// shortcutText is a Shortcut's key as KeyText writes it, read with the
+// Platform, so that mod+s shows as ctrl+s or super+s.
+func (c *Controller) shortcutText(key string) string {
+	return KeyText(c.readKey(key))
+}
+
+// readKey is a key a program wrote, read with the Platform; as written
+// where it does not read.
+func (c *Controller) readKey(key string) string {
+	if k, ok := c.Platform.ReadKey(key); ok {
+		return k
+	}
+	return key
 }
 
 // programKeys reports whether a host leaves an element's keys to the
@@ -305,20 +320,20 @@ var editNames = []struct {
 
 // fieldHints are a text field's keys, from its keymap, in two groups, the
 // moves and the edits: each action once, its first two keys, those with
-// Meta (macOS's Command) after the others, so that a terminal keymap's
-// Control+e shows before the default's Meta+ArrowRight; Submit only in a
+// super (macOS's Command) after the others, so that a terminal keymap's
+// ctrl+e shows before the default's super+arrow_right; Submit only in a
 // HottyForm, where Enter submits; the lines' only in a long text, as
-// bubbles' text input has none. A key bound with Mod shows as the key it
-// is where Mod is mod (SPEC §10.4): ctrl+a, or meta+a on a Mac.
+// bubbles' text input has none. A key bound with mod shows as the key it
+// is where mod is the platform's (SPEC §10.4): ctrl+a, or super+a on a Mac.
 func fieldHints(km *hotty.Keymap, mod string, long, inForm bool) [][]Hint {
-	if mod != "Meta" {
-		mod = "Control"
+	if mod != "super" {
+		mod = "ctrl"
 	}
 	keys := map[hotty.Action][]string{}
 	for _, b := range strings.Fields(km.Format()) {
 		i := strings.LastIndexByte(b, '=')
 		a, k := hotty.Action(b[i+1:]), b[:i]
-		if rest, ok := strings.CutPrefix(k, "Mod+"); ok {
+		if rest, ok := strings.CutPrefix(k, "mod+"); ok {
 			k = mod + "+" + rest
 			if p, ok := hotty.ParseKey(k); ok {
 				k = p
@@ -330,7 +345,7 @@ func fieldHints(km *hotty.Keymap, mod string, long, inForm bool) [][]Hint {
 	}
 	for a, ks := range keys {
 		meta := func(k string) int {
-			if strings.Contains(k, "Meta+") {
+			if strings.Contains(k, "super+") {
 				return 1
 			}
 			return 0
@@ -358,18 +373,21 @@ func fieldHints(km *hotty.Keymap, mod string, long, inForm bool) [][]Hint {
 	return nonEmpty(moves, edits)
 }
 
-// keyNames are the W3C key values bubbles' help writes otherwise.
+// keyNames are the key names (SPEC §10.4) bubbles' help writes otherwise.
 var keyNames = map[string]string{
-	"ArrowUp": "↑", "ArrowDown": "↓", "ArrowLeft": "←", "ArrowRight": "→",
-	"Escape": "esc", "PageUp": "pgup", "PageDown": "pgdn", "Control": "ctrl",
+	"arrow_up": "↑", "arrow_down": "↓", "arrow_left": "←", "arrow_right": "→",
+	"escape": "esc", "page_up": "pgup", "page_down": "pgdn",
 }
 
-// KeyText is a key value (SPEC §10.4) as bubbles' help writes keys:
-// modifiers and names in lower case, "ctrl" for Control, arrows as
-// arrows; a character as it is ("G").
+// KeyText is a key (SPEC §10.4) as bubbles' help writes keys: modifiers
+// and names in lower case, arrows as arrows; a character as it is, a
+// capital for a letter with shift alone ("shift+g" is "G").
 func KeyText(key string) string {
 	if k, ok := hotty.ParseKey(key); ok {
 		key = k
+		if t, ok := hotty.KeyText(k); ok && t != " " && strings.HasPrefix(k, "shift+") && !strings.Contains(k[len("shift+"):], "+") {
+			return t
+		}
 	}
 	parts := strings.Split(key, "+")
 	if strings.HasSuffix(key, "++") {

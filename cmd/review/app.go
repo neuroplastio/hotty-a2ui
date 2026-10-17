@@ -124,7 +124,7 @@ func (a *app) surface() []map[string]any {
 			obj("id", "save_t", "component", "Text", "text", "Save"),
 			obj("id", "status", "component", "Text", "text", bind("/status"), "variant", "caption", "weight", 1),
 			obj("id", "help", "component", "HottyKeyHints", "catalogId", cat),
-			obj("id", "save_key", "component", "HottyShortcut", "catalogId", cat, "key", "Control+s", "press", "save", "label", "Save"),
+			obj("id", "save_key", "component", "HottyShortcut", "catalogId", cat, "key", "ctrl+s", "press", "save", "label", "Save"),
 			obj("id", "title", "component", "Text", "text", bind("/title")),
 			obj("id", "brief", "component", "Text", "text", bind("/brief")),
 			obj("id", "shot", "component", "Image", "url", bind("/img"), "description", bind("/cur"), "fit", "contain", "weight", 1),
@@ -207,7 +207,7 @@ func (a *app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.fail(fmt.Errorf("the host: %s %s", msg.Code, msg.Detail))
 	case tea.KeyPressMsg:
 		k := hottytea.KeyName(msg.Key())
-		if k == "Control+c" || k == "q" && a.s.Mode != hottytea.Native {
+		if k == "ctrl+c" || k == "q" && a.s.Mode != hottytea.Native {
 			return a, a.quit()
 		}
 		if k == "" || a.s.Mode != hottytea.Native {
@@ -221,9 +221,9 @@ func (a *app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.fail(err)
 		if !ok {
 			switch k {
-			case "Tab", "Shift+Tab":
-				a.sf.C.FocusNext(k == "Shift+Tab")
-			case "Escape":
+			case "tab", "shift+tab":
+				a.sf.C.FocusNext(k == "shift+tab")
+			case "escape":
 				a.sf.C.Focus("")
 			case "q":
 				if !a.sf.C.St.Keyboard {

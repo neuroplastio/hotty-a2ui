@@ -111,7 +111,7 @@ func (l *layout) paintSuggestions(cv *canvas, p *suggestPlace) {
 }
 
 // suggestKey gives a key to the focused text field's suggestions first
-// (view.Controller.SuggestKey): ArrowRight takes one only at the value's
+// (view.Controller.SuggestKey): arrow_right takes one only at the value's
 // end with nothing selected, where it would not move. A taken suggestion
 // puts the caret at the end of the new value.
 func (r *Rendition) suggestKey(e *view.Element, key string) (bool, error) {

@@ -50,13 +50,13 @@ func (m *markup) scrollView(e *view.Element) *node {
 // scrollKeys bind the keys bubbles' viewport scrolls with, past the ones a
 // browser does, to the host's scroll actions (SPEC §10.2, Scrolling keys),
 // so that the box scrolls with them on a host as it does in cells (profile
-// §3.7). Its buttons keep Space and its fields type the letters: a key an
+// §3.7). Its buttons keep space and its fields type the letters: a key an
 // element uses stays its own, and a field leaves scroll actions out.
-// Shift+Space is bound too, or it would page down as Space does.
+// shift+space is bound too, or it would page down as space does.
 const scrollKeys = "j=scroll-down k=scroll-up f=scroll-page-down b=scroll-page-up " +
-	"Space=scroll-page-down Shift+Space=scroll-page-up " +
-	"u=scroll-half-page-up d=scroll-half-page-down Control+u=scroll-half-page-up Control+d=scroll-half-page-down " +
-	"g=scroll-start G=scroll-end"
+	"space=scroll-page-down shift+space=scroll-page-up " +
+	"u=scroll-half-page-up d=scroll-half-page-down ctrl+u=scroll-half-page-up ctrl+d=scroll-half-page-down " +
+	"g=scroll-start shift+g=scroll-end"
 
 // sideKeys scroll lines that do not wrap sideways (h and l), as in cells,
 // where the two fall through when the lines wrap.

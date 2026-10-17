@@ -36,6 +36,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/neuroplastio/hotty-go/hottyterm v0.0.0-20261016100234-c4f075234c13 // indirect
+	github.com/neuroplastio/myelin/myelinkey v0.1.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/tinylib/msgp v1.6.5 // indirect
@@ -43,4 +44,14 @@ require (
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
+)
+
+// hotty-go 0.4 is not released: it is a local branch until it is.
+// Drop these when hotty-go 0.4 is released.
+replace (
+	github.com/neuroplastio/hotty-go => ../../hotty-go/hotty-0.4
+	github.com/neuroplastio/hotty-go/hottyedit => ../../hotty-go/hotty-0.4/hottyedit
+	github.com/neuroplastio/hotty-go/hottytea => ../../hotty-go/hotty-0.4/hottytea
+	github.com/neuroplastio/hotty-go/hottyterm => ../../hotty-go/hotty-0.4/hottyterm
+	github.com/neuroplastio/hotty-go/hottytest => ../../hotty-go/hotty-0.4/hottytest
 )

@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyKeyHints",
   "icon": "help_center",
-  "description": "A help line, as bubbles' help draws one: the keys of what has the keyboard, then the surface's HottyShortcuts that have a label. Tab through the note and watch it change. ? shows every key in columns, a text field's editing keys among them, and ? again hides them; in a field, ? is typed. Control+s saves, Control+d discards.",
+  "description": "A help line, as bubbles' help draws one: the keys of what has the keyboard, then the surface's HottyShortcuts that have a label. Tab through the note and watch it change. ? shows every key in columns, a text field's editing keys among them, and ? again hides them; in a field, ? is typed. ctrl+s saves, ctrl+d discards.",
   "messages": [
     {
       "version": "v1.0",
@@ -145,7 +145,7 @@
             "id": "save_key",
             "component": "HottyShortcut",
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-            "key": "Control+s",
+            "key": "ctrl+s",
             "press": "save",
             "label": "save"
           },
@@ -153,7 +153,7 @@
             "id": "discard_key",
             "component": "HottyShortcut",
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
-            "key": "Control+d",
+            "key": "ctrl+d",
             "action": {
               "event": {
                 "name": "discard"
