@@ -32,6 +32,7 @@ notes
 palette
 progress_activity
 qr_code
+radio_button_checked
 rocket_launch
 show_chart
 ssid_chart

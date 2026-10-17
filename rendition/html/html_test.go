@@ -862,6 +862,83 @@ func TestSelect(t *testing.T) {
 	x.check(r)
 }
 
+// TestCycle: a cycle (io_neuroplast_hotty.cycle) is a field holding its
+// value, a button with the keyboard, between two chevrons, buttons out of
+// the Tab order. A click on ‹ steps it back, and one on its value or its
+// › on, round from either end; the keyboard stays on the value,
+// whose arrows, Home and End are the program's, which steps it as cells
+// does. Enter clicks it on the host, which steps it on.
+func TestCycle(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"env":["stage"]}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["env"]},
+ {"id":"env","component":"ChoicePicker","label":"Env","value":{"@path":"/env"},
+  "options":[{"label":"production","value":"prod"},{"label":"staging","value":"stage"},{"label":"preview","value":"prev"}],
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"cycle":true}}}}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	env := func() string { return fmt.Sprint(r.C.S.Data.Value("/env").([]any)[0]) }
+	shows := func(when, want string) {
+		t.Helper()
+		if v, _ := s.Attr("env", "aria-valuetext"); v != want || !strings.Contains(s.HTML(), `min-width: 10ch">`+want+`</span>`) {
+			t.Errorf("%s: it shows %q, want %q", when, v, want)
+		}
+	}
+	shows("at first", "staging")
+	if tab, _ := s.Attr(partID("env", partLess), "tabindex"); tab != "-1" {
+		t.Errorf("‹ has tabindex %q", tab)
+	}
+	if strings.Contains(s.HTML(), "aria-haspopup") {
+		t.Error("a cycle is a select with a list")
+	}
+
+	var got []string
+	for _, id := range []string{partID("env", partLess), partID("env", partLess), "env", partID("env", partMore), partID("env", partMore)} {
+		must(t, x.h.Click(r.name, id))
+		x.pump()
+		got = append(got, env())
+		if s.Focused() != "env" {
+			t.Errorf("after a click on %s the keyboard is on %q", id, s.Focused())
+		}
+	}
+	if want := []string{"prod", "prev", "prod", "stage", "prev"}; !slices.Equal(got, want) {
+		t.Errorf("clicks on ‹, ‹, the value, › and ›: %v, want %v", got, want)
+	}
+	shows("after the clicks", "preview")
+
+	for _, step := range []struct{ key, want string }{
+		{"ArrowRight", "prod"}, {"ArrowLeft", "prev"}, {"Home", "prod"}, {"End", "prev"}, {"s", "stage"},
+	} {
+		if x.h.Key(step.key) {
+			t.Errorf("the host used %s", step.key)
+		}
+		_, ok, err := r.Key(step.key)
+		must(t, err)
+		x.update(r)
+		x.pump()
+		if !ok || env() != step.want {
+			t.Errorf("%s: taken %v, env %s, want %s", step.key, ok, env(), step.want)
+		}
+	}
+	if !x.h.Key("Enter") {
+		t.Error("the host did not click the cycle on Enter")
+	}
+	x.pump()
+	if env() != "prev" {
+		t.Errorf("Enter: env %s, want prev", env())
+	}
+	shows("at the end", "preview")
+	if r.ListOpen() {
+		t.Error("a cycle opened a list")
+	}
+	x.check(r)
+}
+
 // TestSliderAndDate: a Slider is a track the host can draw, stepped by
 // its − and + buttons; a DateTime is a text field with its form as the
 // placeholder, which shows a value with an offset.

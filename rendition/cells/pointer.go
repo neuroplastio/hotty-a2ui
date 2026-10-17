@@ -151,7 +151,7 @@ func (r *Rendition) paintHover(cv *canvas) {
 			if c.Role == Border && c.Mix == 0 {
 				c.To, c.Mix = Fg, hoverBarMix
 			}
-		case p.field || isSelect(e) && p.opt < 0:
+		case p.field || isSelect(e) && !e.Cycle && p.opt < 0:
 			if c.LineSet && c.Line == Border && c.LineMix == fieldLineMix {
 				c.LineMix = hoverLineMix
 			}

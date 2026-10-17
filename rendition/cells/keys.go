@@ -115,6 +115,9 @@ func printable(name string) bool {
 // elementKey gives a key to the focused element that is not a text
 // control; ok reports whether it took it (SPEC §10.2's table).
 func (r *Rendition) elementKey(e *view.Element, name string) (ok bool, err error) {
+	if isSelect(e) && e.Cycle {
+		return r.c.CycleKey(e.ID, name)
+	}
 	if isSelect(e) {
 		return r.selectKey(e, name)
 	}
@@ -269,7 +272,7 @@ func (r *Rendition) pageRows(e *view.Element) int {
 func (r *Rendition) selectKey(e *view.Element, name string) (bool, error) {
 	n := len(e.Options)
 	open := r.listOpen(e)
-	cur := picked(e)
+	cur := e.Picked()
 	if open {
 		cur = r.hi
 	}

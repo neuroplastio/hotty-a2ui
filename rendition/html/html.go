@@ -350,6 +350,17 @@ func (r *Rendition) Event(ev hotty.Event) error {
 	}
 	switch ev.Kind {
 	case hotty.EventClick:
+		if e.Cycle {
+			// Its ‹ steps it back; its value, its › and its label on. The
+			// value has the keyboard, and its keys: where the host focused
+			// the arrow clicked, Update moves the focus back.
+			c.Focus(id)
+			n := 1
+			if part == partLess {
+				n = -1
+			}
+			return c.StepChoice(id, n)
+		}
 		if isSelect(e) {
 			return r.clickSelect(e, part, ev)
 		}
@@ -601,7 +612,12 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	if key == "Escape" && c.DismissNewest() {
 		return nil, true, nil
 	}
-	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && isSelect(e) {
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Cycle {
+		if ok, err := c.CycleKey(e.ID, key); ok {
+			return nil, true, err
+		}
+	}
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && isSelect(e) && !e.Cycle {
 		if ok, err := r.selectKey(e, key); ok {
 			return nil, true, err
 		}
@@ -747,7 +763,7 @@ func (r *Rendition) clickSelect(e *view.Element, part string, ev hotty.Event) er
 			r.list = nil
 			return nil
 		}
-		r.list = &list{id: e.ID, hi: max(pickedIndex(e), 0)}
+		r.list = &list{id: e.ID, hi: max(e.Picked(), 0)}
 		if ev.Area != nil {
 			r.list.at, r.list.placed = *ev.Area, true
 		}
@@ -792,30 +808,13 @@ func (r *Rendition) listKey(l *list, key string) (bool, error) {
 		r.list = nil
 		return false, nil
 	default:
-		if i := nextByLetter(e, l.hi, key); i >= 0 {
+		if i := e.NextByLetter(l.hi, key); i >= 0 {
 			l.hi = i
 			return true, nil
 		}
 		return false, nil
 	}
 	return true, nil
-}
-
-// nextByLetter is the next option after from, wrapping, whose label
-// starts with key, a printable character (case aside); -1 if none does,
-// or key is not one.
-func nextByLetter(e *view.Element, from int, key string) int {
-	n := len(e.Options)
-	if utf8.RuneCountInString(key) != 1 {
-		return -1
-	}
-	for k := 1; k <= n; k++ {
-		j := (max(from, -1) + k + n) % n
-		if strings.HasPrefix(strings.ToLower(e.Options[j].Label), strings.ToLower(key)) {
-			return j
-		}
-	}
-	return -1
 }
 
 // selectKey is a key on a closed select, which a host leaves to the
@@ -827,7 +826,7 @@ func (r *Rendition) selectKey(e *view.Element, key string) (bool, error) {
 	if n == 0 {
 		return false, nil
 	}
-	cur := pickedIndex(e)
+	cur := e.Picked()
 	i := -1
 	switch key {
 	case "ArrowUp":
@@ -839,7 +838,7 @@ func (r *Rendition) selectKey(e *view.Element, key string) (bool, error) {
 	case "End", "PageDown":
 		i = n - 1
 	default:
-		if i = nextByLetter(e, cur, key); i < 0 {
+		if i = e.NextByLetter(cur, key); i < 0 {
 			return utf8.RuneCountInString(key) == 1, nil
 		}
 	}
@@ -847,17 +846,6 @@ func (r *Rendition) selectKey(e *view.Element, key string) (bool, error) {
 		return true, nil
 	}
 	return true, r.C.SetValue(e.ID, e.Options[i].Value)
-}
-
-// pickedIndex is the index of a select's picked option, -1 if none is.
-func pickedIndex(e *view.Element) int {
-	picked, _ := e.Value.([]string)
-	for i, o := range e.Options {
-		if contains(picked, o.Value) {
-			return i
-		}
-	}
-	return -1
 }
 
 // holdEdit keeps, in the new document main, the value of the text control

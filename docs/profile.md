@@ -91,7 +91,7 @@ so that an error comes and goes as a text delta.
 | Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. While it has the host's focus it is filled with `--k-focus`, its label in `--k-on-accent`, as cells reverses it in the accent (§3.4) and huh fills the answer a Confirm would give (§6.24): a fill, where the host's own 1px focus ring may drop out on a rounded edge at a fractional scale. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing; it keeps the ring. A HottyForm's default (§6.2) has `k-enter`: a 3px line inside its left edge in `--k-fg` at 55%, as cells draws a bar there, whatever has the focus |
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input`; a textarea resizes from its corner along the axes its `resize` allows (§6.30). With suggestions (§6.22), the `input` names (`list`) a `datalist` (`~x`) of the agent's options, which follows them by deltas: a host that draws a datalist, as a browser's DOM does, shows its own list, whose pick comes back as `input`. Blitz draws none (checked with `hotty render`), so on hottyterm the field is plain. The kit's list under the field, its ghost text and its keys are cells' until a list of the kit's own, a surface at a higher z (vault KIT-11h): a host keeps Tab (SPEC.md §10.2 ignores a binding of it) and leaves the value of the field it has focused alone (SPEC.md §6.2) |
 | CheckBox | `input type=checkbox` |
-| ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a chevron in `--k-muted` (Material's `keyboard_arrow_down`, `keyboard_arrow_up` while the list is open, 1.25em), whose list opens in a surface of its own (below); else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9). An option's icon (§6.16) goes before its label: in the list, on a chip or a checkbox, and on the select while the option is picked |
+| ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a chevron in `--k-muted` (Material's `keyboard_arrow_down`, `keyboard_arrow_up` while the list is open, 1.25em), whose list opens in a surface of its own (below); with `cycle` (§6.16), a field (`k-input k-cycle`, `~r`) as wide as its widest option, holding its value centred, a `button role=spinbutton` with `aria-valuetext` and the Tab stop, between two chevrons in `--k-muted` (Material's `keyboard_arrow_left` and `keyboard_arrow_right`, 1.25em, in `--k-focus` while it has the keyboard), buttons out of the Tab order (`~m` and `~n`, as a Slider's `−` and `+`); its `data-keys` give the program the arrows, Home and End, which step it as in cells (§3.7), and the host clicks it on Space and Enter; else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9). An option's icon (§6.16) goes before its label: in the list, on a chip or a checkbox, and on the select or the cycle while the option is picked |
 | Slider | `button role=slider` drawing the track (its rail, fill and knob), between `−` and `+` buttons out of the Tab order, then an `output` as wide as the widest value (§3.3's), in `ch`. The track is cut into notches, one a value (at most 41; twenty steps without a `step`), each centred on where the knob stands at its value and half one at either end, so that a tap, a click, sets the value tapped. The track is the drag target (SPEC.md §9.1), `data-on="drag"` and `data-steps` its notches' count less one, and the notches take `click` alone: a drag sets the value of the step under the pointer wherever the pointer goes, off the track and out of the surface too, until it is let go, and the click it ends with changes nothing more. The track's `touch-action: pan-y` lets a finger drag it: one that moves along the track drags, and one that moves up or down scrolls. Its fill runs from the rail's start to the knob, or, with `fill` `"end"` (§6.16), from the knob to the rail's end. Hosts draw `input type=range` unevenly (Blitz not at all) |
 | DateTimeInput | `input type=text` with the ISO 8601 value, its form as the placeholder, as in cells (§3.5). Hosts draw date and time inputs unevenly (Blitz not at all), and none takes an offset such as `Z` |
 | Tabs | a `tablist` of `button role=tab`, each its icon (§6.16) and its title, then the tab shown |
@@ -133,7 +133,7 @@ renderer's own state: a tab shown, a Modal opened.
 | event | does |
 | --- | --- |
 | `input`, `change` | writes the control's value: to its bound path, else as the renderer's; a text field's new value then runs its suggestions' `onInput` (§6.22) |
-| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a HottyMarkdown's link in place is followed (§6.27); a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a tap on a HottyRangeSlider's track moves its nearer knob there, and a click on a knob gives it the keyboard; a click on a HottyPaginator's dot shows its page, and one anywhere on it gives it the keyboard; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it; a click on a toast dismisses it, and one on its action sends its event and dismisses it (§6.23) |
+| `click` | a Button runs its action; a HottySwitch flips (a disabled one does not); a Table's row or a HottyList's item is selected, or acted on once it is; a tab is shown; a chip toggles; a link opens; a HottyMarkdown's link in place is followed (§6.27); a Modal's trigger opens it; the backdrop closes it; a Slider's `−` or `+` steps it, and a tap on its track sets it; a tap on a HottyRangeSlider's track moves its nearer knob there, and a click on a knob gives it the keyboard; a click on a HottyPaginator's dot shows its page, and one anywhere on it gives it the keyboard; a select opens or closes its list, an option in the list is picked, and a click beside the list closes it; a cycle's `‹` steps it back, and its value or its `›` on, round from either end, and its value has the keyboard; a click on a toast dismisses it, and one on its action sends its event and dismisses it (§6.23) |
 | `submit` | the HottyForm submits (§6.2) |
 | `dragstart`, `drag` | a Slider takes the value of the notch the pointer is on (SPEC.md §9.1); `dragend` and a drag off the track leave it. A HottyRangeSlider's dragstart picks the knob that moves (§6.20), and each drag moves it, stopped where it meets the other. The click a drag ends with, which comes right after its dragend and only when it was let go on the slider, changes nothing more |
 | `focus`, `blur` | the surface has the keyboard, or not |
@@ -233,7 +233,7 @@ on a host:
 | Text, Video, AudioPlayer | links are `<a href>`: one that leaves the site (`http`, `https`, `//host`, to a host not the page's `Origin`) opens in a new tab (`target=_blank rel=noopener`), any other (a path, a fragment, a query, the page's own site, `mailto:`, `tel:`) in the same one, and one to any other scheme loses its `href`. The host's `target=_blank` (§2) goes. One function decides this for every link on a page |
 | HottyMarkdown | its HTML as on a host, but a link in place (§6.27) is an `<a href>` to its href, which the page's links decide (a path or a fragment in the same tab), and a heading's id is its GitHub anchor itself (`usage`, not `<doc>~#usage`), so that a `#fragment` in the page's address or a link finds it. Anchors number across the surface, so two surfaces of one page may share one; a page that shows several documents keeps them in one surface |
 | TextField, DateTimeInput | the value, `readonly`: it can be selected and copied, not changed. Suggestions' `datalist` goes |
-| CheckBox, HottySwitch, Slider, HottyRangeSlider, ChoicePicker, Button | as on a host, their state shown (a select's picked option, closed; a chip pressed or not), taking no click (`pointer-events: none`, a checkbox's label too) and out of the Tab order (`tabindex=-1`): no program would hear them |
+| CheckBox, HottySwitch, Slider, HottyRangeSlider, ChoicePicker, Button | as on a host, their state shown (a select's picked option, closed; a cycle's; a chip pressed or not), taking no click (`pointer-events: none`, a checkbox's label too) and out of the Tab order (`tabindex=-1`): no program would hear them |
 | HottyForm | a `div role=form`: a submit would leave the page |
 | Modal | closed: its trigger alone |
 | HottyTable | every row, not a window of them; the selected one marked, `aria-current` |
@@ -326,6 +326,7 @@ Natural widths:
 | CheckBox | 2 for the gutter, 3 for the box, plus 1 and the label when it has one |
 | HottySwitch | 2 for the gutter, 3 for the switch, plus 1 and the label when it has one |
 | a select | a one-line text field's, its input the widest option's label, a space and `▾` |
+| a cycle | a one-line text field's, its input the widest option's label between `‹ ` and ` ›` |
 | a Choice's options | 2 for the gutter, plus the label's width or the widest option row (`> [ ] label`, or `> ( ) label` for chips that pick one), whichever is wider |
 | Slider | 2 for the gutter, the label + 1 if it has one, a track of 10, 1, and the value's width: the widest of min, max, the value, and a value on a step (its ends' whole part, a point and the step's decimals), so that the track keeps its length as the value moves |
 | HottyRangeSlider | a Slider's, its value's width that of the widest range: twice a Slider's value's width, and 1 for the `–` |
@@ -487,6 +488,7 @@ How the containers lay their children out:
 | CheckBox | past the gutter, `[•] label` or `[ ] label`, its box reversed in `accent` while it has the keyboard; then the error |
 | HottySwitch | past the gutter, its track with the knob at one end, then a space and its label, on one row: `▬▬■` in `accent` while it is on, a bar into a filled knob, and `□⎯⎯` in `muted` while it is off, a hollow knob on a thin line (`⎯`, not `─`: a terminal draws `─` itself at the cell's middle, where the font's square need not sit, and a font draws `⎯`, often a symbol font by fallback, since few coding fonts have it; a Slider's thin track is the same), so that without colour the knob's end, its fill and the track's weight still say which; then the error. Its label is in `accent` while it has the keyboard. A disabled one is `muted` and faint throughout, its knob still at its end. The switch and its label take a click |
 | a select (one value, `checkbox` display) | past the gutter, its label and its input on one row, as a one-line text field's (§3.5): the picked option's label, or `…` in `muted` when none is picked, and `▾` in `muted` at the input's end, a column after the widest option's label, so that the chevron stays put as the pick changes. While its list is open (§3.7), the options follow one a row under the input, their labels under its value's: `● label` for the picked one and `○ label` for the others, each after `  `, or after `> ` in `accent` on the highlighted row, whose label is `accent` and bold. Then the error. |
+| a cycle (a select with `cycle`, §6.16) | as a select, its input `‹ label ›`: the picked option's label, or `…` in `muted` when none is picked, centred between `‹ ` and ` ›`, a column more after it than before where they differ (the maintainer, 2026-10-17: "centered between arrows"), the input as wide as the widest option makes it, so that the arrows stay put as the pick changes. The arrows are in `muted`, and in `accent` while it has the keyboard, as only focus is (§3.6); it has no underline, its arrows saying what it is, and no list. Then the error. |
 | a Choice's options (several values, or `chips`) | past the gutter, a title row, then the options one a row, each after `  `, or after `> ` in `accent` for the option with the keyboard (huh's multiselect): `[•] label` or `[ ] label` where several may be picked, and `(•) label` or `( ) label` for chips that pick one, as a GUI's radio buttons; pills wrapped across the field read as neither a form nor a list. Then the error. |
 | Slider | past the gutter, `label ━━━━■⎯⎯⎯⎯ 50` on one row: the label as a title and a space, then the track, a space and the value. The track fills the columns left. Up to the knob it is `━`, the knob is `■` at round((value − min) / (max − min) × (track − 1)), and after it the track is `⎯` in `border`. With `fill` `"end"` (§6.16) the two sides swap, `⎯⎯⎯⎯■━━━━ 50`: `⎯` in `border` up to the knob and `━` after it, the glyphs the same. When there is no label, or the track would be shorter than 3, the label is dropped. Then the error. |
 | HottyRangeSlider | a Slider's row with two knobs, `label ⎯⎯■━━━━■⎯⎯ 20–70`: the start's and the end's, each `■` where a Slider's would stand at its value, `━` between them and `⎯` in `border` either side, then the range, `start–end`. Where both would take one column, the end's goes a column right (the start's a column left, at the track's end), so that both show, `■■`. A disabled one is `muted` and faint throughout. Then the error. |
@@ -887,6 +889,14 @@ In the output:
     keys then move the highlight, and Space or Enter picks it and closes
     the list.
   - The list closes when the select loses the keyboard.
+- **A cycle** (§6.16) has no list: ArrowLeft and ArrowUp pick the option
+  before, ArrowRight, ArrowDown, Space and Enter the one after, round
+  from either end, as its arrows do; Home and End the first and the last;
+  a printable character the next option whose label starts with it, as a
+  select's. With none picked, going on picks the first, and going back
+  the last. Enter steps it in a HottyForm too, as a host clicks a focused
+  button on Enter. On a host its value is a button whose `data-keys`
+  give the program the arrows, Home and End, so it steps there as here.
 - **A Slider** steps by Left and Down (back) and Right and Up, and goes
   to its ends by Home and End. A step is its `step`, else a twentieth of
   its range, clamped. Whatever sets it, a Slider's value lands on a step
@@ -1008,6 +1018,9 @@ In the output:
     counts: presses on one cell 500 ms apart or less are a run (`Click`);
   - a select opens or closes its list, and a click on a row of the open
     list picks that option and closes the list;
+  - a click on a cycle's `‹ ` steps it back, and one anywhere else on its
+    row (its label, its value, its `›`) on, as a host's label clicks its
+    control;
   - a click on a row of a text field's suggestions takes that one, the
     cursor after it; a click on the list's border lands on the list, not
     on what it covers, and leaves the field as it is;
@@ -1767,7 +1780,7 @@ come.
 It is as tall as the text around it and takes its colour, and takes no
 focus. In cells and text it is its glyph (§3.4), as an Icon is.
 
-### 6.16 icons and fill
+### 6.16 icons, fill and cycle
 
 `metadata.extensions.io_neuroplast_hotty.icons` gives the titles of a
 Tabs, or the options of a ChoicePicker, an icon each, which the basic
@@ -1789,6 +1802,18 @@ filter keeps is what is filled. In cells the track's two sides swap
 fill goes on the other side of the knob (§2). The value, its keys and its
 clicks are a Slider's either way. Any other value is the default, and
 other renderers ignore it, filling from the start.
+
+`metadata.extensions.io_neuroplast_hotty.cycle` set to `true` on a
+ChoicePicker that would be a select (one value, shown as checkboxes)
+steps through its options in place, as a TUI's form does (`‹ staging ›`),
+where a select opens a list: for a few short options, an environment, a
+size, a theme. The arrow keys, Home, End and letters pick (§3.7), and a
+click on its arrows steps it back or on, round from either end. In cells
+its input is `‹ label ›` (§3.4), and on a host a field holding its value
+between two chevron buttons (§2). Its value, its data model and the text
+rendition's line are a select's. On chips or several values it does
+nothing, and other renderers ignore it, drawing a select. The key hints
+are `←/→ change`, and `home/end first/last` in the full view.
 
 ### 6.17 HottySwitch
 

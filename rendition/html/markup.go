@@ -419,6 +419,12 @@ func (m *markup) element(e *view.Element) *node {
 		outer = m.field(e, class, head, el("div", "id", partID(e.ID, partRange), "class", "k-slide").add(n, out))
 	case view.Choice:
 		picked, _ := e.Value.([]string)
+		if e.Cycle {
+			var box *node
+			n, box = cycle(e)
+			outer = m.field(e, "k-field", label(e), box)
+			break
+		}
 		if len(e.Children) == 0 {
 			// A select is a button with the picked option's label; its
 			// list opens in the layer (listbox). Hosts draw select unevenly

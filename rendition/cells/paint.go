@@ -22,6 +22,8 @@ type hit struct {
 	// field is a text control's value area; track a Slider's.
 	field *fieldArea
 	track *trackArea
+	// step is where a click steps a cycle: -1 on its "‹ ", 1 elsewhere.
+	step int
 	// disabled: a disabled Button, activated but not focused.
 	disabled bool
 }
@@ -459,8 +461,8 @@ func (l *layout) paintError(cv *canvas, e *view.Element, x, y, w int) {
 // paintChoice paints a Choice in its field's box (past the gutter): a
 // select's label and input on one row, the input placed and underlined as
 // a one-line text field's, and while open its list under the input,
-// "> ● label" on the highlighted row; or the label on a row above the
-// options, a row each.
+// "> ● label" on the highlighted row; a cycle's as a select's, its input
+// "‹ label ›"; or the label on a row above the options, a row each.
 func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	row := y
 	focused := l.hasKeyboard(e)
@@ -477,6 +479,16 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 	}
 	if isSelect(e) {
 		vx, vw := ux+inset, min(max(uw-inset, 0), inputWidth(e))
+		if e.Cycle {
+			// A click on it steps on, as a host's label clicks its button;
+			// one on "‹ " steps back. No underline: the arrows say what it
+			// is.
+			cv.write(vx, row, vw, cycleValue(e, vw, focused))
+			l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + 1, id: e.ID, opt: -1, step: 1},
+				hit{x: vx, y: row, w: min(2, vw), h: 1, id: e.ID, opt: -1, step: -1})
+			l.paintError(cv, e, x, row+1, w)
+			return
+		}
 		cv.write(vx, row, vw, selectValue(e, vw))
 		underline(cv, vx, row, vw, focused)
 		l.r.hits = append(l.r.hits, hit{x: x - gutter, y: y, w: w + gutter, h: row - y + 1, id: e.ID, opt: -1})
@@ -486,7 +498,7 @@ func (l *layout) paintChoice(cv *canvas, e *view.Element, x, y, w int) {
 			// the options' labels are under the value's, as a GUI select's
 			// list is.
 			lx := max(x, vx-4)
-			cur := picked(e)
+			cur := e.Picked()
 			for i, o := range e.Options {
 				mark, dot, st := glyphs("  ", style{}), "○ ", style{}
 				if i == cur {

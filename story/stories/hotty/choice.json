@@ -1,0 +1,158 @@
+{
+  "name": "Choice picker",
+  "kind": "component",
+  "component": "ChoicePicker, io_neuroplast_hotty.cycle",
+  "icon": "radio_button_checked",
+  "description": "The four ways a ChoicePicker draws. Environment is a cycle (io_neuroplast_hotty.cycle): its options stepped through in place, ‹ staging ›, the value centred between the arrows; the arrows, or a click on its ‹ and ›, step it round from either end, and Home and End go to the ends. Region is a select, which picks one from a list that opens. Strategy is chips that pick one, radio buttons in cells. Notify picks several, as checkboxes. Each pick is written to the data model.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "choice",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "env": [
+            "staging"
+          ],
+          "region": [
+            "eu-west-1"
+          ],
+          "strategy": [
+            "canary"
+          ],
+          "notify": [
+            "slack"
+          ]
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "choice",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "env",
+              "region",
+              "strategy",
+              "notify",
+              "hints"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Deploy auth-api"
+          },
+          {
+            "id": "env",
+            "component": "ChoicePicker",
+            "label": "Environment",
+            "value": {
+              "@path": "/env"
+            },
+            "options": [
+              {
+                "label": "production",
+                "value": "production"
+              },
+              {
+                "label": "staging",
+                "value": "staging"
+              },
+              {
+                "label": "preview",
+                "value": "preview"
+              }
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "cycle": true,
+                  "autofocus": true
+                }
+              }
+            }
+          },
+          {
+            "id": "region",
+            "component": "ChoicePicker",
+            "label": "Region",
+            "value": {
+              "@path": "/region"
+            },
+            "options": [
+              {
+                "label": "eu-west-1",
+                "value": "eu-west-1"
+              },
+              {
+                "label": "us-east-1",
+                "value": "us-east-1"
+              },
+              {
+                "label": "ap-southeast-2",
+                "value": "ap-southeast-2"
+              }
+            ]
+          },
+          {
+            "id": "strategy",
+            "component": "ChoicePicker",
+            "label": "Strategy",
+            "displayStyle": "chips",
+            "value": {
+              "@path": "/strategy"
+            },
+            "options": [
+              {
+                "label": "Canary",
+                "value": "canary"
+              },
+              {
+                "label": "Blue/green",
+                "value": "blue-green"
+              },
+              {
+                "label": "Rolling",
+                "value": "rolling"
+              }
+            ]
+          },
+          {
+            "id": "notify",
+            "component": "ChoicePicker",
+            "label": "Notify",
+            "variant": "multipleSelection",
+            "value": {
+              "@path": "/notify"
+            },
+            "options": [
+              {
+                "label": "Slack",
+                "value": "slack"
+              },
+              {
+                "label": "Email",
+                "value": "email"
+              },
+              {
+                "label": "Pager",
+                "value": "pager"
+              }
+            ]
+          },
+          {
+            "id": "hints",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -13,6 +13,10 @@ func init() {
 		"keyboard_arrow_down": "m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4z",
 		// keyboard-arrow-up-sharp
 		"keyboard_arrow_up": "m12 10.8l-4.6 4.6L6 14l6-6l6 6l-1.4 1.4z",
+		// keyboard-arrow-left-sharp
+		"keyboard_arrow_left": "m14 18l-6-6l6-6l1.4 1.4l-4.6 4.6l4.6 4.6z",
+		// keyboard-arrow-right-sharp
+		"keyboard_arrow_right": "M12.6 12L8 7.4L9.4 6l6 6l-6 6L8 16.6z",
 		// lightbulb-sharp
 		"lightbulb": "M10.588 21.413Q10 20.825 10 20h4q0 .825-.587 1.413T12 22t-1.412-.587M8 19v-2h8v2zm.25-3q-1.725-1.025-2.738-2.75T4.5 9.5q0-3.125 2.188-5.312T12 2t5.313 2.188T19.5 9.5q0 2.025-1.012 3.75T15.75 16z",
 		// feedback-sharp

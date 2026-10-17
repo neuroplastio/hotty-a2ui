@@ -378,6 +378,8 @@ func (r *Rendition) click(col, row int) error {
 			r.wake()
 		}
 		return nil
+	case isSelect(e) && e.Cycle:
+		return c.StepChoice(e.ID, h.step)
 	case isSelect(e):
 		if h.opt >= 0 {
 			r.list = ""
@@ -530,5 +532,5 @@ func (r *Rendition) toggleList(e *view.Element) {
 		r.list = ""
 		return
 	}
-	r.list, r.hi = e.ID, max(picked(e), 0)
+	r.list, r.hi = e.ID, max(e.Picked(), 0)
 }

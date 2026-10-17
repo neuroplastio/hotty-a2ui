@@ -29,6 +29,7 @@ As of 2026-10-09: hotty-a2ui 18b5b87, A2UI at `third_party/a2ui/REV` (ae466ff).
 | textinput, huh input, OpenTUI Input | TextField |
 | textarea, huh text, OpenTUI Textarea | TextField `longText` |
 | huh select and multiselect, OpenTUI Select (plain) | ChoicePicker: a select with its popover list, checkboxes, chips |
+| huh inline select (`‹ value ›`) | ChoicePicker with `io_neuroplast_hotty.cycle` (profile §6.16) |
 | OpenTUI TabSelect | Tabs |
 | OpenTUI Slider | Slider |
 | OpenTUI Box, lipgloss layout | Card, Row, Column |

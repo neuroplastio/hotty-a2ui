@@ -237,6 +237,11 @@ func (c *Controller) ownHints(e *Element, keys string) (short []Hint, groups [][
 	case Option:
 		short = []Hint{{"space", "pick"}}
 	case Choice:
+		if e.Cycle {
+			// Its arrows step it (CycleKey), Home and End to its ends.
+			short = []Hint{{"←/→", "change"}}
+			return short, [][]Hint{append(slices.Clone(short), Hint{"home/end", "first/last"})}
+		}
 		short = []Hint{{"enter", "open"}}
 	case Slider, Knob:
 		short = []Hint{{"←/→", "adjust"}}

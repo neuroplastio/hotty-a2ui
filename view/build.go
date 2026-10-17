@@ -404,6 +404,14 @@ func fill(n *a2ui.Node) string {
 	return ""
 }
 
+// cycle reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.cycle on a ChoicePicker: true steps through its
+// options in place, where it would be a select.
+func cycle(n *a2ui.Node) bool {
+	v, _ := hottyExt(n)["cycle"].(bool)
+	return v
+}
+
 // resize reads the hotty extension metadata.extensions
 // .io_neuroplast_hotty.resize on a longText TextField: the axes its
 // corner resizes it along, "vertical", "horizontal" or "none"; anything

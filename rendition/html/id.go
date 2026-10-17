@@ -20,9 +20,9 @@ const (
 	partLabel  = "l"
 	partError  = "e"
 	partOutput = "v" // a Slider's value
-	partRange  = "r" // a Slider's track, buttons and value
-	partLess   = "m" // a Slider's − button
-	partMore   = "n" // a Slider's + button
+	partRange  = "r" // a Slider's track, buttons and value; a cycle's field
+	partLess   = "m" // a Slider's − button; a cycle's ‹
+	partMore   = "n" // a Slider's + button; a cycle's ›
 	partNotch  = "k" // a Slider's notches, "k0" to "kN": where a drag sets it
 	partTabs   = "t" // a Tabs' bar
 	partPanel  = "p" // a Tabs' content

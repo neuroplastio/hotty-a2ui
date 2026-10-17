@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-13
+Last updated: 2026-10-17
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from rounds 7–9
@@ -75,6 +75,12 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   cells draws a bar at its left edge (`▏Yes `, `▎` while it has the
   keyboard), a host a line inside its left edge, whatever has the
   keyboard (profile §3.4, §6.2; journal 2026-10-13.2).
+
+- [x] **KIT-CYCLE** — A select stepped in place, `‹ staging ›`, as the
+  tour's form draws it (the maintainer, 2026-10-17), the value centred
+  between the arrows: `io_neuroplast_hotty.cycle` on a ChoicePicker, in
+  cells and on a host; story `hotty/choice` (journal 2026-10-17.1). Its
+  look points wait for the next feedback round.
 
 ## Phase 2 — The HOTTY layer
 

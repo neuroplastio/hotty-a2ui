@@ -44,8 +44,9 @@ const (
 	// Value (a bool), Disabled while it cannot be flipped.
 	Switch Kind = "switch"
 	// Choice picks one or more of Options. One of a single choice shown
-	// as checkboxes is a list to pick from (a select); otherwise each
-	// option is a child, which toggles.
+	// as checkboxes is a list to pick from (a select), or with Cycle its
+	// options stepped through in place; otherwise each option is a child,
+	// which toggles.
 	Choice Kind = "choice"
 	// Option is one of a Choice's options as a child: Label, Active when
 	// it is picked.
@@ -244,6 +245,9 @@ type Element struct {
 	Options  []ChoiceOption `json:"options,omitempty"`
 	Multiple bool           `json:"multiple,omitempty"`
 	Filter   bool           `json:"filter,omitempty"`
+	// Cycle: a select whose arrows step through its options in place,
+	// round from either end, with no list (io_neuroplast_hotty.cycle).
+	Cycle bool `json:"cycle,omitempty"`
 	// Slider and RangeSlider: the range, and the step (0: any value).
 	// Progress: Max.
 	Min  float64 `json:"min,omitempty"`

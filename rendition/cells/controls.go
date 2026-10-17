@@ -50,9 +50,12 @@ func isOneLine(e *view.Element) bool {
 // inputWidth is the columns of a one-line field's input (profile §3.5),
 // at most the room it is given: a text field's textInput; a DateTime's,
 // its value's form or its value, whichever is wider, and a column for the
-// caret after it; a select's, its widest option, a space and "▾".
+// caret after it; a select's, its widest option, a space and "▾"; a
+// cycle's, its widest option between "‹ " and " ›".
 func inputWidth(e *view.Element) int {
 	switch {
+	case isSelect(e) && e.Cycle:
+		return width(cycleValue(e, noWrap, false))
 	case isSelect(e):
 		return width(selectValue(e, noWrap))
 	case e.Kind == view.DateTime:
@@ -449,6 +452,38 @@ func selectValue(e *view.Element, w int) []glyph {
 	return concat(value, repeat(" ", w-width(value)-1, style{}), arrow)
 }
 
+// cycleValue is a cycle's input (io_neuroplast_hotty.cycle), w wide:
+// "‹ " and " ›" at its ends, and centred between them the picked option's
+// label, or "…" in muted when none is, cut to fit, a column more after it
+// than before where they differ (the maintainer, 2026-10-17: "centered
+// between arrows"). The arrows are muted, or accent while it has the
+// keyboard, as only focus is (§3.6). At noWrap it is as wide as the
+// widest option makes it, so that the arrows stay put as the pick changes.
+func cycleValue(e *view.Element, w int, focused bool) []glyph {
+	value := line(pickedLabel(e), style{})
+	if len(value) == 0 {
+		value = line("…", style{role: Muted})
+	}
+	if w == noWrap {
+		n := width(value)
+		for _, o := range e.Options {
+			n = max(n, Width(o.Label))
+		}
+		w = n + 4
+	}
+	arrow := style{role: Muted}
+	if focused {
+		arrow = style{role: Accent}
+	}
+	room := w - 4
+	if room < 1 {
+		return fit(concat(glyphs("‹", arrow), value), w)
+	}
+	value = fit(value, room)
+	pad := room - width(value)
+	return concat(glyphs("‹ ", arrow), repeat(" ", pad/2, style{}), value, repeat(" ", pad-pad/2, style{}), glyphs(" ›", arrow))
+}
+
 // labelFade is how far a field's label is from the text's colour toward
 // the background: a step under the value, not muted's grey, which read as
 // too grey (the maintainer, round 4).
@@ -484,21 +519,9 @@ func underline(cv *canvas, x, y, w int, focused bool) {
 	})
 }
 
-// picked is the index of a select's value among its options, or -1.
-func picked(e *view.Element) int {
-	vs, _ := e.Value.([]string)
-	for i, o := range e.Options {
-		for _, v := range vs {
-			if v == o.Value {
-				return i
-			}
-		}
-	}
-	return -1
-}
-
+// pickedLabel is the label of a select's picked option, "" if none is.
 func pickedLabel(e *view.Element) string {
-	if i := picked(e); i >= 0 {
+	if i := e.Picked(); i >= 0 {
 		return e.Options[i].Label
 	}
 	return ""

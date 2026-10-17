@@ -1,11 +1,13 @@
 # The Material Symbols names the HTML rendition draws itself, beyond the
-# 59: a select's chevron, closed and open (make icons writes icons_gen.go
-# from this list). Not expand_more and expand_less, the same shapes:
+# 59: a select's chevron, closed and open, and a cycle's two (make icons
+# writes icons_gen.go from this list). Not expand_more and expand_less, the same shapes:
 # Iconify hides expand_less. Then a HottyMarkdown's alerts' icons, as
 # GitHub's octicons: TIP's light bulb, IMPORTANT's speech bubble with "!",
 # CAUTION's stop sign (NOTE's info and WARNING's warning are the 59's).
 keyboard_arrow_down
 keyboard_arrow_up
+keyboard_arrow_left
+keyboard_arrow_right
 lightbulb
 feedback
 report

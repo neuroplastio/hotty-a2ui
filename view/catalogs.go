@@ -236,6 +236,7 @@ func mapChoice(b *Builder, n *a2ui.Node) *Element {
 		picked = []string{v}
 	}
 	e.Value = picked
+	e.Cycle = cycle(n) && !e.Multiple && e.Variant != "chips"
 	if e.Multiple || e.Variant == "chips" {
 		for i, o := range e.Options {
 			e.Children = append(e.Children, &Element{ID: SubID(n.Key, "option", i), Kind: Option, Type: "ChoicePicker.option",
