@@ -227,13 +227,37 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   components settle. Measured by hotty-web, 2026-10-17: a form in the
   site's TinyGo main module (cells, html, view) took it from 6.9 MB to
   8.9 MB raw, with chroma and regexp2, icons, qr, diff, fuzzy and uax29
-  linked though the form uses none.
+  linked though the form uses few of them (a HottyCode, so chroma). Served
+  (TinyGo, wasm-opt -Oz, brotli -q 11): 1,645,197 bytes without the kit,
+  2,166,970 with it, +0.52 MB (+32%), for a cycle, a Slider, chips, two
+  Buttons, Text and a HottyScrollView of HottyCode.
 - [ ] **KIT-STACK** — A form's first key or click (cells `Key`, or html
   `Event` then `Update`) overflows TinyGo's 64 KB goroutine stack (hotty-web,
   2026-10-17); the site's main module runs it at `-stack-size=128KB`.
   Find the deep path (the html diff or the cells layout, hotty-web
   guesses) and make it lighter, so the site can drop the flag. Waits for
   the maintainer's word (token preservation).
+- [ ] **KIT-REDRAW** — cells `Draw` lays a long HottyMarkdown out whole on
+  every draw, a hover's too (docs, 2026-10-17): on HOTTY's SPEC page at
+  ~100 columns a link's hover draw is 93 ms of wasm in Chromium, natively
+  ~100 ms and 180 MB allocated, 85% in layout.measureHeight/lines
+  (runGlyphs, wrapConts, glyphs, splitLines), about half of the wasm time
+  Go's GC. Keep each element's lines at a width across draws while the
+  document, the width and its non-hover state hold, so a hover only
+  repaints (paintHover over the last base frame); reuse the frame, canvas
+  and cell buffers. Repro: web docs-pilot on hotty-0.4, `make serve
+  SITE=hotty CHECKOUT='../../../{name}/hotty-0.4'`, Text mode, pointer on
+  and off a link. Waits for the maintainer's word (token preservation).
+- [x] **KIT-TOUCH** — A finger drags a Slider in cells (the maintainer,
+  via hotty-web, 2026-10-17: "in cell mode slider touch dragging doesn't
+  work in xterm and in hottyterm"). The mouse drag worked
+  (cmd/storybook TestSliderDragInCells, SGR reports), but a touch drag
+  over the cells is the terminal's scroll (SPEC §9). hotty 0.4's V4-02,
+  SPEC §9.6 "Touch in the cells", lets a program name cells that take a
+  finger's drag (`a=touch` areas). The kit names its enabled Sliders' and
+  HottyRangeSliders' tracks (`cells.TouchAreas`, profile §3.7), and the
+  storybook sends them (`storybook.Options.Mouse`; 4b1f6d3, by the hotty
+  agent). On main with hotty 0.4, 2026-10-18.
 - [ ] **KIT-CAT** — A composite catalog: basic's definitions verbatim plus
   the hotty catalog, generated, so an agent can use it as the surface
   default (L1). Do it when the agent integration starts, which the
