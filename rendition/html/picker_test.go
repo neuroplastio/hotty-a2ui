@@ -9,11 +9,11 @@ import (
 	hottycat "github.com/neuroplastio/hotty-a2ui/catalog/hotty"
 )
 
-// TestPickerOnHost: a HottyPicker is a focusable box holding its query,
-// with the program's caret, its rows (a heading where their section
-// changes, the selected one marked) and its line of keys. A click on a
-// row selects it, and a second runs its first action. The program edits
-// the query by the keys, and the host follows by deltas.
+// TestPickerOnHost: a HottyPicker is a box holding its query as an input
+// of its own, which the host edits and gives the program the picker's keys
+// from, its rows (the selected one marked) and its line of keys. A click on
+// a row selects it, and a second runs its first action. A query the program
+// writes comes in a new input, which has the keyboard (SPEC §6.2).
 func TestPickerOnHost(t *testing.T) {
 	x := newHarness(t)
 	var msgs []any
@@ -27,7 +27,9 @@ func TestPickerOnHost(t *testing.T) {
 	x.process(msgs...)
 	r := x.rs["s"]
 	s := x.h.Surface(r.name)
-	for _, want := range [][3]string{{"root", "tabindex", "0"}, {"root", "role", "combobox"}, {"root", "data-keys", listKeys}} {
+	input := func(n int) string { return partID("root", partTitle+strconv.Itoa(n)) }
+	for _, want := range [][3]string{{input(0), "role", "combobox"}, {input(0), "placeholder", "Type a command"},
+		{input(0), "data-keys", pickKeys(r.C.V.Find("root"))}} {
 		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
 			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
 		}
@@ -39,13 +41,10 @@ func TestPickerOnHost(t *testing.T) {
 	if v, _ := s.Attr(row(0), "aria-selected"); v != "true" {
 		t.Errorf("the first row is not selected")
 	}
-	if got := s.TextOf(partID("root", partTitle)); got != ">Type a command" {
-		t.Errorf("the query reads %q", got)
-	}
 	must(t, x.h.Click(r.name, row(1)))
 	x.pump()
-	if got := r.C.S.Data.Value("/sel"); got != "p-1" || r.C.St.Focus != "root" {
-		t.Fatalf("a click on fish: selected %v, focus %q", got, r.C.St.Focus)
+	if got := r.C.S.Data.Value("/sel"); got != "p-1" || r.C.St.Focus != "root" || s.Focused() != input(0) {
+		t.Fatalf("a click on fish: selected %v, focus %q, the host's on %q", got, r.C.St.Focus, s.Focused())
 	}
 	must(t, x.h.Click(r.name, row(1)))
 	x.pump()
@@ -53,13 +52,21 @@ func TestPickerOnHost(t *testing.T) {
 		t.Fatalf("a second click: %+v", x.actions)
 	}
 	for _, k := range []string{"s", "p"} {
-		if _, ok, err := r.Key(k); !ok || err != nil {
-			t.Fatalf("key %s: %v %v", k, ok, err)
+		if !x.h.Key(k) {
+			t.Fatalf("the host did not type %s into the query", k)
 		}
+		x.pump()
 		x.update(r)
-		x.check(r)
 	}
-	if got := s.TextOf(partID("root", partTitle)); got != ">sp" || r.C.S.Data.Value("/q") != "sp" {
-		t.Errorf("after s, p: the query reads %q, /q %v", got, r.C.S.Data.Value("/q"))
+	if got := r.C.S.Data.Value("/q"); got != "sp" {
+		t.Fatalf("after s, p: /q %v", got)
+	}
+	// The program writes another query: a new input, with the keyboard.
+	must(t, r.C.S.Write("/q", "split"))
+	r.C.Rebuild()
+	x.update(r)
+	x.check(r)
+	if v, _ := s.Attr(input(1), "value"); v != "split" || s.Focused() != input(1) {
+		t.Fatalf("the program's query: value %q, the host's keyboard on %q", v, s.Focused())
 	}
 }

@@ -254,8 +254,9 @@ func (r *Rendition) pickHints(e *view.Element) []view.Hint {
 
 // paintQuery paints a HottyPicker's query on its row, after its chip: a
 // one-line field, as paintField paints one's value, without its
-// underline, the placeholder faint while it is empty. It scrolls to keep
-// the cursor in it while the picker has the keyboard.
+// underline, the placeholder faint while it is empty, and the terminal's
+// cursor at its caret, never a block. It scrolls to keep the cursor in it
+// while the picker has the keyboard.
 func (l *layout) paintQuery(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	focused := r.focused(e.ID)
@@ -302,8 +303,10 @@ func (l *layout) paintQuery(cv *canvas, e *view.Element, x, y, w int) {
 	if v == "" {
 		cv.write(vx, y, vw, fit(line(e.Placeholder, style{role: Muted, attr: Faint}), vw))
 	}
-	if cx := vx + curCol - area.hoff; focused && cx < cv.f.Cols && y < cv.f.Rows && r.caretOn(e.ID) {
-		cv.cursorAt(cx, y, r.blockCursor() && s0 == s1)
+	// The caret is the terminal's own cursor, a text input's, whatever the
+	// keymap: the terminal blinks it, so it is always there, never drawn.
+	if cx := vx + curCol - area.hoff; focused && cx < cv.f.Cols && y < cv.f.Rows {
+		cv.cursorAt(cx, y, false)
 	}
 	r.hits = append(r.hits, hit{x: x, y: y, w: w, h: 1, id: e.ID, opt: -1, field: area})
 }

@@ -335,6 +335,9 @@ type Element struct {
 	PanelKey    string    `json:"panelKey,omitempty"`
 	Panel       bool      `json:"panel,omitempty"`
 	PanelAt     int       `json:"panelAt,omitempty"`
+	// Written counts the queries written to a HottyPicker other than as
+	// the user typed them (Pick.Written).
+	Written int `json:"written,omitempty"`
 
 	// ScrollView: its lines, when it has no child; whether they wrap; the
 	// first column shown, when they do not; and whether it follows the

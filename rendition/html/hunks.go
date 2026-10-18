@@ -275,6 +275,9 @@ func (r *Rendition) focusOn(id string) string {
 		if e.Selected >= 0 && e.Selected < len(e.Files) {
 			return partID(id, partItem+strconv.Itoa(e.Selected))
 		}
+	case e.Kind == view.Picker:
+		// Its input, which a query the program wrote replaces (picker).
+		return pickInput(e)
 	}
 	return id
 }

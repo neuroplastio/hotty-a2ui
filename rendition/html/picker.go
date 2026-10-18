@@ -6,40 +6,36 @@ import (
 	"strings"
 
 	"github.com/clipperhouse/uax29/v2/graphemes"
-	"github.com/neuroplastio/hotty-go"
-	"github.com/neuroplastio/hotty-go/hottyedit"
 
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
-// picker is a HottyPicker on a host (profile §2, §6.32): a focusable box,
-// as a HottyList is, holding its query after its chip, with a caret where
-// the program's caret is; a rule; its status; its rows, a heading wherever
-// their section changes, each an option whose id is the picker's, "~i" and
-// the row's index; and its line of keys. While the actions panel is open,
-// the selected row's actions take the rows' place. The box's keys are the
-// program's (listKeys): the query is edited by the program, as cells
-// edits it (Rendition.pickEdit), so that what the program writes to it
-// shows, which a host's own input would not while it is focused (SPEC
-// §6.2).
-func (m *markup) picker(e *view.Element, caret int) *node {
-	box := el("div", "id", domID(e.ID), "class", "k-pick", "tabindex", "0", "role", "combobox",
-		"aria-expanded", "true", "data-keys", listKeys)
+// picker is a HottyPicker on a host (profile §2, §6.32): a box holding
+// its query, after its chip, as a text input of its own, which the host
+// edits, its caret the host's; a rule; its status; its rows, a heading
+// wherever their section changes, each an option whose id is the
+// picker's, "~i" and the row's index; and its line of keys. While the
+// actions panel is open, the selected row's actions take the rows' place.
+// The input gives the program the keys the picker takes (pickKeys).
+//
+// A host leaves a focused field's value alone (SPEC §6.2), so a query the
+// program writes (a completion, a staged command) comes in a new input:
+// its id counts the queries written (view.Element.Written), and a new id
+// is a new element, which the keyboard follows (focusOn).
+func (m *markup) picker(e *view.Element) *node {
+	box := el("div", "id", domID(e.ID), "class", "k-pick")
 	q, _ := e.Value.(string)
-	query := el("div", "id", partID(e.ID, partTitle), "class", "k-pick-query")
+	query := el("div", "class", "k-pick-query")
 	if e.Chip != "" {
 		query.add(el("span", "class", "k-pick-chip").add(texts(e.Chip)...))
 	}
-	cl := clustersOf(q)
-	caret = min(max(caret, 0), len(cl))
-	before, after := strings.Join(cl[:caret], ""), strings.Join(cl[caret:], "")
-	query.add(el("span", "class", "k-pick-text").add(texts(before)...),
-		el("span", "class", "k-caret", "aria-hidden", "true"),
-		el("span", "class", "k-pick-text").add(texts(after)...))
-	if q == "" && e.Placeholder != "" {
-		query.add(el("span", "class", "k-pick-hint").add(texts(e.Placeholder)...))
+	in := el("input", "id", pickInput(e), "class", "k-pick-input", "type", "text", "value", q,
+		"data-on", "input", "data-keys", pickKeys(e), "role", "combobox", "aria-expanded", "true",
+		"autocomplete", "off", "spellcheck", "false")
+	if e.Placeholder != "" {
+		in.set("placeholder", e.Placeholder)
 	}
-	box.add(query)
+	box.add(query.add(in))
 	if e.Status != "" {
 		cls, text := "k-pick-status", e.Status
 		if e.StatusError {
@@ -196,47 +192,18 @@ func clustersOf(s string) []string {
 	return out
 }
 
-// pickEdit edits a focused HottyPicker's query by a key, as cells does
-// (rendition/cells editKey): by the field's keymap, the surface's (SetKeys)
-// and then those of the components it is in, typing the characters it does
-// not bind; the caret is the rendition's. ok is false for a key the keymap
-// leaves to the program.
-func (r *Rendition) pickEdit(e *view.Element, key string) (ok bool, err error) {
-	km := hotty.Resolve(r.C.Platform, false, append([]string{r.keys}, r.C.V.KeyChain(e.ID)...)...)
-	f := r.pickField(e)
-	switch km.Lookup(key) {
-	case "", hotty.Copy, hotty.Cut, hotty.Paste, hotty.Undo, hotty.Redo, hotty.Submit:
-		return false, nil
-	}
-	_, changed := f.Key(km, key)
-	if changed {
-		return true, r.C.SetValue(e.ID, f.Value)
-	}
-	return true, nil
-}
+// pickInput is the DOM id of a HottyPicker's input: a part of the picker,
+// numbered by the queries written to it.
+func pickInput(e *view.Element) string { return partID(e.ID, partTitle+strconv.Itoa(e.Written)) }
 
-// pickField is the hottyedit.Field a HottyPicker's query is edited by: the
-// one kept while its value is the query, else a new one, its caret at the
-// end.
-func (r *Rendition) pickField(e *view.Element) *hottyedit.Field {
-	q, _ := e.Value.(string)
-	if r.picks == nil {
-		r.picks = map[string]*hottyedit.Field{}
+// pickKeys are the keys a HottyPicker's input gives the program, which
+// works the picker with them (view.Controller.PickerKey): the moves, its
+// actions' keys, and the panel's.
+func pickKeys(e *view.Element) string {
+	keys := "arrow_up=program arrow_down=program ctrl+p=program ctrl+n=program page_up=program page_down=program " +
+		"enter=program mod+enter=program alt+enter=program shift+enter=program shift+delete=program"
+	if e.PanelKey != "" {
+		keys += " " + e.PanelKey + "=program"
 	}
-	f := r.picks[e.ID]
-	if f == nil || f.Value != q {
-		f = &hottyedit.Field{Value: q, Caret: len(clustersOf(q))}
-		r.picks[e.ID] = f
-	}
-	return f
-}
-
-// pickCaret is where a HottyPicker's caret is drawn: the field's while it
-// edits the query, else its end.
-func (r *Rendition) pickCaret(e *view.Element) int {
-	q, _ := e.Value.(string)
-	if f := r.picks[e.ID]; f != nil && f.Value == q {
-		return f.Caret
-	}
-	return len(clustersOf(q))
+	return keys
 }

@@ -38,9 +38,6 @@ type markup struct {
 	// HottyKeyHints shows as tip, the tooltip (view.Controller.Tooltip).
 	described bool
 	tip       string
-	// caret is where a HottyPicker's caret is drawn, by its id
-	// (Rendition.pickCaret).
-	caret func(e *view.Element) int
 	// key is a key a program wrote as the key hints write it, read with
 	// the Platform: mod+k as ctrl+k, or super+k on a Mac.
 	key func(k string) string
@@ -279,11 +276,7 @@ func (m *markup) element(e *view.Element) *node {
 	case view.FilePicker:
 		n = filePicker(e)
 	case view.Picker:
-		caret := 0
-		if m.caret != nil {
-			caret = m.caret(e)
-		}
-		n = m.picker(e, caret)
+		n = m.picker(e)
 	case view.Tree:
 		if m.page {
 			n = m.pageTree(e)

@@ -720,16 +720,15 @@ textarea.k-resize-none { resize: none; }
    status; the rows the agent ranked, headings where their section
    changes, the selected one tinted, in the focus colour while the picker
    has the keyboard; the other actions' keys at a row's end; then a line
-   of keys. The query is the program's text, not an input (SPEC §6.2).
+   of keys. The query is an input of its own, the host's caret in it.
    The detail wins, as in cells: a row wraps, and shows one line, so keys
    that don't fit beside its whole title wrap out of sight; the selected
    row doesn't wrap, its keys stay and its title is cut. */
-.k-pick { display: flex; flex-direction: column; align-self: stretch; outline: none; }
-.k-pick-query { display: flex; align-items: baseline; column-gap: 0.5ch; padding: var(--k-1) var(--k-3); border-bottom: 1px solid var(--k-border); white-space: pre; }
-.k-pick-chip { color: var(--k-focus); font-weight: 600; }
-.k-pick-query .k-caret { margin: 0 -0.25ch; }
-.k-pick:focus .k-pick-query .k-caret { visibility: visible; }
-.k-pick-hint { color: var(--k-muted); opacity: 0.7; }
+.k-pick { display: flex; flex-direction: column; align-self: stretch; }
+.k-pick-query { display: flex; align-items: baseline; column-gap: 0.5ch; padding: var(--k-1) var(--k-3); border-bottom: 1px solid var(--k-border); }
+.k-pick-chip { color: var(--k-focus); font-weight: 600; white-space: pre; }
+.k-pick-input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; color: inherit; font: inherit; padding: 0; margin: 0; }
+.k-pick-input::placeholder { color: var(--k-muted); opacity: 0.7; }
 .k-pick-status { padding: var(--k-1) var(--k-3); }
 .k-pick-status.k-error { color: var(--k-error); }
 .k-pick-rows { display: flex; flex-direction: column; padding: var(--k-1) 0; }
@@ -742,9 +741,9 @@ textarea.k-resize-none { resize: none; }
 .k-pick-keys { flex: none; font-size: 0.875rem; white-space: pre; }
 .k-pick-row .k-match { text-decoration: none; color: var(--k-focus); font-weight: 600; }
 .k-pick-row.k-sel { background: var(--k-tonal); }
-.k-pick:focus .k-pick-row.k-sel { background: var(--k-focus); color: var(--k-bg); }
-.k-pick:focus .k-pick-row.k-sel :is(.k-pick-group, .k-pick-detail, .k-pick-keys, .k-match) { color: var(--k-bg); }
-.k-pick:focus .k-pick-row.k-sel .k-match { text-decoration: underline; }
+.k-pick:focus-within .k-pick-row.k-sel { background: var(--k-focus); color: var(--k-bg); }
+.k-pick:focus-within .k-pick-row.k-sel :is(.k-pick-group, .k-pick-detail, .k-pick-keys, .k-match) { color: var(--k-bg); }
+.k-pick:focus-within .k-pick-row.k-sel .k-match { text-decoration: underline; }
 .k-pick-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
 .k-pick-keys-line { color: var(--k-muted); font-size: 0.875rem; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
 

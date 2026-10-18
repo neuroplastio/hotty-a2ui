@@ -32,12 +32,18 @@ type PickAction struct {
 
 // Pick is a HottyPicker as the user worked it, by its id: the row the
 // user selected, where selected is not bound (Moved: since the query last
-// changed), and the actions panel, open, and the action it highlights.
+// changed); the actions panel, open, and the action it highlights; the
+// query as the user last typed it (Typed), and how many times another
+// query was written since the picker was made (Written: the agent's, a
+// completion or a staged command, which a host's focused field would not
+// show, SPEC §6.2).
 type Pick struct {
 	Selected string
 	Moved    bool
 	Panel    bool
 	At       int
+	Typed    string
+	Written  int
 }
 
 // PickLine is a line of a HottyPicker's rows: a heading (Row < 0) or a
@@ -65,6 +71,11 @@ func mapPicker(b *Builder, n *a2ui.Node) *Element {
 		e.Rows = append(e.Rows, pickRow(m))
 	}
 	st := b.St.Pick[n.Key]
+	if q, _ := e.Value.(string); q != st.Typed {
+		st.Typed, st.Written = q, st.Written+1
+		b.St.Pick[n.Key] = st
+	}
+	e.Written = st.Written
 	sel := b.String(n, "selected")
 	if bd, ok := n.Props["selected"].(a2ui.Bound); (!ok || !bd.Writable()) && st.Moved {
 		sel = st.Selected
@@ -313,8 +324,8 @@ func (c *Controller) setPickQuery(e *Element, q string) error {
 	} else {
 		c.St.Local[e.ID] = q
 	}
-	c.pick(e.ID)
-	c.St.Pick[e.ID] = Pick{}
+	was := c.pick(e.ID)
+	c.St.Pick[e.ID] = Pick{Typed: q, Written: was.Written}
 	c.St.Scroll[e.ID] = 0
 	if bd, ok := n.Props["selected"].(a2ui.Bound); ok && bd.Writable() && err == nil {
 		err = c.S.Write(bd.Path, "")

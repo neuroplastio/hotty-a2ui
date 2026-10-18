@@ -21,7 +21,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/neuroplastio/hotty-go"
-	"github.com/neuroplastio/hotty-go/hottyedit"
 
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/view"
@@ -46,9 +45,6 @@ type Rendition struct {
 	// sent their values (holdEdit): what the host shows in them is what
 	// was typed, which nothing in sent says.
 	edited map[string]bool
-	// picks are the fields each HottyPicker's query is edited by, by its
-	// id (pickEdit).
-	picks map[string]*hottyedit.Field
 	// pending is the Shortcut key waiting for the host to commit the
 	// focused field (Key).
 	pending string
@@ -135,7 +131,7 @@ func (r *Rendition) markup() *markup {
 	toasts := r.C.TickToasts(at, r.heldToast)
 	short, full := r.C.KeyHints(r.keys, true)
 	m := &markup{list: r.openList(), now: at, short: short, full: full,
-		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover), drag: r.C.St.Drag, caret: r.pickCaret, key: r.keyText}
+		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover), drag: r.C.St.Drag, key: r.keyText}
 	m.animate(toasts)
 	m.animate(timers)
 	if r.C.St.Keyboard && !r.Away {
@@ -425,17 +421,17 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		// gives its keyboard up: to where the program moved it, or to the
 		// other rendition. So only typing, or a control's change, which
 		// comes at once, says where the keyboard is.
-		if ev.Kind == hotty.EventInput || e.Kind != view.TextField && e.Kind != view.DateTime {
-			r.host.focus = id
+		if ev.Kind == hotty.EventInput || e.Kind != view.TextField && e.Kind != view.DateTime && e.Kind != view.Picker {
+			r.host.focus = r.focusOn(id)
 			if !r.Away {
 				c.St.Focus = id
 			}
 		}
-		if e.Kind == view.TextField {
+		if e.Kind == view.TextField || e.Kind == view.Picker {
 			if r.edited == nil {
 				r.edited = map[string]bool{}
 			}
-			r.edited[domID(id)] = true
+			r.edited[r.fieldDOM(r.focusOn(id))] = true
 		}
 		switch e.Kind {
 		case view.CheckBox:
@@ -603,13 +599,10 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	}
 	// A focused HottyFilePicker is a box on the host too: it moves, opens
 	// and goes up by the keys (view.Controller.FileKey).
-	// A focused HottyPicker is a box on the host too: its own keys first,
-	// then its query's, which the program edits (pickEdit).
+	// A focused HottyPicker's input gives the program its moves and its
+	// actions' keys (pickKeys); the host edits the query.
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Picker {
 		if ok, err := c.PickerKey(e.ID, key); ok {
-			return nil, true, err
-		}
-		if ok, err := r.pickEdit(e, key); ok {
 			return nil, true, err
 		}
 	}
@@ -875,7 +868,7 @@ func (r *Rendition) holdEdit(main *node) {
 	if !r.host.on || r.host.focus == "" {
 		return
 	}
-	id := domID(r.host.focus)
+	id := r.fieldDOM(r.host.focus)
 	old, cur := r.sent[0].find(id), main.find(id)
 	if old == nil || cur == nil || old.tag != cur.tag {
 		return
@@ -888,6 +881,16 @@ func (r *Rendition) holdEdit(main *node) {
 	}
 }
 
+// fieldDOM is the DOM id of what has the host's keyboard, as focusOn
+// names it: an element's id, or a part's DOM id as it is (a HottyPicker's
+// input).
+func (r *Rendition) fieldDOM(focus string) string {
+	if r.C.V.Find(focus) != nil {
+		return domID(focus)
+	}
+	return focus
+}
+
 // resend makes Update send the value of each text field the user typed in
 // and has left, even when it is the value the host was last sent: the
 // host shows what was typed, and the program's value only replaces it
@@ -897,7 +900,7 @@ func (r *Rendition) holdEdit(main *node) {
 func (r *Rendition) resend() {
 	held := ""
 	if r.host.on {
-		held = domID(r.host.focus)
+		held = r.fieldDOM(r.host.focus)
 	}
 	for id := range r.edited {
 		if id == held {
