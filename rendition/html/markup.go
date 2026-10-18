@@ -195,7 +195,11 @@ func (m *markup) element(e *view.Element) *node {
 	case view.Card:
 		n = el("div", "id", id, "class", "k-card k-stack k-col").add(m.all(e.Children)...)
 	case view.Text:
-		n = el("div", "id", id, "class", "k-text k-v-"+e.Variant)
+		class := "k-text k-v-" + e.Variant
+		if e.Tone != "" {
+			class += " k-tone-" + e.Tone
+		}
+		n = el("div", "id", id, "class", class)
 		n.text, n.raw = emojiHTML(view.MarkdownHTML(e.Markdown)), true
 		n.text = groupBreaks(strings.TrimSpace(view.PlainText(view.Markdown(e.Markdown))), n.text)
 	case view.Document:

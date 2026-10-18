@@ -112,7 +112,7 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 	case view.Image:
 		cv.write(x, y, w, fit(line(imageText(e), style{role: Muted}), w))
 	case view.Icon:
-		cv.write(x, y, w, glyphs(icons.Glyph(e.Name), style{}))
+		cv.write(x, y, w, glyphs(icons.Glyph(e.Name), style{role: toneRoles[e.Tone]}))
 	case view.Media:
 		st := style{attr: Underline, link: e.URL}
 		if l.r.focused(e.ID) {

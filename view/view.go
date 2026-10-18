@@ -220,6 +220,9 @@ type Element struct {
 	// a Choice's display (checkbox, chips).
 	Markdown string `json:"markdown,omitempty"`
 	Variant  string `json:"variant,omitempty"`
+	// Text and Icon: the role its glyphs take (io_neuroplast_hotty.tone),
+	// one of Tones; "" for its own.
+	Tone string `json:"tone,omitempty"`
 
 	// Image and Media: where it is, what it shows. Icon: Name, one of
 	// the basic catalog's or (HottyIcon) a Material Symbols name, or else

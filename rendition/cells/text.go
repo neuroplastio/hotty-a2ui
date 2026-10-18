@@ -50,6 +50,13 @@ func decor(gs []glyph) []glyph {
 	return out
 }
 
+// toneRoles are the roles a Text's or an Icon's tone names
+// (io_neuroplast_hotty.tone, profile §6.33); a Text with none is in the
+// terminal's text, or muted as a caption, and an Icon in the terminal's
+// text.
+var toneRoles = map[string]Role{"muted": Muted, "accent": Accent, "success": Success,
+	"warning": Warning, "error": Error, "info": Info}
+
 // codeIndent is the columns a Text's code block sits in from its prose.
 const codeIndent = 2
 
@@ -59,6 +66,9 @@ func markdown(e *view.Element, w int) []tline {
 	base := style{}
 	if e.Variant == "caption" {
 		base.role = Muted
+	}
+	if r, ok := toneRoles[e.Tone]; ok {
+		base.role = r
 	}
 	var out []tline
 	for _, b := range view.Markdown(e.Markdown) {

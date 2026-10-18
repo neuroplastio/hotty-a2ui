@@ -163,6 +163,15 @@
 .k-v-h5 { font-size: 0.9375rem; line-height: 1.4; font-weight: 600; }
 .k-v-caption { font-size: 0.8125rem; line-height: 1.4; color: var(--k-muted); }
 
+/* A Text's or an Icon's tone (io_neuroplast_hotty.tone, profile §6.33):
+   the role its glyphs take, after a caption's muted, which it overrides. */
+.k-tone-muted { color: var(--k-muted); }
+.k-tone-accent { color: var(--k-link); }
+.k-tone-success { color: var(--k-success); }
+.k-tone-warning { color: var(--k-warning); }
+.k-tone-error { color: var(--k-error); }
+.k-tone-info { color: var(--k-info, var(--hotty-ansi-6, var(--k-link))); }
+
 /* Pictures */
 .k-icon { display: inline-flex; align-items: center; justify-content: center; line-height: 1; font-size: 1.125em; }
 .k-img { display: block; flex-shrink: 0; max-width: 100%; border-radius: var(--k-r-field); margin-bottom: var(--k-1); }

@@ -12,8 +12,15 @@ import (
 // svgPath, as an inline <svg> 1em square, filled with the text's colour or
 // stroked with it; else, for a name the kit has no shape for or a path it
 // doesn't accept, the glyph cells draw. The svg is the kit's own, so an
-// svgPath is only ever the d of its one path.
-func icon(e *view.Element, id string) *node { return shape(e.Name, e.Path, e.Stroke, id) }
+// svgPath is only ever the d of its one path. Its tone (profile §6.33) is
+// the text's colour it takes.
+func icon(e *view.Element, id string) *node {
+	n := shape(e.Name, e.Path, e.Stroke, id)
+	if e.Tone != "" {
+		n.set("class", "k-icon k-tone-"+e.Tone)
+	}
+	return n
+}
 
 // shape is an icon by its name, or its path when it has one, stroked
 // stroke wide when that is more than 0, as icon draws it; id is its DOM id,

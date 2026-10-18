@@ -2708,6 +2708,28 @@ them. It takes the keyboard.
 | host | `div.k-pick` (`role=combobox`, `tabindex=0`, `data-keys` giving the program the keys a box would scroll by, §2): `div.k-pick-query` with `span.k-pick-chip`, the query's text either side of the program's `span.k-caret`, `span.k-pick-hint` while empty; `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the keys in `span.k-pick-keys`, which wrap out of a row's one line where they don't fit beside its title (the selected row doesn't wrap); `div.k-pick-keys-line` |
 | text | `? ` and its chip and query; its status; every row in order under its heading and `:`, `> ` marking the selected one, its group, title, and after a dash its detail and its keyed actions with their keys (§4) |
 
+### 6.33 tone
+
+`metadata.extensions.io_neuroplast_hotty.tone` on a Text, an Icon or a
+HottyIcon: the role its glyphs take (§3.6), `muted`, `accent`,
+`success`, `warning`, `error` or `info`. It is a DynamicString: a
+literal, or a path, which in a template is the item's (`{"@path":
+"tone"}`), so that a list colours each row by its own data, and a change
+to the data model moves it. Anything else leaves the component its own
+colour, and on any other component it is ignored. It is A2UI's
+"component-instance styling override" (L7), for a status: plexos'
+agents list colours each agent by its state, as herdr's sidebar does
+(plexos, 2026-10-18).
+
+A tone is colour alone, which NO_COLOR and the text rendition drop:
+the words or the icon say the same, as §3.6 asks of every colour.
+
+| rendition | a tone |
+| --- | --- |
+| cells | the role of every glyph of the Text, a caption's `muted` given way to it, inline code still `muted`; of an Icon's glyph |
+| host | a class beside the component's own, `k-tone-<role>` (`.k-text.k-tone-error`, `.k-icon.k-tone-success`), which kit.css colours with the role's colour; `accent` is the host's accent (`--k-link`), as cells' blue is |
+| text | nothing (§4) |
+
 ## 7. Fallbacks
 
 A component never fails the surface it is in.

@@ -3,6 +3,7 @@ package view
 import (
 	"io/fs"
 	"reflect"
+	"slices"
 	"strconv"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -207,6 +208,9 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	e.A11y = b.a11y(n)
 	e.Autofocus = autofocus(n)
 	e.Keys = keys(n)
+	if e.Kind == Text || e.Kind == Icon {
+		e.Tone = b.tone(n)
+	}
 	if e.Kind == TextField && e.Variant == "longText" {
 		e.Resize = resize(n)
 	}
@@ -396,6 +400,25 @@ func autofocus(n *a2ui.Node) bool { return hottyExt(n)["autofocus"] == true }
 func keys(n *a2ui.Node) string {
 	s, _ := hottyExt(n)["keys"].(string)
 	return s
+}
+
+// Tones are the roles io_neuroplast_hotty.tone may name (profile §6.33).
+var Tones = []string{"muted", "accent", "success", "warning", "error", "info"}
+
+// tone reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.tone on a Text or an Icon, a literal or a path in
+// its scope (a template's item's own, in a list): one of Tones, or ""
+// for anything else, which leaves it its own colour.
+func (b *Builder) tone(n *a2ui.Node) string {
+	v, ok := hottyExt(n)["tone"]
+	if !ok {
+		return ""
+	}
+	r, _ := b.S.Context(n.Scope).Resolve(v)
+	if s, _ := r.(string); slices.Contains(Tones, s) {
+		return s
+	}
+	return ""
 }
 
 // fill reads the hotty extension metadata.extensions

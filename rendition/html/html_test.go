@@ -1821,3 +1821,39 @@ func TestDefaultButtonClass(t *testing.T) {
 		}
 	}
 }
+
+// TestTone: a Text's or an Icon's tone (io_neuroplast_hotty.tone) is a
+// class beside its own, k-tone-<role>, which kit.css colours; a tone read
+// from a template's item follows the data model, and a value that names
+// no role adds none.
+func TestTone(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"rows":[{"t":"error"},{"t":"plum"}]}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["cap","mark","rows"]},
+ {"id":"cap","component":"Text","text":"waiting","variant":"caption","metadata":{"extensions":{"io_neuroplast_hotty":{"tone":"warning"}}}},
+ {"id":"mark","component":"Icon","name":"check","metadata":{"extensions":{"io_neuroplast_hotty":{"tone":"success"}}}},
+ {"id":"rows","component":"List","children":{"componentId":"row","path":"/rows"}},
+ {"id":"row","component":"Text","text":"x","metadata":{"extensions":{"io_neuroplast_hotty":{"tone":{"@path":"t"}}}}}]}}]`), &msgs))
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	count := func(class string) int { return strings.Count(s.HTML(), `class="`+class+`"`) }
+	for class, n := range map[string]int{
+		"k-text k-v-caption k-tone-warning": 1,
+		"k-icon k-tone-success":             1,
+		"k-text k-v-body k-tone-error":      1,
+		"k-text k-v-body":                   1,
+	} {
+		if got := count(class); got != n {
+			t.Errorf("%d of %q, want %d in\n%s", got, class, n, s.HTML())
+		}
+	}
+	var set []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/rows/1/t","value":"info"}}]`), &set))
+	x.process(set...)
+	if got := count("k-text k-v-body k-tone-info"); got != 1 {
+		t.Errorf("after the data changed: %d of k-tone-info in\n%s", got, s.HTML())
+	}
+	x.check(x.rs["s"])
+}
