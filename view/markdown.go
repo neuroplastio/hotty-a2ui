@@ -313,7 +313,9 @@ func (w *walker) inline(n ast.Node, style Style, href string) []Run {
 	for c := n.FirstChild(); c != nil; c = c.NextSibling() {
 		switch c := c.(type) {
 		case *ast.Text:
-			t := string(c.Segment.Value(w.src))
+			// Its escapes and entities resolved, as a HottyMarkdown's are
+			// and as goldmark's HTML writer resolves them on a host.
+			t := textOf(c, w.src)
 			switch {
 			case c.HardLineBreak():
 				t += "\n"

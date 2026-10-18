@@ -39,3 +39,19 @@ func TestListNumbers(t *testing.T) {
 		}
 	}
 }
+
+// A Text's backslash escapes and entities read in cells and in plain text
+// as on a host, where goldmark's HTML writer resolves them: `\_` is an
+// underscore, not a backslash and an italic's start.
+func TestTextEscapes(t *testing.T) {
+	for src, want := range map[string]string{
+		`**\_tmp\_**`:      "_tmp_",
+		`codex\-1`:         "codex-1",
+		`a \* b &amp; c`:   "a * b & c",
+		"`no \\_ in code`": `no \_ in code`,
+	} {
+		if got := PlainText(Markdown(src)); got != want {
+			t.Errorf("%q reads %q, want %q", src, got, want)
+		}
+	}
+}
