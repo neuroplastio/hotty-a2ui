@@ -326,6 +326,13 @@ func buttonFace(e *view.Element, st style) []glyph {
 	return concat(glyphs(" ", st), label, glyphs(" ", st))
 }
 
+// richItem reports whether a Button is a List's row (Item) whose label is
+// a Row or a Column of its own: drawn as that across the row
+// (paintRich), where any other Button's label is one line of its texts.
+func richItem(e *view.Element) bool {
+	return e != nil && e.Kind == view.Button && e.Item && len(e.Children) == 1 && e.Children[0].Kind == view.Stack
+}
+
 // buttonLabel is a Button's content as one line: its Texts' plain text and
 // its Icons' glyphs, a space apart.
 func buttonLabel(e *view.Element) string {

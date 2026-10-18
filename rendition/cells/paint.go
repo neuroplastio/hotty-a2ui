@@ -130,6 +130,10 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		}
 		cv.write(x, y, w, fit(line(placeholderText(e), st), w))
 	case view.Button:
+		if richItem(e) {
+			l.paintRich(cv, e, x, y, w, h)
+			return
+		}
 		st := style{}
 		switch {
 		case e.Disabled:
@@ -675,4 +679,24 @@ func rangeKnobs(e *view.Element) [2]*view.Element {
 		}
 	}
 	return ks
+}
+
+// paintRich paints a List's row whose label is a Row or a Column of its
+// own (richItem): its label laid out across the row inside a column of
+// padding each side, as a plain row's is, in its own colours and
+// attributes, as a menu's row holds a mark, a name and a word at its end.
+// The whole row takes the click; with the keyboard it is reversed in the
+// accent from end to end, as a plain row is, and disabled it is faint.
+func (l *layout) paintRich(cv *canvas, e *view.Element, x, y, w, h int) {
+	label := e.Children[0]
+	h = min(h, l.height(e, w))
+	l.paint(cv, label, x+1, y, w-2, h)
+	switch {
+	case e.Disabled:
+		cv.restyle(x, y, w, h, func(c *Cell) { c.Role, c.Attr = Muted, c.Attr|Faint })
+	case l.r.focused(e.ID):
+		cv.restyle(x, y, w, h, func(c *Cell) { c.Role, c.Attr = Accent, c.Attr|Reverse })
+	}
+	l.r.boxes[e.ID] = box{x, y, w, h}
+	l.r.hits = append(l.r.hits, hit{x: x, y: y, w: w, h: h, id: e.ID, opt: -1, disabled: e.Disabled})
 }

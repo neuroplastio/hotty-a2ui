@@ -146,6 +146,12 @@ func (l *layout) minimum(e *view.Element) int {
 	}
 	n := 0
 	kids := shown(e.Children)
+	switch {
+	case richItem(e):
+		n = l.minimum(e.Children[0]) + 2
+		l.min[e] = n
+		return n
+	}
 	switch e.Kind {
 	case view.Stack:
 		if e.Dir != view.Horizontal {
@@ -257,6 +263,9 @@ func longestWord(gs []glyph) int {
 }
 
 func (l *layout) measure(e *view.Element) int {
+	if richItem(e) {
+		return l.natural(e.Children[0]) + 2
+	}
 	switch e.Kind {
 	case view.Stack:
 		kids := shown(e.Children)
@@ -336,6 +345,9 @@ func (l *layout) height(e *view.Element, w int) int {
 }
 
 func (l *layout) measureHeight(e *view.Element, w int) int {
+	if richItem(e) {
+		return l.height(e.Children[0], w-2)
+	}
 	switch e.Kind {
 	case view.Stack:
 		kids := shown(e.Children)

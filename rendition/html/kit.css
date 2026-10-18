@@ -254,6 +254,9 @@
   text-align: start;
 }
 .k-item.k-borderless { background: transparent; }
+/* A row whose label is a Row or a Column fills it, so that a weighted
+   child pushes what comes after it to the row's end, as in cells. */
+.k-item.k-btn > .k-stack { flex: 1 1 auto; min-width: 0; }
 .k-item:not(.k-borderless) { font-weight: 600; }
 .k-item:focus-visible { outline: 1px solid var(--k-focus); outline-offset: -1px; }
 /* Rows sit close, as a menu's do; a text between them heads a group. */
