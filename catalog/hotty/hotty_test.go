@@ -34,6 +34,13 @@ func TestCatalog(t *testing.T) {
 		// moves the keyboard to one.
 		{`{"id":"s","component":"HottyShortcut","key":"y","press":"yes","label":"yes"}`, true},
 		{`{"id":"s","component":"HottyShortcut","key":"arrow_left","label":"move","action":{"functionCall":{"@call":"hottyFocus","args":{"id":"yes"}}}}`, true},
+		// A HottyPicker (instruction 33): its rows' actions take only the keys
+		// that type nothing, and a row has a value and a title.
+		{`{"id":"p","component":"HottyPicker","query":{"@path":"/q"},"rows":[{"value":"a","title":"A","match":[[0,1]],"actions":[{"id":"run","title":"Run"},{"id":"x","title":"Close","key":"shift+delete"}]}],"panelKey":"mod+k","onAction":{"event":{"name":"act"}}}`, true},
+		{`{"id":"p","component":"HottyPicker","rows":{"@path":"/rows"},"status":{"@path":"/st"},"statusKind":{"@path":"/kind"}}`, true},
+		{`{"id":"p","component":"HottyPicker","rows":[{"value":"a","title":"A","actions":[{"id":"x","title":"X","key":"ctrl+x"}]}]}`, false},
+		{`{"id":"p","component":"HottyPicker","rows":[{"value":"a"}]}`, false},
+		{`{"id":"p","component":"HottyPicker","query":"q"}`, false},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"event":{"name":"send"}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyFocus","args":{"id":"name"}}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyBlur"}}}`, true},

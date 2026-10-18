@@ -31,9 +31,9 @@ const (
 	partOption = "o" // a select's options in its list, "o0" to "oN"
 	partRow    = "y" // a Table's rows, "y0" to "yN", by their index
 	partFrame  = "f" // a Spinner's frame; a timer's time: what a tick changes
-	partTitle  = "h" // a HottyList's title, or its filter while typed
-	partStatus = "u" // a HottyList's status line
-	partItem   = "i" // a HottyList's items, or a HottyFilePicker's entries, "i0" to "iN", by their index
+	partTitle  = "h" // a HottyList's title, or its filter while typed; a HottyPicker's query
+	partStatus = "u" // a HottyList's status line; a HottyPicker's status
+	partItem   = "i" // a HottyList's items, a HottyFilePicker's entries or a HottyPicker's rows, "i0" to "iN", by their index
 	partDots   = "d" // a HottyList's or a HottyPaginator's page dots; a HottyPaginator's each, "d0" to "dN"
 	partLines  = "j" // a HottyScrollView's lines, which a log appends to
 	partHunk   = "b" // a HottyDiff's hunks, "b0" to "bN", by their index

@@ -117,6 +117,8 @@ func (c *Controller) ClickItem(id string, i, count int) error {
 		acts = i < len(e.Nodes) && (e.Nodes[i].Branch() && !e.Filtering() || i == e.SelectedRow())
 	case RichList, Table, DiffView:
 		acts = i == e.SelectedRow()
+	case Picker:
+		acts = i == e.Selected
 	default:
 		return nil
 	}
@@ -134,6 +136,8 @@ func (c *Controller) ClickItem(id string, i, count int) error {
 		return c.ClickFile(id, i)
 	case e.Kind == Tree:
 		return c.ClickNode(id, i)
+	case e.Kind == Picker:
+		return c.clickPick(e, i, acts)
 	case acts:
 		return c.Activate(id)
 	}
@@ -264,6 +268,9 @@ func (c *Controller) SetValue(id string, v any) error {
 		if s, ok := v.(string); ok {
 			v = []string{s}
 		}
+	case Picker:
+		s, _ := v.(string)
+		return c.setPickQuery(e, s)
 	}
 	err := c.set(e, v)
 	c.Rebuild()

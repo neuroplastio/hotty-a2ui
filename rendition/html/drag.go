@@ -191,7 +191,7 @@ func rows(e *view.Element) bool {
 func itemOf(e *view.Element, part string) int {
 	prefix := ""
 	switch e.Kind {
-	case view.RichList, view.FilePicker:
+	case view.RichList, view.FilePicker, view.Picker:
 		prefix = partItem
 	case view.Table:
 		prefix = partRow

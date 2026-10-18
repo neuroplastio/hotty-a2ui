@@ -60,6 +60,10 @@ type State struct {
 	// (io_neuroplast_hotty.suggestions), by its id: the one highlighted,
 	// or the list closed. The first its list shows is in Scroll.
 	Suggest map[string]Suggest
+	// Pick is each HottyPicker as the user worked it, by its id: its
+	// selection where selected is not bound, and its actions panel. The
+	// first line it shows is in Scroll.
+	Pick map[string]Pick
 	// Toasts are the toasts shown over the surface, the oldest first
 	// (hottyToast); ToastSeq numbers those whose caller named none.
 	Toasts   []*ToastState
@@ -124,7 +128,7 @@ type DirPick struct {
 func NewState() *State {
 	return &State{Tabs: map[string]int{}, Local: map[string]any{}, Touched: map[string]bool{}, Submitted: map[string]bool{}, Scroll: map[string]int{}, Query: map[string]Query{},
 		Left: map[string]int{}, Tail: map[string]bool{}, Open: map[string][]string{}, Revealed: map[string]string{}, Moved: map[string]Moved{},
-		Suggest: map[string]Suggest{}, Timers: map[string]*TimerState{}, File: map[string]FilePick{}}
+		Suggest: map[string]Suggest{}, Pick: map[string]Pick{}, Timers: map[string]*TimerState{}, File: map[string]FilePick{}}
 }
 
 // Mapper makes an element of a node, children included; nil when the

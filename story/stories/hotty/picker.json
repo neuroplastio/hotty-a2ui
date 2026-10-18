@@ -1,0 +1,328 @@
+{
+  "name": "Picker",
+  "kind": "component",
+  "component": "HottyPicker",
+  "icon": "terminal",
+  "description": "A terminal multiplexer's command palette: commands, panes and agents in one list, as Zed's, VS Code's and Raycast's palettes have them. The agent ranks the rows: each change to the query sends query, and the program behind the story answers with the rows whose \"Group: Title\" holds what was typed, best first, the matched letters drawn out; with no query, every row under its section. The arrows (ctrl+p, ctrl+n) move the selection round, Page Up and Page Down by the rows it shows. Enter runs a row's first action; mod+enter, alt+enter and shift+delete run those a row has on them, their keys at its right; ctrl+k (mod+k) lists the selected row's actions, where the arrows and Enter pick one and Escape goes back. Each action sends act with the row and the action, and the program says in the status what ran; htop runs on bastion, which does not answer, so its Focus and Close pane say so as an error. Get a setting has no actions: Enter sends act with none.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "picker",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "query": "",
+          "selected": "",
+          "action": "",
+          "status": "",
+          "statusKind": "info",
+          "rows": [
+            {
+              "value": "pane.split",
+              "group": "Pane",
+              "title": "Split right",
+              "section": "Recently used",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "again",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the command",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "tab.new",
+              "group": "Tab",
+              "title": "New tab",
+              "section": "Recently used",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "again",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the command",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "p-1",
+              "group": "Pane",
+              "title": "fish",
+              "detail": "~/code/plexos",
+              "section": "Panes",
+              "actions": [
+                {
+                  "id": "focus",
+                  "title": "Focus",
+                  "key": "enter"
+                },
+                {
+                  "id": "close",
+                  "title": "Close pane",
+                  "key": "shift+delete"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy its id",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "p-2",
+              "group": "Pane",
+              "title": "claude",
+              "detail": "agent · plexos",
+              "section": "Panes",
+              "actions": [
+                {
+                  "id": "focus",
+                  "title": "Focus",
+                  "key": "enter"
+                },
+                {
+                  "id": "close",
+                  "title": "Close pane",
+                  "key": "shift+delete"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy its id",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "p-3",
+              "group": "Pane",
+              "title": "htop",
+              "detail": "bastion",
+              "section": "Panes",
+              "actions": [
+                {
+                  "id": "focus",
+                  "title": "Focus",
+                  "key": "enter"
+                },
+                {
+                  "id": "close",
+                  "title": "Close pane",
+                  "key": "shift+delete"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy its id",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "pane.close",
+              "group": "Pane",
+              "title": "Close",
+              "section": "Commands",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "again",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the command",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "pane.zoom",
+              "group": "Pane",
+              "title": "Zoom",
+              "section": "Commands",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "again",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the command",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "workspace.new",
+              "group": "Workspace",
+              "title": "New workspace",
+              "section": "Commands",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "again",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the command",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "workspace.rename",
+              "group": "Workspace",
+              "title": "Rename…",
+              "section": "Commands",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "again",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the command",
+                  "key": "alt+enter"
+                }
+              ]
+            },
+            {
+              "value": "config.get",
+              "group": "Config",
+              "title": "Get a setting",
+              "section": "Commands"
+            },
+            {
+              "value": "session.quit",
+              "group": "Session",
+              "title": "Quit",
+              "section": "Commands",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "again",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the command",
+                  "key": "alt+enter"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "picker",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "palette"
+            ]
+          },
+          {
+            "id": "palette",
+            "component": "HottyPicker",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "query": {
+              "@path": "/query"
+            },
+            "rows": {
+              "@path": "/rows"
+            },
+            "selected": {
+              "@path": "/selected"
+            },
+            "action": {
+              "@path": "/action"
+            },
+            "status": {
+              "@path": "/status"
+            },
+            "statusKind": {
+              "@path": "/statusKind"
+            },
+            "placeholder": "Type a command, a pane or an agent…",
+            "panelKey": "mod+k",
+            "height": 8,
+            "onQuery": {
+              "event": {
+                "name": "query",
+                "context": {
+                  "query": {
+                    "@path": "/query"
+                  }
+                }
+              }
+            },
+            "onAction": {
+              "event": {
+                "name": "act",
+                "context": {
+                  "row": {
+                    "@path": "/selected"
+                  },
+                  "action": {
+                    "@path": "/action"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

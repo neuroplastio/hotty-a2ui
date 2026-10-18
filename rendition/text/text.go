@@ -159,6 +159,8 @@ func element(e *view.Element) []string {
 		return richList(e)
 	case view.FilePicker:
 		return filePicker(e)
+	case view.Picker:
+		return picker(e)
 	case view.Tree:
 		return tree(e)
 	case view.Chart:
@@ -394,6 +396,54 @@ func richList(e *view.Element) []string {
 	}
 	if len(e.Items) == 0 {
 		out = append(out, "  "+e.Placeholder)
+	}
+	return out
+}
+
+// picker is a HottyPicker as text: its chip and query after "? ", its
+// status, then every row in the agent's order, under its heading, its
+// group before its title and its detail and actions' keys after a dash,
+// "> " marking the selected one; its empty text when it has none.
+func picker(e *view.Element) []string {
+	q, _ := e.Value.(string)
+	out := []string{strings.TrimSpace("? " + strings.TrimSpace(e.Chip+" "+q))}
+	if e.Status != "" {
+		mark := ""
+		if e.StatusError {
+			mark = "✗ "
+		}
+		out = append(out, mark+e.Status)
+	}
+	for _, ln := range e.PickLines() {
+		if ln.Row < 0 {
+			out = append(out, ln.Heading+":")
+			continue
+		}
+		r := e.Rows[ln.Row]
+		s := "  "
+		if ln.Row == e.Selected {
+			s = "> "
+		}
+		if r.Group != "" {
+			s += r.Group + ": "
+		}
+		s += r.Title
+		var more []string
+		if r.Detail != "" {
+			more = append(more, r.Detail)
+		}
+		for _, a := range r.Actions {
+			if a.Key != "" {
+				more = append(more, a.Title+" ("+view.KeyText(a.Key)+")")
+			}
+		}
+		if len(more) > 0 {
+			s += " — " + strings.Join(more, ", ")
+		}
+		out = append(out, s)
+	}
+	if len(e.Rows) == 0 {
+		out = append(out, "  "+e.NoRows)
 	}
 	return out
 }

@@ -21,6 +21,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/neuroplastio/hotty-go"
+	"github.com/neuroplastio/hotty-go/hottyedit"
 
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/view"
@@ -45,6 +46,9 @@ type Rendition struct {
 	// sent their values (holdEdit): what the host shows in them is what
 	// was typed, which nothing in sent says.
 	edited map[string]bool
+	// picks are the fields each HottyPicker's query is edited by, by its
+	// id (pickEdit).
+	picks map[string]*hottyedit.Field
 	// pending is the Shortcut key waiting for the host to commit the
 	// focused field (Key).
 	pending string
@@ -131,7 +135,7 @@ func (r *Rendition) markup() *markup {
 	toasts := r.C.TickToasts(at, r.heldToast)
 	short, full := r.C.KeyHints(r.keys, true)
 	m := &markup{list: r.openList(), now: at, short: short, full: full,
-		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover), drag: r.C.St.Drag}
+		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover), drag: r.C.St.Drag, caret: r.pickCaret, key: r.keyText}
 	m.animate(toasts)
 	m.animate(timers)
 	if r.C.St.Keyboard && !r.Away {
@@ -363,7 +367,7 @@ func (r *Rendition) Event(ev hotty.Event) error {
 		if isSelect(e) {
 			return r.clickSelect(e, part, ev)
 		}
-		if e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.DiffView || e.Kind == view.Tree || e.Kind == view.FilePicker {
+		if e.Kind == view.Table || e.Kind == view.RichList || e.Kind == view.DiffView || e.Kind == view.Tree || e.Kind == view.FilePicker || e.Kind == view.Picker {
 			// A row (a Table's), an item (a HottyList's), a hunk (a
 			// HottyDiff's), a node (a HottyTree's) or an entry (a
 			// HottyFilePicker's) is selected by a click and acted on by
@@ -599,6 +603,16 @@ func (r *Rendition) Key(key string) (cmds []string, ok bool, err error) {
 	}
 	// A focused HottyFilePicker is a box on the host too: it moves, opens
 	// and goes up by the keys (view.Controller.FileKey).
+	// A focused HottyPicker is a box on the host too: its own keys first,
+	// then its query's, which the program edits (pickEdit).
+	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.Picker {
+		if ok, err := c.PickerKey(e.ID, key); ok {
+			return nil, true, err
+		}
+		if ok, err := r.pickEdit(e, key); ok {
+			return nil, true, err
+		}
+	}
 	if e := c.V.Find(c.St.Focus); c.St.Keyboard && e != nil && e.Kind == view.FilePicker {
 		if ok, err := c.FileKey(e.ID, key); ok {
 			return nil, true, err

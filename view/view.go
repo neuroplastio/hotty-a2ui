@@ -105,6 +105,11 @@ const (
 	// Query.Text, its filter; Error, why it lists nothing; Height and Top
 	// as a Table's.
 	FilePicker Kind = "filepicker"
+	// Picker is a query and the rows the agent ranked for it (HottyPicker):
+	// Value, the query; Placeholder, Chip, Rows, Selected (the selected
+	// row, -1 for none), Status and StatusError, Busy, NoRows, PanelKey,
+	// Panel and PanelAt; Height and Top count lines (PickLines).
+	Picker Kind = "picker"
 	// KeyHints shows the keys its surface takes now (HottyKeyHints), as
 	// Controller.KeyHints has them: Open while the full view shows, Active
 	// when ? switches views.
@@ -313,6 +318,21 @@ type Element struct {
 	Suggestions []string `json:"suggestions,omitempty"`
 	GhostOnly   bool     `json:"ghostOnly,omitempty"`
 
+	// Picker: its rows, best first, as the agent ranked them; the chip
+	// before its query; the status under it, and whether that is an
+	// error; whether rows are still to come; what shows with no rows; the
+	// key that opens the actions panel, and the panel: open, and the
+	// action it highlights (profile §6.32).
+	Rows        []PickRow `json:"rows,omitempty"`
+	Chip        string    `json:"chip,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	StatusError bool      `json:"statusError,omitempty"`
+	Busy        bool      `json:"busy,omitempty"`
+	NoRows      string    `json:"noRows,omitempty"`
+	PanelKey    string    `json:"panelKey,omitempty"`
+	Panel       bool      `json:"panel,omitempty"`
+	PanelAt     int       `json:"panelAt,omitempty"`
+
 	// ScrollView: its lines, when it has no child; whether they wrap; the
 	// first column shown, when they do not; and whether it follows the
 	// tail. Its Height and Top are a Table's, Top a row.
@@ -440,7 +460,7 @@ func (e *Element) Focusable() bool {
 	switch e.Kind {
 	case Button, Switch, Knob:
 		return !e.Disabled
-	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, FilePicker, ScrollView, Tree, ToastAction, Paginator, Link:
+	case TextField, CheckBox, Slider, DateTime, Tab, Option, Table, RichList, FilePicker, Picker, ScrollView, Tree, ToastAction, Paginator, Link:
 		return true
 	case DiffView:
 		return len(e.RowIDs) > 0

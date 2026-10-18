@@ -226,6 +226,7 @@ func (r *Run) Grant(name string, fsys fs.FS) {
 // no A2UI message says (granting a root, reading a file).
 var programs = map[string]func(r *Run){
 	"hotty/filepicker": filePickerProgram,
+	"hotty/picker":     pickerProgram,
 }
 
 // filePickerProgram is the program behind hotty/filepicker: it grants

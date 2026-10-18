@@ -918,3 +918,41 @@
     - key: escape
     - expect: {focused: fp, actions: [filePicked, dirChanged, dirChanged], data: {/dir: ""}}
 
+
+# A HottyPicker (profile §6.32): a command palette. The agent (the story's
+# program) ranks the rows for each query, which the picker edits as a text
+# field's; the arrows move the selection round; Enter and an action's key
+# run a row's action; mod+k lists the selected row's actions.
+- name: HottyPicker edits its query, which the agent answers, and runs the selected row's actions
+  story: hotty/picker
+  keys: terminal
+  steps:
+    - focus: palette
+    - expect: {focused: palette, data: {/selected: ""}}
+    - key: arrow_down
+    - expect: {data: {/selected: tab.new}}
+    - key: enter
+    - expect: {actions: [act], context: {row: tab.new, action: run}, data: {/status: run tab.new}}
+    - type: zoom
+    - expect: {actions: [act, query, query, query, query], data: {/query: zoom, /selected: ""}}
+    - key: enter
+    - expect: {context: {row: pane.zoom, action: run}}
+    - key: ctrl+w
+    - expect: {data: {/query: ""}}
+    - key: arrow_up
+    - expect: {data: {/selected: session.quit}}
+    - key: arrow_down
+    - key: arrow_down
+    - key: arrow_down
+    - expect: {data: {/selected: p-1}}
+    - key: shift+delete
+    - expect: {context: {row: p-1, action: close}}
+    - key: ctrl+k
+    - key: arrow_down
+    - key: arrow_down
+    - key: enter
+    - expect: {focused: palette, context: {row: p-1, action: copy}}
+    - key: arrow_down
+    - key: arrow_down
+    - key: enter
+    - expect: {context: {row: p-3, action: focus}, data: {/status: bastion is not reachable, /statusKind: error}}

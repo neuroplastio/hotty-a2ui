@@ -358,7 +358,7 @@ func (r *Rendition) click(col, row int) error {
 	}
 	c.Focus(e.ID)
 	switch {
-	case isTextControl(e):
+	case isTextControl(e) || e.Kind == view.Picker && h.opt < 0:
 		if h.opt >= 0 {
 			// A row of its suggestions: picked, the caret after it.
 			delete(r.cursor, e.ID)
@@ -387,7 +387,7 @@ func (r *Rendition) click(col, row int) error {
 		}
 		r.toggleList(e)
 		return nil
-	case e.Kind == view.Table, e.Kind == view.DiffView, e.Kind == view.RichList, e.Kind == view.Tree:
+	case e.Kind == view.Table, e.Kind == view.DiffView, e.Kind == view.RichList, e.Kind == view.Tree, e.Kind == view.Picker:
 		// A row, a hunk, an item or a node: selected by a click, acted on
 		// by another, once a run (view.Controller.ClickItem).
 		return r.c.ClickItem(e.ID, h.opt, r.count)

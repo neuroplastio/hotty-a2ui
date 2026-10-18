@@ -204,6 +204,8 @@ func (l *layout) minimum(e *view.Element) int {
 		n = listMinimum(e)
 	case view.FilePicker:
 		n = fileMinimum(e)
+	case view.Picker:
+		n = pickMinimum(e)
 	case view.Tree:
 		n = treeMinimum(e)
 	case view.Chart:

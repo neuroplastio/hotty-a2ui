@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-17
+Last updated: 2026-10-18
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from rounds 7–9
@@ -87,6 +87,16 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
 - [x] **KIT-SLIDERUN** — A Slider's and a HottyRangeSlider's labels join
   a run of one-line fields' in cells, their tracks starting where the
   inputs do (hotty-web, 2026-10-17; journal 2026-10-17.2).
+- [x] **KIT-PICKER** — A command palette's picker, `HottyPicker`, for
+  plexos's palette (the maintainer, 2026-10-18, plexos d/palette-picker:
+  "I don't think palette fits into any existing components except text
+  input with auto complete"). A query, the rows the agent ranks for it
+  (the picker never filters), actions on the selected row by keys that
+  type nothing (`enter`, `mod+enter`, `alt+enter`, `shift+enter`,
+  `shift+delete`) and an actions panel (`panelKey`). Cells, text and a
+  host baseline; story `hotty/picker` with the palette's agent behind it;
+  vectors on both; `ref picker`; profile §6.32 (journal 2026-10-18.1).
+  Awaiting the maintainer's look.
 
 ## Phase 2 — The hotty layer
 

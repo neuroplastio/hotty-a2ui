@@ -101,6 +101,7 @@ so that an error comes and goes as a text delta.
 | HottyTable | `div tabindex=0 role=grid` holding a `table`: the header in `thead`, then in `tbody` the rows the view shows (the same window as cells, §3.4), each a `tr data-on=click` whose id is the table's and `~y` and the row's index, `aria-selected` on the selected one, which is filled (`--k-tonal`, tinted with `--k-focus` while the table has the keyboard). Its `data-keys` give the program the arrows, Page Up, Page Down, Home and End (SPEC.md §10.2, keys for the program), on a host that would scroll with them; Enter reaches the program anyway, a focused box using no keys. While it scrolls, a note under it says which rows show. A column's `width` is for cells: on a host the table lays its columns out. A host's own scrolling and a sticky header are vault KIT-01h; the row under the pointer is on `--k-surface` (§3.7, hovered). A `reorderable` one's `data-keys` also give the program alt+arrow_up and alt+arrow_down, which move the selected row (§6.21), and a row that can move has `data-on="click drag drop"` and `data-steps="0 1"`: a drag moves it (§6.21) |
 | HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`, in a row (`~d`, `role=status`) that says which page shows (a HottyPaginator's dots, §6.26). Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type are vault KIT-04h; the item under the pointer is on `--k-surface` (§3.7, hovered). A `reorderable` one's `data-keys` give alt+arrow_up and alt+arrow_down too, and an item that can move has `data-on="click drag drop"` and `data-steps="0 1"` (§6.21) |
 | HottyFilePicker | `div tabindex=0 role=listbox` (`k-filepicker`), as a HottyList's box: its current directory as title, then the entries the view shows (within its height, or all on a page), each a `div role=option data-on=click` whose id is the picker's and `~i` and the entry's index, directory names with a trailing `/` and files with their formatted size in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-focus` with its text while the picker has the keyboard. In a subdirectory, its title is a `role=button` that goes up, `◂` before the path. Its `data-keys` give the program the arrows, Page Up, Page Down, Home, End, Backspace, Escape, and the letters `k`, `j`, `h`, `l`, `g`, `shift+g`. Its empty text shows when it has no entries, or its error when the root is missing or unreadable. The entry under the pointer is on `--k-surface` (§3.7, hovered) |
+| HottyPicker | `div tabindex=0 role=combobox` (`k-pick`), as a HottyList's box: its query with the program's caret, its status, the lines its rows show (headings and rows, each row `role=option` with an id, `aria-selected`, `data-on=click`), and a line of keys; `data-keys` gives the program the keys a box would scroll by, and the query is the program's to edit (§6.32) |
 | HottyKeyHints | `div`: in the short view, a line of hints, each a `kbd` (the key, in `--k-muted`) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a HottyFilePicker's, a HottyDiff's, a HottyTree's, a HottyPaginator's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. Keycaps are vault KIT-08h. On a surface with a component that has an `accessibility.description`, a row (`~z`, `k-hints-tip`) comes first: the tooltip (§6.23), the description of the element the host says the pointer is over, else of the element with the keyboard, in the text's colour and italics, cut with an ellipsis; empty, a line high, when neither has one |
 | a toast (`hottyToast`, §6.23) | in the toasts' region (`~t`, `div role=region aria-label=Notifications`), fixed at the surface's top right corner, a column `min(22rem, 100% − 1rem)` wide, the newest at the top: a `div data-on=click` whose id is `hottyToast:` and the toast's id, `role=alert` for a warning or an error, which a screen reader reads at once, `role=status` for news and a success, read when it is idle. It holds the kind's mark, the basic catalog's icon (`info`, `check`, `warning`, `error`) in the kind's colour (`--k-info`, `--k-success`, `--k-warning`, `--k-error`), `aria-hidden`; the message; and its action, a borderless `button` whose id is the toast's and `/action/0`. It is filled with a tenth of its kind's colour over `--k-surface`, ringed with it, rounded and shadowed. The region is cut at the surface's edges: a toast as a surface of its own at a higher z (SPEC.md §5.2) is vault KIT-13h |
 | HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there. Its `data-keys` binds the keys bubbles' viewport scrolls with to the host's scroll actions (SPEC.md §10.2, *Scrolling keys*), so that they scroll it as in cells (§3.7): j and k, f, b, Space and shift+space, u and d (ctrl+u, ctrl+d), g and G, and h and l while its lines are cut. A Button in it keeps Space and a field in it types the letters, since a key an element uses stays its own and a field leaves scroll actions out. Following the tail on a host is vault KIT-07h |
@@ -239,6 +240,7 @@ on a host:
 | HottyTable | every row, not a window of them; the selected one marked, `aria-current` |
 | HottyList | its title, its status line and every item; no filter, no dots |
 | HottyFilePicker | its title, and every entry (not limited by height); the highlighted one marked, `aria-selected` |
+| HottyPicker | its query and every row under its headings, not a window of them; the selected one marked, `aria-selected` |
 | HottyPaginator | its child with every page's items, one after another, and no dots; a bare one, whose pages are the agent's, says which page shows, as on a host |
 | HottyKeyHints, toasts | left out: no key reaches a program, and no notice comes |
 | HottyProgress | an indeterminate one sweeps by a CSS animation, 5 s across as on the clock (§3.4); still under `prefers-reduced-motion` |
@@ -335,6 +337,7 @@ Natural widths:
 | HottyTable | its columns' widths, each a column's `width`, else its header's or its widest cell's, whichever is wider, plus 2 for each column (a column of padding each side), and 2 for the scrollbar while its body scrolls |
 | HottyList | 2 for the indent, plus its widest line: its title + 2, its status line, its empty text, `Filter: ` + 1 when it filters, each item's label and description |
 | HottyFilePicker | 2 for the indent, plus its widest line: its title, each entry's name and trailing "/" for a directory, its size column, or its empty text or error |
+| HottyPicker | 1 either side, plus its widest line: its chip and placeholder (20 at least), its status, its empty text, each row's group, title, detail and keys |
 | HottyKeyHints | its short line, or in the full view its columns, uncut; not its tooltip's row (§6.23), which is cut to the rest, so that nothing moves as it changes |
 | HottyScrollView | its widest line unwrapped (whether it wraps them or not), or its child's natural width, plus 1 for the padding and 2 for the scrollbar |
 | HottyCode | its gutter (§3.4) and its widest line |
@@ -371,6 +374,7 @@ Minimums:
   and its scrollbar while it scrolls.
 - A HottyList's is its indent and 4.
 - A HottyFilePicker's is its indent and 4.
+- A HottyPicker's is its chip's and 7.
 - A HottyKeyHints's is 1: it cuts what does not fit (§3.4).
 - A HottyScrollView's is its child's, or 1 for its lines (it cuts them or
   wraps them), plus 1 for the padding and 2 for the scrollbar.
@@ -398,7 +402,7 @@ How the containers lay their children out:
   - Its children are stacked with no rows between them, except for one
     blank row between two controls (fields, Buttons that are not a
     List's rows, HottyProgress, HottySpinner, HottyTable, HottyList,
-    HottyFilePicker and HottyScrollView; a HottyPaginator is a field)
+    HottyFilePicker, HottyPicker and HottyScrollView; a HottyPaginator is a field)
     when one is a field and the other is not, as bubbles
     sets a form's button apart, or when neither is a field and either has
     a title row (§3.4; a HottyProgress's label is one, a HottyTable's
@@ -496,6 +500,7 @@ How the containers lay their children out:
 | HottyTable | a header row, bold; a rule of `─` in `border`; then a row for each row the body shows, a cell for each column: its text, padded a column each side, cut with `…` when wider than its column, at the start, the centre (rounded down) or the end as `align` says. The columns take their natural widths; while the table is too wide, a column at a time comes off the widest that is wider than 3 (the first of equals), and once none is, off the widest. The body shows `height` rows, or all of them (one, `No rows` in `muted`, when it has none): from the first it showed, moved as little as brings the selected row into view, never past the last (the view's `Top`, the same in both renditions). While it scrolls, the rule ends with ` 4–10 of 12 ` in `muted` and one more `─`. The selected row is reversed across the table, in `accent` while the table has the keyboard and in `muted` otherwise. While it scrolls, a HottyScrollView's scrollbar runs down the body after a blank column, past the last column's padding, the rule running over both, so that the counter says where it is and the bar how much more there is either way. |
 | HottyList | as bubbles' list with its default delegate, every line 2 columns in: its title, ` Title ` in `accent` reversed, and a blank row (neither without a title); its status line in `muted` and a blank row; then the items of the page that shows, each its label and, under it, its description in `muted` (one row an item, with no blank rows between, when none has a description; else two, a blank row between). The selected item's first two columns are `│ `: in `accent` with its label and description while the list has the keyboard, and in `muted` otherwise, its label bold, as a HottyTree's (the maintainer, round 6). A label too wide is cut with `…`; its characters that matched the filter are underlined. With a `height`, a page shows that many items, from the page that holds the selected one, and the body keeps their rows on every page; after it, while the items take more than a page, a blank row and a dot for each page (a HottyPaginator's dots: `•`, the page shown's in `fg`, the others in `border`; `3/10` in `muted` when the dots do not fit), whose two rows stay while a filter leaves one page. The status line is `12 items` (`1 item`, `No items`); while a filter applies, `“query” 7 items`, or `Nothing matched`, then ` • 5 filtered`. While the filter is typed, `Filter: ` in `accent` and the text take the title's row, with the cursor after them. With no items, the empty text shows in `muted` in the body. |
 | HottyFilePicker | as bubbles' filepicker, every line 2 columns in: its directory path on a title row, ` /path ` in `accent` reversed (` ◂ /path ` in a subdirectory, where a click on it goes up), and a blank row; then its entries, directories first, then files, each a name (a directory with a trailing `/`) and, for a file, its size right-aligned in `muted`. The selected entry's first two columns are `│ `: in `accent` with its name and size while the picker has the keyboard; otherwise the bar in `muted` and its name bold. With a `height`, that many rows show: from the directory's first entry or moved to bring the selected entry into view (windowed at `Top`), and while they scroll, a blank column and a HottyScrollView's scrollbar beside them, which the wheel moves. With no entries, the empty text shows in `muted`; with an unreadable or ungranted root, `✗ error` in `error`. |
+| HottyPicker | as a palette (§6.32): its query, a rule in `border`, its status, its lines (headings in `muted` and bold, rows one column in with their keys at the right, the selected one reversed in `accent` across it while it has the keyboard), then a line of keys |
 | HottyKeyHints | as bubbles' help draws it: the short view one line, each key in `muted`, a space, what it does in `muted` faint, and ` • ` in `border` faint between them (bubbles' three steps; the Terminal theme's `muted` and `border` are one colour); the hints that do not fit go, and ` …` ends the line where it fits. The full view (after `?`, §3.7) is its groups (§6.10) as columns four apart, each a row a key, the keys padded to the widest, then a space and what they do; a group that does not fit goes, and ` …` follows the first row where it fits. On a surface with a component that has an `accessibility.description`, a row comes before the keys: the tooltip (§6.23), the description of the element under the pointer, else of the element with the keyboard, in the text's colour and italic, cut with `…` to the keys' width; blank when neither has one, so that nothing moves. |
 | a toast (`hottyToast`, §6.23) | a box with rounded corners, its border in its kind's colour (`info`, `success`, `warning`, `error`), over the frame's top right corner a column from its edge (the column blank), the toasts stacked down from the top, the newest first, all as wide as the widest needs (its mark, its message, and its action, 2 columns apart, and 4 for the borders and padding), at most 40 and the frame: a column of padding each side, then on its first row its kind's mark, the glyph of its icon (`ⓘ`, `✓`, `!`, `✗`, the Icon glyphs of `info`, `check`, `warning` and `error`, §3.6), bold in its kind's colour, and a space; then its message, wrapped, continuation rows indented 2 under the message; then its action's label at the end of the last row, bold and underlined (reversed in `accent` while it has the keyboard), or on a row of its own when it does not fit there. A toast is drawn over what is under it, as an open Modal's panel is: it hides it and takes its clicks (§3.7), and a field's cursor under it is not shown. The frame is at least as tall as the stack |
 | HottyScrollView | a box `height` rows tall, as bubbles' viewport: a column of padding, its content, 3 columns narrower than the box, then a blank column and the scrollbar down the last. The box is filled with `surface` (a background of `surface` cells, §3.6), so that it stands apart from what is around it; a cell its content tints keeps its own tint. Where the theme does not colour `surface`, there is no fill, and the padding alone sets it off. Its lines are a row each, cut at the box and scrolled sideways six columns at a time, or with `wrap` broken into the rows they take as a Text's are, between words, and a word longer than a row where the row ends; a child is laid out at the content's width, and shows through the box at the rows scrolled to: what it hides takes no click, and the element with the keyboard inside it is scrolled into sight. It starts at its top, or with `follow` at its end, where it stays as lines arrive until the user scrolls up, and follows again once back at the end. The scrollbar, while the content is taller than the box, is a track of `│` in `border` faint and on it a thumb of `┃` as long as the share that shows (at least a row), where it shows, in `muted`, and in `accent` while the box has the keyboard. bubbles' viewport draws no scrollbar: without one, a box with no edge gives no sign that it scrolls |
@@ -1035,7 +1040,7 @@ In the output:
     when it is a branch (while no filter applies), or acts on it when it
     is the selected leaf (§6.14, `view.Controller.ClickNode`);
   - on these items (a row, an item, a hunk, a node, a HottyFilePicker's
-    entry) a run of clicks acts once (`view.Controller.ClickItem`): its
+    entry, a HottyPicker's row) a run of clicks acts once (`view.Controller.ClickItem`): its
     second click acts only where its first only selected, and the clicks
     after it do nothing more. So a double click acts on an item once,
     whether it was selected or not, and leaves a branch as its first
@@ -1316,6 +1321,11 @@ reference is `rendition/text`.
   whatever its `height`, a directory with a trailing "/", "> " marking the
   highlighted one, and a file's size in bytes; its error, or its empty text,
   shows where the entries would.
+- A HottyPicker is `? ` and its chip and query, its status, then every row
+  in the agent's order under its heading and `:`, whatever its `height`:
+  its group and title, then after ` — ` its detail and its keyed actions
+  with their keys, `> ` marking the selected one; its empty text when it
+  has no rows.
 - A HottyTree is every node it shows, whatever its `height`, drawn as
   cells draws it (its guides, folds and closed branches' counts), after
   `> ` for the selected node and two spaces for the others; its empty
@@ -2627,6 +2637,73 @@ brings them.
 | cells | the directory path on a title row reversed in `accent` (§3.4), a blank row, then its entries 2 columns in, directories first with a trailing `/`, a file's size right-aligned in `muted`. The highlighted entry has a `│ ` bar, in `accent` with its name and size while the picker has the keyboard, else `muted` with its name bold. Windowed at `height`, with a scrollbar. Error `✗ error` in `error`, or empty text in `muted` |
 | host | `div.k-filepicker` (`role=listbox`), title `div.k-file-title`, entries `div.k-file-item` (`role=option`) with `.k-sel` and `aria-selected`, directory with trailing `/`, size `span.k-file-size`; with a `height`, `div.k-file-list.k-scrolls` is that many rows tall and the host scrolls it (SPEC.md §5.3), with the wheel and a thin scrollbar; the selected entry is `tabindex=-1` and has the host's focus while the picker has the keyboard, so the host scrolls it into view; `data-keys` gives navigation keys to the program (§2) |
 | text | the directory shown, `/`, then every entry whatever its `height`, a directory with a trailing `/`, `> ` marking the highlighted one, and a file's size in bytes; its error, or its empty text, shows where the entries would (§4) |
+
+### 6.32 HottyPicker
+
+`HottyPicker` is a command palette: a query the user types on top, the
+rows the agent ranks for it under it, and actions on the selected row by
+keys that type nothing, as Zed's, VS Code's and Raycast's palettes have
+them. It takes the keyboard.
+
+- **The agent ranks; the picker draws.** The picker never filters or
+  orders the rows. Each change the user makes to the query is written to
+  `query` and runs `onQuery`; the agent answers by writing `rows`, best
+  first. A row's `match` is where the query matched its title, `[from,
+  to)` character ranges, which the picker draws out.
+- **A row** is `value` (what identifies it, and the selection) and
+  `title`, then optionally `group`, shown before the title as `Group:
+  Title`, muted; `detail`, after it, muted; `section`, a heading over the
+  row wherever it differs from the row before's; and `actions`.
+- **Actions** are `{id, title, key}`. The first runs on Enter, whatever its
+  key; the others run on theirs, which show at the row's right. A key is
+  one of `enter`, `mod+enter`, `alt+enter`, `shift+enter` and
+  `shift+delete` (mod is Control, or Command on a Mac, §5): keys that type
+  nothing and that no field edits by, so every other key goes to the
+  query. An action writes the row's value to `selected` and its id to
+  `action`, then runs `onAction`. Enter on a row with no actions writes
+  `""`.
+- **The selection** is a row's value, written to `selected` as the user
+  moves it. When `selected` names no row, the first is selected. A change
+  to the query writes `""` there, so the first row of the agent's answer
+  is.
+- **The actions panel:** `panelKey` (Raycast's is `mod+k`) lists the
+  selected row's actions in the rows' place, each with its key. The arrows
+  move in it, Enter runs one, Escape or the key again closes it; another
+  key closes it and does what it does.
+- **Status and loading:** `status` is a line under the query, an error
+  drawn as one where `statusKind` is `error`; `loading` says rows are still
+  to come. `emptyText` (`No matches.`) shows with no rows; `height` is the
+  lines the rows and their headings take at most, 10 by default, the rest
+  scrolled as the selection moves.
+- **The query is a field's.** It is edited as a one-line text field is,
+  by the field's keymap (§5): in cells and on a host alike, the program
+  edits it, so what the agent writes to `query` shows at once. A host's
+  own input would not show a write to a field it has focused (SPEC.md
+  §6.2), and a palette's agent rewrites its query (a staged command, a
+  completion).
+- **The story** `hotty/picker` has a program behind it in the storybook
+  (`story.Run.Program`): the palette's agent, which ranks its rows for
+  each query (sahilm/fuzzy over `Group: Title`, as HottyList's filter
+  ranks) and says in `status` what each action did. Bubbles' list,
+  filtering (`ref picker`), is the nearest reference: bubbles has no
+  palette.
+
+**Keys:**
+- arrow_up, arrow_down, `ctrl+p`, `ctrl+n`: move the selection a row,
+  round from either end.
+- page_up, page_down: by the lines shown.
+- Enter, and an action's key: run that action on the selected row.
+- `panelKey`: the actions panel.
+- Any other key edits the query, as a text field's keymap has it; Escape
+  and Tab are not the picker's.
+- A click on a row selects it; a second click runs its first action. A
+  click on the query puts the caret there, in cells.
+
+| rendition | a HottyPicker |
+| --- | --- |
+| cells | its chip in `accent` and bold, then the query, a one-line field with no underline, its placeholder faint in `muted`; a rule in `border`; its status, `✗ ` and the status in `error` for an error; the lines from the first shown, a heading in `muted` and bold, a row one column in: its group and `: ` in `muted`, its title, the matched characters in `accent` and bold, its detail in `muted` two columns on, its other actions' keys right-aligned in `muted`. The selected row is reversed in `accent` across the picker while it has the keyboard (reversed in `muted` otherwise), its matched characters bold and underlined. Then a line of keys, as a HottyKeyHints' short one (§6.10): `↑/↓ move • enter <first action> • <panelKey> actions` |
+| host | `div.k-pick` (`role=combobox`, `tabindex=0`, `data-keys` giving the program the keys a box would scroll by, §2): `div.k-pick-query` with `span.k-pick-chip`, the query's text either side of the program's `span.k-caret`, `span.k-pick-hint` while empty; `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the keys in `span.k-pick-keys`; `div.k-pick-keys-line` |
+| text | `? ` and its chip and query; its status; every row in order under its heading and `:`, `> ` marking the selected one, its group, title, and after a dash its detail and its keyed actions with their keys (§4) |
 
 ## 7. Fallbacks
 
