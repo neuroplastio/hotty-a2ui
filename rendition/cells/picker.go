@@ -252,6 +252,18 @@ func (r *Rendition) pickHints(e *view.Element) []view.Hint {
 	return hs
 }
 
+// pickCaret puts a HottyPicker's caret at its query's end once a query is
+// written to it other than as typed (view.Element.Written: Tab's
+// completion, the agent's), as a field's caret is when its whole value is
+// set.
+func (r *Rendition) pickCaret(e *view.Element) {
+	if r.written[e.ID] != e.Written {
+		r.written[e.ID] = e.Written
+		delete(r.cursor, e.ID)
+		delete(r.fields, e.ID)
+	}
+}
+
 // paintQuery paints a HottyPicker's query on its row, after its chip: a
 // one-line field, as paintField paints one's value, without its
 // underline, the placeholder faint while it is empty, and the terminal's
@@ -269,6 +281,7 @@ func (l *layout) paintQuery(cv *canvas, e *view.Element, x, y, w int) {
 		cv.write(vx+vw-1, y, 1, line("…", style{role: Muted}))
 		vw -= 2
 	}
+	r.pickCaret(e)
 	v, _ := e.Value.(string)
 	cl := clusters(v)
 	r.rows[e.ID] = 1

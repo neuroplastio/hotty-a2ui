@@ -57,11 +57,12 @@ func (r *Rendition) Key(key string) (handled bool, err error) {
 				return true, err
 			}
 		case e != nil && e.Kind == view.Picker:
-			// Its own keys first (the arrows, its actions' keys), then its
-			// query's, as a text field's (profile §6.32).
+			// Its own keys first (the arrows, Tab, its actions' keys),
+			// then its query's, as a text field's (profile §6.32).
 			if ok, err := c.PickerKey(e.ID, key); ok {
 				return true, err
 			}
+			r.pickCaret(e)
 			if ok, err := r.editKey(e, key); ok {
 				return true, err
 			}

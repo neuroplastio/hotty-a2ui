@@ -1,6 +1,10 @@
 package view
 
-import "github.com/neuroplastio/hotty-a2ui/a2ui"
+import (
+	"cmp"
+
+	"github.com/neuroplastio/hotty-a2ui/a2ui"
+)
 
 // A HottyPicker (profile §6.32) in the view: a query the user types, the
 // rows the agent ranked for it, in its order, the selected one, the lines
@@ -11,15 +15,17 @@ import "github.com/neuroplastio/hotty-a2ui/a2ui"
 // PickRow is one of a HottyPicker's rows, as the agent wrote it: what
 // identifies it, its title, the group before it and the detail after it,
 // the heading it falls under, where the query matched its title (character
-// ranges, from and to), and its actions, the first Enter's.
+// ranges, from and to), its actions, the first Enter's, and what Tab fills
+// the query with ("" for its title).
 type PickRow struct {
-	Value   string       `json:"value"`
-	Title   string       `json:"title"`
-	Group   string       `json:"group,omitempty"`
-	Detail  string       `json:"detail,omitempty"`
-	Section string       `json:"section,omitempty"`
-	Match   [][2]int     `json:"match,omitempty"`
-	Actions []PickAction `json:"actions,omitempty"`
+	Value    string       `json:"value"`
+	Title    string       `json:"title"`
+	Complete string       `json:"complete,omitempty"`
+	Group    string       `json:"group,omitempty"`
+	Detail   string       `json:"detail,omitempty"`
+	Section  string       `json:"section,omitempty"`
+	Match    [][2]int     `json:"match,omitempty"`
+	Actions  []PickAction `json:"actions,omitempty"`
 }
 
 // PickAction is one of a row's actions: its id, what it does, and the key
@@ -103,7 +109,7 @@ func mapPicker(b *Builder, n *a2ui.Node) *Element {
 
 // pickRow reads a row as the agent wrote it.
 func pickRow(m map[string]any) PickRow {
-	r := PickRow{Value: a2ui.ToString(m["value"]), Title: a2ui.ToString(m["title"]), Group: a2ui.ToString(m["group"]),
+	r := PickRow{Value: a2ui.ToString(m["value"]), Title: a2ui.ToString(m["title"]), Complete: a2ui.ToString(m["complete"]), Group: a2ui.ToString(m["group"]),
 		Detail: a2ui.ToString(m["detail"]), Section: a2ui.ToString(m["section"])}
 	ms, _ := m["match"].([]any)
 	for _, x := range ms {
@@ -175,7 +181,9 @@ func (e *Element) PickFooter() (enter string, panel bool) {
 // PickerKey works a HottyPicker by a key, named as SPEC §10.4 has it. The
 // arrows up and down, Control+p and Control+n, move the selection a row,
 // round from either end, and Page Up and Page Down by the lines it shows.
-// Enter runs the selected row's first action, and a key one of its
+// Tab completes the query to the selected row (its complete, else its
+// title), as a query the agent wrote. Enter runs the selected row's first
+// action, and a key one of its
 // actions names runs that one. panelKey opens the selected row's actions,
 // where the arrows move, Enter runs the one highlighted, and Escape or the
 // key again closes them; another key closes them and is taken as if they
@@ -214,6 +222,11 @@ func (c *Controller) PickerKey(id, key string) (ok bool, err error) {
 		return true, c.pickMove(e, max(e.Selected-page, 0))
 	case key == "page_down":
 		return true, c.pickMove(e, min(e.Selected+page, n-1))
+	case key == "tab":
+		if r := e.SelectedPick(); r != nil {
+			return true, c.writePickQuery(e, cmp.Or(r.Complete, r.Title), false)
+		}
+		return true, nil
 	case e.PanelKey != "" && sameKey(c.Platform, e.PanelKey, key):
 		if r := e.SelectedPick(); r != nil && len(r.Actions) > 0 {
 			c.pickPanel(e, true, 0)
@@ -308,11 +321,16 @@ func (c *Controller) pickRun(e *Element, action string) error {
 	return err
 }
 
-// setPickQuery makes q a HottyPicker's query, as the user's edit: it is
-// written where query is bound (else kept as the renderer's), the
-// selection goes back to the first row, the panel closes, and onQuery
-// runs, its context reading the query there.
-func (c *Controller) setPickQuery(e *Element, q string) error {
+// setPickQuery makes q a HottyPicker's query, as the user typed it.
+func (c *Controller) setPickQuery(e *Element, q string) error { return c.writePickQuery(e, q, true) }
+
+// writePickQuery makes q a HottyPicker's query: it is written where query
+// is bound (else kept as the renderer's), the selection goes back to the
+// first row, the panel closes, and onQuery runs, its context reading the
+// query there. typed: the user typed it in the field; else it is written
+// to the field (Tab's completion), as the agent's queries are
+// (Pick.Written).
+func (c *Controller) writePickQuery(e *Element, q string, typed bool) error {
 	if v, _ := e.Value.(string); v == q {
 		return nil
 	}
@@ -325,7 +343,10 @@ func (c *Controller) setPickQuery(e *Element, q string) error {
 		c.St.Local[e.ID] = q
 	}
 	was := c.pick(e.ID)
-	c.St.Pick[e.ID] = Pick{Typed: q, Written: was.Written}
+	c.St.Pick[e.ID] = Pick{Typed: was.Typed, Written: was.Written}
+	if typed {
+		c.St.Pick[e.ID] = Pick{Typed: q, Written: was.Written}
+	}
 	c.St.Scroll[e.ID] = 0
 	if bd, ok := n.Props["selected"].(a2ui.Bound); ok && bd.Writable() && err == nil {
 		err = c.S.Write(bd.Path, "")

@@ -956,3 +956,14 @@
     - key: arrow_down
     - key: enter
     - expect: {context: {row: p-3, action: focus}, data: {/status: bastion is not reachable, /statusKind: error}}
+
+- name: HottyPicker completes its query to the selected row on Tab, and keeps the keyboard
+  story: hotty/picker
+  keys: terminal
+  steps:
+    - focus: palette
+    - type: zo
+    - key: tab
+    - expect: {focused: palette, data: {/query: Zoom}}
+    - type: x
+    - expect: {focused: palette, data: {/query: Zoomx}}

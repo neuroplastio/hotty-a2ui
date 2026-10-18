@@ -30,6 +30,9 @@ type Rendition struct {
 	// fields are the text controls as last edited, which keep a run of
 	// row moves' place along the row (editKey).
 	fields map[string]*hottyedit.Field
+	// written is each HottyPicker's count of queries written (view.Element.Written)
+	// as its caret last followed it (pickCaret).
+	written map[string]int
 
 	hits    []hit
 	panel   *hit           // the open Modal's panel, as last drawn
@@ -81,7 +84,7 @@ type box struct{ x, y, w, h int }
 // New is a surface's rendition in cells.
 func New(c *view.Controller) *Rendition {
 	return &Rendition{c: c, cursor: map[string]int{}, hscroll: map[string]int{}, vscroll: map[string]int{}, rows: map[string]int{},
-		fields: map[string]*hottyedit.Field{}, sized: map[string]fieldSize{}, history: map[string]*history{}, Clock: time.Now}
+		fields: map[string]*hottyedit.Field{}, written: map[string]int{}, sized: map[string]fieldSize{}, history: map[string]*history{}, Clock: time.Now}
 }
 
 // Animating is how soon the last Draw's frame changes by itself: the

@@ -193,3 +193,20 @@ func TestPickerQuery(t *testing.T) {
 		t.Errorf("the same query again ran onQuery: %v", err)
 	}
 }
+
+// Tab completes the query to the selected row's title, as a query the
+// agent wrote (Written), and onQuery runs.
+func TestPickerTab(t *testing.T) {
+	c, actions := palette(t, "")
+	c.PickerKey("root", "arrow_down")
+	if ok, err := c.PickerKey("root", "tab"); !ok || err != nil {
+		t.Fatalf("tab: ok %v, err %v", ok, err)
+	}
+	e := c.V.Find("root")
+	if e.Value != "New tab" || data(c, "/q") != "New tab" || e.Written != 1 || e.Selected != 0 {
+		t.Errorf("query %v (/q %v), written %d, selected %d", e.Value, data(c, "/q"), e.Written, e.Selected)
+	}
+	if len(*actions) != 1 || (*actions)[0].Name != "query" {
+		t.Errorf("actions %+v, want query", *actions)
+	}
+}

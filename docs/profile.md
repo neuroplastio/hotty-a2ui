@@ -2698,15 +2698,21 @@ them. It takes the keyboard.
 - page_up, page_down: by the lines shown.
 - Enter, and an action's key: run that action on the selected row.
 - `panelKey`: the actions panel.
+- Tab completes the query to the selected row: its `complete`, else its
+  title, written as a query the agent writes is, the caret at its end. A
+  host keeps Tab (SPEC.md §10.2), so on one the input sits between two
+  stops of the picker's, focusable and unseen: Tab onto the one after it
+  completes, Shift+Tab onto the one before does nothing, and either gives
+  the input the keyboard back.
 - Any other key edits the query, as a text field's keymap has it; Escape
-  and Tab are not the picker's.
+  is not the picker's.
 - A click on a row selects it; a second click runs its first action. A
   click on the query puts the caret there, in cells.
 
 | rendition | a HottyPicker |
 | --- | --- |
 | cells | its chip in `accent` and bold, then the query, a one-line field with no underline, the terminal's cursor at its caret, its placeholder faint in `muted`; a rule in `border`; its status, `✗ ` and the status in `error` for an error; the lines from the first shown, a heading in `muted` and bold, a row one column in: its group and `: ` in `muted`, its title, the matched characters in `accent` and bold, its detail in `muted` two columns on, its other actions' keys right-aligned in `muted` where they fit beside the row's whole text (else on the selected row alone, which they cut). The selected row is reversed in `accent` across the picker while it has the keyboard (reversed in `muted` otherwise), its matched characters bold and underlined. Then a line of keys, as a HottyKeyHints' short one (§6.10): `↑/↓ move • enter <first action> • <panelKey> actions` |
-| host | `div.k-pick`: `div.k-pick-query` with `span.k-pick-chip` and `input.k-pick-input` (`role=combobox`, its placeholder; its `data-keys` give the program the moves, the actions' keys and the panel's); `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the keys in `span.k-pick-keys`, which wrap out of a row's one line where they don't fit beside its title (the selected row doesn't wrap); `div.k-pick-keys-line` |
+| host | `div.k-pick`: `div.k-pick-query` with `span.k-pick-chip` and `input.k-pick-input` (`role=combobox`, its placeholder; its `data-keys` give the program the moves, the actions' keys and the panel's) between the stops `span.k-pick-stop` (`~m` before it, `~n` after it, for Shift+Tab and Tab); `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the keys in `span.k-pick-keys`, which wrap out of a row's one line where they don't fit beside its title (the selected row doesn't wrap); `div.k-pick-keys-line` |
 | text | `? ` and its chip and query; its status; every row in order under its heading and `:`, `> ` marking the selected one, its group, title, and after a dash its detail and its keyed actions with their keys (§4) |
 
 ### 6.33 tone

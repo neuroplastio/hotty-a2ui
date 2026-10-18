@@ -22,6 +22,12 @@ import (
 // program writes (a completion, a staged command) comes in a new input:
 // its id counts the queries written (view.Element.Written), and a new id
 // is a new element, which the keyboard follows (focusOn).
+//
+// A host keeps Tab and Shift+Tab, which move the focus (SPEC §10.2), so
+// the input sits between two stops of the picker's own (pickTab after it,
+// pickBack before it), focusable and unseen: Tab onto the one after
+// completes the query (Rendition.Event), and either gives the input the
+// keyboard back.
 func (m *markup) picker(e *view.Element) *node {
 	box := el("div", "id", domID(e.ID), "class", "k-pick")
 	q, _ := e.Value.(string)
@@ -35,7 +41,10 @@ func (m *markup) picker(e *view.Element) *node {
 	if e.Placeholder != "" {
 		in.set("placeholder", e.Placeholder)
 	}
-	box.add(query.add(in))
+	stop := func(part string) *node {
+		return el("span", "id", partID(e.ID, part), "class", "k-pick-stop", "tabindex", "0", "aria-hidden", "true")
+	}
+	box.add(query.add(stop(pickBack), in, stop(pickTab)))
 	if e.Status != "" {
 		cls, text := "k-pick-status", e.Status
 		if e.StatusError {
@@ -191,6 +200,14 @@ func clustersOf(s string) []string {
 	}
 	return out
 }
+
+// pickTab and pickBack are a HottyPicker's stops after and before its
+// input, parts of the picker (a cycle's › and ‹): Tab and Shift+Tab land
+// there.
+const (
+	pickTab  = partMore
+	pickBack = partLess
+)
 
 // pickInput is the DOM id of a HottyPicker's input: a part of the picker,
 // numbered by the queries written to it.

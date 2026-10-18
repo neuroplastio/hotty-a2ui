@@ -286,6 +286,13 @@ func (r *Rendition) Event(ev hotty.Event) error {
 			if !r.Away {
 				c.St.Focus = id
 			}
+			// Tab onto a HottyPicker's stop after its input: its Tab, which
+			// completes the query; the input has the keyboard back with the
+			// next Update, as from the stop before it (picker).
+			if e := c.V.Find(id); e.Kind == view.Picker && part == pickTab {
+				_, err := c.PickerKey(id, "tab")
+				return err
+			}
 		}
 		return nil
 	case hotty.EventBlur:
