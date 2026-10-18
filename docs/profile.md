@@ -2655,7 +2655,10 @@ them. It takes the keyboard.
   Title`, muted; `detail`, after it, muted; `section`, a heading over the
   row wherever it differs from the row before's; and `actions`.
 - **Actions** are `{id, title, key}`. The first runs on Enter, whatever its
-  key; the others run on theirs, which show at the row's right. A key is
+  key; the others run on theirs, which show at the row's right where they
+  fit beside the row's whole text. A narrow picker shows them on the
+  selected row alone: the detail wins, and the actions panel lists every
+  key. A key is
   one of `enter`, `mod+enter`, `alt+enter`, `shift+enter` and
   `shift+delete` (mod is Control, or Command on a Mac, §5): keys that type
   nothing and that no field edits by, so every other key goes to the
@@ -2701,8 +2704,8 @@ them. It takes the keyboard.
 
 | rendition | a HottyPicker |
 | --- | --- |
-| cells | its chip in `accent` and bold, then the query, a one-line field with no underline, its placeholder faint in `muted`; a rule in `border`; its status, `✗ ` and the status in `error` for an error; the lines from the first shown, a heading in `muted` and bold, a row one column in: its group and `: ` in `muted`, its title, the matched characters in `accent` and bold, its detail in `muted` two columns on, its other actions' keys right-aligned in `muted`. The selected row is reversed in `accent` across the picker while it has the keyboard (reversed in `muted` otherwise), its matched characters bold and underlined. Then a line of keys, as a HottyKeyHints' short one (§6.10): `↑/↓ move • enter <first action> • <panelKey> actions` |
-| host | `div.k-pick` (`role=combobox`, `tabindex=0`, `data-keys` giving the program the keys a box would scroll by, §2): `div.k-pick-query` with `span.k-pick-chip`, the query's text either side of the program's `span.k-caret`, `span.k-pick-hint` while empty; `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the keys in `span.k-pick-keys`; `div.k-pick-keys-line` |
+| cells | its chip in `accent` and bold, then the query, a one-line field with no underline, its placeholder faint in `muted`; a rule in `border`; its status, `✗ ` and the status in `error` for an error; the lines from the first shown, a heading in `muted` and bold, a row one column in: its group and `: ` in `muted`, its title, the matched characters in `accent` and bold, its detail in `muted` two columns on, its other actions' keys right-aligned in `muted` where they fit beside the row's whole text (else on the selected row alone, which they cut). The selected row is reversed in `accent` across the picker while it has the keyboard (reversed in `muted` otherwise), its matched characters bold and underlined. Then a line of keys, as a HottyKeyHints' short one (§6.10): `↑/↓ move • enter <first action> • <panelKey> actions` |
+| host | `div.k-pick` (`role=combobox`, `tabindex=0`, `data-keys` giving the program the keys a box would scroll by, §2): `div.k-pick-query` with `span.k-pick-chip`, the query's text either side of the program's `span.k-caret`, `span.k-pick-hint` while empty; `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the keys in `span.k-pick-keys`, which wrap out of a row's one line where they don't fit beside its title (the selected row doesn't wrap); `div.k-pick-keys-line` |
 | text | `? ` and its chip and query; its status; every row in order under its heading and `:`, `> ` marking the selected one, its group, title, and after a dash its detail and its keyed actions with their keys (§4) |
 
 ## 7. Fallbacks

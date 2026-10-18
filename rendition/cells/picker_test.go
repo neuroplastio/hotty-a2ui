@@ -89,6 +89,17 @@ func TestPickerDraws(t *testing.T) {
 	if got := trimmed(r.Draw(42)); got != want {
 		t.Errorf("after arrow_down, the lines follow the selection, its heading with it:\n%s\nwant\n%s", got, want)
 	}
+	// Narrow, the detail wins: a row whose keys don't fit beside its whole
+	// text shows none; the selected row keeps its keys, and is cut.
+	want = " Type a command\n" +
+		"────────────────────────────\n" +
+		" Pane: Split right\n" +
+		" Panes\n" +
+		" Pane: fish …  shift+delete\n" +
+		" ↑/↓ move • enter focus …"
+	if got := trimmed(r.Draw(28)); got != want {
+		t.Errorf("at 28 columns:\n%s\nwant\n%s", got, want)
+	}
 }
 
 // Typed keys edit the query, as a field's, with the caret after them; the

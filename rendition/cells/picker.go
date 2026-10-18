@@ -162,7 +162,10 @@ func (l *layout) paintPicker(cv *canvas, e *view.Element, x, y, w int) {
 
 // paintPickRows paints the lines that show from Top: a heading in muted
 // and bold, or a row, the selected one across the picker. A heading on
-// the last line, with none of its rows under it, is left out.
+// the last line, with none of its rows under it, is left out. A row's
+// other actions' keys show at its right where they fit beside its whole
+// text; a narrow picker shows them on the selected row alone, so that the
+// others' details aren't cut for keys the panel lists anyway.
 func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused bool) {
 	r := l.r
 	in, iw := x+pickIndent, max(w-2*pickIndent, 0)
@@ -190,13 +193,15 @@ func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused
 			keys = r.pickSelected(focused)
 			cv.write(x, at, w, line(strings.Repeat(" ", w), keys))
 		}
-		ks := r.pickKeys(row, keys)
+		// The detail wins: a row's keys show where they fit beside its
+		// whole text, else on the selected row alone, where they cut it.
+		ks, text := r.pickKeys(row, keys), r.pickRow(row, sel, focused)
 		tw := iw
-		if kw := width(ks); kw > 0 && kw+2 < iw {
+		if kw := width(ks); kw > 0 && kw+2 < iw && (sel || width(text)+2+kw <= iw) {
 			cv.write(in+iw-kw, at, kw, ks)
 			tw = iw - kw - 2
 		}
-		cv.write(in, at, tw, fit(r.pickRow(row, sel, focused), tw))
+		cv.write(in, at, tw, fit(text, tw))
 		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: 1, id: e.ID, opt: ln.Row})
 	}
 }
