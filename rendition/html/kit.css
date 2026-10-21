@@ -64,8 +64,9 @@
 /* A bar a row or two tall (Rendition.SetDense), as a status line is: no
    padding above or below, a line of text one row high (the host's
    --hotty-cell-h, SPEC's root line-height), and the content in the
-   middle of the surface's rows. */
-.k-surface.k-dense { padding-block: 0; justify-content: center; line-height: var(--hotty-cell-h, 1.25rem); }
+   middle of the surface's rows. Its text never wraps: a line too long
+   for the bar would take another row. */
+.k-surface.k-dense { padding-block: 0; justify-content: center; line-height: var(--hotty-cell-h, 1.25rem); white-space: nowrap; }
 .k-emoji { font-family: var(--k-emoji); font-style: normal; font-weight: normal; }
 
 /* Layout */
@@ -834,8 +835,10 @@ textarea.k-resize-none { resize: none; }
 /* HottyKeyHints: a baseline (phase 1), as cells draws it, bubbles' help:
    keys muted, what they do fainter, the separators fainter still (cells'
    faint); the full view's groups in columns 4ch apart, each a grid of
-   keys and what they do. A line too long is cut. Keycaps are KIT-08h. */
-.k-hints { font-family: var(--k-mono); font-size: 0.875rem; }
+   keys and what they do. A line too long is cut. Keycaps are KIT-08h.
+   In a row the hints give up their width first (min-width 0), so the
+   text beside them shows whole. */
+.k-hints { font-family: var(--k-mono); font-size: 0.875rem; min-width: 0; }
 .k-hints-short { white-space: nowrap; overflow: hidden; }
 .k-hints-full { display: flex; column-gap: 4ch; overflow: hidden; }
 .k-hints-col { display: grid; grid-template-columns: auto auto; column-gap: 1ch; align-content: start; white-space: nowrap; }
