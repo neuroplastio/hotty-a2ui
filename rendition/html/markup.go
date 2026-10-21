@@ -73,11 +73,14 @@ type list struct {
 
 // surface is the surface's two top elements: the view, and the layer an
 // open Modal's content shows in.
-func surface(v *view.Surface, th theme.Theme, keys string, fit bool, m *markup) (main, layer *node) {
+func surface(v *view.Surface, th theme.Theme, keys string, fit, dense bool, m *markup) (main, layer *node) {
 	l := m.list
 	class := "k-surface"
 	if fit {
 		class += " k-fit"
+	}
+	if dense {
+		class += " k-dense"
 	}
 	// While a drag is under way, nothing shows the pointer over it (kit.css,
 	// hover): only the drag's line does.

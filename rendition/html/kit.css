@@ -61,6 +61,11 @@
    the surface has. Its colour still fills the surface's last row, by a
    shadow, which takes no room. */
 .k-surface.k-fit { min-height: 0; box-shadow: 0 0 0 100vh var(--k-bg); }
+/* A bar a row or two tall (Rendition.SetDense), as a status line is: no
+   padding above or below, a line of text one row high (the host's
+   --hotty-cell-h, SPEC's root line-height), and the content in the
+   middle of the surface's rows. */
+.k-surface.k-dense { padding-block: 0; justify-content: center; line-height: var(--hotty-cell-h, 1.25rem); }
 .k-emoji { font-family: var(--k-emoji); font-style: normal; font-weight: normal; }
 
 /* Layout */

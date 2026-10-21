@@ -1857,3 +1857,30 @@ func TestTone(t *testing.T) {
 	}
 	x.check(x.rs["s"])
 }
+
+// TestDense: a surface the program says is a bar (SetDense) has k-dense
+// beside k-surface from the next Doc on, kept by an Update and gone when
+// it says it is not; one that never says has none.
+func TestDense(t *testing.T) {
+	run, err := story.Start(story.Find("hotty/confirm-form"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := run.Surfaces()[0].C
+	if doc := New(c, "s").Doc(); !strings.Contains(doc, `<div id="`+surfaceID+`" class="k-surface">`) {
+		t.Errorf("not a plain k-surface without SetDense:\n%s", doc)
+	}
+	r := New(c, "s")
+	r.SetDense(true)
+	if doc := r.Doc(); !strings.Contains(doc, `<div id="`+surfaceID+`" class="k-surface k-dense">`) {
+		t.Errorf("no k-dense surface in\n%s", doc)
+	}
+	r.SetDense(false)
+	r.Update()
+	if class, _ := r.sent[0].attr("class"); class != "k-surface" {
+		t.Errorf("SetDense(false), then Update: class %q", class)
+	}
+	if !strings.Contains(kitCSS, ".k-surface.k-dense {") {
+		t.Error("kit.css has no .k-surface.k-dense rule")
+	}
+}

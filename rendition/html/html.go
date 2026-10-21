@@ -58,6 +58,8 @@ type Rendition struct {
 	keys string
 	// fit: the program sizes the surface to its document (SetFit).
 	fit bool
+	// dense: the surface is a bar a row or two tall (SetDense).
+	dense bool
 	// drag is the Slider whose track a drag is on, or the HottyRangeSlider
 	// a drag is on, knob the knob it moves (-1 until its first move picks
 	// one), and dragged the one whose drag just ended: the click after it
@@ -158,6 +160,14 @@ func (r *Rendition) SetKeys(keys string) { r.keys = keys }
 // which would hold the fit at the surface's height.
 func (r *Rendition) SetFit(fit bool) { r.fit = fit }
 
+// SetDense says, from the next Doc or Update on, whether the surface is a
+// bar, a row or two of the terminal tall, as a status line or a footer of
+// key hints is: it then has no padding above or below its content, a line
+// of text is one row high, and the content sits in the middle of the
+// surface. A surface placed one row high otherwise draws its content
+// below that row.
+func (r *Rendition) SetDense(dense bool) { r.dense = dense }
+
 // Name is the hotty surface's name.
 func (r *Rendition) Name() string { return r.name }
 
@@ -167,7 +177,7 @@ func (r *Rendition) Name() string { return r.name }
 // gives the host the keyboard again if the view has it.
 func (r *Rendition) Doc() string {
 	m := r.markup()
-	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, m)
+	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, r.dense, m)
 	ts := toasts(r.C.V, themeCSS(r.theme))
 	r.sent, r.anim = []*node{main, layer, ts}, m.anim
 	r.host, r.edited = keyboard{}, nil
@@ -181,7 +191,7 @@ func (r *Rendition) Update() []string {
 		return nil
 	}
 	m := r.markup()
-	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, m)
+	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, r.dense, m)
 	ts := toasts(r.C.V, themeCSS(r.theme))
 	r.anim = m.anim
 	r.holdEdit(main)
