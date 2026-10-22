@@ -12,8 +12,9 @@ import (
 
 // picker is a HottyPicker on a host (profile §2, §6.32): a box holding
 // its query, after its chip, as a text input of its own, which the host
-// edits, its caret the host's; a rule; its status; its rows, a heading
-// wherever their section changes, each an option whose id is the
+// edits, its caret the host's; a rule; its status, muted and smaller,
+// with a rule under it, so that it reads as the head's and not as a row;
+// its rows, a heading wherever their section changes, each an option whose id is the
 // picker's, "~i" and the row's index, its keys at its right, its
 // description on a second line; and its footer, what the selected row's
 // keys do, flush right, as Zed's. While the actions panel is open, the

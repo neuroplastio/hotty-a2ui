@@ -3,6 +3,7 @@ package html
 import (
 	"encoding/json"
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -178,6 +179,32 @@ func TestPickerDescription(t *testing.T) {
 	x, r = pickerHarnessOf(t, 2, `[{"value":"a","title":"a"},{"value":"b","title":"b","description":"Bee"}]`)
 	if html := x.h.Surface(r.name).HTML(); strings.Contains(html, "Bee") || !strings.Contains(html, ">b<") {
 		t.Errorf("the description past the last line shows:\n%s", html)
+	}
+}
+
+// TestPickerStatus: a picker's status reads as its head's, not as a row:
+// under the query, in a class of its own (k-pick-status, muted and smaller,
+// with a rule under it), and an error's keeps its colour and its ✗.
+func TestPickerStatus(t *testing.T) {
+	if !regexp.MustCompile(`\.k-pick-status \{[^}]*color: var\(--k-muted\);[^}]*font-size: 0\.875rem;[^}]*border-bottom: `).MatchString(kitCSS) {
+		t.Error("kit.css sets the status off neither muted, smaller nor ruled")
+	}
+	for _, c := range []struct{ kind, class, text string }{
+		{"info", "k-pick-status", "theme.use · theme"},
+		{"error", "k-pick-status k-error", "✗ theme.use · theme"},
+	} {
+		x := newHarness(t)
+		var msgs []any
+		must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"q":""}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyPicker","catalogId":"`+hottycat.ID+`","query":{"@path":"/q"},"status":"theme.use · theme","statusKind":"`+c.kind+`",
+  "rows":[{"value":"a","title":"a"}]}]}}]`), &msgs))
+		x.process(msgs...)
+		s := x.h.Surface(x.rs["s"].name)
+		want := `</div><div id="` + partID("root", partStatus) + `" class="` + c.class + `" aria-live="polite">` + c.text + `</div><div class="k-pick-rows"`
+		if html := s.HTML(); !strings.Contains(html, want) {
+			t.Errorf("%s: no %s in\n%s", c.kind, want, html)
+		}
 	}
 }
 

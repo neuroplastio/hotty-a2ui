@@ -14,6 +14,12 @@ import (
 // three lines of rows at once, and the actions it sent, "name:row:action".
 func palette(t *testing.T) (*Rendition, *view.Controller, *[]string) {
 	t.Helper()
+	return paletteWith(t, "")
+}
+
+// paletteWith is palette with extra, more of the picker's properties.
+func paletteWith(t *testing.T, extra string) (*Rendition, *view.Controller, *[]string) {
+	t.Helper()
 	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
 	actions := new([]string)
 	p.Send = func(o a2ui.Outbound) {
@@ -29,7 +35,7 @@ func palette(t *testing.T) (*Rendition, *view.Controller, *[]string) {
 	 {"value":"p-2","group":"Pane","title":"htop","section":"Panes"}]}}},
 	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
 	 {"id":"root","component":"HottyPicker","catalogId":"` + hotty.ID + `","query":{"@path":"/q"},"rows":{"@path":"/rows"},
-	  "selected":{"@path":"/sel"},"action":{"@path":"/act"},"panelKey":"mod+k","placeholder":"Type a command","height":3,
+	  "selected":{"@path":"/sel"},"action":{"@path":"/act"},"panelKey":"mod+k","placeholder":"Type a command","height":3,` + extra + `
 	  "onAction":{"event":{"name":"act","context":{"row":{"@path":"/sel"},"action":{"@path":"/act"}}}}}]}}]`
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
@@ -186,5 +192,42 @@ func TestPickerKeys(t *testing.T) {
 	keys(t, r, "arrow_down", "enter")
 	if n := len(*actions); n != 4 || (*actions)[3] != "act:p-1:close" {
 		t.Errorf("enter in the panel: %q", *actions)
+	}
+}
+
+// A HottyPicker's status reads as its head's, not as a row: muted, with a
+// rule under it, and the picker two rows taller for it. An error status
+// keeps its colour and its ✗.
+func TestPickerStatus(t *testing.T) {
+	plain, _, _ := palette(t)
+	r, _, _ := paletteWith(t, `"status":"theme.use · theme","statusKind":"info",`)
+	f := r.Draw(42)
+	want := " Type a command\n" +
+		"──────────────────────────────────────────\n" +
+		" theme.use · theme\n" +
+		"──────────────────────────────────────────\n" +
+		" Used\n" +
+		" Pane: Split right               ctrl+b %\n" +
+		"\n" +
+		"      Run again  ctrl+enter    Run  enter"
+	if got := trimmed(f); got != want {
+		t.Fatalf("got\n%s\nwant\n%s", got, want)
+	}
+	if got, want := len(f.Cells), len(plain.Draw(42).Cells)+2; got != want {
+		t.Errorf("%d rows with a status, want %d", got, want)
+	}
+	if cell := f.Cells[2][1]; cell.Role != Muted {
+		t.Errorf("the status: %v, want muted", cell.Role)
+	}
+	if cell := f.Cells[3][0]; cell.Role != Border {
+		t.Errorf("the rule under the status: %v, want the border's", cell.Role)
+	}
+	r, _, _ = paletteWith(t, `"status":"theme.use · theme","statusKind":"error",`)
+	f = r.Draw(42)
+	if got := strings.Split(trimmed(f), "\n")[2]; got != " ✗ theme.use · theme" {
+		t.Errorf("an error status: %q", got)
+	}
+	if cell := f.Cells[2][1]; cell.Role != Error {
+		t.Errorf("an error status: %v, want the error's", cell.Role)
 	}
 }

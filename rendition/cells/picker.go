@@ -9,7 +9,9 @@ import (
 
 // A HottyPicker in cells (profile §3.3, §3.4, §3.7, §6.32), as a
 // command palette draws one: the query on the first row, after its chip;
-// a rule; the status, while it has one; the rows, a heading wherever their
+// a rule; the status, while it has one, in muted with a rule of its own
+// under it, so that it reads as the head's and not as a row; the rows, a
+// heading wherever their
 // section changes, the selected one reversed in the accent across the
 // picker, as a menu's item, a row's keys at its right and its description
 // in muted on the line under it; then the footer, what the selected row's
@@ -23,10 +25,10 @@ const pickIndent = 1
 const pickGap = "    "
 
 // pickHead is how many rows a HottyPicker's lines above its rows take:
-// the query and the rule, and the status while it has one.
+// the query and the rule, and the status and its rule while it has one.
 func pickHead(e *view.Element) int {
 	if e.Status != "" {
-		return 3
+		return 4
 	}
 	return 2
 }
@@ -142,16 +144,18 @@ func (l *layout) paintPicker(cv *canvas, e *view.Element, x, y, w int) {
 	focused := r.focused(e.ID)
 	in, iw := x+pickIndent, max(w-2*pickIndent, 0)
 	l.paintQuery(cv, e, in, y, iw)
+	rule := fit(line(strings.Repeat("─", w), style{role: Border}), w)
 	row := y + 1
-	cv.write(x, row, w, fit(line(strings.Repeat("─", w), style{role: Border}), w))
+	cv.write(x, row, w, rule)
 	row++
 	if e.Status != "" {
-		st, text := style{}, e.Status
+		st, text := style{role: Muted}, e.Status
 		if e.StatusError {
 			st, text = style{role: Error}, "✗ "+text
 		}
 		cv.write(in, row, iw, fit(line(text, st), iw))
-		row++
+		cv.write(x, row+1, w, rule)
+		row += 2
 	}
 	r.hits = append(r.hits, hit{x: x, y: y + 1, w: w, h: row - y - 1, id: e.ID, opt: -1})
 	if e.Panel {
