@@ -239,7 +239,10 @@ func (b *Book) Update(msg tea.Msg, h *hottytea.Session) (quit bool) {
 			b.event(ev)
 		}
 	case hottytea.ErrorMsg:
-		if b.mine(msg.Reply.Surface) {
+		// A picker's completion the user typed past is its pane's
+		// (html.Rendition.Reply), not an error.
+		p := b.panes[msg.Reply.Surface]
+		if b.mine(msg.Reply.Surface) && (p == nil || p.html == nil || !p.html.Reply(msg.Reply)) {
 			b.status = "✗ the host: " + hotty.Err(msg.Reply).Error()
 		}
 	case tea.KeyPressMsg:

@@ -2,7 +2,7 @@
 
     Status:   Draft, proved by this repository (gov NEIO-11).
     A2UI:     v1.0 (candidate), pinned at third_party/a2ui/REV.
-    hotty:    SPEC.md 0.4, unchanged.
+    hotty:    SPEC.md 0.5, unchanged.
 
 A2UI describes a UI as a flat list of components and a data model. This
 profile says how a renderer shows an A2UI surface in a terminal, in the three
@@ -2680,11 +2680,13 @@ them. It takes the keyboard.
   scrolled as the selection moves.
 - **The query is a text input's,** with an input's caret: in cells the
   terminal's own cursor, whatever the keymap, and on a host an `input` the
-  host edits, its caret the host's. A host leaves a focused field's value
-  alone (SPEC.md §6.2), and a palette's agent rewrites its query (a staged
-  command, a completion), so a query written other than as the user typed
-  it comes in a new `input` (its id `~h` and the count of such writes),
-  which takes the keyboard.
+  host edits, its caret the host's. A palette's agent rewrites its query (a
+  staged command, a completion), so a query written other than as the user
+  typed it goes to the `input` (its id `~h`) with `a=field` (SPEC.md §6.4),
+  which replaces the field's text, focused or not, against the `rev` of the
+  last `input` heard, and puts the caret after it. When the user typed
+  first, the host answers `ESTALE` and the write is dropped: what the user
+  typed is the query, as their `input` says.
 - **The story** `hotty/picker` has a program behind it in the storybook
   (`story.Run.Program`): the palette's agent, which ranks its rows for
   each query (sahilm/fuzzy over `Group: Title`, as HottyList's filter

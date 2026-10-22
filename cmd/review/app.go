@@ -204,7 +204,9 @@ func (a *app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.fail(a.r.Event(msg.Event))
 		}
 	case hottytea.ErrorMsg:
-		a.fail(fmt.Errorf("the host: %s %s", msg.Code, msg.Detail))
+		if !a.r.Reply(msg.Reply) {
+			a.fail(fmt.Errorf("the host: %s %s", msg.Code, msg.Detail))
+		}
 	case tea.KeyPressMsg:
 		k := hottytea.KeyName(msg.Key())
 		if k == "ctrl+c" || k == "q" && a.s.Mode != hottytea.Native {
