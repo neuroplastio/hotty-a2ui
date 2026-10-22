@@ -57,6 +57,10 @@ func TestCaps(t *testing.T) {
 		{win, "super+e", true, "[⊞+E]"},
 		{win, "super+e", false, "[Win+E]"},
 		{win, "ctrl+alt+delete", false, "[Ctrl+Alt+Del]"},
+		{linux, "ctrl+backspace", true, "[Ctrl+\U000F0B5C]"},
+		{linux, "ctrl+backspace", false, "[Ctrl+Backspace]"},
+		{win, "backspace", true, "[\U000F0B5C]"},
+		{mac, "backspace", true, "[\U000F0B5C]"},
 	} {
 		if got := caps(tc.c, tc.keys, tc.glyphs); got != tc.want {
 			t.Errorf("%q (os %q, glyphs %v): %q, want %q", tc.keys, tc.c.Keycaps.OS, tc.glyphs, got, tc.want)

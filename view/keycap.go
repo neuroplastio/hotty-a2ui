@@ -196,7 +196,8 @@ func (c *Controller) keyLabel(os string, glyphs bool, key string) string {
 // The labels, by system and presentation; the first table to have a key
 // gives it. The glyphs are Material Design Icons in the font hosts ship
 // (HOST.md §2): Apple's key symbols drawn evenly, where the font's own
-// ⌃⌥⇧⌘ are not. Esc is a word everywhere: ⎋ reads as reload.
+// ⌃⌥⇧⌘ are not; Backspace's on every system. Esc is a word everywhere:
+// ⎋ reads as reload.
 var (
 	words = map[string]string{
 		"super": "Meta", "ctrl": "Ctrl", "alt": "Alt", "shift": "Shift",
@@ -214,9 +215,10 @@ var (
 		"enter": "\U000F0311", "backspace": "\U000F0B5C", "tab": "\U000F0312", "caps_lock": "\U000F0632",
 		"escape": "esc",
 	}
+	pcIcons = map[string]string{"backspace": "\U000F0B5C"}
 
 	pcLabels  = []map[string]string{textArrows, words}
-	pcGlyphs  = []map[string]string{iconArrows, words}
+	pcGlyphs  = []map[string]string{pcIcons, iconArrows, words}
 	macText   = []map[string]string{macWords, textArrows, words}
 	macGlyphs = []map[string]string{macIcons, iconArrows, words}
 )

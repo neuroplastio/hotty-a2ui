@@ -758,14 +758,14 @@ textarea.k-resize-none { resize: none; }
 .k-pick-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .k-pick-group, .k-pick-detail, .k-pick-keys { color: var(--k-muted); }
 .k-pick-detail { margin-left: 2ch; }
-.k-pick-keys { flex: none; font-size: 0.875rem; white-space: pre; }
+.k-pick-keys { flex: none; font-size: 1rem; white-space: pre; }
 .k-pick-row .k-match { text-decoration: none; color: var(--k-focus); font-weight: 600; }
 .k-pick-row.k-sel { background: var(--k-tonal); }
 .k-pick:focus-within .k-pick-row.k-sel { background: var(--k-focus); color: var(--k-bg); }
 .k-pick:focus-within .k-pick-row.k-sel :is(.k-pick-group, .k-pick-detail, .k-pick-keys, .k-pick-desc, .k-match) { color: var(--k-bg); }
 .k-pick:focus-within .k-pick-row.k-sel .k-match { text-decoration: underline; }
 .k-pick-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
-.k-pick-keys-line { display: flex; flex-direction: row-reverse; flex-wrap: wrap; column-gap: var(--k-5); font-size: 0.875rem; line-height: 1.5; height: 1.5em; overflow: hidden; white-space: pre; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
+.k-pick-keys-line { display: flex; flex-direction: row-reverse; flex-wrap: wrap; column-gap: var(--k-5); font-size: 1rem; line-height: 1.6; height: 1.6em; overflow: hidden; white-space: pre; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
 .k-pick-key { color: var(--k-muted); margin-left: 1ch; }
 
 /* HottyPaginator: a baseline (phase 1), as cells draws it: its child,
@@ -867,7 +867,7 @@ textarea.k-resize-none { resize: none; }
    ship (hotty HOST.md §2), whose icons draw macOS's keys; borders a device
    pixel, as a CSS pixel's draws as none at some scales. */
 .k-caps { font-family: inherit; white-space: nowrap; }
-.k-cap { display: inline-block; box-sizing: border-box; min-width: 1.75em; padding: 0 0.4em; text-align: center; font-family: "AdwaitaMono Nerd Font Propo", var(--k-mono); font-size: 0.85em; font-weight: 500; line-height: 1.35; color: var(--k-fg); background: var(--k-tonal); border: var(--hotty-px, 1px) solid var(--k-line); border-bottom-width: calc(2 * var(--hotty-px, 1px)); border-radius: 0.3em; }
+.k-cap { display: inline-block; box-sizing: border-box; min-width: 1.75em; padding: 0 0.4em; text-align: center; font-family: "AdwaitaMono Nerd Font Propo", var(--k-mono); font-size: 1em; font-weight: 500; line-height: 1.3; color: var(--k-fg); background: var(--k-tonal); border: var(--hotty-px, 1px) solid var(--k-line); border-bottom-width: calc(2 * var(--hotty-px, 1px)); border-radius: 0.3em; }
 .k-cap-plus, .k-cap-sep { color: var(--k-muted); }
 .k-cap-sep { margin: 0 0.3em; }
 

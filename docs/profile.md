@@ -1667,7 +1667,7 @@ not the agent's:
 | | text | glyphs |
 |---|---|---|
 | macOS | Ctrl, Option, Shift, Cmd, Return, esc; `+` between | ⌃⌥⇧⌘, Return's, Backspace's, Tab's and Caps Lock's symbols, tight together (⇧⌘P); esc a word |
-| Linux | Ctrl, Alt, Shift, Meta, Enter, Esc; `+` between | the same, the arrows as icons |
+| Linux | Ctrl, Alt, Shift, Meta, Enter, Esc; `+` between | the same, the arrows and Backspace as icons (Backspace's macOS's ⌫) |
 | Windows | as Linux, super as Win | as Linux, super as ⊞ |
 
 Modifiers come in the system's order: ⌃⌥⇧⌘ on macOS, Win+Ctrl+Alt+Shift
@@ -1685,7 +1685,8 @@ kit does by default.
 
 On a host the caps are `kbd.k-caps`, a `kbd.k-cap` a chord, its labels
 joined by `span.k-cap-plus` unless they sit tight, and `span.k-cap-sep`
-(`aria-hidden`) for `>` and `/`: a cap is filled with `--k-tonal` and
+(`aria-hidden`) for `>` and `/`: a cap is the size of the text around
+it (a picker's keys and its footer the size of its rows), filled with `--k-tonal` and
 ringed with `--k-line`, a device pixel wide (`--hotty-px`) and two at its
 bottom, in AdwaitaMono Nerd Font Propo where the host has it. In cells a
 cap is its labels with a column of room either side, its background
