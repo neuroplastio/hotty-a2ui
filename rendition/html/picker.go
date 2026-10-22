@@ -18,10 +18,11 @@ import (
 // actions panel is open, the selected row's actions take the rows' place.
 // The input gives the program the keys the picker takes (pickKeys).
 //
-// A host leaves a focused field's value alone (SPEC §6.2), so a query the
-// program writes (a completion, a staged command) comes in a new input:
-// its id counts the queries written (view.Element.Written), and a new id
-// is a new element, which the keyboard follows (focusOn).
+// A query the program writes (a completion, a staged command), other than
+// as the user typed it (view.Element.Written), goes to the input with
+// a=field (Rendition.complete), which changes it focused or not, if the
+// user has not typed since, and puts the caret after it (SPEC §6.4). The
+// input keeps its id, its history and its caret.
 //
 // A host keeps Tab and Shift+Tab, which move the focus (SPEC §10.2), so
 // the input sits between two stops of the picker's own (pickTab after it,
@@ -35,6 +36,7 @@ func (m *markup) picker(e *view.Element) *node {
 	if e.Chip != "" {
 		query.add(el("span", "class", "k-pick-chip").add(texts(e.Chip)...))
 	}
+	m.pickers = append(m.pickers, e)
 	in := el("input", "id", pickInput(e), "class", "k-pick-input", "type", "text", "value", q,
 		"data-on", "input", "data-keys", pickKeys(e), "role", "combobox", "aria-expanded", "true",
 		"autocomplete", "off", "spellcheck", "false")
@@ -209,9 +211,8 @@ const (
 	pickBack = partLess
 )
 
-// pickInput is the DOM id of a HottyPicker's input: a part of the picker,
-// numbered by the queries written to it.
-func pickInput(e *view.Element) string { return partID(e.ID, partTitle+strconv.Itoa(e.Written)) }
+// pickInput is the DOM id of a HottyPicker's input, a part of the picker.
+func pickInput(e *view.Element) string { return partID(e.ID, partTitle) }
 
 // pickKeys are the keys a HottyPicker's input gives the program, which
 // works the picker with them (view.Controller.PickerKey): the moves, its

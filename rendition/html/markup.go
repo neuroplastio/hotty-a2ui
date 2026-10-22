@@ -46,6 +46,9 @@ type markup struct {
 	keyboard string
 	// drag is the drag under way, nil when none is (drags).
 	drag *view.Drag
+	// pickers are the HottyPickers it made, whose queries the program may
+	// have written (Rendition.complete).
+	pickers []*view.Element
 	// page: the markup is for a web page with no program behind it
 	// (Rendition.Page, page.go); heading and site are what the page said
 	// of itself (PageOptions).

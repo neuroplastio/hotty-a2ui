@@ -45,6 +45,13 @@ type Rendition struct {
 	// sent their values (holdEdit): what the host shows in them is what
 	// was typed, which nothing in sent says.
 	edited map[string]bool
+	// heard are the HottyPickers' inputs as the host has them, by DOM id,
+	// as far as the rendition knows: their value and rev, as the last
+	// input event told (SPEC §6.4), and as complete changed them since.
+	heard map[string]field
+	// written is each HottyPicker's count of the queries written other
+	// than as typed (view.Element.Written) that the host has.
+	written map[string]int
 	// pending is the Shortcut key waiting for the host to commit the
 	// focused field (Key).
 	pending string
@@ -102,6 +109,13 @@ type Rendition struct {
 type keyboard struct {
 	on    bool
 	focus string
+}
+
+// field is a text field as the host has it: its value, and its rev
+// (SPEC §6.4).
+type field struct {
+	value string
+	rev   int
 }
 
 // New is the rendition of a controller's surface, as the host surface
@@ -180,7 +194,10 @@ func (r *Rendition) Doc() string {
 	main, layer := surface(r.C.V, r.theme, r.keys, r.fit, r.dense, m)
 	ts := toasts(r.C.V, themeCSS(r.theme))
 	r.sent, r.anim = []*node{main, layer, ts}, m.anim
-	r.host, r.edited = keyboard{}, nil
+	r.host, r.edited, r.heard, r.written = keyboard{}, nil, nil, map[string]int{}
+	for _, e := range m.pickers {
+		r.written[e.ID] = e.Written
+	}
 	return head + main.html() + layer.html() + ts.html()
 }
 
@@ -196,8 +213,9 @@ func (r *Rendition) Update() []string {
 	r.anim = m.anim
 	r.holdEdit(main)
 	r.resend()
+	fields := r.complete(m, main, layer)
 	// The surface's changes go as one delta, which the host applies as one
-	// (SDK §2.9).
+	// (SDK §2.9), and then the queries written to its pickers.
 	var out []string
 	ops := diff(r.sent[0], main, nil)
 	ops = diff(r.sent[1], layer, ops)
@@ -205,6 +223,7 @@ func (r *Rendition) Update() []string {
 	if len(ops) > 0 {
 		out = append(out, hotty.Delta(r.name, ops))
 	}
+	out = append(out, fields...)
 	r.sent = []*node{main, layer, ts}
 	if r.pop != nil {
 		if n := popover(r.C.V, r.theme, r.openList()); n != nil {
@@ -444,11 +463,17 @@ func (r *Rendition) Event(ev hotty.Event) error {
 				c.St.Focus = id
 			}
 		}
-		if e.Kind == view.TextField || e.Kind == view.Picker {
+		if e.Kind == view.TextField {
 			if r.edited == nil {
 				r.edited = map[string]bool{}
 			}
 			r.edited[r.fieldDOM(r.focusOn(id))] = true
+		}
+		if e.Kind == view.Picker && ev.Target == pickInput(e) {
+			if r.heard == nil {
+				r.heard = map[string]field{}
+			}
+			r.heard[ev.Target] = field{ev.Value, ev.Rev}
 		}
 		switch e.Kind {
 		case view.CheckBox:
@@ -872,6 +897,64 @@ func (r *Rendition) selectKey(e *view.Element, key string) (bool, error) {
 		return true, nil
 	}
 	return true, r.C.SetValue(e.ID, e.Options[i].Value)
+}
+
+// complete sends each HottyPicker's query written other than as the user
+// typed it (view.Element.Written: Tab's completion, the agent's) to its
+// input with a=field: its whole value replaced, against the rev the host
+// last told of (SPEC §6.4). The host changes it, focused or not, unless the
+// user typed since, and puts the caret after it; else it answers ESTALE,
+// and the completion is dropped (Reply). The input's value attribute stays
+// the query it entered the document with: one that changed would set the
+// value again, unchecked, on an input not focused (§6.2), over what the
+// user typed.
+func (r *Rendition) complete(m *markup, docs ...*node) []string {
+	var out []string
+	for _, e := range m.pickers {
+		id := pickInput(e)
+		var old, cur *node
+		for i, d := range docs {
+			if cur = d.find(id); cur != nil {
+				old = r.sent[i].find(id)
+				break
+			}
+		}
+		written := e.Written != r.written[e.ID]
+		r.written[e.ID] = e.Written
+		if old == nil || cur == nil {
+			// It enters the document, its rev 0 (§6.4).
+			delete(r.heard, id)
+			continue
+		}
+		entered, _ := old.attr("value")
+		cur.set("value", entered)
+		q, _ := e.Value.(string)
+		f, ok := r.heard[id]
+		if !ok {
+			// Neither the user nor an a=field has changed it.
+			f.value = entered
+		}
+		if !written || q == f.value {
+			continue
+		}
+		from, to := 0, len(f.value)
+		out = append(out, hotty.SetField(r.name, id, hotty.FieldChange{Rev: f.rev, From: &from, To: &to, Text: &q}))
+		if r.heard == nil {
+			r.heard = map[string]field{}
+		}
+		r.heard[id] = field{q, f.rev}
+	}
+	return out
+}
+
+// Reply takes an error the host replied to the surface's commands, and
+// reports whether it was the rendition's to take: ESTALE, answering the
+// a=field of a query written to a HottyPicker (complete). The user typed
+// first, so the query is not written; their input event, on its way, makes
+// what they typed the query (SPEC §6.4). A program shows the errors it
+// does not take.
+func (r *Rendition) Reply(rep hotty.Reply) bool {
+	return !rep.OK && rep.Re == "field" && rep.Surface == r.name && rep.Code == hotty.ESTALE
 }
 
 // holdEdit keeps, in the new document main, the value of the text control

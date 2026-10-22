@@ -276,7 +276,7 @@ func (r *Rendition) focusOn(id string) string {
 			return partID(id, partItem+strconv.Itoa(e.Selected))
 		}
 	case e.Kind == view.Picker:
-		// Its input, which a query the program wrote replaces (picker).
+		// Its input (picker).
 		return pickInput(e)
 	}
 	return id
