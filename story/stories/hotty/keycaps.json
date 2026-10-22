@@ -354,12 +354,8 @@
             "id": "root",
             "component": "Column",
             "children": [
-              "system",
-              "present",
-              "case",
-              "sep",
-              "glue",
-              "meta",
+              "looks",
+              "writing",
               "about",
               "rule",
               "picker",
@@ -368,6 +364,26 @@
               "word_key",
               "files_key",
               "send_key"
+            ]
+          },
+          {
+            "id": "looks",
+            "component": "Row",
+            "justify": "start",
+            "children": [
+              "system",
+              "present",
+              "meta"
+            ]
+          },
+          {
+            "id": "writing",
+            "component": "Row",
+            "justify": "start",
+            "children": [
+              "case",
+              "sep",
+              "glue"
             ]
           },
           {
@@ -402,7 +418,8 @@
                   "autofocus": true
                 }
               }
-            }
+            },
+            "weight": 1
           },
           {
             "id": "present",
@@ -431,7 +448,8 @@
                   "cycle": true
                 }
               }
-            }
+            },
+            "weight": 1
           },
           {
             "id": "case",
@@ -460,7 +478,8 @@
                   "cycle": true
                 }
               }
-            }
+            },
+            "weight": 1
           },
           {
             "id": "sep",
@@ -493,7 +512,8 @@
                   "cycle": true
                 }
               }
-            }
+            },
+            "weight": 1
           },
           {
             "id": "glue",
@@ -522,7 +542,8 @@
                   "cycle": true
                 }
               }
-            }
+            },
+            "weight": 1
           },
           {
             "id": "meta",
@@ -603,13 +624,14 @@
                   "cycle": true
                 }
               }
-            }
+            },
+            "weight": 1
           },
           {
             "id": "about",
             "component": "Text",
             "variant": "caption",
-            "text": "A program sets these from its config. Auto is macOS where the host's Mod is Command, else Linux; Default is glyphs on a hotty host, words in cells. System's is the system's own way: on macOS Apple's (Shift-Command-P, ⇧⌘P), elsewhere Ctrl+Shift+P. System's Meta is ⌘, Meta or ⊞ (Win in words); the icons need the host's Nerd Font."
+            "text": "A program sets these from its config; System's follows the system's conventions."
           },
           {
             "id": "rule",
