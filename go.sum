@@ -40,6 +40,16 @@ github.com/mattn/go-runewidth v0.0.24 h1:cpokDiIn0MGnhdHwuWnJBITySJ20QyNGnY2kR/a
 github.com/mattn/go-runewidth v0.0.24/go.mod h1:XBkDxAl56ILZc9knddidhrOlY5R/pDhgLpndooCuJAs=
 github.com/muesli/cancelreader v0.2.2 h1:3I4Kt4BQjOR54NavqnDogx/MIoWBFa0StPA8ELUXHmA=
 github.com/muesli/cancelreader v0.2.2/go.mod h1:3XuTXfFS2VjM+HTLZY9Ak0l6eUKfijIfMUZ4EgX0QYo=
+github.com/neuroplastio/hotty-go v0.5.0 h1:Ucd/N8zLRiALKYsPW7YZ5wKhF6iyC89j1gAJBM01CNI=
+github.com/neuroplastio/hotty-go v0.5.0/go.mod h1:Jpc6zXV2vFn0EWfxy1dDuXswBwj/MZGGi9FY20Nv4R0=
+github.com/neuroplastio/hotty-go/hottyedit v0.5.0 h1:SFIHrKy10j1vG8b6OEY8o+i6a+/E5Y5ncmGE1f8XoKQ=
+github.com/neuroplastio/hotty-go/hottyedit v0.5.0/go.mod h1:RcmPTX589vpRMuN2uXPJbZ5C8nG+A0iSLVkw+V0Hb9k=
+github.com/neuroplastio/hotty-go/hottytea v0.5.0 h1:7N2k2ajyAUnpTel6TrM1ITT7x/2o1geJ5+4RxuUcx1w=
+github.com/neuroplastio/hotty-go/hottytea v0.5.0/go.mod h1:VywTuv9mzBiAdQQ9MOWuyTlsB+AaMovDB8pNQEqDdJI=
+github.com/neuroplastio/hotty-go/hottyterm v0.5.0 h1:wFsYOIYPS21Hw3afXB6QHPLhI/bJvc3ATKhELoBcbu4=
+github.com/neuroplastio/hotty-go/hottyterm v0.5.0/go.mod h1:jQtJL+f9U05FGG9hYSmnRxKelETt0HaW5GfU2poEKls=
+github.com/neuroplastio/hotty-go/hottytest v0.5.0 h1:7eZAIWuCpxpGRg7Frt3WgUL5epp6NQwXAjXPQ7VIVM8=
+github.com/neuroplastio/hotty-go/hottytest v0.5.0/go.mod h1:Ja7dw2cqkgtKTss+wJ5QsH8pUhWQBDmERxyaCmvH4fE=
 github.com/neuroplastio/myelin/myelinkey v0.1.0 h1:c1XVForIsnqnYxmmwwN/UHFdtUzQYv3fD94hyxGe8cI=
 github.com/neuroplastio/myelin/myelinkey v0.1.0/go.mod h1:lnIMTPFSwjs8dsx9R8zsPNGaRnlzS4rScUY4exrjLus=
 github.com/philhofer/fwd v1.2.0 h1:e6DnBTl7vGY+Gz322/ASL4Gyp1FspeMvx1RNDoToZuM=

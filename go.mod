@@ -45,15 +45,3 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 )
-
-// hotty 0.5, local only: hotty-go's hotty-0.5 branch as it is in its
-// worktree. The requirements move to the release when 0.5 lands.
-replace github.com/neuroplastio/hotty-go => ../../hotty-go/hotty-0.5
-
-replace github.com/neuroplastio/hotty-go/hottyedit => ../../hotty-go/hotty-0.5/hottyedit
-
-replace github.com/neuroplastio/hotty-go/hottytea => ../../hotty-go/hotty-0.5/hottytea
-
-replace github.com/neuroplastio/hotty-go/hottyterm => ../../hotty-go/hotty-0.5/hottyterm
-
-replace github.com/neuroplastio/hotty-go/hottytest => ../../hotty-go/hotty-0.5/hottytest
