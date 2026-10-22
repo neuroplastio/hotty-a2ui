@@ -85,6 +85,7 @@ func printPage(w io.Writer, args []string, stream string, th theme.Theme) error 
 		}
 		b.WriteString("</h2>\n")
 		for _, s := range p.ss {
+			s.C.Keycaps = keycaps
 			r := html.New(s.C, "s"+strconv.Itoa(i)+"-"+s.S.ID)
 			r.SetTheme(th)
 			// Under the story's h2, a Tabs' titles are h3s.

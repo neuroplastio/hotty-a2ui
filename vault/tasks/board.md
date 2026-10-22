@@ -154,7 +154,10 @@ As of 2026-10-09, from the hotty agent:
   2026-10-11 (kit.css `:hover`).
 - [ ] **KIT-04h** — Rich list: two-line rows in proportional type. Hover
   landed 2026-10-11.
-- [ ] **KIT-08h** — Key hints as keycaps, following the host's focus. On
+- [ ] **KIT-08h** — Key hints as keycaps, following the host's focus.
+  Keycaps done 2026-10-22 (profile §6.10, *Keycaps*): per-system labels,
+  glyphs or text in either rendition, the user's own labels, in the hints
+  and the picker. plx sets `Controller.Keycaps` from its config. Open: on
   a host the hints leave out what the host works itself (fields, boxes,
   Buttons), since it moves focus without telling the renderer (journal
   2026-10-09.10). Probe whether Blitz restyles `:has(:focus)` on a focus

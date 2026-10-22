@@ -62,7 +62,7 @@ func pickWidth(e *view.Element) int {
 			rw += 2 + Width(row.Detail)
 		}
 		if row.Keys != "" {
-			rw += 2 + Width(keysText(row.Keys, view.KeyText))
+			rw += 2 + width(capsOf((&view.Controller{}).Caps(keysText(row.Keys, view.KeyText), false), nil))
 		}
 		n = max(n, rw, Width(row.Description))
 	}
@@ -112,12 +112,13 @@ func (r *Rendition) pickSelected(focused bool) style {
 	return style{role: Muted, attr: Reverse}
 }
 
-// pickKeys are the keys that run a row, as the key hints write each.
-func (r *Rendition) pickKeys(row view.PickRow, st style) []glyph {
+// pickKeys are the keys that run a row, as caps (Rendition.caps); on is
+// the selected row's style, nil for another row's.
+func (r *Rendition) pickKeys(row view.PickRow, on *style) []glyph {
 	if row.Keys == "" {
 		return nil
 	}
-	return line(keysText(row.Keys, r.keyText), st)
+	return r.caps(keysText(row.Keys, r.keyText), on)
 }
 
 // keysText is a sequence of keys, apart by spaces, each as text writes it.
@@ -199,8 +200,10 @@ func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused
 		row := e.Rows[ln.Row]
 		sel := ln.Row == e.Selected
 		keys := style{role: Muted}
+		var on *style
 		if sel {
 			keys = r.pickSelected(focused)
+			on = &keys
 			cv.write(x, at, w, line(strings.Repeat(" ", w), keys))
 		}
 		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: 1, id: e.ID, opt: ln.Row})
@@ -210,7 +213,7 @@ func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused
 		}
 		// The detail wins: a row's keys show where they fit beside its
 		// whole text, else on the selected row alone, where they cut it.
-		ks, text := r.pickKeys(row, keys), r.pickRow(row, sel, focused)
+		ks, text := r.pickKeys(row, on), r.pickRow(row, sel, focused)
 		tw := iw
 		if kw := width(ks); kw > 0 && kw+2 < iw && (sel || width(text)+2+kw <= iw) {
 			cv.write(in+iw-kw, at, kw, ks)
@@ -230,17 +233,18 @@ func (l *layout) paintPickPanel(cv *canvas, e *view.Element, x, y, w int, focuse
 	cv.write(in, y, iw, fit(line("Actions: "+row.Title, style{role: Muted, attr: Bold}), iw))
 	for i, a := range row.Actions {
 		at := y + 1 + i
-		st, keys := style{}, style{role: Muted}
+		st := style{}
+		var on *style
 		if i == e.PanelAt {
 			st = r.pickSelected(focused)
-			keys = st
+			on = &st
 			cv.write(x, at, w, line(strings.Repeat(" ", w), st))
 		}
 		key := a.Key
 		if i == 0 {
 			key = "enter"
 		}
-		ks := line(r.keyText(key), keys)
+		ks := r.caps(r.keyText(key), on)
 		tw := iw
 		if kw := width(ks); kw > 0 && kw+2 < iw {
 			cv.write(in+iw-kw, at, kw, ks)
@@ -251,13 +255,13 @@ func (l *layout) paintPickPanel(cv *canvas, e *view.Element, x, y, w int, focuse
 }
 
 // pickFooter is a HottyPicker's footer in w columns, as Zed's: what its
-// keys do now (view.Element.PickFooter), each its title and its key in
-// muted, from the right, the most significant there; those that don't fit
+// keys do now (view.Element.PickFooter), each its title and its key as a
+// cap, from the right, the most significant there; those that don't fit
 // at the left are left out.
 func (r *Rendition) pickFooter(e *view.Element, w int) []glyph {
 	var out []glyph
 	for _, h := range e.PickFooter() {
-		item := concat(line(h.Desc, style{}), line("  "+r.keyText(h.Key), style{role: Muted}))
+		item := concat(line(h.Desc+" ", style{}), r.caps(r.keyText(h.Key), nil))
 		if out != nil {
 			item = concat(item, line(pickGap, style{}))
 		}

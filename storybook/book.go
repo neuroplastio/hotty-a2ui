@@ -83,6 +83,10 @@ type Options struct {
 	Rendition string
 	// Theme is the theme to start in; the zero theme is theme.Default.
 	Theme theme.Theme
+	// Keycaps is how every surface draws keys (view.Keycaps): the zero
+	// Keycaps draws them for the host's system, as each rendition does by
+	// default.
+	Keycaps view.Keycaps
 	// Plain draws the cells without colours (NO_COLOR).
 	Plain bool
 	// Bars: the Book has the screen to itself, and draws its name and the
@@ -1069,6 +1073,7 @@ func (b *Book) pane(name string, s *story.Surface, k kind, r hottytea.Rect) *pan
 	}
 	// The host's Mod and edit shortcuts, ctrl's where it says none.
 	s.C.Platform = hotty.PlatformOf(b.caps)
+	s.C.Keycaps = b.o.Keycaps
 	p.rect = r
 	return p
 }

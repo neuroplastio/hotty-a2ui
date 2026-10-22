@@ -66,9 +66,9 @@ func TestPickerDraws(t *testing.T) {
 	want := " Type a command\n" +
 		"──────────────────────────────────────────\n" +
 		" Used\n" +
-		" Pane: Split right               ctrl+b %\n" +
+		" Pane: Split right            Ctrl+B > %\n" +
 		"\n" +
-		"      Run again  ctrl+enter    Run  enter"
+		"    Run again  Ctrl+Enter     Run  Enter"
 	f := r.Draw(42)
 	if got := trimmed(f); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
@@ -79,8 +79,8 @@ func TestPickerDraws(t *testing.T) {
 	if cell := f.Cells[3][0]; cell.Role != Muted || cell.Attr&Reverse == 0 {
 		t.Errorf("the selected row, unfocused: %v %v, want muted reversed", cell.Role, cell.Attr)
 	}
-	if cell, key := f.Cells[5][31], f.Cells[5][40]; cell.Role != 0 || key.Role != Muted {
-		t.Errorf("the footer: a title %v, a key %v; want the text's and muted", cell.Role, key.Role)
+	if cell, key := f.Cells[5][31], f.Cells[5][35]; cell.Role != 0 || key.BackMix != capTint {
+		t.Errorf("the footer: a title %v, a key tinted %d; want the text's and a cap", cell.Role, key.BackMix)
 	}
 	c.Focus("root")
 	f = r.Draw(42)
@@ -95,19 +95,19 @@ func TestPickerDraws(t *testing.T) {
 	want = " Type a command\n" +
 		"────────────────────────────\n" +
 		" Used\n" +
-		" Pane: Split rig…  ctrl+b %\n" +
+		" Pane: Split…   Ctrl+B > %\n" +
 		"\n" +
-		"                 Run  enter"
+		"                Run  Enter"
 	if got := trimmed(r.Draw(28)); got != want {
 		t.Errorf("at 28 columns:\n%s\nwant\n%s", got, want)
 	}
 	keys(t, r, "arrow_down")
 	want = " Type a command\n" +
 		"──────────────────────────────────────────\n" +
-		" Pane: Split right               ctrl+b %\n" +
+		" Pane: Split right            Ctrl+B > %\n" +
 		" Panes\n" +
 		" Pane: fish  ~/code\n" +
-		" Close pane  shift+delete    Focus  enter"
+		"  Close pane  Shift+Del     Focus  Enter"
 	if got := trimmed(r.Draw(42)); got != want {
 		t.Errorf("after arrow_down, the lines follow the selection, its heading with it:\n%s\nwant\n%s", got, want)
 	}
@@ -117,12 +117,12 @@ func TestPickerDraws(t *testing.T) {
 		" Pane: Split right\n" +
 		" Panes\n" +
 		" Pane: fish  ~/code\n" +
-		"               Focus  enter"
+		"              Focus  Enter"
 	if got := trimmed(r.Draw(28)); got != want {
 		t.Errorf("at 28 columns:\n%s\nwant\n%s", got, want)
 	}
 	keys(t, r, "ctrl+k")
-	if got := strings.Split(trimmed(r.Draw(42)), "\n")[5]; got != "                  Back  esc    Run  enter" {
+	if got := strings.Split(trimmed(r.Draw(42)), "\n")[5]; got != "                Back  Esc     Run  Enter" {
 		t.Errorf("the panel's footer %q", got)
 	}
 }
@@ -186,7 +186,7 @@ func TestPickerKeys(t *testing.T) {
 	}
 	keys(t, r, "ctrl+k")
 	f := r.Draw(42)
-	if got := strings.Split(trimmed(f), "\n")[2:5]; strings.Join(got, "|") != " Actions: fish| Focus                              enter| Close pane                  shift+delete" {
+	if got := strings.Split(trimmed(f), "\n")[2:5]; strings.Join(got, "|") != " Actions: fish| Focus                             Enter| Close pane                    Shift+Del" {
 		t.Errorf("the panel: %q", got)
 	}
 	keys(t, r, "arrow_down", "enter")
@@ -207,9 +207,9 @@ func TestPickerStatus(t *testing.T) {
 		" theme.use · theme\n" +
 		"──────────────────────────────────────────\n" +
 		" Used\n" +
-		" Pane: Split right               ctrl+b %\n" +
+		" Pane: Split right            Ctrl+B > %\n" +
 		"\n" +
-		"      Run again  ctrl+enter    Run  enter"
+		"    Run again  Ctrl+Enter     Run  Enter"
 	if got := trimmed(f); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
 	}

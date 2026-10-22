@@ -32,7 +32,7 @@ func TestPickerOnHost(t *testing.T) {
 		}
 	}
 	row := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
-	if got := s.TextOf(row(0)); got != "Pane: Splitctrl+b %" {
+	if got := s.TextOf(row(0)); got != "Pane: SplitCtrl+B>%" {
 		t.Errorf("the first row reads %q", got)
 	}
 	if v, _ := s.Attr(row(0), "aria-selected"); v != "true" {
@@ -163,7 +163,7 @@ func TestPickerDescription(t *testing.T) {
 	row := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
 	html := s.HTML()
 	for _, want := range []string{
-		`<div class="k-pick-line"><span class="k-pick-title">pane.new</span><span class="k-pick-keys">ctrl+b n</span></div><div class="k-pick-desc">New pane (your shell)</div>`,
+		`<div class="k-pick-line"><span class="k-pick-title">pane.new</span>` + capsOf("k-pick-keys", []string{"Ctrl", "B"}, []string{"N"}) + `</div><div class="k-pick-desc">New pane (your shell)</div>`,
 		`<span class="k-pick-title">pane.split<span class="k-pick-detail">right</span></span></div>`,
 	} {
 		if !strings.Contains(html, want) {
@@ -219,16 +219,16 @@ func TestPickerFooter(t *testing.T) {
 	if got := s.TextOf(partID("root", partItem+"0")); got != "Pane: govmain · p-3" {
 		t.Errorf("the row reads %q", got)
 	}
-	act := func(title, key string) string {
-		return `<span class="k-pick-act">` + title + `<span class="k-pick-key">` + key + `</span></span>`
+	act := func(title string, key []string) string {
+		return `<span class="k-pick-act">` + title + capsOf("k-pick-key", key) + `</span>`
 	}
-	want := `<div class="k-pick-keys-line">` + act("Go to pane", "enter") + act("Close pane", "shift+delete") + act("Actions", "ctrl+k") + `</div>`
+	want := `<div class="k-pick-keys-line">` + act("Go to pane", []string{"Enter"}) + act("Close pane", []string{"Shift", "Del"}) + act("Actions", []string{"Ctrl", "K"}) + `</div>`
 	if html := s.HTML(); !strings.Contains(html, want) {
 		t.Errorf("no %s in\n%s", want, html)
 	}
 	must(t, func() error { _, err := r.C.PickerKey("root", "ctrl+k"); return err }())
 	x.update(r)
-	want = `<div class="k-pick-keys-line">` + act("Run", "enter") + act("Back", "esc") + `</div>`
+	want = `<div class="k-pick-keys-line">` + act("Run", []string{"Enter"}) + act("Back", []string{"Esc"}) + `</div>`
 	if html := s.HTML(); !strings.Contains(html, want) {
 		t.Errorf("in the panel, no %s in\n%s", want, html)
 	}
@@ -323,4 +323,17 @@ func typeQuery(t *testing.T, x *harness, r *Rendition, keys string) {
 		x.pump()
 		x.update(r)
 	}
+}
+
+// capsOf is the markup of keys as caps, in a kbd of class cls: a
+// sequence's chords in order, each its labels.
+func capsOf(cls string, chords ...[]string) string {
+	s := `<kbd class="` + cls + ` k-caps">`
+	for i, ch := range chords {
+		if i > 0 {
+			s += `<span class="k-cap-sep" aria-hidden="true">&gt;</span>`
+		}
+		s += `<kbd class="k-cap">` + strings.Join(ch, `<span class="k-cap-plus">+</span>`) + `</kbd>`
+	}
+	return s + `</kbd>`
 }

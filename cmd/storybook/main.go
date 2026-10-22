@@ -12,6 +12,8 @@
 //	storybook -page 24_recipe-card hotty/tree > page.html
 //	                                  stories as an ordinary web page (page mode)
 //	storybook -theme nord             in a theme (storybook -list names them)
+//	storybook -keys-os mac -keys-as text hotty/keys
+//	                                  keys drawn for macOS, in words
 //	storybook -bare hotty/keys        a story's surfaces alone, in cells
 //	storybook -list                   the stories' names
 //
@@ -38,6 +40,7 @@ import (
 	"github.com/neuroplastio/hotty-a2ui/rendition/theme"
 	"github.com/neuroplastio/hotty-a2ui/story"
 	"github.com/neuroplastio/hotty-a2ui/storybook"
+	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
 func main() {
@@ -50,6 +53,8 @@ func main() {
 	rend := flag.String("rendition", "", "start in this `rendition`: surfaces, cells, text or side (surfaces beside cells)")
 	out := flag.String("out", "", "write what the renderer sends the agent (actions, errors, function calls) to `file` as JSON lines (- for stdout)")
 	bare := flag.Bool("bare", false, "show one story's surfaces alone, in cells, on the whole screen: no list, pickers or panel")
+	flag.StringVar(&keycaps.OS, "keys-os", "", "draw keys for this `system`: mac, linux or windows (the host's Mod guesses)")
+	flag.StringVar(&keycaps.Present, "keys-as", "", "draw keys as `form`: glyphs or text (glyphs on a host, text in cells)")
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "usage: storybook [flags] [story]")
 		flag.PrintDefaults()
@@ -62,6 +67,10 @@ func main() {
 			break
 		}
 		args = append(args, flag.Arg(0))
+	}
+	if err := checkKeycaps(); err != nil {
+		fmt.Fprintln(os.Stderr, "storybook:", err)
+		os.Exit(2)
 	}
 	th := theme.Default
 	if *themeName != "" {
@@ -176,7 +185,7 @@ func interactive(st *story.Story, in io.Reader, source, rend string, th theme.Th
 	if source == "-" {
 		source = "stdin"
 	}
-	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th})
+	m := newModel(storybook.Options{First: first, Stream: in != nil, Source: source, Out: out, Rendition: rend, Theme: th, Keycaps: keycaps})
 	p := tea.NewProgram(m, tea.WithInput(termIn), tea.WithOutput(m.s.WatchFile(termOut)), tea.WithoutSignalHandler())
 	m.s.Attach(p.Send)
 	endOnSignal(p)
@@ -272,9 +281,27 @@ func printHTML(w io.Writer, args []string, th theme.Theme) error {
 		return err
 	}
 	for _, s := range run.Surfaces() {
+		s.C.Keycaps = keycaps
 		r := html.New(s.C, s.S.ID)
 		r.SetTheme(th)
 		fmt.Fprintf(w, "<!-- %s -->\n%s\n", s.S.ID, r.Doc())
+	}
+	return nil
+}
+
+// keycaps is how the surfaces draw keys (-keys-os, -keys-as).
+var keycaps view.Keycaps
+
+func checkKeycaps() error {
+	switch keycaps.OS {
+	case "", "mac", "linux", "windows":
+	default:
+		return fmt.Errorf("-keys-os %q: mac, linux or windows", keycaps.OS)
+	}
+	switch keycaps.Present {
+	case "", view.PresentGlyphs, view.PresentText:
+	default:
+		return fmt.Errorf("-keys-as %q: glyphs or text", keycaps.Present)
 	}
 	return nil
 }

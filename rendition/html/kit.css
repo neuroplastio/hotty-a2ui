@@ -863,6 +863,14 @@ textarea.k-resize-none { resize: none; }
    colour, in italics, a line high when empty, cut with an ellipsis. */
 .k-hints-tip { min-height: 1.5em; font-family: var(--k-font); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* Keycaps (KIT-08h): a cap for each chord, its labels in the font hosts
+   ship (hotty HOST.md §2), whose icons draw macOS's keys; borders a device
+   pixel, as a CSS pixel's draws as none at some scales. */
+.k-caps { font-family: inherit; white-space: nowrap; }
+.k-cap { display: inline-block; box-sizing: border-box; min-width: 1.75em; padding: 0 0.4em; text-align: center; font-family: "AdwaitaMono Nerd Font Propo", var(--k-mono); font-size: 0.85em; font-weight: 500; line-height: 1.35; color: var(--k-fg); background: var(--k-tonal); border: var(--hotty-px, 1px) solid var(--k-line); border-bottom-width: calc(2 * var(--hotty-px, 1px)); border-radius: 0.3em; }
+.k-cap-plus, .k-cap-sep { color: var(--k-muted); }
+.k-cap-sep { margin: 0 0.3em; }
+
 /* HottyScrollView: a baseline (phase 1), the host's own scrolling (SPEC
    §5.3): a box --k-rows terminal rows tall, filled as a field is so that
    it shows where it ends, that scrolls its overflow with the host's

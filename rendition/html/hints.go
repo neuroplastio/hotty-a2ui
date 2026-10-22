@@ -10,7 +10,7 @@ import (
 // and what they do each. The host moves focus among the elements it works
 // without telling the renderer, so their keys are left out; a box's, a
 // Slider's and a select's show, as the program's keys go there
-// (view.Controller.KeyHints). Keycaps are vault KIT-08h. On a surface with
+// (view.Controller.KeyHints). Each key is a cap (keycaps). On a surface with
 // descriptions, a row comes first for the tooltip (profile §6.23): the
 // description of the element the pointer is over, where the host says
 // (SPEC §9.4), else of the one with the keyboard; empty, a line high,
@@ -27,7 +27,7 @@ func (m *markup) keyHints(e *view.Element) *node {
 				line.add(el("span", "class", "k-hint-sep", "aria-hidden", "true").add(txt(" • ")))
 			}
 			line.add(el("span", "class", "k-hint").add(
-				el("kbd", "class", "k-hint-key").add(texts(h.Key)...),
+				m.keycaps("k-hint-key", h.Key),
 				el("span", "class", "k-hint-desc").add(texts(" "+h.Desc)...)))
 		}
 		return n.add(line)
@@ -36,10 +36,46 @@ func (m *markup) keyHints(e *view.Element) *node {
 	for _, g := range m.full {
 		col := el("div", "class", "k-hints-col")
 		for _, h := range g {
-			col.add(el("kbd", "class", "k-hint-key").add(texts(h.Key)...),
+			col.add(m.keycaps("k-hint-key", h.Key),
 				el("span", "class", "k-hint-desc").add(texts(h.Desc)...))
 		}
 		full.add(col)
 	}
 	return n.add(full)
+}
+
+// keycaps are a hint's keys as caps (view.Controller.Caps, KIT-08h), in a
+// kbd of class cls: a kbd of class k-cap for each chord, its labels joined
+// by a dim "+" unless they sit tight (⇧⌘P), and a dim ">" between a
+// sequence's chords and "/" between alternatives.
+func (m *markup) keycaps(cls, keys string) *node {
+	n := el("kbd", "class", cls+" k-caps")
+	var alts [][]view.Chord
+	if m.caps != nil {
+		alts = m.caps(keys)
+	} else {
+		alts = (&view.Controller{}).Caps(keys, true)
+	}
+	sep := func(s string) *node {
+		return el("span", "class", "k-cap-sep", "aria-hidden", "true").add(txt(s))
+	}
+	for i, seq := range alts {
+		if i > 0 {
+			n.add(sep("/"))
+		}
+		for j, ch := range seq {
+			if j > 0 {
+				n.add(sep(">"))
+			}
+			cp := el("kbd", "class", "k-cap")
+			for k, l := range ch.Labels {
+				if k > 0 && !ch.Tight {
+					cp.add(el("span", "class", "k-cap-plus").add(txt("+")))
+				}
+				cp.add(txt(l))
+			}
+			n.add(cp)
+		}
+	}
+	return n
 }

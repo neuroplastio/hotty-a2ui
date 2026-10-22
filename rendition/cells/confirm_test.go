@@ -24,7 +24,7 @@ func TestConfirm(t *testing.T) {
 		"\n" +
 		" Yes   No\n" +
 		"\n" +
-		"enter press • ←/→ move • y yes • n no • ? more"
+		" Enter  press •  ← / →  move •  Y  yes •  N  no •  ?  more"
 	f := r.Draw(64)
 	if got := f.Plain(); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
@@ -87,7 +87,7 @@ func TestConfirm(t *testing.T) {
 		"\n" +
 		"  ▏Yes   No\n" +
 		"\n" +
-		"enter submit • ? more"
+		" Enter  submit •  ?  more"
 	if got := r.Draw(64).Plain(); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
 	}
@@ -100,7 +100,7 @@ func TestConfirm(t *testing.T) {
 	if !picked(f, "yes") || picked(f, "no") {
 		t.Error("Tab past the fields does not pick Yes")
 	}
-	if got := f.Plain(); !strings.HasSuffix(got, "\nenter press • ←/→ move • y yes • n no • ? more") {
+	if got := f.Plain(); !strings.HasSuffix(got, "\n Enter  press •  ← / →  move •  Y  yes •  N  no •  ?  more") {
 		t.Errorf("the hints on Yes:\n%s", got)
 	}
 	if _, err := r.Key("tab"); err != nil {

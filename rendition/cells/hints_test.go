@@ -35,30 +35,51 @@ func last(f *Frame) string {
 	return rows[len(rows)-1]
 }
 
-// The short view is bubbles' help line: the keys muted, what they do
-// fainter, the separators faint border; what does not fit is cut, " …"
-// ending the line where it fits.
+// Cells draw keys as words by default, but as glyphs where the user says
+// their terminal's font has them (view.Keycaps.Present): cells don't
+// force text. The labels follow the system either way.
+func TestKeyHintsKeycaps(t *testing.T) {
+	r, c := helped(t)
+	c.Focus("l")
+	for _, tc := range []struct {
+		caps view.Keycaps
+		want string
+	}{
+		{view.Keycaps{OS: "mac"}, " ↑ / K  up •  ↓ / J  down •  /  filter •  Return  choose •  ?  more"},
+		{view.Keycaps{OS: "mac", Present: view.PresentGlyphs}, " \U000F005D / K  up •  \U000F0045 / J  down •  /  filter •  \U000F0311  choose •  ?  more"},
+		{view.Keycaps{Present: view.PresentGlyphs}, " \U000F005D / K  up •  \U000F0045 / J  down •  /  filter •  Enter  choose •  ?  more"},
+	} {
+		c.Keycaps = tc.caps
+		if got := last(r.Draw(80)); got != tc.want {
+			t.Errorf("%+v: %q, want %q", tc.caps, got, tc.want)
+		}
+	}
+}
+
+// The short view is bubbles' help line: the keys caps, what they do
+// muted and faint, the separators faint border; what does not fit is cut,
+// " …" ending the line where it fits.
 func TestKeyHintsLine(t *testing.T) {
 	r, c := helped(t)
-	if got := last(r.Draw(60)); got != "? more" {
+	if got := last(r.Draw(66)); got != " ?  more" {
 		t.Errorf("without the keyboard: %q", got)
 	}
 	c.Focus("l")
-	f := r.Draw(60)
-	if got := last(f); got != "↑/k up • ↓/j down • / filter • enter choose • ? more" {
+	f := r.Draw(66)
+	if got := last(f); got != " ↑ / K  up •  ↓ / J  down •  /  filter •  Enter  choose •  ?  more" {
 		t.Fatalf("the list focused: %q", got)
 	}
 	row := f.Cells[len(f.Cells)-1]
-	for i, want := range map[int]style{0: hintKey, 2: hintKey, 3: hintDesc, 4: hintDesc, 7: hintDim, 9: hintKey} {
-		if row[i].Role != want.role || row[i].Attr != want.attr {
-			t.Errorf("column %d (%q): %v %v, want %v %v", i, row[i].Text, row[i].Role, row[i].Attr, want.role, want.attr)
+	for i, want := range map[int]style{0: capStyle, 1: capStyle, 3: capSep, 5: capStyle, 7: hintDesc, 8: hintDesc, 11: hintDim, 13: capStyle} {
+		if row[i].Role != want.role || row[i].Attr != want.attr || row[i].BackMix != want.backMix {
+			t.Errorf("column %d (%q): %v %v %d, want %v %v %d", i, row[i].Text, row[i].Role, row[i].Attr, row[i].BackMix, want.role, want.attr, want.backMix)
 		}
 	}
-	if got := last(r.Draw(30)); got != "↑/k up • ↓/j down • / filter …" {
-		t.Errorf("at 30 columns: %q", got)
+	if got := last(r.Draw(40)); got != " ↑ / K  up •  ↓ / J  down •  /  filter …" {
+		t.Errorf("at 40 columns: %q", got)
 	}
-	if got := last(r.Draw(28)); got != "↑/k up • ↓/j down • / filter" {
-		t.Errorf("at 28 columns: %q", got)
+	if got := last(r.Draw(39)); got != " ↑ / K  up •  ↓ / J  down •  /  filter" {
+		t.Errorf("at 39 columns: %q", got)
 	}
 }
 
@@ -71,27 +92,27 @@ func TestKeyHintsFull(t *testing.T) {
 	c.Focus("l")
 	r.Draw(60)
 	keys(t, r, "?")
-	want := "↑/k      up             /     filter    tab       next\n" +
-		"↓/j      down           enter choose    shift+tab back\n" +
-		"→/l/pgdn next page                      ?         close help\n" +
-		"←/h/pgup prev page\n" +
-		"g/home   go to start\n" +
-		"G/end    go to end"
-	if got := r.Draw(60).Plain(); !strings.HasSuffix(got, "\n"+want) {
+	want := " ↑ / K          up              /      filter     Tab        next\n" +
+		" ↓ / J          down            Enter  choose     Shift+Tab  back\n" +
+		" → / L / PgDn   next page                         ?          close help\n" +
+		" ← / H / PgUp   prev page\n" +
+		" G / Home       go to start\n" +
+		" Shift+G / End  go to end"
+	if got := r.Draw(80).Plain(); !strings.HasSuffix(got, "\n"+want) {
 		t.Fatalf("the full view:\n%s\nwant it to end\n%s", got, want)
 	}
-	if got := r.Draw(30).Plain(); !strings.Contains(got, "\n↑/k      up          …\n") {
-		t.Errorf("at 30 columns, the second group does not fit:\n%s", got)
+	if got := r.Draw(34).Plain(); !strings.Contains(got, "\n ↑ / K          up          …\n") {
+		t.Errorf("at 34 columns, the second group does not fit:\n%s", got)
 	}
 	keys(t, r, "?")
-	if got := last(r.Draw(60)); got != "↑/k up • ↓/j down • / filter • enter choose • ? more" {
+	if got := last(r.Draw(66)); got != " ↑ / K  up •  ↓ / J  down •  /  filter •  Enter  choose •  ?  more" {
 		t.Fatalf("? again: %q", got)
 	}
 	keys(t, r, "/", "?")
 	if e := c.V.Find("l"); e.Query.Text != "?" || c.St.FullHints {
 		t.Errorf("? in the filter: %+v, full %v", e.Query, c.St.FullHints)
 	}
-	if got := last(r.Draw(60)); got != "enter apply filter • esc cancel • ? more" {
+	if got := last(r.Draw(60)); got != " Enter  apply filter •  Esc  cancel •  ?  more" {
 		t.Errorf("while the filter is typed: %q", got)
 	}
 	c.Focus("title")

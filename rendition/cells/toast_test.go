@@ -182,12 +182,12 @@ func TestTooltipRow(t *testing.T) {
 		return [2]string{rows[len(rows)-2], rows[len(rows)-1]}
 	}
 	f := r.Draw(80)
-	if got := last2(f); got != [2]string{"", "? more"} {
+	if got := last2(f); got != [2]string{"", " ?  more"} {
 		t.Errorf("nothing focused: %q", got)
 	}
 	c.Focus("mute")
 	f = r.Draw(80)
-	if got := last2(f); got != [2]string{"Silences notifications about this conversation", "enter press • ? more"} {
+	if got := last2(f); got != [2]string{"Silences notifications about this conversation", " Enter  press •  ?  more"} {
 		t.Errorf("mute focused: %q", got)
 	}
 	if c := f.Cells[f.Rows-2][0]; c.Attr&Italic == 0 || c.Role != Fg && c.Role != 0 {

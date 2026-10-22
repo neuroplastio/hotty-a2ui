@@ -45,7 +45,7 @@ func TestTimerRows(t *testing.T) {
 		"Focus 25:00\n" +
 		"Tea 0:10\n" +
 		" Start   Stop   Reset\n\n" +
-		"s start/stop lap • r reset lap • ? more"
+		" S  start/stop lap •  R  reset lap •  ?  more"
 	if got := at(0); got != want {
 		t.Fatalf("at 0:\n%s\nwant\n%s", got, want)
 	}

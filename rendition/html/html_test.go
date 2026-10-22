@@ -1553,7 +1553,7 @@ func TestConfirmOnHost(t *testing.T) {
 	}
 }
 
-// A HottyKeyHints on a host is the line cells draws, a kbd for each key;
+// A HottyKeyHints on a host is the line cells draws, a cap for each key;
 // it follows the element the program knows has the keyboard, and ?, which
 // reaches the program from a box, shows the full view's groups as columns.
 func TestKeyHintsOnHost(t *testing.T) {
@@ -1568,17 +1568,32 @@ func TestKeyHintsOnHost(t *testing.T) {
 	x.process(msgs...)
 	r := x.rs["s"]
 	s := x.h.Surface(r.name)
-	if got := s.TextOf("help"); got != "ctrl+s save • ? more" {
+	if got := s.TextOf("help"); got != "Ctrl+S save • ? more" {
 		t.Errorf("without the keyboard: %q", got)
 	}
-	if !strings.Contains(s.HTML(), `<kbd class="k-hint-key">ctrl+s</kbd>`) {
-		t.Errorf("the key is not a kbd:\n%s", s.HTML())
+	if !strings.Contains(s.HTML(), `<kbd class="k-hint-key k-caps"><kbd class="k-cap">Ctrl<span class="k-cap-plus">+</span>S</kbd></kbd>`) {
+		t.Errorf("the key is not a cap:\n%s", s.HTML())
 	}
 	must(t, x.h.Click(r.name, partID("l", partItem+"1")))
 	x.pump()
-	if got := s.TextOf("help"); got != "↑/k up • ↓/j down • / filter • ctrl+s save • ? more" {
+	if got := s.TextOf("help"); got != "\U000F005D/K up • \U000F0045/J down • / filter • Ctrl+S save • ? more" {
 		t.Errorf("the list clicked: %q", got)
 	}
+	// A host draws glyphs unless the user says text (view.Keycaps).
+	for _, tc := range []struct {
+		caps view.Keycaps
+		want string
+	}{
+		{view.Keycaps{OS: "mac"}, "\U000F005D/K up • \U000F0045/J down • / filter • \U000F0634S save • ? more"},
+		{view.Keycaps{OS: "mac", Present: view.PresentText}, "↑/K up • ↓/J down • / filter • Ctrl+S save • ? more"},
+	} {
+		r.C.Keycaps = tc.caps
+		x.update(r)
+		if got := s.TextOf("help"); got != tc.want {
+			t.Errorf("%+v: %q, want %q", tc.caps, got, tc.want)
+		}
+	}
+	r.C.Keycaps = view.Keycaps{}
 	if _, ok, err := r.Key("?"); !ok || err != nil {
 		t.Fatalf("?: %v %v", ok, err)
 	}

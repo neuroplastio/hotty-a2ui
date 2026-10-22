@@ -72,7 +72,7 @@ func (m *markup) picker(e *view.Element) *node {
 				item.set("class", "k-pick-row k-sel")
 			}
 			item.add(el("span", "class", "k-pick-title").add(texts(a.Title)...),
-				el("span", "class", "k-pick-keys").add(texts(m.keyText(key))...))
+				m.keycaps("k-pick-keys", m.keyText(key)))
 			list.add(item)
 		}
 	case len(e.Rows) == 0:
@@ -109,7 +109,7 @@ func (m *markup) picker(e *view.Element) *node {
 	foot := el("div", "class", "k-pick-keys-line")
 	for _, h := range e.PickFooter() {
 		foot.add(el("span", "class", "k-pick-act").add(texts(h.Desc)...).
-			add(el("span", "class", "k-pick-key").add(texts(m.keyText(h.Key))...)))
+			add(m.keycaps("k-pick-key", m.keyText(h.Key))))
 	}
 	box.add(foot)
 	return box
@@ -147,7 +147,7 @@ func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 		for k, key := range ks {
 			ks[k] = m.keyText(key)
 		}
-		first.add(el("span", "class", "k-pick-keys").add(texts(strings.Join(ks, " "))...))
+		first.add(m.keycaps("k-pick-keys", strings.Join(ks, " ")))
 	}
 	if desc {
 		item.add(el("div", "class", "k-pick-desc").add(texts(r.Description)...))
@@ -162,6 +162,12 @@ func (m *markup) keyText(k string) string {
 		return m.key(k)
 	}
 	return view.KeyText(k)
+}
+
+// caps is a hint's keys as caps, glyphs unless the user set text
+// (view.Keycaps.Present).
+func (r *Rendition) caps(keys string) [][]view.Chord {
+	return r.C.Caps(keys, r.C.Keycaps.Glyphs(true))
 }
 
 // keyText is a key a program wrote, read with the Platform, as the key

@@ -23,6 +23,9 @@ type Controller struct {
 	// stands for and its edit shortcuts, hotty.PlatformOf its caps. The
 	// zero one is ctrl's, which a program keeps where no host says.
 	Platform hotty.Platform
+	// Keycaps is how the renditions draw keys: the user's system, glyphs
+	// or words, and their own labels.
+	Keycaps Keycaps
 }
 
 // NewController is a surface's controller, its view built.

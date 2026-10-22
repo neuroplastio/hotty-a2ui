@@ -41,6 +41,9 @@ type markup struct {
 	// key is a key a program wrote as the key hints write it, read with
 	// the Platform: mod+k as ctrl+k, or super+k on a Mac.
 	key func(k string) string
+	// caps is a hint's keys as caps (view.Controller.Caps), in the
+	// presentation the user set, glyphs by default.
+	caps func(keys string) [][]view.Chord
 	// keyboard is the element with the keyboard, "" while the surface
 	// has none.
 	keyboard string
