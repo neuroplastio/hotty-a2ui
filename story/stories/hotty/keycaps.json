@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyKeyHints, HottyPicker",
   "icon": "keyboard",
-  "description": "Keys drawn as keycaps, labelled for a system: each chord a cap, a sequence's caps in order with > between them. How they are labelled is the program's setting (view.Controller.Keycaps), which a program takes from its config; here the controls on top set it, and the picker's keys, its footer and the hints redraw as they change. System is the labels' (Auto guesses from the host's Mod), Presentation draws glyphs (⌃⌥⇧⌘, Return's arrow) or words, and Meta key's label replaces the system's with a symbol or a word. Tab moves between the controls, the arrows step them; ? in the hints shows every key.",
+  "description": "Keys drawn as keycaps, labelled for a system: each chord a cap, a sequence's caps in order with > between them. How they are labelled is the program's setting (view.Controller.Keycaps), which a program takes from its config; here the controls on top set it, and the picker's keys, its footer and the hints redraw as they change. System is the labels' (Auto guesses from the host's Mod), Presentation draws glyphs (⌃⌥⇧⌘, Return's arrow) or words, and Meta key's label replaces the system's with a Material Design Icon (Tux, say) or a word. Tab moves between the controls, the arrows step them; ? in the hints shows every key.",
   "messages": [
     {
       "version": "v1.0",
@@ -434,24 +434,60 @@
                 "value": "system"
               },
               {
-                "label": "◆",
-                "value": "◆"
+                "label": "󰌽 Tux",
+                "value": "󰌽"
               },
               {
-                "label": "◇",
-                "value": "◇"
+                "label": "󰻀 Penguin",
+                "value": "󰻀"
               },
               {
-                "label": "❖",
-                "value": "❖"
+                "label": "󰜋 Rhombus",
+                "value": "󰜋"
               },
               {
-                "label": "✦",
-                "value": "✦"
+                "label": "󰇈 Diamond",
+                "value": "󰇈"
               },
               {
-                "label": "⌘",
-                "value": "⌘"
+                "label": "󰫢 Star",
+                "value": "󰫢"
+              },
+              {
+                "label": "󰋘 Hexagon",
+                "value": "󰋘"
+              },
+              {
+                "label": "󰝨 Atom",
+                "value": "󰝨"
+              },
+              {
+                "label": "󱐋 Bolt",
+                "value": "󱐋"
+              },
+              {
+                "label": "󰑣 Rocket",
+                "value": "󰑣"
+              },
+              {
+                "label": "󰏩 Paw",
+                "value": "󰏩"
+              },
+              {
+                "label": "󰢚 Alien",
+                "value": "󰢚"
+              },
+              {
+                "label": "󰆥 Crown",
+                "value": "󰆥"
+              },
+              {
+                "label": "󰆍 Console",
+                "value": "󰆍"
+              },
+              {
+                "label": "󰌌 Keyboard",
+                "value": "󰌌"
               },
               {
                 "label": "Super",
@@ -470,7 +506,7 @@
             "id": "about",
             "component": "Text",
             "variant": "caption",
-            "text": "A program sets these from its config. Auto is macOS where the host's Mod is Command, else Linux; Default is glyphs on a hotty host, words in cells. System's label is ⌘, Meta or ⊞ (Win in words)."
+            "text": "A program sets these from its config. Auto is macOS where the host's Mod is Command, else Linux; Default is glyphs on a hotty host, words in cells. System's Meta is ⌘, Meta or ⊞ (Win in words); the icons need the host's Nerd Font."
           },
           {
             "id": "rule",

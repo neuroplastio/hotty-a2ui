@@ -1662,20 +1662,22 @@ not the agent's:
   since their font is the terminal's. Either rendition draws either: a
   terminal whose font has the glyphs takes them in cells too.
 - `Labels`, the user's own label for a key by name (SPEC §10.4): `super`
-  as `◆`, say. The kit's own labels show no logo.
+  as Tux (Material Design Icons' `linux`), say. The kit's own labels
+  show no logo.
 
 | | text | glyphs |
 |---|---|---|
 | macOS | Ctrl, Option, Shift, Cmd, Return, esc; `+` between | ⌃⌥⇧⌘, Return's, Backspace's, Tab's and Caps Lock's symbols, tight together (⇧⌘P); esc a word |
-| Linux | Ctrl, Alt, Shift, Meta, Enter, Esc; `+` between | the same, the arrows and Backspace as icons (Backspace's macOS's ⌫) |
+| Linux | Ctrl, Alt, Shift, Meta, Enter, Esc; `+` between | ⌃ and ⇧ as macOS's, Alt and Meta words, the arrows and Backspace as icons (Backspace's macOS's ⌫); `+` between |
 | Windows | as Linux, super as Win | as Linux, super as ⊞ |
 
 Modifiers come in the system's order: ⌃⌥⇧⌘ on macOS, Win+Ctrl+Alt+Shift
 elsewhere. A letter or an F-key is in capitals, a capital alone is
 Shift and the letter, and any other name is its words capitalised. The
 glyphs are Material Design Icons in the Nerd Font hosts ship, drawn
-evenly where a font's own ⌃⌥⇧⌘ are not; Esc is a word, as ⎋ reads as
-reload.
+evenly where a font's own ⌃⌥⇧⌘ are not. Ctrl's caret and Shift's arrow
+read on any system, so they are glyphs everywhere; Alt and Meta are the
+system's. Esc is a word, as ⎋ reads as reload.
 
 In the storybook, the story `hotty/keycaps` sets them with controls of
 its own, as a program's config would: a program behind the story

@@ -32,7 +32,7 @@ func TestPickerOnHost(t *testing.T) {
 		}
 	}
 	row := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
-	if got := s.TextOf(row(0)); got != "Pane: SplitCtrl+B>%" {
+	if got := s.TextOf(row(0)); got != "Pane: Split\U000F0634+B>%" {
 		t.Errorf("the first row reads %q", got)
 	}
 	if v, _ := s.Attr(row(0), "aria-selected"); v != "true" {
@@ -163,7 +163,7 @@ func TestPickerDescription(t *testing.T) {
 	row := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
 	html := s.HTML()
 	for _, want := range []string{
-		`<div class="k-pick-line"><span class="k-pick-title">pane.new</span>` + capsOf("k-pick-keys", []string{"Ctrl", "B"}, []string{"N"}) + `</div><div class="k-pick-desc">New pane (your shell)</div>`,
+		`<div class="k-pick-line"><span class="k-pick-title">pane.new</span>` + capsOf("k-pick-keys", []string{"\U000F0634", "B"}, []string{"N"}) + `</div><div class="k-pick-desc">New pane (your shell)</div>`,
 		`<span class="k-pick-title">pane.split<span class="k-pick-detail">right</span></span></div>`,
 	} {
 		if !strings.Contains(html, want) {
@@ -222,7 +222,7 @@ func TestPickerFooter(t *testing.T) {
 	act := func(title string, key []string) string {
 		return `<span class="k-pick-act">` + title + capsOf("k-pick-key", key) + `</span>`
 	}
-	want := `<div class="k-pick-keys-line">` + act("Go to pane", []string{"Enter"}) + act("Close pane", []string{"Shift", "Del"}) + act("Actions", []string{"Ctrl", "K"}) + `</div>`
+	want := `<div class="k-pick-keys-line">` + act("Go to pane", []string{"Enter"}) + act("Close pane", []string{"\U000F0636", "Del"}) + act("Actions", []string{"\U000F0634", "K"}) + `</div>`
 	if html := s.HTML(); !strings.Contains(html, want) {
 		t.Errorf("no %s in\n%s", want, html)
 	}

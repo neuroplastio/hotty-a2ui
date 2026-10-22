@@ -1568,15 +1568,15 @@ func TestKeyHintsOnHost(t *testing.T) {
 	x.process(msgs...)
 	r := x.rs["s"]
 	s := x.h.Surface(r.name)
-	if got := s.TextOf("help"); got != "Ctrl+S save • ? more" {
+	if got := s.TextOf("help"); got != "\U000F0634+S save • ? more" {
 		t.Errorf("without the keyboard: %q", got)
 	}
-	if !strings.Contains(s.HTML(), `<kbd class="k-hint-key k-caps"><kbd class="k-cap">Ctrl<span class="k-cap-plus">+</span>S</kbd></kbd>`) {
+	if !strings.Contains(s.HTML(), "<kbd class=\"k-hint-key k-caps\"><kbd class=\"k-cap\">\U000F0634<span class=\"k-cap-plus\">+</span>S</kbd></kbd>") {
 		t.Errorf("the key is not a cap:\n%s", s.HTML())
 	}
 	must(t, x.h.Click(r.name, partID("l", partItem+"1")))
 	x.pump()
-	if got := s.TextOf("help"); got != "\U000F005D/K up • \U000F0045/J down • / filter • Ctrl+S save • ? more" {
+	if got := s.TextOf("help"); got != "\U000F005D/K up • \U000F0045/J down • / filter • \U000F0634+S save • ? more" {
 		t.Errorf("the list clicked: %q", got)
 	}
 	// A host draws glyphs unless the user says text (view.Keycaps).
