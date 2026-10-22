@@ -1,6 +1,7 @@
 package view_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -78,8 +79,41 @@ func TestPickerBuilds(t *testing.T) {
 			t.Errorf("line %d: %+v, want %+v", i, lines[i], want[i])
 		}
 	}
-	if enter, panel := e.PickFooter(); enter != "Run" || !panel {
-		t.Errorf("footer %q, %v", enter, panel)
+	if got := e.PickFooter(); !slices.Equal(got, []view.Hint{{Key: "enter", Desc: "Run"}, {Key: "mod+enter", Desc: "Run and stay"}, {Key: "mod+k", Desc: "Actions"}}) {
+		t.Errorf("footer %+v", got)
+	}
+}
+
+// A row's keys are the agent's, as written; the footer lists the selected
+// row's actions, Enter's first, then those with a key in order, then the
+// panel key; in the panel, Enter's and Escape's.
+func TestPickerFooter(t *testing.T) {
+	c, _ := paletteOf(t, `[{"value":"pane.new","title":"pane.new","keys":"ctrl+b , n","actions":[{"id":"run","title":"Run"}]},
+	 {"value":"p-1","title":"fish","actions":[{"id":"focus","title":"Go to pane"},{"id":"rename","title":"Rename"},
+	  {"id":"close","title":"Close pane","key":"shift+delete"}]},
+	 {"value":"config.get","title":"Get a setting"}]`, "")
+	e := c.V.Find("root")
+	if e.Rows[0].Keys != "ctrl+b , n" || e.Rows[1].Keys != "" {
+		t.Errorf("keys %q, %q", e.Rows[0].Keys, e.Rows[1].Keys)
+	}
+	for _, step := range []struct {
+		key  string
+		want []view.Hint
+	}{
+		{"", []view.Hint{{Key: "enter", Desc: "Run"}, {Key: "mod+k", Desc: "Actions"}}},
+		{"arrow_down", []view.Hint{{Key: "enter", Desc: "Go to pane"}, {Key: "shift+delete", Desc: "Close pane"}, {Key: "mod+k", Desc: "Actions"}}},
+		{"ctrl+k", []view.Hint{{Key: "enter", Desc: "Run"}, {Key: "escape", Desc: "Back"}}},
+		{"escape", []view.Hint{{Key: "enter", Desc: "Go to pane"}, {Key: "shift+delete", Desc: "Close pane"}, {Key: "mod+k", Desc: "Actions"}}},
+		{"arrow_down", nil},
+	} {
+		if step.key != "" {
+			if ok, err := c.PickerKey("root", step.key); !ok || err != nil {
+				t.Fatalf("%s: %v, %v", step.key, ok, err)
+			}
+		}
+		if got := c.V.Find("root").PickFooter(); !slices.Equal(got, step.want) {
+			t.Errorf("after %q: footer %+v, want %+v", step.key, got, step.want)
+		}
 	}
 }
 

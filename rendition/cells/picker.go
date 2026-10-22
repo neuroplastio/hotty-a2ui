@@ -11,12 +11,16 @@ import (
 // command palette draws one: the query on the first row, after its chip;
 // a rule; the status, while it has one; the rows, a heading wherever their
 // section changes, the selected one reversed in the accent across the
-// picker, as a menu's item, a row's description in muted on the line under
-// it; then a line of keys. While the actions panel is open, the selected
-// row's actions take the rows' place.
+// picker, as a menu's item, a row's keys at its right and its description
+// in muted on the line under it; then the footer, what the selected row's
+// keys do, flush right, as Zed's. While the actions panel is open, the
+// selected row's actions take the rows' place.
 
 // pickIndent is the columns before a row's text and after its keys.
 const pickIndent = 1
+
+// pickGap is the columns between two of the footer's actions.
+const pickGap = "    "
 
 // pickHead is how many rows a HottyPicker's lines above its rows take:
 // the query and the rule, and the status while it has one.
@@ -39,8 +43,8 @@ func pickBody(e *view.Element) int {
 	return n
 }
 
-// pickHeight is a HottyPicker's height: its head, its rows, and the line
-// of keys.
+// pickHeight is a HottyPicker's height: its head, its rows, and the
+// footer.
 func pickHeight(e *view.Element) int { return pickHead(e) + pickBody(e) + 1 }
 
 // pickWidth is a HottyPicker's natural width: its widest row, its keys
@@ -55,10 +59,8 @@ func pickWidth(e *view.Element) int {
 		if row.Detail != "" {
 			rw += 2 + Width(row.Detail)
 		}
-		for i, a := range row.Actions {
-			if i > 0 && a.Key != "" {
-				rw += 2 + Width(view.KeyText(a.Key))
-			}
+		if row.Keys != "" {
+			rw += 2 + Width(keysText(row.Keys, view.KeyText))
 		}
 		n = max(n, rw, Width(row.Description))
 	}
@@ -108,20 +110,21 @@ func (r *Rendition) pickSelected(focused bool) style {
 	return style{role: Muted, attr: Reverse}
 }
 
-// pickKeys are the keys of a row's actions past its first, as the key
-// hints write them, two columns apart.
+// pickKeys are the keys that run a row, as the key hints write each.
 func (r *Rendition) pickKeys(row view.PickRow, st style) []glyph {
-	var gs []glyph
-	for i, a := range row.Actions {
-		if i == 0 || a.Key == "" {
-			continue
-		}
-		if gs != nil {
-			gs = concat(gs, line("  ", st))
-		}
-		gs = concat(gs, line(r.keyText(a.Key), st))
+	if row.Keys == "" {
+		return nil
 	}
-	return gs
+	return line(keysText(row.Keys, r.keyText), st)
+}
+
+// keysText is a sequence of keys, apart by spaces, each as text writes it.
+func keysText(keys string, text func(string) string) string {
+	ks := strings.Fields(keys)
+	for i, k := range ks {
+		ks[i] = text(k)
+	}
+	return strings.Join(ks, " ")
 }
 
 // keyText is a key a program wrote, read with the Platform, as the key
@@ -157,7 +160,8 @@ func (l *layout) paintPicker(cv *canvas, e *view.Element, x, y, w int) {
 		l.paintPickRows(cv, e, x, row, w, focused)
 	}
 	row += pickBody(e)
-	cv.write(in, row, iw, shortHints(r.pickHints(e), iw))
+	foot := r.pickFooter(e, iw)
+	cv.write(in+iw-width(foot), row, width(foot), foot)
 	r.boxes[e.ID] = box{x, y, w, row + 1 - y}
 }
 
@@ -165,9 +169,9 @@ func (l *layout) paintPicker(cv *canvas, e *view.Element, x, y, w int) {
 // and bold, or a row, the selected one across the picker, and a row's
 // description in muted under it, across the picker with it. A heading on
 // the last line, with none of its rows under it, is left out. A row's
-// other actions' keys show at its right where they fit beside its whole
-// text; a narrow picker shows them on the selected row alone, so that the
-// others' details aren't cut for keys the panel lists anyway.
+// keys show at its right where they fit beside its whole text; a narrow
+// picker shows them on the selected row alone, so that the others'
+// details aren't cut for them.
 func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused bool) {
 	r := l.r
 	in, iw := x+pickIndent, max(w-2*pickIndent, 0)
@@ -242,20 +246,23 @@ func (l *layout) paintPickPanel(cv *canvas, e *view.Element, x, y, w int, focuse
 	}
 }
 
-// pickHints are the picker's line of keys: the arrows, then what Enter
-// does to the selected row and the panel's key; in the panel, its own.
-func (r *Rendition) pickHints(e *view.Element) []view.Hint {
-	if e.Panel {
-		return []view.Hint{{Key: "↑/↓", Desc: "move"}, {Key: "enter", Desc: "run"}, {Key: "esc", Desc: "back"}}
-	}
-	hs := []view.Hint{{Key: "↑/↓", Desc: "move"}}
-	if enter, panel := e.PickFooter(); enter != "" {
-		hs = append(hs, view.Hint{Key: "enter", Desc: strings.ToLower(enter)})
-		if panel {
-			hs = append(hs, view.Hint{Key: r.keyText(e.PanelKey), Desc: "actions"})
+// pickFooter is a HottyPicker's footer in w columns, as Zed's: what its
+// keys do now (view.Element.PickFooter), each its title and its key in
+// muted, from the right, the most significant there; those that don't fit
+// at the left are left out.
+func (r *Rendition) pickFooter(e *view.Element, w int) []glyph {
+	var out []glyph
+	for _, h := range e.PickFooter() {
+		item := concat(line(h.Desc, style{}), line("  "+r.keyText(h.Key), style{role: Muted}))
+		if out != nil {
+			item = concat(item, line(pickGap, style{}))
 		}
+		if width(item)+width(out) > w {
+			break
+		}
+		out = concat(item, out)
 	}
-	return hs
+	return out
 }
 
 // pickCaret puts a HottyPicker's caret at its query's end once a query is

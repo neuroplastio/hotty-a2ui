@@ -732,11 +732,13 @@ textarea.k-resize-none { resize: none; }
    out: the query after its chip, with the program's caret; a rule; the
    status; the rows the agent ranked, headings where their section
    changes, the selected one tinted, in the focus colour while the picker
-   has the keyboard; the other actions' keys at a row's end; then a line
-   of keys. The query is an input of its own, the host's caret in it.
-   The detail wins, as in cells: a row wraps, and shows one line, so keys
-   that don't fit beside its whole title wrap out of sight; the selected
-   row doesn't wrap, its keys stay and its title is cut. */
+   has the keyboard; a row's keys at its end; then the footer, the
+   selected row's actions from the right, as Zed's, those that don't fit
+   wrapping out of sight at the left. The query is an input of its own,
+   the host's caret in it. The detail wins, as in cells: a row wraps, and
+   shows one line, so keys that don't fit beside its whole title wrap out
+   of sight; the selected row doesn't wrap, its keys stay and its title is
+   cut. */
 .k-pick { display: flex; flex-direction: column; align-self: stretch; }
 .k-pick-query { display: flex; align-items: baseline; column-gap: 0.5ch; padding: var(--k-1) var(--k-3); border-bottom: 1px solid var(--k-border); }
 .k-pick-chip { color: var(--k-focus); font-weight: 600; white-space: pre; }
@@ -763,7 +765,8 @@ textarea.k-resize-none { resize: none; }
 .k-pick:focus-within .k-pick-row.k-sel :is(.k-pick-group, .k-pick-detail, .k-pick-keys, .k-pick-desc, .k-match) { color: var(--k-bg); }
 .k-pick:focus-within .k-pick-row.k-sel .k-match { text-decoration: underline; }
 .k-pick-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
-.k-pick-keys-line { color: var(--k-muted); font-size: 0.875rem; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
+.k-pick-keys-line { display: flex; flex-direction: row-reverse; flex-wrap: wrap; column-gap: var(--k-5); font-size: 0.875rem; line-height: 1.5; height: 1.5em; overflow: hidden; white-space: pre; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
+.k-pick-key { color: var(--k-muted); margin-left: 1ch; }
 
 /* HottyPaginator: a baseline (phase 1), as cells draws it: its child,
    holding the page the view shows, then its pages, a HottyList's dots,

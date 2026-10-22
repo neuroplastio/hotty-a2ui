@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyPicker",
   "icon": "terminal",
-  "description": "A terminal multiplexer's command palette: commands, panes and agents in one list, as Zed's, VS Code's and Raycast's palettes have them. A command has a description under its title, smaller and muted; a pane its directory or host after it. The agent ranks the rows: each change to the query sends query, and the program behind the story answers with the rows whose \"Group: Title\" holds what was typed, best first, the matched letters drawn out; with no query, every row under its section. The arrows (ctrl+p, ctrl+n) move the selection round, Page Up and Page Down by the rows it shows. Enter runs a row's first action; mod+enter, alt+enter and shift+delete run those a row has on them, their keys at its right; ctrl+k (mod+k) lists the selected row's actions, where the arrows and Enter pick one and Escape goes back. Each action sends act with the row and the action, and the program says in the status what ran; htop runs on bastion, which does not answer, so its Focus and Close pane say so as an error. Get a setting has no actions: Enter sends act with none.",
+  "description": "A terminal multiplexer's command palette: commands, panes and agents in one list, as Zed's, VS Code's and Raycast's palettes have them. A command has a description under its title, smaller and muted; a pane its directory or host after it. The agent ranks the rows: each change to the query sends query, and the program behind the story answers with the rows whose \"Group: Title\" holds what was typed, best first, the matched letters drawn out; with no query, every row under its section. The arrows (ctrl+p, ctrl+n) move the selection round, Page Up and Page Down by the rows it shows. A command's keys, as the multiplexer binds it, are at its right. Enter runs a row's first action, and mod+enter, alt+enter and shift+delete run those a row has on them; the footer says what each does for the selected row, Enter's at the right, as Zed's does. ctrl+k (mod+k) lists the selected row's actions, where the arrows and Enter pick one and Escape goes back. Each action sends act with the row and the action, and the program says in the status what ran; htop runs on bastion, which does not answer, so its Focus and Close pane say so as an error. Get a setting has no actions: Enter sends act with none.",
   "messages": [
     {
       "version": "v1.0",
@@ -21,6 +21,7 @@
               "value": "pane.split",
               "group": "Pane",
               "title": "Split right",
+              "keys": "ctrl+b %",
               "description": "Open a pane beside this one",
               "section": "Recently used",
               "actions": [
@@ -45,6 +46,7 @@
               "value": "tab.new",
               "group": "Tab",
               "title": "New tab",
+              "keys": "ctrl+b c",
               "description": "Open a tab with your shell in it",
               "section": "Recently used",
               "actions": [
@@ -141,6 +143,7 @@
               "value": "pane.close",
               "group": "Pane",
               "title": "Close",
+              "keys": "ctrl+b x",
               "description": "Close this pane and what runs in it",
               "section": "Commands",
               "actions": [
@@ -165,6 +168,7 @@
               "value": "pane.zoom",
               "group": "Pane",
               "title": "Zoom",
+              "keys": "ctrl+b z",
               "description": "Fill the tab with this pane, or put it back",
               "section": "Commands",
               "actions": [
@@ -213,6 +217,7 @@
               "value": "workspace.rename",
               "group": "Workspace",
               "title": "Rename…",
+              "keys": "ctrl+b $",
               "description": "Give this workspace another name",
               "section": "Commands",
               "actions": [

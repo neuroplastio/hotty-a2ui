@@ -31,7 +31,7 @@ func TestPickerOnHost(t *testing.T) {
 		}
 	}
 	row := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
-	if got := s.TextOf(row(0)); got != "Pane: Splitctrl+enter" {
+	if got := s.TextOf(row(0)); got != "Pane: Splitctrl+b %" {
 		t.Errorf("the first row reads %q", got)
 	}
 	if v, _ := s.Attr(row(0), "aria-selected"); v != "true" {
@@ -151,18 +151,18 @@ func TestPickerStale(t *testing.T) {
 }
 
 // TestPickerDescription: a row with a description is two lines, its
-// title's (with its detail and keys) and the description's under it, in a
+// title's (with its keys) and the description's under it, in a
 // class of its own (k-pick-desc, smaller and muted); a row without one is
 // one line, as it was.
 func TestPickerDescription(t *testing.T) {
-	x, r := pickerHarnessOf(t, 10, `[{"value":"pane.new","title":"pane.new","description":"New pane (your shell)","detail":"ctrl+b n",
+	x, r := pickerHarnessOf(t, 10, `[{"value":"pane.new","title":"pane.new","description":"New pane (your shell)","keys":"ctrl+b n",
   "actions":[{"id":"run","title":"Run"},{"id":"keep","title":"Keep","key":"mod+enter"}]},
  {"value":"pane.split","title":"pane.split","detail":"right"}]`)
 	s := x.h.Surface(r.name)
 	row := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
 	html := s.HTML()
 	for _, want := range []string{
-		`<div class="k-pick-line"><span class="k-pick-title">pane.new<span class="k-pick-detail">ctrl+b n</span></span><span class="k-pick-keys">ctrl+enter</span></div><div class="k-pick-desc">New pane (your shell)</div>`,
+		`<div class="k-pick-line"><span class="k-pick-title">pane.new</span><span class="k-pick-keys">ctrl+b n</span></div><div class="k-pick-desc">New pane (your shell)</div>`,
 		`<span class="k-pick-title">pane.split<span class="k-pick-detail">right</span></span></div>`,
 	} {
 		if !strings.Contains(html, want) {
@@ -181,11 +181,37 @@ func TestPickerDescription(t *testing.T) {
 	}
 }
 
+// TestPickerFooter: a row's actions show in the footer alone, not on the
+// row: each its title and its key, the most significant first, which the
+// CSS puts at the right (Enter's, the others with a key, the panel's); in
+// the panel, Enter's and Escape's.
+func TestPickerFooter(t *testing.T) {
+	x, r := pickerHarnessOf(t, 10, `[{"value":"p-1","title":"Pane: gov","detail":"main · p-3",
+  "actions":[{"id":"focus","title":"Go to pane"},{"id":"close","title":"Close pane","key":"shift+delete"}]}]`)
+	s := x.h.Surface(r.name)
+	if got := s.TextOf(partID("root", partItem+"0")); got != "Pane: govmain · p-3" {
+		t.Errorf("the row reads %q", got)
+	}
+	act := func(title, key string) string {
+		return `<span class="k-pick-act">` + title + `<span class="k-pick-key">` + key + `</span></span>`
+	}
+	want := `<div class="k-pick-keys-line">` + act("Go to pane", "enter") + act("Close pane", "shift+delete") + act("Actions", "ctrl+k") + `</div>`
+	if html := s.HTML(); !strings.Contains(html, want) {
+		t.Errorf("no %s in\n%s", want, html)
+	}
+	must(t, func() error { _, err := r.C.PickerKey("root", "ctrl+k"); return err }())
+	x.update(r)
+	want = `<div class="k-pick-keys-line">` + act("Run", "enter") + act("Back", "esc") + `</div>`
+	if html := s.HTML(); !strings.Contains(html, want) {
+		t.Errorf("in the panel, no %s in\n%s", want, html)
+	}
+}
+
 // pickerHarness shows a HottyPicker, root, as surface s's, whose query is
 // /q.
 func pickerHarness(t *testing.T) (*harness, *Rendition) {
 	t.Helper()
-	return pickerHarnessOf(t, 10, `[{"value":"split","group":"Pane","title":"Split","section":"Used","match":[[0,2]],"actions":[{"id":"run","title":"Run"},{"id":"again","title":"Again","key":"mod+enter"}]},
+	return pickerHarnessOf(t, 10, `[{"value":"split","group":"Pane","title":"Split","keys":"ctrl+b %","section":"Used","match":[[0,2]],"actions":[{"id":"run","title":"Run"},{"id":"again","title":"Again","key":"mod+enter"}]},
    {"value":"p-1","group":"Pane","title":"fish","detail":"~/code","section":"Panes"}]`)
 }
 

@@ -14,16 +14,18 @@ import (
 
 // PickRow is one of a HottyPicker's rows, as the agent wrote it: what
 // identifies it, its title, the group before it and the detail after it,
-// the description on a line under it, the heading it falls under, where
-// the query matched its title (character ranges, from and to), its
-// actions, the first Enter's, and what Tab fills the query with ("" for
-// its title).
+// the keys that run it where the program binds them (a sequence, key
+// names apart by spaces), the description on a line under it, the heading
+// it falls under, where the query matched its title (character ranges,
+// from and to), its actions, the first Enter's, and what Tab fills the
+// query with ("" for its title).
 type PickRow struct {
 	Value       string       `json:"value"`
 	Title       string       `json:"title"`
 	Complete    string       `json:"complete,omitempty"`
 	Group       string       `json:"group,omitempty"`
 	Detail      string       `json:"detail,omitempty"`
+	Keys        string       `json:"keys,omitempty"`
 	Description string       `json:"description,omitempty"`
 	Section     string       `json:"section,omitempty"`
 	Match       [][2]int     `json:"match,omitempty"`
@@ -113,7 +115,8 @@ func mapPicker(b *Builder, n *a2ui.Node) *Element {
 // pickRow reads a row as the agent wrote it.
 func pickRow(m map[string]any) PickRow {
 	r := PickRow{Value: a2ui.ToString(m["value"]), Title: a2ui.ToString(m["title"]), Complete: a2ui.ToString(m["complete"]), Group: a2ui.ToString(m["group"]),
-		Detail: a2ui.ToString(m["detail"]), Description: a2ui.ToString(m["description"]), Section: a2ui.ToString(m["section"])}
+		Detail: a2ui.ToString(m["detail"]), Keys: a2ui.ToString(m["keys"]), Description: a2ui.ToString(m["description"]),
+		Section: a2ui.ToString(m["section"])}
 	ms, _ := m["match"].([]any)
 	for _, x := range ms {
 		p, _ := x.([]any)
@@ -198,15 +201,30 @@ func (e *Element) SelectedPick() *PickRow {
 	return &e.Rows[e.Selected]
 }
 
-// PickFooter is what a HottyPicker's footer says of its selected row:
-// the action Enter runs, and whether the panel key lists more ("" each
-// for none).
-func (e *Element) PickFooter() (enter string, panel bool) {
+// PickFooter is what a HottyPicker's footer lists, the most significant
+// first, for a footer that draws them from its right, as Zed's does: in
+// the actions panel, Enter's run and Escape's back; else the selected
+// row's actions, Enter's first, then each of the others that has a key,
+// and the panel key, where it lists them. Each is a key and its title, as
+// written.
+func (e *Element) PickFooter() []Hint {
+	if e.Panel {
+		return []Hint{{Key: "enter", Desc: "Run"}, {Key: "escape", Desc: "Back"}}
+	}
 	r := e.SelectedPick()
 	if r == nil || len(r.Actions) == 0 {
-		return "", false
+		return nil
 	}
-	return r.Actions[0].Title, e.PanelKey != ""
+	hs := []Hint{{Key: "enter", Desc: r.Actions[0].Title}}
+	for _, a := range r.Actions[1:] {
+		if a.Key != "" {
+			hs = append(hs, Hint{Key: a.Key, Desc: a.Title})
+		}
+	}
+	if e.PanelKey != "" {
+		hs = append(hs, Hint{Key: e.PanelKey, Desc: "Actions"})
+	}
+	return hs
 }
 
 // PickerKey works a HottyPicker by a key, named as SPEC §10.4 has it. The

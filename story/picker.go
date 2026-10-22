@@ -13,10 +13,11 @@ import (
 // rows for each query the picker sends and says what each action did.
 
 // pickerEntry is one of the palette's rows before ranking: what it is, the
-// section it shows under with no query, and its actions.
+// keys the multiplexer binds it to, the section it shows under with no
+// query, and its actions.
 type pickerEntry struct {
-	value, group, title, detail, description, section string
-	actions                                           []map[string]any
+	value, group, title, detail, keys, description, section string
+	actions                                                 []map[string]any
 }
 
 // pickerRun, pickerPane and pickerAgent are a command's, a pane's and an
@@ -36,17 +37,17 @@ var (
 
 // pickerEntries are the palette's rows with no query, in order.
 var pickerEntries = []pickerEntry{
-	{"pane.split", "Pane", "Split right", "", "Open a pane beside this one", "Recently used", pickerRun},
-	{"tab.new", "Tab", "New tab", "", "Open a tab with your shell in it", "Recently used", pickerRun},
-	{"p-1", "Pane", "fish", "~/code/plexos", "", "Panes", pickerPane},
-	{"p-2", "Pane", "claude", "agent · plexos", "", "Panes", pickerPane},
-	{"p-3", "Pane", "htop", "bastion", "", "Panes", pickerPane},
-	{"pane.close", "Pane", "Close", "", "Close this pane and what runs in it", "Commands", pickerRun},
-	{"pane.zoom", "Pane", "Zoom", "", "Fill the tab with this pane, or put it back", "Commands", pickerRun},
-	{"workspace.new", "Workspace", "New workspace", "", "Start a workspace of its own", "Commands", pickerRun},
-	{"workspace.rename", "Workspace", "Rename…", "", "Give this workspace another name", "Commands", pickerRun},
-	{"config.get", "Config", "Get a setting", "", "Show what a setting is set to", "Commands", nil},
-	{"session.quit", "Session", "Quit", "", "End the session and every pane in it", "Commands", pickerRun},
+	{"pane.split", "Pane", "Split right", "", "ctrl+b %", "Open a pane beside this one", "Recently used", pickerRun},
+	{"tab.new", "Tab", "New tab", "", "ctrl+b c", "Open a tab with your shell in it", "Recently used", pickerRun},
+	{"p-1", "Pane", "fish", "~/code/plexos", "", "", "Panes", pickerPane},
+	{"p-2", "Pane", "claude", "agent · plexos", "", "", "Panes", pickerPane},
+	{"p-3", "Pane", "htop", "bastion", "", "", "Panes", pickerPane},
+	{"pane.close", "Pane", "Close", "", "ctrl+b x", "Close this pane and what runs in it", "Commands", pickerRun},
+	{"pane.zoom", "Pane", "Zoom", "", "ctrl+b z", "Fill the tab with this pane, or put it back", "Commands", pickerRun},
+	{"workspace.new", "Workspace", "New workspace", "", "", "Start a workspace of its own", "Commands", pickerRun},
+	{"workspace.rename", "Workspace", "Rename…", "", "ctrl+b $", "Give this workspace another name", "Commands", pickerRun},
+	{"config.get", "Config", "Get a setting", "", "", "Show what a setting is set to", "Commands", nil},
+	{"session.quit", "Session", "Quit", "", "", "End the session and every pane in it", "Commands", pickerRun},
 }
 
 // PickerRows are the palette's rows for a query: with none, every row
@@ -58,6 +59,9 @@ func PickerRows(query string) []any {
 		m := map[string]any{"value": p.value, "title": p.title, "group": p.group}
 		if p.detail != "" {
 			m["detail"] = p.detail
+		}
+		if p.keys != "" {
+			m["keys"] = p.keys
 		}
 		if p.description != "" {
 			m["description"] = p.description

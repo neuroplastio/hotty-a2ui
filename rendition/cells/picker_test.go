@@ -22,7 +22,7 @@ func palette(t *testing.T) (*Rendition, *view.Controller, *[]string) {
 		}
 	}
 	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"q":"","sel":"","act":"","rows":[
-	 {"value":"pane.split","group":"Pane","title":"Split right","section":"Used","match":[[0,2]],
+	 {"value":"pane.split","group":"Pane","title":"Split right","keys":"ctrl+b %","section":"Used","match":[[0,2]],
 	  "actions":[{"id":"run","title":"Run"},{"id":"again","title":"Run again","key":"mod+enter"}]},
 	 {"value":"p-1","group":"Pane","title":"fish","detail":"~/code","section":"Panes",
 	  "actions":[{"id":"focus","title":"Focus"},{"id":"close","title":"Close pane","key":"shift+delete"}]},
@@ -49,18 +49,20 @@ func trimmed(f *Frame) string {
 
 // A HottyPicker is laid out as a palette: the query (its placeholder while
 // it is empty), a rule, the lines that show (a heading where the section
-// changes, a row's group before its title, its other actions' keys at its
-// right), then its line of keys; a heading on the last line, with none of
-// its rows under it, is left out. The selected row is reversed across the
-// picker; the title's matched characters are drawn out.
+// changes, a row's group before its title, its keys at its right), then
+// the footer, the selected row's actions flush right, Enter's at the right
+// and those that don't fit at the left left out; a heading on the last
+// line, with none of its rows under it, is left out. The selected row is
+// reversed across the picker; the title's matched characters are drawn
+// out.
 func TestPickerDraws(t *testing.T) {
 	r, c, _ := palette(t)
 	want := " Type a command\n" +
 		"──────────────────────────────────────────\n" +
 		" Used\n" +
-		" Pane: Split right             ctrl+enter\n" +
+		" Pane: Split right               ctrl+b %\n" +
 		"\n" +
-		" ↑/↓ move • enter run • ctrl+k actions"
+		"      Run again  ctrl+enter    Run  enter"
 	f := r.Draw(42)
 	if got := trimmed(f); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
@@ -71,6 +73,9 @@ func TestPickerDraws(t *testing.T) {
 	if cell := f.Cells[3][0]; cell.Role != Muted || cell.Attr&Reverse == 0 {
 		t.Errorf("the selected row, unfocused: %v %v, want muted reversed", cell.Role, cell.Attr)
 	}
+	if cell, key := f.Cells[5][31], f.Cells[5][40]; cell.Role != 0 || key.Role != Muted {
+		t.Errorf("the footer: a title %v, a key %v; want the text's and muted", cell.Role, key.Role)
+	}
 	c.Focus("root")
 	f = r.Draw(42)
 	if cell := f.Cells[3][41]; cell.Role != Accent || cell.Attr&Reverse == 0 {
@@ -79,26 +84,40 @@ func TestPickerDraws(t *testing.T) {
 	if cell := f.Cells[3][7]; cell.Attr&Underline == 0 || cell.Attr&Bold == 0 {
 		t.Errorf("a matched character in the selected row: %v, want bold and underlined", cell.Attr)
 	}
+	// Narrow, the detail wins: the selected row keeps its keys, and is
+	// cut; the footer keeps Enter's.
+	want = " Type a command\n" +
+		"────────────────────────────\n" +
+		" Used\n" +
+		" Pane: Split rig…  ctrl+b %\n" +
+		"\n" +
+		"                 Run  enter"
+	if got := trimmed(r.Draw(28)); got != want {
+		t.Errorf("at 28 columns:\n%s\nwant\n%s", got, want)
+	}
 	keys(t, r, "arrow_down")
 	want = " Type a command\n" +
 		"──────────────────────────────────────────\n" +
-		" Pane: Split right             ctrl+enter\n" +
+		" Pane: Split right               ctrl+b %\n" +
 		" Panes\n" +
-		" Pane: fish  ~/code          shift+delete\n" +
-		" ↑/↓ move • enter focus • ctrl+k actions"
+		" Pane: fish  ~/code\n" +
+		" Close pane  shift+delete    Focus  enter"
 	if got := trimmed(r.Draw(42)); got != want {
 		t.Errorf("after arrow_down, the lines follow the selection, its heading with it:\n%s\nwant\n%s", got, want)
 	}
-	// Narrow, the detail wins: a row whose keys don't fit beside its whole
-	// text shows none; the selected row keeps its keys, and is cut.
+	// A row whose keys don't fit beside its whole text shows none.
 	want = " Type a command\n" +
 		"────────────────────────────\n" +
 		" Pane: Split right\n" +
 		" Panes\n" +
-		" Pane: fish …  shift+delete\n" +
-		" ↑/↓ move • enter focus …"
+		" Pane: fish  ~/code\n" +
+		"               Focus  enter"
 	if got := trimmed(r.Draw(28)); got != want {
 		t.Errorf("at 28 columns:\n%s\nwant\n%s", got, want)
+	}
+	keys(t, r, "ctrl+k")
+	if got := strings.Split(trimmed(r.Draw(42)), "\n")[5]; got != "                  Back  esc    Run  enter" {
+		t.Errorf("the panel's footer %q", got)
 	}
 }
 
@@ -124,8 +143,7 @@ func TestPickerDescription(t *testing.T) {
 		" New pane (your shell)\n" +
 		" pane.split\n" +
 		" tab.new\n" +
-		" New tab\n" +
-		" ↑/↓ move"
+		" New tab\n"
 	f := r.Draw(30)
 	if got := trimmed(f); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)

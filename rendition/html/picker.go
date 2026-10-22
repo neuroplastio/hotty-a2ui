@@ -14,9 +14,10 @@ import (
 // its query, after its chip, as a text input of its own, which the host
 // edits, its caret the host's; a rule; its status; its rows, a heading
 // wherever their section changes, each an option whose id is the
-// picker's, "~i" and the row's index, its description on a second line;
-// and its line of keys. While the actions panel is open, the selected
-// row's actions take the rows' place. The input gives the program the keys
+// picker's, "~i" and the row's index, its keys at its right, its
+// description on a second line; and its footer, what the selected row's
+// keys do, flush right, as Zed's. While the actions panel is open, the
+// selected row's actions take the rows' place. The input gives the program the keys
 // the picker takes (pickKeys).
 //
 // A query the program writes (a completion, a staged command), other than
@@ -102,23 +103,20 @@ func (m *markup) picker(e *view.Element) *node {
 		}
 	}
 	box.add(list)
-	var hints []string
-	if e.Panel {
-		hints = []string{"↑/↓ move", "enter run", "esc back"}
-	} else if enter, panel := e.PickFooter(); enter != "" {
-		hints = []string{"↑/↓ move", "enter " + strings.ToLower(enter)}
-		if panel {
-			hints = append(hints, m.keyText(e.PanelKey)+" actions")
-		}
+	// The most significant first, which the CSS puts at the right; those
+	// that don't fit wrap out of sight at the left.
+	foot := el("div", "class", "k-pick-keys-line")
+	for _, h := range e.PickFooter() {
+		foot.add(el("span", "class", "k-pick-act").add(texts(h.Desc)...).
+			add(el("span", "class", "k-pick-key").add(texts(m.keyText(h.Key))...)))
 	}
-	box.add(el("div", "class", "k-pick-keys-line").add(texts(strings.Join(hints, " • "))...))
+	box.add(foot)
 	return box
 }
 
 // pickItem is a row: its group and title, the title's matched characters
-// in spans of class k-match, its detail, and its other actions' keys; with
-// desc, those in a line of their own (k-pick-line), and its description
-// under them.
+// in spans of class k-match, its detail, and its keys; with desc, those in
+// a line of their own (k-pick-line), and its description under them.
 func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 	r := e.Rows[i]
 	cls := "k-pick-row"
@@ -144,14 +142,11 @@ func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 		item.add(first)
 	}
 	first.add(title)
-	var keys []string
-	for k, a := range r.Actions {
-		if k > 0 && a.Key != "" {
-			keys = append(keys, m.keyText(a.Key))
+	if ks := strings.Fields(r.Keys); len(ks) > 0 {
+		for k, key := range ks {
+			ks[k] = m.keyText(key)
 		}
-	}
-	if len(keys) > 0 {
-		first.add(el("span", "class", "k-pick-keys").add(texts(strings.Join(keys, "  "))...))
+		first.add(el("span", "class", "k-pick-keys").add(texts(strings.Join(ks, " "))...))
 	}
 	if desc {
 		item.add(el("div", "class", "k-pick-desc").add(texts(r.Description)...))
