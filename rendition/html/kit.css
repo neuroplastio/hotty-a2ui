@@ -67,6 +67,13 @@
    middle of the surface's rows. Its text never wraps: a line too long
    for the bar would take another row. */
 .k-surface.k-dense { padding-block: 0; justify-content: center; line-height: var(--hotty-cell-h, 1.25rem); white-space: nowrap; }
+/* In a bar a one-line field (a text field, a DateTime or a select, as
+   cells has it) takes one row: its label beside its input, and the
+   input a row tall, its border included. A rule takes no rows of its
+   own either. A longText keeps its rows. */
+.k-dense .k-field:has(> .k-input:not(textarea)) { flex-direction: row; align-items: center; column-gap: var(--k-2); }
+.k-dense .k-input:not(textarea) { min-height: 0; padding-block: 0; line-height: calc(var(--hotty-cell-h, 1.25rem) - 2px); }
+.k-dense .k-hr { margin-block: 0; }
 .k-emoji { font-family: var(--k-emoji); font-style: normal; font-weight: normal; }
 
 /* Layout */
