@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyKeyHints, HottyPicker",
   "icon": "keyboard",
-  "description": "Keys drawn as keycaps, labelled for a system: each chord a cap, a sequence's caps in order with > between them. How they are labelled is the program's setting (view.Controller.Keycaps), which a program takes from its config; here the controls on top set it, and the picker's keys, its footer and the hints redraw as they change. System is the labels' (Auto guesses from the host's Mod), Presentation draws glyphs (⌃⌥⇧⌘, Return's arrow) or words, and Meta key's label replaces the system's, ◆ say. Tab moves between the controls, the arrows step them; ? in the hints shows every key.",
+  "description": "Keys drawn as keycaps, labelled for a system: each chord a cap, a sequence's caps in order with > between them. How they are labelled is the program's setting (view.Controller.Keycaps), which a program takes from its config; here the controls on top set it, and the picker's keys, its footer and the hints redraw as they change. System is the labels' (Auto guesses from the host's Mod), Presentation draws glyphs (⌃⌥⇧⌘, Return's arrow) or words, and Meta key's label replaces the system's with a symbol or a word. Tab moves between the controls, the arrows step them; ? in the hints shows every key.",
   "messages": [
     {
       "version": "v1.0",
@@ -17,7 +17,9 @@
           "present": [
             "default"
           ],
-          "meta": "",
+          "meta": [
+            "system"
+          ],
           "query": "",
           "selected": "palette",
           "action": "",
@@ -421,17 +423,54 @@
           },
           {
             "id": "meta",
-            "component": "TextField",
+            "component": "ChoicePicker",
             "label": "Meta key's label",
             "value": {
               "@path": "/meta"
+            },
+            "options": [
+              {
+                "label": "System's",
+                "value": "system"
+              },
+              {
+                "label": "◆",
+                "value": "◆"
+              },
+              {
+                "label": "◇",
+                "value": "◇"
+              },
+              {
+                "label": "❖",
+                "value": "❖"
+              },
+              {
+                "label": "✦",
+                "value": "✦"
+              },
+              {
+                "label": "⌘",
+                "value": "⌘"
+              },
+              {
+                "label": "Super",
+                "value": "Super"
+              }
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "cycle": true
+                }
+              }
             }
           },
           {
             "id": "about",
             "component": "Text",
             "variant": "caption",
-            "text": "A program sets these from its config. Auto is macOS where the host's Mod is Command, else Linux; Default is glyphs on a hotty host, words in cells. An empty label is the system's own: try ◆."
+            "text": "A program sets these from its config. Auto is macOS where the host's Mod is Command, else Linux; Default is glyphs on a hotty host, words in cells. System's label is ⌘, Meta or ⊞ (Win in words)."
           },
           {
             "id": "rule",

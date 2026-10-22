@@ -1,8 +1,6 @@
 package story
 
 import (
-	"strings"
-
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -10,7 +8,8 @@ import (
 // config sets (plx's), the story's controls set here: every surface draws
 // keys (view.Controller.Keycaps) for the system the keys surface's
 // /system names ("auto", the Platform's guess), as its /present says
-// ("default", the rendition's), with its /meta, if any, as super's label.
+// ("default", the rendition's), with the label its /meta picks, if not
+// "system", as super's.
 func keycapsProgram(r *Run) {
 	r.config = func(s *Surface) {
 		k := view.Keycaps{}
@@ -33,8 +32,8 @@ func keycapsProgram(r *Run) {
 		if p := picked("/present"); p != "default" {
 			k.Present = p
 		}
-		if meta, _ := ctl.Data.Value("/meta").(string); strings.TrimSpace(meta) != "" {
-			k.Labels = map[string]string{"super": strings.TrimSpace(meta)}
+		if meta := picked("/meta"); meta != "system" && meta != "" {
+			k.Labels = map[string]string{"super": meta}
 		}
 		s.C.Keycaps = k
 	}

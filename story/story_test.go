@@ -123,7 +123,7 @@ func TestKeycapsControls(t *testing.T) {
 	for _, m := range []string{
 		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/system","value":["windows"]}}`,
 		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/present","value":["text"]}}`,
-		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/meta","value":" ◆ "}}`,
+		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/meta","value":["◆"]}}`,
 	} {
 		if err := run.Feed([]byte(m)); err != nil {
 			t.Fatal(err)
