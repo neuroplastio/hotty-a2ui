@@ -28,10 +28,11 @@ type Keycaps struct {
 	// as Apple's keys print it.
 	Case string
 	// Sep joins a chord's labels. "" is the system's: "-" on macOS, as
-	// Apple writes keys (Shift-Command-P), "+" elsewhere.
+	// Apple writes keys (Command-Shift-P), "+" elsewhere.
 	Sep string
-	// Glue is whether a chord whose modifiers are all glyphs sits tight,
-	// with no Sep (⇧⌘P): "on" or "off". "" is the system's: on in macOS's
+	// Glue is whether a chord's modifiers drawn as glyphs sit tight against
+	// its key, with no Sep (⌘⇧P), after any written as words
+	// (Meta+Alt+⌃⇧R): "on" or "off". "" is the system's: on in macOS's
 	// glyphs, off elsewhere.
 	Glue string
 	// Labels relabels keys by name (SPEC §10.4), over the system's: "super"
@@ -64,12 +65,16 @@ func (k Keycaps) Glyphs(host bool) bool {
 }
 
 // A Chord is a key with its modifiers, as a cap shows it: its labels,
-// modifiers first in the system's order, with Sep between them, "" where
-// they sit tight (⇧⌘P; Keycaps.Glue).
+// modifiers first in myelin's order, with Sep between them but for the
+// last Glued, which sit tight (⌘⇧P, Meta+Alt+⌃⇧R; Keycaps.Glue).
 type Chord struct {
 	Labels []string
 	Sep    string
+	Glued  int
 }
+
+// Joined reports whether Sep comes before the chord's kth label.
+func (ch Chord) Joined(k int) bool { return k > 0 && k <= len(ch.Labels)-ch.Glued }
 
 // Caps is a hint's keys (KeyText's form: alternatives joined by "/", a
 // sequence's keys by spaces) as caps: the alternatives, each a sequence of
@@ -149,40 +154,40 @@ func readChord(k string) (mods []string, key string) {
 
 func arrow(key string) bool { return strings.HasPrefix(key, "arrow_") }
 
-// modOrder is the order caps put modifiers in: Apple's on macOS (⌃⌥⇧⌘),
-// the PC's elsewhere (Win+Ctrl+Alt+Shift).
-var modOrder = map[bool][]string{
-	true:  {"ctrl", "alt", "shift", "super"},
-	false: {"super", "ctrl", "alt", "shift"},
-}
+// modOrder is the order caps put modifiers in on every system: myelin's
+// (myelinkey SPEC §2.1).
+var modOrder = []string{"super", "ctrl", "alt", "shift"}
 
-// chord is a key's cap on os.
+// chord is a key's cap on os. With glue on, the modifiers drawn as glyphs
+// (a label of one character) go last, tight against the key.
 func (c *Controller) chord(os string, glyphs bool, mods []string, key string) Chord {
 	mac := os == "mac"
-	order := modOrder[mac]
 	mods = slices.Clone(mods)
 	slices.SortStableFunc(mods, func(a, b string) int {
-		return slices.Index(order, a) - slices.Index(order, b)
+		return slices.Index(modOrder, a) - slices.Index(modOrder, b)
 	})
-	var ch Chord
-	glyphMods := true
-	for _, m := range mods {
-		l := c.keyLabel(os, glyphs, m)
-		glyphMods = glyphMods && utf8.RuneCountInString(l) == 1
-		ch.Labels = append(ch.Labels, l)
-	}
-	ch.Labels = append(ch.Labels, c.keyLabel(os, glyphs, key))
 	k := c.Keycaps
-	if glue := k.Glue == GlueOn || k.Glue == "" && mac && glyphs; glue && glyphMods {
-		return ch
-	}
+	ch := Chord{Sep: k.Sep}
 	switch {
-	case k.Sep != "":
-		ch.Sep = k.Sep
+	case ch.Sep != "":
 	case mac:
 		ch.Sep = "-"
 	default:
 		ch.Sep = "+"
+	}
+	glue := k.Glue == GlueOn || k.Glue == "" && mac && glyphs
+	var marks []string
+	for _, m := range mods {
+		l := c.keyLabel(os, glyphs, m)
+		if glue && utf8.RuneCountInString(l) == 1 {
+			marks = append(marks, l)
+		} else {
+			ch.Labels = append(ch.Labels, l)
+		}
+	}
+	ch.Labels = append(append(ch.Labels, marks...), c.keyLabel(os, glyphs, key))
+	if len(marks) > 0 {
+		ch.Glued = len(marks) + 1
 	}
 	return ch
 }

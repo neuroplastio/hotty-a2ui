@@ -14,7 +14,14 @@ func caps(c *Controller, keys string, glyphs bool) string {
 	for _, seq := range c.Caps(keys, glyphs) {
 		var cs []string
 		for _, ch := range seq {
-			cs = append(cs, "["+strings.Join(ch.Labels, ch.Sep)+"]")
+			var b strings.Builder
+			for k, l := range ch.Labels {
+				if ch.Joined(k) {
+					b.WriteString(ch.Sep)
+				}
+				b.WriteString(l)
+			}
+			cs = append(cs, "["+b.String()+"]")
 		}
 		alts = append(alts, strings.Join(cs, ">"))
 	}
@@ -45,8 +52,8 @@ func TestCaps(t *testing.T) {
 		{linux, "super+space", false, "[Meta+Space]"},
 		{linux, "esc", true, "[Esc]"},
 		{linux, "f5/caps_lock", false, "[F5]/[Caps Lock]"},
-		{mac, "super+shift+p", true, "[\U000F0636\U000F0633P]"},
-		{mac, "super+shift+p", false, "[Shift-Command-P]"},
+		{mac, "super+shift+p", true, "[\U000F0633\U000F0636P]"},
+		{mac, "super+shift+p", false, "[Command-Shift-P]"},
 		{mac, "alt+enter", false, "[Option-Return]"},
 		{mac, "ctrl+backspace/delete", false, "[Control-Delete]/[Forward Delete]"},
 		{mac, "delete", true, "[\U000F0E7F]"},
@@ -81,14 +88,17 @@ func TestCapsStyle(t *testing.T) {
 		{Keycaps{Case: CaseLower}, "ctrl+shift+l", false, "[ctrl+shift+l]"},
 		{Keycaps{Case: CaseLower}, "f5/caps_lock", false, "[f5]/[caps lock]"},
 		{Keycaps{OS: "mac", Case: CaseTitle}, "super+esc", true, "[\U000F0633Esc]"},
-		{Keycaps{OS: "mac", Case: CaseLower}, "super+shift+p", false, "[shift-command-p]"},
+		{Keycaps{OS: "mac", Case: CaseLower}, "super+shift+p", false, "[command-shift-p]"},
 		{Keycaps{Sep: "-"}, "ctrl+x ctrl+s", false, "[Ctrl-X]>[Ctrl-S]"},
 		{Keycaps{Sep: " "}, "alt+enter", false, "[Alt Enter]"},
 		{Keycaps{Glue: GlueOn}, "ctrl+shift+p", true, "[\U000F0634\U000F0636P]"},
-		{Keycaps{Glue: GlueOn}, "super+ctrl+r", true, "[Meta+\U000F0634+R]"},
+		{Keycaps{Glue: GlueOn}, "super+ctrl+r", true, "[Meta+\U000F0634R]"},
+		{Keycaps{Glue: GlueOn}, "super+ctrl+alt+shift+r", true, "[Meta+Alt+\U000F0634\U000F0636R]"},
+		{Keycaps{OS: "windows", Glue: GlueOn}, "super+shift+s", true, "[⊞\U000F0636S]"},
+		{Keycaps{Glue: GlueOn, Labels: map[string]string{"super": "\U000F033D"}}, "super+alt+l", true, "[Alt+\U000F033DL]"},
 		{Keycaps{Glue: GlueOn}, "ctrl+shift+p", false, "[Ctrl+Shift+P]"},
-		{Keycaps{OS: "mac", Glue: GlueOff}, "super+shift+p", true, "[\U000F0636-\U000F0633-P]"},
-		{Keycaps{OS: "mac", Labels: map[string]string{"super": "Super"}}, "super+shift+p", true, "[\U000F0636-Super-P]"},
+		{Keycaps{OS: "mac", Glue: GlueOff}, "super+shift+p", true, "[\U000F0633-\U000F0636-P]"},
+		{Keycaps{OS: "mac", Labels: map[string]string{"super": "Super"}}, "super+shift+p", true, "[Super-\U000F0636P]"},
 		{Keycaps{Case: CaseLower, Labels: map[string]string{"super": "Super"}}, "super+k", false, "[Super+k]"},
 	} {
 		c := &Controller{Keycaps: tc.k}

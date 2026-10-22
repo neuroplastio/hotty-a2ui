@@ -1664,10 +1664,11 @@ not the agent's:
 - `Case`, `title` (Ctrl+Shift+L) or `lower` (ctrl+shift+l). Unset, the
   system's: title, but macOS's glyphs write Esc as its key does, `esc`.
 - `Sep`, what joins a chord's labels. Unset, the system's: `-` on macOS,
-  as Apple writes keys (Shift-Command-P), `+` elsewhere.
-- `Glue`, `on` or `off`: whether a chord whose modifiers are all glyphs
-  sits tight, with no `Sep` (⌃⇧P). Unset, on in macOS's glyphs only.
-  A modifier that is a word (Alt, Meta) keeps the `Sep`.
+  as Apple writes keys (Command-Shift-P), `+` elsewhere.
+- `Glue`, `on` or `off`: whether a chord's modifiers drawn as glyphs sit
+  tight against its key, with no `Sep` (⌃⇧P). Unset, on in macOS's
+  glyphs only. Modifiers that are words (Alt, Meta) come first and keep
+  the `Sep`: Meta+Alt+⌃⇧R.
 
   These three let a user write keys as the system they came from does,
   where the defaults are each system's own.
@@ -1677,12 +1678,12 @@ not the agent's:
 
 | | text | glyphs |
 |---|---|---|
-| macOS | Apple's: Control, Option, Shift, Command, Return, Esc; Backspace is Delete and Delete is Forward Delete; `-` between | ⌃⌥⇧⌘, Return's, Backspace's (⌫), Forward Delete's (⌦), Tab's and Caps Lock's symbols, tight together (⇧⌘P); esc a word, as its key prints it |
+| macOS | Apple's: Control, Option, Shift, Command, Return, Esc; Backspace is Delete and Delete is Forward Delete; `-` between | ⌃⌥⇧⌘, Return's, Backspace's (⌫), Forward Delete's (⌦), Tab's and Caps Lock's symbols, tight together (⌘⇧P); esc a word, as its key prints it |
 | Linux | Ctrl, Alt, Shift, Meta, Enter, Esc; `+` between | ⌃ and ⇧ as macOS's, Alt and Meta words, the arrows and Backspace as icons (Backspace's macOS's ⌫); `+` between |
 | Windows | as Linux, super as Win | as Linux, super as ⊞ |
 
-Modifiers come in the system's order: ⌃⌥⇧⌘ on macOS, Win+Ctrl+Alt+Shift
-elsewhere. A letter or an F-key is in capitals, a capital alone is
+Modifiers come in myelin's order on every system (myelinkey SPEC §2.1):
+Meta, Ctrl, Alt, Shift (⌘⌃⌥⇧ on macOS), but for glue's. A letter or an F-key is in capitals, a capital alone is
 Shift and the letter, and any other name is its words capitalised. The
 glyphs are Material Design Icons in the Nerd Font hosts ship, drawn
 evenly where a font's own ⌃⌥⇧⌘ are not. Ctrl's caret and Shift's arrow

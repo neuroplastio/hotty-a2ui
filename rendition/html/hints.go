@@ -46,7 +46,7 @@ func (m *markup) keyHints(e *view.Element) *node {
 
 // keycaps are a hint's keys as caps (view.Controller.Caps, KIT-08h), in a
 // kbd of class cls: a kbd of class k-cap for each chord, its labels joined
-// by its dim separator ("+", say) unless they sit tight (⇧⌘P), and a dim
+// by its dim separator ("+", say) unless they sit tight (⌘⇧P), and a dim
 // ">" between a sequence's chords and "/" between alternatives.
 func (m *markup) keycaps(cls, keys string) *node {
 	n := el("kbd", "class", cls+" k-caps")
@@ -69,7 +69,7 @@ func (m *markup) keycaps(cls, keys string) *node {
 			}
 			cp := el("kbd", "class", "k-cap")
 			for k, l := range ch.Labels {
-				if k > 0 && ch.Sep != "" {
+				if ch.Joined(k) {
 					cp.add(el("span", "class", "k-cap-join").add(txt(ch.Sep)))
 				}
 				cp.add(txt(l))
