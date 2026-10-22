@@ -79,7 +79,6 @@ func runBare(st *story.Story, th theme.Theme) error {
 	}
 	m := &bareModel{run: run, th: th, plain: os.Getenv("NO_COLOR") != ""}
 	for _, s := range run.Surfaces() {
-		s.C.Keycaps = keycaps
 		m.panes = append(m.panes, &barePane{s: s, r: cells.New(s.C)})
 	}
 	_, err = tea.NewProgram(m).Run()
@@ -324,6 +323,7 @@ func (m *bareModel) draw() {
 			b.WriteString("\n\n")
 			top++
 		}
+		m.run.Configure(p.s)
 		p.f, p.top = p.r.Draw(m.w), top
 		if d := p.r.Animating(); d > 0 && (m.anim == 0 || d < m.anim) {
 			m.anim = d

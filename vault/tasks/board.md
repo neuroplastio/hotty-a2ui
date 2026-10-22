@@ -157,7 +157,10 @@ As of 2026-10-09, from the hotty agent:
 - [ ] **KIT-08h** — Key hints as keycaps, following the host's focus.
   Keycaps done 2026-10-22 (profile §6.10, *Keycaps*): per-system labels,
   glyphs or text in either rendition, the user's own labels, in the hints
-  and the picker. plx sets `Controller.Keycaps` from its config. Open: on
+  and the picker. plx sets `Controller.Keycaps` from its config; in the
+  storybook, the story hotty/keycaps's controls do (2026-10-23, no flags).
+  Blitz breaks a nowrap line after an inline-block, so an overflowing
+  hints line wraps its first caps on a host: a hotty-blitz fix. Open: on
   a host the hints leave out what the host works itself (fields, boxes,
   Buttons), since it moves focus without telling the renderer (journal
   2026-10-09.10). Probe whether Blitz restyles `:has(:focus)` on a focus

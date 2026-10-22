@@ -1,0 +1,530 @@
+{
+  "name": "Keycaps",
+  "kind": "component",
+  "component": "HottyKeyHints, HottyPicker",
+  "icon": "keyboard",
+  "description": "Keys drawn as keycaps, labelled for a system: each chord a cap, a sequence's caps in order with > between them. How they are labelled is the program's setting (view.Controller.Keycaps), which a program takes from its config; here the controls on top set it, and the picker's keys, its footer and the hints redraw as they change. System is the labels' (Auto guesses from the host's Mod), Presentation draws glyphs (⌃⌥⇧⌘, Return's arrow) or words, and Meta key's label replaces the system's, ◆ say. Tab moves between the controls, the arrows step them; ? in the hints shows every key.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "keys",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "system": [
+            "auto"
+          ],
+          "present": [
+            "default"
+          ],
+          "meta": "",
+          "query": "",
+          "selected": "palette",
+          "action": "",
+          "rows": [
+            {
+              "value": "palette",
+              "group": "View",
+              "title": "Command palette",
+              "keys": "mod+shift+p",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "split",
+              "group": "Pane",
+              "title": "Split right",
+              "keys": "ctrl+b %",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "word",
+              "group": "Edit",
+              "title": "Delete the word before",
+              "keys": "ctrl+backspace",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "close",
+              "group": "Dialog",
+              "title": "Close",
+              "keys": "escape",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "next",
+              "group": "Pane",
+              "title": "Next pane",
+              "keys": "ctrl+tab",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "dedent",
+              "group": "Edit",
+              "title": "Indent less",
+              "keys": "shift+tab",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "top",
+              "group": "View",
+              "title": "Go to the top",
+              "keys": "mod+arrow_up",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "page",
+              "group": "Terminal",
+              "title": "Scroll up a page",
+              "keys": "shift+page_up",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "lock",
+              "group": "Screen",
+              "title": "Lock",
+              "keys": "super+l",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "reload",
+              "group": "Session",
+              "title": "Reload everything",
+              "keys": "ctrl+alt+shift+super+r",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            },
+            {
+              "value": "help",
+              "group": "Help",
+              "title": "Open the manual",
+              "keys": "f1",
+              "actions": [
+                {
+                  "id": "run",
+                  "title": "Run",
+                  "key": "enter"
+                },
+                {
+                  "id": "keep",
+                  "title": "Run and keep open",
+                  "key": "mod+enter"
+                },
+                {
+                  "id": "copy",
+                  "title": "Copy the keys",
+                  "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Forget",
+                  "key": "shift+delete"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "keys",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "system",
+              "present",
+              "meta",
+              "about",
+              "rule",
+              "picker",
+              "hints",
+              "palette_key",
+              "word_key",
+              "files_key",
+              "send_key"
+            ]
+          },
+          {
+            "id": "system",
+            "component": "ChoicePicker",
+            "label": "System",
+            "value": {
+              "@path": "/system"
+            },
+            "options": [
+              {
+                "label": "Auto",
+                "value": "auto"
+              },
+              {
+                "label": "macOS",
+                "value": "mac"
+              },
+              {
+                "label": "Linux",
+                "value": "linux"
+              },
+              {
+                "label": "Windows",
+                "value": "windows"
+              }
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "cycle": true,
+                  "autofocus": true
+                }
+              }
+            }
+          },
+          {
+            "id": "present",
+            "component": "ChoicePicker",
+            "label": "Presentation",
+            "value": {
+              "@path": "/present"
+            },
+            "options": [
+              {
+                "label": "Default",
+                "value": "default"
+              },
+              {
+                "label": "Glyphs",
+                "value": "glyphs"
+              },
+              {
+                "label": "Text",
+                "value": "text"
+              }
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "cycle": true
+                }
+              }
+            }
+          },
+          {
+            "id": "meta",
+            "component": "TextField",
+            "label": "Meta key's label",
+            "value": {
+              "@path": "/meta"
+            }
+          },
+          {
+            "id": "about",
+            "component": "Text",
+            "variant": "caption",
+            "text": "A program sets these from its config. Auto is macOS where the host's Mod is Command, else Linux; Default is glyphs on a hotty host, words in cells. An empty label is the system's own: try ◆."
+          },
+          {
+            "id": "rule",
+            "component": "Divider"
+          },
+          {
+            "id": "picker",
+            "component": "HottyPicker",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "query": {
+              "@path": "/query"
+            },
+            "rows": {
+              "@path": "/rows"
+            },
+            "selected": {
+              "@path": "/selected"
+            },
+            "action": {
+              "@path": "/action"
+            },
+            "placeholder": "Keys of every kind",
+            "panelKey": "mod+k",
+            "height": 11,
+            "onAction": {
+              "event": {
+                "name": "act",
+                "context": {
+                  "row": {
+                    "@path": "/selected"
+                  },
+                  "action": {
+                    "@path": "/action"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "hints",
+            "component": "HottyKeyHints",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"
+          },
+          {
+            "id": "palette_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "mod+shift+p",
+            "label": "palette",
+            "action": {
+              "event": {
+                "name": "palette"
+              }
+            }
+          },
+          {
+            "id": "word_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "alt+backspace",
+            "label": "delete word",
+            "action": {
+              "event": {
+                "name": "deleteWord"
+              }
+            }
+          },
+          {
+            "id": "files_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "super+e",
+            "label": "files",
+            "action": {
+              "event": {
+                "name": "files"
+              }
+            }
+          },
+          {
+            "id": "send_key",
+            "component": "HottyShortcut",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "key": "ctrl+enter",
+            "label": "send",
+            "action": {
+              "event": {
+                "name": "send"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -107,3 +107,30 @@ func TestFilePickerPickLoadsCode(t *testing.T) {
 		t.Errorf("got code %q, want module example.com/project", code)
 	}
 }
+
+// TestKeycapsControls: hotty/keycaps's controls set how its surfaces draw
+// keys, as a program's config would (Run.Configure).
+func TestKeycapsControls(t *testing.T) {
+	run, err := Start(Find("hotty/keycaps"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := run.Surfaces()[0]
+	run.Configure(s)
+	if k := s.C.Keycaps; k.OS != "" || k.Present != "" || k.Labels != nil {
+		t.Errorf("at first %+v, want the zero Keycaps", k)
+	}
+	for _, m := range []string{
+		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/system","value":["windows"]}}`,
+		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/present","value":["text"]}}`,
+		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/meta","value":" ◆ "}}`,
+	} {
+		if err := run.Feed([]byte(m)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	run.Configure(s)
+	if k := s.C.Keycaps; k.OS != "windows" || k.Present != view.PresentText || k.Labels["super"] != "◆" {
+		t.Errorf("after the controls %+v", k)
+	}
+}

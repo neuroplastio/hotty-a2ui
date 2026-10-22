@@ -145,10 +145,12 @@ type Run struct {
 	// surface, after its view is built again; deleted when it went.
 	Changed func(s *Surface, deleted bool)
 	// roots are the filesystems granted to each surface's controller, by
-	// name (Grant); hears hears the user's actions, as the program behind
-	// the story does (Program).
-	roots map[string]fs.FS
-	hears func(a *a2ui.ActionMessage)
+	// name (Grant); hears hears the user's actions, and config sets a
+	// view up before it is drawn, as the program behind the story does
+	// (Program, Configure).
+	roots  map[string]fs.FS
+	hears  func(a *a2ui.ActionMessage)
+	config func(s *Surface)
 
 	surfaces []*Surface
 }
@@ -226,6 +228,7 @@ func (r *Run) Grant(name string, fsys fs.FS) {
 // no A2UI message says (granting a root, reading a file).
 var programs = map[string]func(r *Run){
 	"hotty/filepicker": filePickerProgram,
+	"hotty/keycaps":    keycapsProgram,
 	"hotty/picker":     pickerProgram,
 }
 
@@ -247,6 +250,16 @@ func filePickerProgram(r *Run) {
 		msg, _ := json.Marshal(map[string]any{"version": "v1.0", "updateDataModel": map[string]any{
 			"surfaceId": a.SurfaceID, "path": "/code", "value": string(text)}})
 		r.Feed(msg)
+	}
+}
+
+// Configure sets a surface's view up as the program behind the story
+// has it, before each time it is drawn: hotty/keycaps's keycaps, as its
+// controls say. A view of a story with no program draws as the kit does
+// by default.
+func (r *Run) Configure(s *Surface) {
+	if r.config != nil {
+		r.config(s)
 	}
 }
 

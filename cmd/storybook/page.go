@@ -34,7 +34,7 @@ main { max-width: 46rem; margin: 0 auto; }
 func printPage(w io.Writer, args []string, stream string, th theme.Theme) error {
 	type part struct {
 		title, name string
-		ss          []*story.Surface
+		run         *story.Run
 	}
 	var parts []part
 	switch {
@@ -59,7 +59,7 @@ func printPage(w io.Writer, args []string, stream string, th theme.Theme) error 
 		if err != nil {
 			return err
 		}
-		parts = append(parts, part{title: filepath.Base(stream), ss: run.Surfaces()})
+		parts = append(parts, part{title: filepath.Base(stream), run: run})
 	case len(args) == 0:
 		return errors.New("-page takes stories: storybook -list names them")
 	}
@@ -72,7 +72,7 @@ func printPage(w io.Writer, args []string, stream string, th theme.Theme) error 
 		if err := run.Play(st); err != nil {
 			return fmt.Errorf("%s: %w", st.Name, err)
 		}
-		parts = append(parts, part{st.Title, st.Name, run.Surfaces()})
+		parts = append(parts, part{st.Title, st.Name, run})
 	}
 	var b strings.Builder
 	b.WriteString("<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n" +
@@ -84,8 +84,8 @@ func printPage(w io.Writer, args []string, stream string, th theme.Theme) error 
 			b.WriteString(" <code>" + stdhtml.EscapeString(p.name) + "</code>")
 		}
 		b.WriteString("</h2>\n")
-		for _, s := range p.ss {
-			s.C.Keycaps = keycaps
+		for _, s := range p.run.Surfaces() {
+			p.run.Configure(s)
 			r := html.New(s.C, "s"+strconv.Itoa(i)+"-"+s.S.ID)
 			r.SetTheme(th)
 			// Under the story's h2, a Tabs' titles are h3s.

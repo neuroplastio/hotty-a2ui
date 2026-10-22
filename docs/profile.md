@@ -1677,6 +1677,12 @@ glyphs are Material Design Icons in the Nerd Font hosts ship, drawn
 evenly where a font's own ⌃⌥⇧⌘ are not; Esc is a word, as ⎋ reads as
 reload.
 
+In the storybook, the story `hotty/keycaps` sets them with controls of
+its own, as a program's config would: a program behind the story
+(`story.Run.Configure`) reads them before each frame, so the caps in its
+picker and hints redraw as they change. Other stories draw keys as the
+kit does by default.
+
 On a host the caps are `kbd.k-caps`, a `kbd.k-cap` a chord, its labels
 joined by `span.k-cap-plus` unless they sit tight, and `span.k-cap-sep`
 (`aria-hidden`) for `>` and `/`: a cap is filled with `--k-tonal` and
