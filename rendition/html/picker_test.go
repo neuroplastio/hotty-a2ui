@@ -333,7 +333,7 @@ func capsOf(cls string, chords ...[]string) string {
 		if i > 0 {
 			s += `<span class="k-cap-sep" aria-hidden="true">&gt;</span>`
 		}
-		s += `<kbd class="k-cap">` + strings.Join(ch, `<span class="k-cap-plus">+</span>`) + `</kbd>`
+		s += `<kbd class="k-cap">` + strings.Join(ch, `<span class="k-cap-join">+</span>`) + `</kbd>`
 	}
 	return s + `</kbd>`
 }

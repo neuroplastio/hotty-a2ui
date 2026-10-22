@@ -1571,7 +1571,7 @@ func TestKeyHintsOnHost(t *testing.T) {
 	if got := s.TextOf("help"); got != "\U000F0634+S save • ? more" {
 		t.Errorf("without the keyboard: %q", got)
 	}
-	if !strings.Contains(s.HTML(), "<kbd class=\"k-hint-key k-caps\"><kbd class=\"k-cap\">\U000F0634<span class=\"k-cap-plus\">+</span>S</kbd></kbd>") {
+	if !strings.Contains(s.HTML(), "<kbd class=\"k-hint-key k-caps\"><kbd class=\"k-cap\">\U000F0634<span class=\"k-cap-join\">+</span>S</kbd></kbd>") {
 		t.Errorf("the key is not a cap:\n%s", s.HTML())
 	}
 	must(t, x.h.Click(r.name, partID("l", partItem+"1")))
@@ -1585,7 +1585,7 @@ func TestKeyHintsOnHost(t *testing.T) {
 		want string
 	}{
 		{view.Keycaps{OS: "mac"}, "\U000F005D/K up • \U000F0045/J down • / filter • \U000F0634S save • ? more"},
-		{view.Keycaps{OS: "mac", Present: view.PresentText}, "↑/K up • ↓/J down • / filter • Ctrl+S save • ? more"},
+		{view.Keycaps{OS: "mac", Present: view.PresentText}, "↑/K up • ↓/J down • / filter • Control-S save • ? more"},
 	} {
 		r.C.Keycaps = tc.caps
 		x.update(r)

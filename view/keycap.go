@@ -22,16 +22,33 @@ type Keycaps struct {
 	// rendition's default: glyphs on a host, text in cells, whose font is
 	// the terminal's.
 	Present string
+	// Case is how a cap's words are written: "title", each word's first
+	// letter a capital (Ctrl+Shift+L, Esc), or "lower" (ctrl+shift+l). ""
+	// is the system's: title, but for macOS's glyphs, whose Esc is "esc",
+	// as Apple's keys print it.
+	Case string
+	// Sep joins a chord's labels. "" is the system's: "-" on macOS, as
+	// Apple writes keys (Shift-Command-P), "+" elsewhere.
+	Sep string
+	// Glue is whether a chord whose modifiers are all glyphs sits tight,
+	// with no Sep (⇧⌘P): "on" or "off". "" is the system's: on in macOS's
+	// glyphs, off elsewhere.
+	Glue string
 	// Labels relabels keys by name (SPEC §10.4), over the system's: "super"
 	// as Tux, say. A user may put a logo there; the kit's defaults show
 	// none (HOST.md §2.4).
 	Labels map[string]string
 }
 
-// The presentations (Keycaps.Present).
+// The presentations (Keycaps.Present), cases (Keycaps.Case) and glue
+// (Keycaps.Glue).
 const (
 	PresentGlyphs = "glyphs"
 	PresentText   = "text"
+	CaseTitle     = "title"
+	CaseLower     = "lower"
+	GlueOn        = "on"
+	GlueOff       = "off"
 )
 
 // Glyphs reports whether caps draw as glyphs, where the rendition's
@@ -47,11 +64,11 @@ func (k Keycaps) Glyphs(host bool) bool {
 }
 
 // A Chord is a key with its modifiers, as a cap shows it: its labels,
-// modifiers first in the system's order; Tight where they sit together
-// (macOS's glyphs, ⇧⌘P), else joined by a "+".
+// modifiers first in the system's order, with Sep between them, "" where
+// they sit tight (⇧⌘P; Keycaps.Glue).
 type Chord struct {
 	Labels []string
-	Tight  bool
+	Sep    string
 }
 
 // Caps is a hint's keys (KeyText's form: alternatives joined by "/", a
@@ -147,20 +164,42 @@ func (c *Controller) chord(os string, glyphs bool, mods []string, key string) Ch
 	slices.SortStableFunc(mods, func(a, b string) int {
 		return slices.Index(order, a) - slices.Index(order, b)
 	})
-	ch := Chord{Tight: mac && glyphs}
-	for _, m := range append(mods, key) {
-		ch.Labels = append(ch.Labels, c.keyLabel(os, glyphs, m))
+	var ch Chord
+	glyphMods := true
+	for _, m := range mods {
+		l := c.keyLabel(os, glyphs, m)
+		glyphMods = glyphMods && utf8.RuneCountInString(l) == 1
+		ch.Labels = append(ch.Labels, l)
+	}
+	ch.Labels = append(ch.Labels, c.keyLabel(os, glyphs, key))
+	k := c.Keycaps
+	if glue := k.Glue == GlueOn || k.Glue == "" && mac && glyphs; glue && glyphMods {
+		return ch
+	}
+	switch {
+	case k.Sep != "":
+		ch.Sep = k.Sep
+	case mac:
+		ch.Sep = "-"
+	default:
+		ch.Sep = "+"
 	}
 	return ch
 }
 
-// keyLabel is a key's label on a cap: the user's (Keycaps.Labels), else
-// the system's, else its name, a letter or an F-key in capitals and a
-// name's words capitalised ("caps_lock" is "Caps Lock").
+// keyLabel is a key's label on a cap: the user's (Keycaps.Labels), as
+// it is, else the system's in the Keycaps' Case.
 func (c *Controller) keyLabel(os string, glyphs bool, key string) string {
 	if l, ok := c.Keycaps.Labels[key]; ok {
 		return l
 	}
+	return cased(systemLabel(os, glyphs, key), c.Keycaps.Case)
+}
+
+// systemLabel is a key's label on os: its table's, else its name, a
+// letter or an F-key in capitals and a name's words capitalised
+// ("caps_lock" is "Caps Lock").
+func systemLabel(os string, glyphs bool, key string) string {
 	if os == "windows" && key == "super" {
 		if glyphs {
 			return "⊞"
@@ -184,13 +223,25 @@ func (c *Controller) keyLabel(os string, glyphs bool, key string) string {
 	if utf8.RuneCountInString(key) == 1 || len(key) <= 3 && key[0] == 'f' && strings.Trim(key[1:], "0123456789") == "" {
 		return strings.ToUpper(key)
 	}
-	words := strings.Split(key, "_")
-	for i, w := range words {
-		if w != "" {
-			words[i] = strings.ToUpper(w[:1]) + w[1:]
+	return cased(strings.ReplaceAll(key, "_", " "), CaseTitle)
+}
+
+// cased is a label in a Case (Keycaps.Case): its words' first letters
+// capitals, or all of it lower case; "" leaves it as it is.
+func cased(l, how string) string {
+	switch how {
+	case CaseLower:
+		return strings.ToLower(l)
+	case CaseTitle:
+		words := strings.Split(l, " ")
+		for i, w := range words {
+			if r, n := utf8.DecodeRuneInString(w); n > 0 {
+				words[i] = string(unicode.ToUpper(r)) + w[n:]
+			}
 		}
+		return strings.Join(words, " ")
 	}
-	return strings.Join(words, " ")
+	return l
 }
 
 // The labels, by system and presentation; the first table to have a key
@@ -198,7 +249,9 @@ func (c *Controller) keyLabel(os string, glyphs bool, key string) string {
 // (HOST.md §2): Apple's key symbols drawn evenly, where the font's own
 // ⌃⌥⇧⌘ are not; ⌃, ⇧ and Backspace's on every system, as Ctrl's caret
 // and Shift's arrow read anywhere, while Alt and Meta are the system's.
-// Esc is a word everywhere: ⎋ reads as reload.
+// Esc is a word everywhere: ⎋ reads as reload. macOS's words are Apple's
+// (Command, Control, Option; Backspace is Delete and Delete is Forward
+// Delete).
 var (
 	words = map[string]string{
 		"super": "Meta", "ctrl": "Ctrl", "alt": "Alt", "shift": "Shift",
@@ -210,11 +263,14 @@ var (
 	iconArrows = map[string]string{
 		"arrow_up": "\U000F005D", "arrow_down": "\U000F0045", "arrow_left": "\U000F004D", "arrow_right": "\U000F0054",
 	}
-	macWords = map[string]string{"super": "Cmd", "alt": "Option", "enter": "Return", "escape": "esc"}
+	macWords = map[string]string{
+		"super": "Command", "ctrl": "Control", "alt": "Option", "enter": "Return",
+		"backspace": "Delete", "delete": "Forward Delete",
+	}
 	macIcons = map[string]string{
 		"ctrl": "\U000F0634", "alt": "\U000F0635", "shift": "\U000F0636", "super": "\U000F0633",
-		"enter": "\U000F0311", "backspace": "\U000F0B5C", "tab": "\U000F0312", "caps_lock": "\U000F0632",
-		"escape": "esc",
+		"enter": "\U000F0311", "backspace": "\U000F0B5C", "delete": "\U000F0E7F", "tab": "\U000F0312",
+		"caps_lock": "\U000F0632", "escape": "esc",
 	}
 	pcIcons = map[string]string{"ctrl": "\U000F0634", "shift": "\U000F0636", "backspace": "\U000F0B5C"}
 

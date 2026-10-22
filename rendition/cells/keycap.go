@@ -18,8 +18,8 @@ var (
 // caps are a hint's keys (view.Controller.Caps, KIT-08h) as cells draw
 // them: each chord a cap, a column of room either side of its labels and
 // its background tinted toward the text, else the terminal's bright black
-// (as a Button's fill); its labels joined by a faint "+" unless they sit
-// tight (⇧⌘P); a muted ">" between a sequence's chords and "/" between
+// (as a Button's fill); its labels joined by its faint separator ("+",
+// say) unless they sit tight (⇧⌘P); a muted ">" between a sequence's chords and "/" between
 // alternatives. Where on is set (a selected row's reverse), the caps are
 // drawn in it, untinted, as tint and reverse don't mix.
 func (r *Rendition) caps(keys string, on *style) []glyph {
@@ -43,8 +43,8 @@ func capsOf(alts [][]view.Chord, on *style) []glyph {
 			}
 			out = concat(out, line(" ", body))
 			for k, l := range ch.Labels {
-				if k > 0 && !ch.Tight {
-					out = concat(out, line("+", plus))
+				if k > 0 && ch.Sep != "" {
+					out = concat(out, line(ch.Sep, plus))
 				}
 				out = concat(out, line(l, body))
 			}

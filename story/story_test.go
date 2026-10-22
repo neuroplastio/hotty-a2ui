@@ -124,13 +124,17 @@ func TestKeycapsControls(t *testing.T) {
 		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/system","value":["windows"]}}`,
 		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/present","value":["text"]}}`,
 		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/meta","value":["◆"]}}`,
+		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/case","value":["lower"]}}`,
+		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/sep","value":["-"]}}`,
+		`{"version":"v1.0","updateDataModel":{"surfaceId":"keys","path":"/glue","value":["on"]}}`,
 	} {
 		if err := run.Feed([]byte(m)); err != nil {
 			t.Fatal(err)
 		}
 	}
 	run.Configure(s)
-	if k := s.C.Keycaps; k.OS != "windows" || k.Present != view.PresentText || k.Labels["super"] != "◆" {
+	if k := s.C.Keycaps; k.OS != "windows" || k.Present != view.PresentText || k.Labels["super"] != "◆" ||
+		k.Case != view.CaseLower || k.Sep != "-" || k.Glue != view.GlueOn {
 		t.Errorf("after the controls %+v", k)
 	}
 }

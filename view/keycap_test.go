@@ -8,17 +8,13 @@ import (
 )
 
 // caps writes Caps' chords as a hint would draw them: "/" between
-// alternatives, ">" between a sequence's chords, "+" inside one.
+// alternatives, ">" between a sequence's chords, a chord's Sep inside one.
 func caps(c *Controller, keys string, glyphs bool) string {
 	var alts []string
 	for _, seq := range c.Caps(keys, glyphs) {
 		var cs []string
 		for _, ch := range seq {
-			sep := "+"
-			if ch.Tight {
-				sep = ""
-			}
-			cs = append(cs, "["+strings.Join(ch.Labels, sep)+"]")
+			cs = append(cs, "["+strings.Join(ch.Labels, ch.Sep)+"]")
 		}
 		alts = append(alts, strings.Join(cs, ">"))
 	}
@@ -50,9 +46,12 @@ func TestCaps(t *testing.T) {
 		{linux, "esc", true, "[Esc]"},
 		{linux, "f5/caps_lock", false, "[F5]/[Caps Lock]"},
 		{mac, "super+shift+p", true, "[\U000F0636\U000F0633P]"},
-		{mac, "super+shift+p", false, "[Shift+Cmd+P]"},
-		{mac, "alt+enter", false, "[Option+Return]"},
+		{mac, "super+shift+p", false, "[Shift-Command-P]"},
+		{mac, "alt+enter", false, "[Option-Return]"},
+		{mac, "ctrl+backspace/delete", false, "[Control-Delete]/[Forward Delete]"},
+		{mac, "delete", true, "[\U000F0E7F]"},
 		{mac, "esc", true, "[esc]"},
+		{mac, "esc", false, "[Esc]"},
 		{mac, "ctrl+x ctrl+s", true, "[\U000F0634X]>[\U000F0634S]"},
 		{win, "super+e", true, "[⊞+E]"},
 		{win, "super+e", false, "[Win+E]"},
@@ -66,6 +65,35 @@ func TestCaps(t *testing.T) {
 	} {
 		if got := caps(tc.c, tc.keys, tc.glyphs); got != tc.want {
 			t.Errorf("%q (os %q, glyphs %v): %q, want %q", tc.keys, tc.c.Keycaps.OS, tc.glyphs, got, tc.want)
+		}
+	}
+}
+
+// Case, Sep and Glue change the system's: a user may write keys as the
+// system they came from does.
+func TestCapsStyle(t *testing.T) {
+	for _, tc := range []struct {
+		k      Keycaps
+		keys   string
+		glyphs bool
+		want   string
+	}{
+		{Keycaps{Case: CaseLower}, "ctrl+shift+l", false, "[ctrl+shift+l]"},
+		{Keycaps{Case: CaseLower}, "f5/caps_lock", false, "[f5]/[caps lock]"},
+		{Keycaps{OS: "mac", Case: CaseTitle}, "super+esc", true, "[\U000F0633Esc]"},
+		{Keycaps{OS: "mac", Case: CaseLower}, "super+shift+p", false, "[shift-command-p]"},
+		{Keycaps{Sep: "-"}, "ctrl+x ctrl+s", false, "[Ctrl-X]>[Ctrl-S]"},
+		{Keycaps{Sep: " "}, "alt+enter", false, "[Alt Enter]"},
+		{Keycaps{Glue: GlueOn}, "ctrl+shift+p", true, "[\U000F0634\U000F0636P]"},
+		{Keycaps{Glue: GlueOn}, "super+ctrl+r", true, "[Meta+\U000F0634+R]"},
+		{Keycaps{Glue: GlueOn}, "ctrl+shift+p", false, "[Ctrl+Shift+P]"},
+		{Keycaps{OS: "mac", Glue: GlueOff}, "super+shift+p", true, "[\U000F0636-\U000F0633-P]"},
+		{Keycaps{OS: "mac", Labels: map[string]string{"super": "Super"}}, "super+shift+p", true, "[\U000F0636-Super-P]"},
+		{Keycaps{Case: CaseLower, Labels: map[string]string{"super": "Super"}}, "super+k", false, "[Super+k]"},
+	} {
+		c := &Controller{Keycaps: tc.k}
+		if got := caps(c, tc.keys, tc.glyphs); got != tc.want {
+			t.Errorf("%q %+v (glyphs %v): %q, want %q", tc.keys, tc.k, tc.glyphs, got, tc.want)
 		}
 	}
 }

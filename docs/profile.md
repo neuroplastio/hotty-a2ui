@@ -1661,13 +1661,23 @@ not the agent's:
   ship a font that has them (hotty HOST.md §2), and cells draw text,
   since their font is the terminal's. Either rendition draws either: a
   terminal whose font has the glyphs takes them in cells too.
+- `Case`, `title` (Ctrl+Shift+L) or `lower` (ctrl+shift+l). Unset, the
+  system's: title, but macOS's glyphs write Esc as its key does, `esc`.
+- `Sep`, what joins a chord's labels. Unset, the system's: `-` on macOS,
+  as Apple writes keys (Shift-Command-P), `+` elsewhere.
+- `Glue`, `on` or `off`: whether a chord whose modifiers are all glyphs
+  sits tight, with no `Sep` (⌃⇧P). Unset, on in macOS's glyphs only.
+  A modifier that is a word (Alt, Meta) keeps the `Sep`.
+
+  These three let a user write keys as the system they came from does,
+  where the defaults are each system's own.
 - `Labels`, the user's own label for a key by name (SPEC §10.4): `super`
   as Tux (Material Design Icons' `linux`), say. The kit's own labels
   show no logo.
 
 | | text | glyphs |
 |---|---|---|
-| macOS | Ctrl, Option, Shift, Cmd, Return, esc; `+` between | ⌃⌥⇧⌘, Return's, Backspace's, Tab's and Caps Lock's symbols, tight together (⇧⌘P); esc a word |
+| macOS | Apple's: Control, Option, Shift, Command, Return, Esc; Backspace is Delete and Delete is Forward Delete; `-` between | ⌃⌥⇧⌘, Return's, Backspace's (⌫), Forward Delete's (⌦), Tab's and Caps Lock's symbols, tight together (⇧⌘P); esc a word, as its key prints it |
 | Linux | Ctrl, Alt, Shift, Meta, Enter, Esc; `+` between | ⌃ and ⇧ as macOS's, Alt and Meta words, the arrows and Backspace as icons (Backspace's macOS's ⌫); `+` between |
 | Windows | as Linux, super as Win | as Linux, super as ⊞ |
 
@@ -1686,14 +1696,14 @@ picker and hints redraw as they change. Other stories draw keys as the
 kit does by default.
 
 On a host the caps are `kbd.k-caps`, a `kbd.k-cap` a chord, its labels
-joined by `span.k-cap-plus` unless they sit tight, and `span.k-cap-sep`
+joined by `span.k-cap-join`, the separator, unless they sit tight, and `span.k-cap-sep`
 (`aria-hidden`) for `>` and `/`: a cap is the size of the text around
 it (a picker's keys and its footer the size of its rows), filled with `--k-tonal` and
 ringed with `--k-line`, a device pixel wide (`--hotty-px`) and two at its
 bottom, in AdwaitaMono Nerd Font Propo where the host has it. In cells a
 cap is its labels with a column of room either side, its background
 tinted toward the text (the terminal's bright black where nothing can be
-tinted), a faint `+` between them; on a selected row, which is reversed,
+tinted), the separator faint between them; on a selected row, which is reversed,
 the caps are drawn in the row's style.
 
 ### 6.11 HottyScrollView

@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyKeyHints, HottyPicker",
   "icon": "keyboard",
-  "description": "Keys drawn as keycaps, labelled for a system: each chord a cap, a sequence's caps in order with > between them. How they are labelled is the program's setting (view.Controller.Keycaps), which a program takes from its config; here the controls on top set it, and the picker's keys, its footer and the hints redraw as they change. System is the labels' (Auto guesses from the host's Mod), Presentation draws glyphs (⌃⌥⇧⌘, Return's arrow) or words, and Meta key's label replaces the system's with a Material Design Icon (Tux, say) or a word. Tab moves between the controls, the arrows step them; ? in the hints shows every key.",
+  "description": "Keys drawn as keycaps, labelled for a system: each chord a cap, a sequence's caps in order with > between them. How they are labelled is the program's setting (view.Controller.Keycaps), which a program takes from its config; here the controls on top set it, and the picker's keys, its footer and the hints redraw as they change. System is the labels' (Auto guesses from the host's Mod), Presentation draws glyphs (⌃⌥⇧⌘, Return's arrow) or words, Case, Separator and Glue write them as another system would (ctrl+shift+l, Ctrl-X, ⌃⇧P), and Meta key's label replaces the system's with a Material Design Icon (Tux, say) or a word. Tab moves between the controls, the arrows step them; ? in the hints shows every key.",
   "messages": [
     {
       "version": "v1.0",
@@ -16,6 +16,15 @@
           ],
           "present": [
             "default"
+          ],
+          "case": [
+            "system"
+          ],
+          "sep": [
+            "system"
+          ],
+          "glue": [
+            "system"
           ],
           "meta": [
             "system"
@@ -347,6 +356,9 @@
             "children": [
               "system",
               "present",
+              "case",
+              "sep",
+              "glue",
               "meta",
               "about",
               "rule",
@@ -411,6 +423,97 @@
               {
                 "label": "Text",
                 "value": "text"
+              }
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "cycle": true
+                }
+              }
+            }
+          },
+          {
+            "id": "case",
+            "component": "ChoicePicker",
+            "label": "Case",
+            "value": {
+              "@path": "/case"
+            },
+            "options": [
+              {
+                "label": "System's",
+                "value": "system"
+              },
+              {
+                "label": "Capitals",
+                "value": "title"
+              },
+              {
+                "label": "Lower case",
+                "value": "lower"
+              }
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "cycle": true
+                }
+              }
+            }
+          },
+          {
+            "id": "sep",
+            "component": "ChoicePicker",
+            "label": "Separator",
+            "value": {
+              "@path": "/sep"
+            },
+            "options": [
+              {
+                "label": "System's",
+                "value": "system"
+              },
+              {
+                "label": "+",
+                "value": "+"
+              },
+              {
+                "label": "-",
+                "value": "-"
+              },
+              {
+                "label": "Space",
+                "value": " "
+              }
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "cycle": true
+                }
+              }
+            }
+          },
+          {
+            "id": "glue",
+            "component": "ChoicePicker",
+            "label": "Glue glyphs",
+            "value": {
+              "@path": "/glue"
+            },
+            "options": [
+              {
+                "label": "System's",
+                "value": "system"
+              },
+              {
+                "label": "On",
+                "value": "on"
+              },
+              {
+                "label": "Off",
+                "value": "off"
               }
             ],
             "metadata": {
@@ -506,7 +609,7 @@
             "id": "about",
             "component": "Text",
             "variant": "caption",
-            "text": "A program sets these from its config. Auto is macOS where the host's Mod is Command, else Linux; Default is glyphs on a hotty host, words in cells. System's Meta is ⌘, Meta or ⊞ (Win in words); the icons need the host's Nerd Font."
+            "text": "A program sets these from its config. Auto is macOS where the host's Mod is Command, else Linux; Default is glyphs on a hotty host, words in cells. System's is the system's own way: on macOS Apple's (Shift-Command-P, ⇧⌘P), elsewhere Ctrl+Shift+P. System's Meta is ⌘, Meta or ⊞ (Win in words); the icons need the host's Nerd Font."
           },
           {
             "id": "rule",
