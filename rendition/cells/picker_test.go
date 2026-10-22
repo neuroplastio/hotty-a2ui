@@ -102,6 +102,50 @@ func TestPickerDraws(t *testing.T) {
 	}
 }
 
+// A row's description is on the line under it, in muted, the selected
+// row's reversed with it across the picker; a click on it is a click on
+// its row. A row without one takes a line.
+func TestPickerDescription(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"q":"","sel":""}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyPicker","catalogId":"` + hotty.ID + `","query":{"@path":"/q"},"selected":{"@path":"/sel"},"placeholder":"Type a command",
+	  "rows":[{"value":"pane.new","title":"pane.new","description":"New pane (your shell)","detail":"ctrl+b n"},
+	   {"value":"pane.split","title":"pane.split"},{"value":"tab.new","title":"tab.new","description":"New tab"}]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	r := New(c)
+	c.Focus("root")
+	want := " Type a command\n" +
+		"──────────────────────────────\n" +
+		" pane.new  ctrl+b n\n" +
+		" New pane (your shell)\n" +
+		" pane.split\n" +
+		" tab.new\n" +
+		" New tab\n" +
+		" ↑/↓ move"
+	f := r.Draw(30)
+	if got := trimmed(f); got != want {
+		t.Fatalf("got\n%s\nwant\n%s", got, want)
+	}
+	for _, y := range []int{2, 3} {
+		if cell := f.Cells[y][29]; cell.Role != Accent || cell.Attr&Reverse == 0 {
+			t.Errorf("the selected row's line %d: %v %v, want the accent reversed across it", y, cell.Role, cell.Attr)
+		}
+	}
+	if cell := f.Cells[6][1]; cell.Role != Muted || cell.Attr&Reverse != 0 {
+		t.Errorf("a description: %v %v, want muted", cell.Role, cell.Attr)
+	}
+	if cell := f.Cells[5][1]; cell.Role == Muted {
+		t.Errorf("a title: %v, want the text's", cell.Role)
+	}
+	if err := r.Click(3, 6); err != nil || c.S.Data.Value("/sel") != "tab.new" {
+		t.Errorf("a click on a description: %v, /sel %v", err, c.S.Data.Value("/sel"))
+	}
+}
+
 // Typed keys edit the query, as a field's, with the caret after them; the
 // picker's keys (the arrows, Enter, an action's key) run on the selected
 // row; the panel key lists its actions in the rows' place.

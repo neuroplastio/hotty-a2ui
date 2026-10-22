@@ -361,3 +361,22 @@ func TestFilePicker(t *testing.T) {
 		t.Errorf("got\n%s\nwant\n%s", got, want)
 	}
 }
+
+// TestPickerDescription: a HottyPicker's row reads with its description on
+// the line under it.
+func TestPickerDescription(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyPicker","catalogId":"` + hotty.ID + `","chip":">",
+	  "rows":[{"value":"pane.new","title":"pane.new","description":"New pane (your shell)","detail":"ctrl+b n"},
+	   {"value":"pane.split","title":"pane.split"}]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	want := "? >\n> pane.new — ctrl+b n\n    New pane (your shell)\n  pane.split\n"
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}

@@ -14,9 +14,10 @@ import (
 // its query, after its chip, as a text input of its own, which the host
 // edits, its caret the host's; a rule; its status; its rows, a heading
 // wherever their section changes, each an option whose id is the
-// picker's, "~i" and the row's index; and its line of keys. While the
-// actions panel is open, the selected row's actions take the rows' place.
-// The input gives the program the keys the picker takes (pickKeys).
+// picker's, "~i" and the row's index, its description on a second line;
+// and its line of keys. While the actions panel is open, the selected
+// row's actions take the rows' place. The input gives the program the keys
+// the picker takes (pickKeys).
 //
 // A query the program writes (a completion, a staged command), other than
 // as the user typed it (view.Element.Written), goes to the input with
@@ -86,14 +87,18 @@ func (m *markup) picker(e *view.Element) *node {
 		}
 		for k := top; k < len(lines) && k < top+height; k++ {
 			ln := lines[k]
-			if ln.Row < 0 {
+			switch {
+			case ln.Row < 0:
 				// A heading on the last line has none of its rows under it.
 				if k < top+height-1 {
 					list.add(el("div", "class", "k-pick-head").add(texts(ln.Heading)...))
 				}
-				continue
+			case !ln.Desc:
+				// A description shows on its line, as in cells: a row on
+				// the last line shows without it.
+				desc := k+1 < len(lines) && lines[k+1].Desc && k+1 < top+height
+				list.add(m.pickItem(e, ln.Row, desc))
 			}
-			list.add(m.pickItem(e, ln.Row))
 		}
 	}
 	box.add(list)
@@ -111,14 +116,20 @@ func (m *markup) picker(e *view.Element) *node {
 }
 
 // pickItem is a row: its group and title, the title's matched characters
-// in spans of class k-match, its detail, and its other actions' keys.
-func (m *markup) pickItem(e *view.Element, i int) *node {
+// in spans of class k-match, its detail, and its other actions' keys; with
+// desc, those in a line of their own (k-pick-line), and its description
+// under them.
+func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 	r := e.Rows[i]
-	item := el("div", "id", partID(e.ID, partItem+strconv.Itoa(i)), "class", "k-pick-row", "role", "option",
-		"aria-selected", strconv.FormatBool(i == e.Selected), "data-on", "click")
-	if i == e.Selected {
-		item.set("class", "k-pick-row k-sel")
+	cls := "k-pick-row"
+	if desc {
+		cls += " k-pick-two"
 	}
+	if i == e.Selected {
+		cls += " k-sel"
+	}
+	item := el("div", "id", partID(e.ID, partItem+strconv.Itoa(i)), "class", cls, "role", "option",
+		"aria-selected", strconv.FormatBool(i == e.Selected), "data-on", "click")
 	title := el("span", "class", "k-pick-title")
 	if r.Group != "" {
 		title.add(el("span", "class", "k-pick-group").add(texts(r.Group + ": ")...))
@@ -127,7 +138,12 @@ func (m *markup) pickItem(e *view.Element, i int) *node {
 	if r.Detail != "" {
 		title.add(el("span", "class", "k-pick-detail").add(texts(r.Detail)...))
 	}
-	item.add(title)
+	first := item
+	if desc {
+		first = el("div", "class", "k-pick-line")
+		item.add(first)
+	}
+	first.add(title)
 	var keys []string
 	for k, a := range r.Actions {
 		if k > 0 && a.Key != "" {
@@ -135,7 +151,10 @@ func (m *markup) pickItem(e *view.Element, i int) *node {
 		}
 	}
 	if len(keys) > 0 {
-		item.add(el("span", "class", "k-pick-keys").add(texts(strings.Join(keys, "  "))...))
+		first.add(el("span", "class", "k-pick-keys").add(texts(strings.Join(keys, "  "))...))
+	}
+	if desc {
+		item.add(el("div", "class", "k-pick-desc").add(texts(r.Description)...))
 	}
 	return item
 }

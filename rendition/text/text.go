@@ -403,7 +403,8 @@ func richList(e *view.Element) []string {
 // picker is a HottyPicker as text: its chip and query after "? ", its
 // status, then every row in the agent's order, under its heading, its
 // group before its title and its detail and actions' keys after a dash,
-// "> " marking the selected one; its empty text when it has none.
+// "> " marking the selected one, its description on the line under it;
+// its empty text when it has none.
 func picker(e *view.Element) []string {
 	q, _ := e.Value.(string)
 	out := []string{strings.TrimSpace("? " + strings.TrimSpace(e.Chip+" "+q))}
@@ -420,6 +421,10 @@ func picker(e *view.Element) []string {
 			continue
 		}
 		r := e.Rows[ln.Row]
+		if ln.Desc {
+			out = append(out, "    "+r.Description)
+			continue
+		}
 		s := "  "
 		if ln.Row == e.Selected {
 			s = "> "

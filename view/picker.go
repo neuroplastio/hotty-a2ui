@@ -14,18 +14,20 @@ import (
 
 // PickRow is one of a HottyPicker's rows, as the agent wrote it: what
 // identifies it, its title, the group before it and the detail after it,
-// the heading it falls under, where the query matched its title (character
-// ranges, from and to), its actions, the first Enter's, and what Tab fills
-// the query with ("" for its title).
+// the description on a line under it, the heading it falls under, where
+// the query matched its title (character ranges, from and to), its
+// actions, the first Enter's, and what Tab fills the query with ("" for
+// its title).
 type PickRow struct {
-	Value    string       `json:"value"`
-	Title    string       `json:"title"`
-	Complete string       `json:"complete,omitempty"`
-	Group    string       `json:"group,omitempty"`
-	Detail   string       `json:"detail,omitempty"`
-	Section  string       `json:"section,omitempty"`
-	Match    [][2]int     `json:"match,omitempty"`
-	Actions  []PickAction `json:"actions,omitempty"`
+	Value       string       `json:"value"`
+	Title       string       `json:"title"`
+	Complete    string       `json:"complete,omitempty"`
+	Group       string       `json:"group,omitempty"`
+	Detail      string       `json:"detail,omitempty"`
+	Description string       `json:"description,omitempty"`
+	Section     string       `json:"section,omitempty"`
+	Match       [][2]int     `json:"match,omitempty"`
+	Actions     []PickAction `json:"actions,omitempty"`
 }
 
 // PickAction is one of a row's actions: its id, what it does, and the key
@@ -52,11 +54,12 @@ type Pick struct {
 	Written  int
 }
 
-// PickLine is a line of a HottyPicker's rows: a heading (Row < 0) or a
-// row, by its index.
+// PickLine is a line of a HottyPicker's rows: a heading (Row < 0), or a
+// row, by its index, its title's line or its description's (Desc).
 type PickLine struct {
 	Row     int
 	Heading string
+	Desc    bool
 }
 
 // pickHeight is the lines a HottyPicker's rows take without a height.
@@ -110,7 +113,7 @@ func mapPicker(b *Builder, n *a2ui.Node) *Element {
 // pickRow reads a row as the agent wrote it.
 func pickRow(m map[string]any) PickRow {
 	r := PickRow{Value: a2ui.ToString(m["value"]), Title: a2ui.ToString(m["title"]), Complete: a2ui.ToString(m["complete"]), Group: a2ui.ToString(m["group"]),
-		Detail: a2ui.ToString(m["detail"]), Section: a2ui.ToString(m["section"])}
+		Detail: a2ui.ToString(m["detail"]), Description: a2ui.ToString(m["description"]), Section: a2ui.ToString(m["section"])}
 	ms, _ := m["match"].([]any)
 	for _, x := range ms {
 		p, _ := x.([]any)
@@ -127,25 +130,37 @@ func pickRow(m map[string]any) PickRow {
 }
 
 // pickTop is the first line that shows: where it was, moved as little as
-// brings the selected row into view, with its heading when that is the
-// line above it.
+// brings the selected row into view, its description too, with its
+// heading when that is the line above it. It is never a description's
+// line, whose row's title would be above it.
 func pickTop(lines []PickLine, sel, top, height int) int {
 	for at, l := range lines {
-		if l.Row != sel || sel < 0 {
+		if l.Row != sel || sel < 0 || l.Desc {
 			continue
 		}
-		first := at
+		first, last := at, at
 		if at > 0 && lines[at-1].Row < 0 {
 			first = at - 1
 		}
-		top = max(min(top, first), at+1-height)
+		if at+1 < len(lines) && lines[at+1].Desc {
+			last = at + 1
+		}
+		top = max(min(top, first), last+1-height)
 		break
 	}
-	return max(min(top, len(lines)-height), 0)
+	top = max(min(top, len(lines)-height), 0)
+	if top < len(lines) && lines[top].Desc {
+		if lines[top].Row == sel {
+			return top - 1
+		}
+		return top + 1
+	}
+	return top
 }
 
 // PickLines are a HottyPicker's lines: each row, after a heading wherever
-// its section differs from the row before's.
+// its section differs from the row before's, and its description on the
+// line under it.
 func (e *Element) PickLines() []PickLine {
 	lines := make([]PickLine, 0, len(e.Rows))
 	prev := ""
@@ -155,8 +170,24 @@ func (e *Element) PickLines() []PickLine {
 		}
 		prev = r.Section
 		lines = append(lines, PickLine{Row: i})
+		if r.Description != "" {
+			lines = append(lines, PickLine{Row: i, Desc: true})
+		}
 	}
 	return lines
+}
+
+// pickPage is how many rows Page Up and Page Down move a HottyPicker's
+// selection by: its height, less the descriptions' lines from Top, one at
+// least.
+func (e *Element) pickPage() int {
+	n := e.Height
+	for k, lines := e.Top, e.PickLines(); k < len(lines) && k < e.Top+e.Height; k++ {
+		if lines[k].Desc {
+			n--
+		}
+	}
+	return max(n, 1)
 }
 
 // SelectedPick is a HottyPicker's selected row, nil for none.
@@ -180,15 +211,15 @@ func (e *Element) PickFooter() (enter string, panel bool) {
 
 // PickerKey works a HottyPicker by a key, named as SPEC §10.4 has it. The
 // arrows up and down, Control+p and Control+n, move the selection a row,
-// round from either end, and Page Up and Page Down by the lines it shows.
-// Tab completes the query to the selected row (its complete, else its
-// title), as a query the agent wrote. Enter runs the selected row's first
-// action, and a key one of its
-// actions names runs that one. panelKey opens the selected row's actions,
-// where the arrows move, Enter runs the one highlighted, and Escape or the
-// key again closes them; another key closes them and is taken as if they
-// were shut. ok reports whether the picker took the key: one it doesn't
-// edits the query.
+// round from either end, and Page Up and Page Down by the lines it shows,
+// a row's description counted with it. Tab completes the query to the
+// selected row (its complete, else its title), as a query the agent wrote.
+// Enter runs the selected row's first action, and a key one of its actions
+// names runs that one. panelKey opens the selected row's actions, where
+// the arrows move, Enter runs the one highlighted, and Escape or the key
+// again closes them; another key closes them and is taken as if they were
+// shut. ok reports whether the picker took the key: one it doesn't edits
+// the query.
 func (c *Controller) PickerKey(id, key string) (ok bool, err error) {
 	e := c.V.Find(id)
 	if e == nil || e.Kind != Picker {
@@ -212,7 +243,7 @@ func (c *Controller) PickerKey(id, key string) (ok bool, err error) {
 		c.pickPanel(e, false, 0)
 		e = c.V.Find(id)
 	}
-	n, page := len(e.Rows), max(e.Height, 1)
+	n, page := len(e.Rows), e.pickPage()
 	switch {
 	case key == "arrow_up" || key == "ctrl+p":
 		return true, c.pickMove(e, (e.Selected+n-1)%max(n, 1))

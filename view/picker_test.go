@@ -23,6 +23,12 @@ const paneRows = `[
 // selection and action bound, and the actions it sent.
 func palette(t *testing.T, height string) (*view.Controller, *[]*a2ui.ActionMessage) {
 	t.Helper()
+	return paletteOf(t, paneRows, height)
+}
+
+// paletteOf is palette on rows.
+func paletteOf(t *testing.T, rows, height string) (*view.Controller, *[]*a2ui.ActionMessage) {
+	t.Helper()
 	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
 	actions := new([]*a2ui.ActionMessage)
 	p.Send = func(o a2ui.Outbound) {
@@ -30,7 +36,7 @@ func palette(t *testing.T, height string) (*view.Controller, *[]*a2ui.ActionMess
 			*actions = append(*actions, o.Action)
 		}
 	}
-	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"q":"","sel":"","act":"","rows":` + paneRows + `}}},
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"q":"","sel":"","act":"","rows":` + rows + `}}},
 	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
 	 {"id":"root","component":"HottyPicker","catalogId":"` + hotty.ID + `","query":{"@path":"/q"},"rows":{"@path":"/rows"},
 	  "selected":{"@path":"/sel"},"action":{"@path":"/act"},"panelKey":"mod+k","placeholder":"Run a command…",` + height + `
@@ -102,6 +108,53 @@ func TestPickerMoves(t *testing.T) {
 	}
 	if ok, _ := c.PickerKey("root", "x"); ok {
 		t.Error("the picker took x: a typed key is the query's")
+	}
+}
+
+// describedRows are commands, all but the second with a description.
+const describedRows = `[
+ {"value":"pane.new","title":"pane.new","description":"New pane (your shell)","detail":"ctrl+b n"},
+ {"value":"pane.split","title":"pane.split"},
+ {"value":"pane.close","title":"pane.close","description":"Close the pane"},
+ {"value":"tab.new","title":"tab.new","description":"New tab"}]`
+
+// A row's description is a line of its own under it: the lines show the
+// selected row whole, never start on a description, and a page counts a
+// description's line with its row.
+func TestPickerDescriptions(t *testing.T) {
+	c, _ := paletteOf(t, describedRows, `"height":3,`)
+	e := c.V.Find("root")
+	if e.Rows[0].Description != "New pane (your shell)" || e.Rows[1].Description != "" {
+		t.Errorf("rows %+v", e.Rows)
+	}
+	lines := e.PickLines()
+	want := []view.PickLine{{Row: 0}, {Row: 0, Desc: true}, {Row: 1}, {Row: 2}, {Row: 2, Desc: true}, {Row: 3}, {Row: 3, Desc: true}}
+	if len(lines) != len(want) {
+		t.Fatalf("lines %+v, want %+v", lines, want)
+	}
+	for i := range want {
+		if lines[i] != want[i] {
+			t.Errorf("line %d: %+v, want %+v", i, lines[i], want[i])
+		}
+	}
+	for _, step := range []struct {
+		key      string
+		sel, top int
+	}{
+		{"arrow_down", 1, 0}, {"arrow_down", 2, 2}, {"arrow_down", 3, 5}, {"arrow_up", 2, 3},
+		{"page_up", 0, 0}, {"page_down", 2, 2},
+	} {
+		if ok, err := c.PickerKey("root", step.key); !ok || err != nil {
+			t.Fatalf("%s: ok %v, err %v", step.key, ok, err)
+		}
+		if e := c.V.Find("root"); e.Selected != step.sel || e.Top != step.top {
+			t.Errorf("%s: selected %d, top %d; want %d, %d", step.key, e.Selected, e.Top, step.sel, step.top)
+		}
+	}
+	// A line high, the selected row shows its title.
+	c, _ = paletteOf(t, describedRows, `"height":1,`)
+	if e := c.V.Find("root"); e.Top != 0 {
+		t.Errorf("height 1: top %d, want the first row's title", e.Top)
 	}
 }
 

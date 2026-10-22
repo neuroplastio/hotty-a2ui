@@ -11,8 +11,9 @@ import (
 // command palette draws one: the query on the first row, after its chip;
 // a rule; the status, while it has one; the rows, a heading wherever their
 // section changes, the selected one reversed in the accent across the
-// picker, as a menu's item; then a line of keys. While the actions panel is
-// open, the selected row's actions take the rows' place.
+// picker, as a menu's item, a row's description in muted on the line under
+// it; then a line of keys. While the actions panel is open, the selected
+// row's actions take the rows' place.
 
 // pickIndent is the columns before a row's text and after its keys.
 const pickIndent = 1
@@ -59,7 +60,7 @@ func pickWidth(e *view.Element) int {
 				rw += 2 + Width(view.KeyText(a.Key))
 			}
 		}
-		n = max(n, rw)
+		n = max(n, rw, Width(row.Description))
 	}
 	return n + 2*pickIndent
 }
@@ -161,7 +162,8 @@ func (l *layout) paintPicker(cv *canvas, e *view.Element, x, y, w int) {
 }
 
 // paintPickRows paints the lines that show from Top: a heading in muted
-// and bold, or a row, the selected one across the picker. A heading on
+// and bold, or a row, the selected one across the picker, and a row's
+// description in muted under it, across the picker with it. A heading on
 // the last line, with none of its rows under it, is left out. A row's
 // other actions' keys show at its right where they fit beside its whole
 // text; a narrow picker shows them on the selected row alone, so that the
@@ -193,6 +195,11 @@ func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused
 			keys = r.pickSelected(focused)
 			cv.write(x, at, w, line(strings.Repeat(" ", w), keys))
 		}
+		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: 1, id: e.ID, opt: ln.Row})
+		if ln.Desc {
+			cv.write(in, at, iw, fit(line(row.Description, keys), iw))
+			continue
+		}
 		// The detail wins: a row's keys show where they fit beside its
 		// whole text, else on the selected row alone, where they cut it.
 		ks, text := r.pickKeys(row, keys), r.pickRow(row, sel, focused)
@@ -202,7 +209,6 @@ func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused
 			tw = iw - kw - 2
 		}
 		cv.write(in, at, tw, fit(text, tw))
-		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: 1, id: e.ID, opt: ln.Row})
 	}
 }
 

@@ -337,7 +337,7 @@ Natural widths:
 | HottyTable | its columns' widths, each a column's `width`, else its header's or its widest cell's, whichever is wider, plus 2 for each column (a column of padding each side), and 2 for the scrollbar while its body scrolls |
 | HottyList | 2 for the indent, plus its widest line: its title + 2, its status line, its empty text, `Filter: ` + 1 when it filters, each item's label and description |
 | HottyFilePicker | 2 for the indent, plus its widest line: its title, each entry's name and trailing "/" for a directory, its size column, or its empty text or error |
-| HottyPicker | 1 either side, plus its widest line: its chip and placeholder (20 at least), its status, its empty text, each row's group, title, detail and keys |
+| HottyPicker | 1 either side, plus its widest line: its chip and placeholder (20 at least), its status, its empty text, each row's group, title, detail and keys, and its description |
 | HottyKeyHints | its short line, or in the full view its columns, uncut; not its tooltip's row (§6.23), which is cut to the rest, so that nothing moves as it changes |
 | HottyScrollView | its widest line unwrapped (whether it wraps them or not), or its child's natural width, plus 1 for the padding and 2 for the scrollbar |
 | HottyCode | its gutter (§3.4) and its widest line |
@@ -2652,8 +2652,10 @@ them. It takes the keyboard.
   to)` character ranges, which the picker draws out.
 - **A row** is `value` (what identifies it, and the selection) and
   `title`, then optionally `group`, shown before the title as `Group:
-  Title`, muted; `detail`, after it, muted; `section`, a heading over the
-  row wherever it differs from the row before's; and `actions`.
+  Title`, muted; `detail`, after it, muted; `description`, a line of its
+  own under the title, smaller and muted, which the row takes with it
+  (two lines, selected together); `section`, a heading over the row
+  wherever it differs from the row before's; and `actions`.
 - **Actions** are `{id, title, key}`. The first runs on Enter, whatever its
   key; the others run on theirs, which show at the row's right where they
   fit beside the row's whole text. A narrow picker shows them on the
@@ -2676,8 +2678,9 @@ them. It takes the keyboard.
 - **Status and loading:** `status` is a line under the query, an error
   drawn as one where `statusKind` is `error`; `loading` says rows are still
   to come. `emptyText` (`No matches.`) shows with no rows; `height` is the
-  lines the rows and their headings take at most, 10 by default, the rest
-  scrolled as the selection moves.
+  lines the rows, their descriptions and their headings take at most, 10
+  by default, the rest scrolled as the selection moves: the selected row
+  shows whole, and the lines never start on a description.
 - **The query is a text input's,** with an input's caret: in cells the
   terminal's own cursor, whatever the keymap, and on a host an `input` the
   host edits, its caret the host's. A palette's agent rewrites its query (a
@@ -2697,7 +2700,8 @@ them. It takes the keyboard.
 **Keys:**
 - arrow_up, arrow_down, `ctrl+p`, `ctrl+n`: move the selection a row,
   round from either end.
-- page_up, page_down: by the lines shown.
+- page_up, page_down: by the lines shown, a row's description counted
+  with it.
 - Enter, and an action's key: run that action on the selected row.
 - `panelKey`: the actions panel.
 - Tab completes the query to the selected row: its `complete`, else its
@@ -2713,9 +2717,9 @@ them. It takes the keyboard.
 
 | rendition | a HottyPicker |
 | --- | --- |
-| cells | its chip in `accent` and bold, then the query, a one-line field with no underline, the terminal's cursor at its caret, its placeholder faint in `muted`; a rule in `border`; its status, `✗ ` and the status in `error` for an error; the lines from the first shown, a heading in `muted` and bold, a row one column in: its group and `: ` in `muted`, its title, the matched characters in `accent` and bold, its detail in `muted` two columns on, its other actions' keys right-aligned in `muted` where they fit beside the row's whole text (else on the selected row alone, which they cut). The selected row is reversed in `accent` across the picker while it has the keyboard (reversed in `muted` otherwise), its matched characters bold and underlined. Then a line of keys, as a HottyKeyHints' short one (§6.10): `↑/↓ move • enter <first action> • <panelKey> actions` |
-| host | `div.k-pick`: `div.k-pick-query` with `span.k-pick-chip` and `input.k-pick-input` (`role=combobox`, its placeholder; its `data-keys` give the program the moves, the actions' keys and the panel's) between the stops `span.k-pick-stop` (`~m` before it, `~n` after it, for Shift+Tab and Tab); `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the keys in `span.k-pick-keys`, which wrap out of a row's one line where they don't fit beside its title (the selected row doesn't wrap); `div.k-pick-keys-line` |
-| text | `? ` and its chip and query; its status; every row in order under its heading and `:`, `> ` marking the selected one, its group, title, and after a dash its detail and its keyed actions with their keys (§4) |
+| cells | its chip in `accent` and bold, then the query, a one-line field with no underline, the terminal's cursor at its caret, its placeholder faint in `muted`; a rule in `border`; its status, `✗ ` and the status in `error` for an error; the lines from the first shown, a heading in `muted` and bold, a row one column in: its group and `: ` in `muted`, its title, the matched characters in `accent` and bold, its detail in `muted` two columns on, its other actions' keys right-aligned in `muted` where they fit beside the row's whole text (else on the selected row alone, which they cut), its description on the next line in `muted`. The selected row is reversed in `accent` across the picker while it has the keyboard (reversed in `muted` otherwise), both its lines, its matched characters bold and underlined. A click on either line is a click on the row. Then a line of keys, as a HottyKeyHints' short one (§6.10): `↑/↓ move • enter <first action> • <panelKey> actions` |
+| host | `div.k-pick`: `div.k-pick-query` with `span.k-pick-chip` and `input.k-pick-input` (`role=combobox`, its placeholder; its `data-keys` give the program the moves, the actions' keys and the panel's) between the stops `span.k-pick-stop` (`~m` before it, `~n` after it, for Shift+Tab and Tab); `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the keys in `span.k-pick-keys`, which wrap out of a row's one line where they don't fit beside its title (the selected row doesn't wrap); a row with a description that shows is `.k-pick-two`, its title and keys in `div.k-pick-line`, then `div.k-pick-desc`, smaller and muted (a row whose description is past the last line shows without it); `div.k-pick-keys-line` |
+| text | `? ` and its chip and query; its status; every row in order under its heading and `:`, `> ` marking the selected one, its group, title, and after a dash its detail and its keyed actions with their keys (§4), its description on the line under it, four spaces in |
 
 ### 6.33 tone
 

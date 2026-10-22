@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/neuroplastio/hotty-go"
@@ -149,18 +150,55 @@ func TestPickerStale(t *testing.T) {
 	leave(t, x, r)
 }
 
+// TestPickerDescription: a row with a description is two lines, its
+// title's (with its detail and keys) and the description's under it, in a
+// class of its own (k-pick-desc, smaller and muted); a row without one is
+// one line, as it was.
+func TestPickerDescription(t *testing.T) {
+	x, r := pickerHarnessOf(t, 10, `[{"value":"pane.new","title":"pane.new","description":"New pane (your shell)","detail":"ctrl+b n",
+  "actions":[{"id":"run","title":"Run"},{"id":"keep","title":"Keep","key":"mod+enter"}]},
+ {"value":"pane.split","title":"pane.split","detail":"right"}]`)
+	s := x.h.Surface(r.name)
+	row := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
+	html := s.HTML()
+	for _, want := range []string{
+		`<div class="k-pick-line"><span class="k-pick-title">pane.new<span class="k-pick-detail">ctrl+b n</span></span><span class="k-pick-keys">ctrl+enter</span></div><div class="k-pick-desc">New pane (your shell)</div>`,
+		`<span class="k-pick-title">pane.split<span class="k-pick-detail">right</span></span></div>`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("no %s in\n%s", want, html)
+		}
+	}
+	for i, want := range []string{"k-pick-row k-pick-two k-sel", "k-pick-row"} {
+		if got, _ := s.Attr(row(i), "class"); got != want {
+			t.Errorf("row %d's class is %q, want %q", i, got, want)
+		}
+	}
+	// Two lines high, the first row shows without its description.
+	x, r = pickerHarnessOf(t, 2, `[{"value":"a","title":"a"},{"value":"b","title":"b","description":"Bee"}]`)
+	if html := x.h.Surface(r.name).HTML(); strings.Contains(html, "Bee") || !strings.Contains(html, ">b<") {
+		t.Errorf("the description past the last line shows:\n%s", html)
+	}
+}
+
 // pickerHarness shows a HottyPicker, root, as surface s's, whose query is
 // /q.
 func pickerHarness(t *testing.T) (*harness, *Rendition) {
+	t.Helper()
+	return pickerHarnessOf(t, 10, `[{"value":"split","group":"Pane","title":"Split","section":"Used","match":[[0,2]],"actions":[{"id":"run","title":"Run"},{"id":"again","title":"Again","key":"mod+enter"}]},
+   {"value":"p-1","group":"Pane","title":"fish","detail":"~/code","section":"Panes"}]`)
+}
+
+// pickerHarnessOf is pickerHarness on rows, height lines high.
+func pickerHarnessOf(t *testing.T, height int, rows string) (*harness, *Rendition) {
 	t.Helper()
 	x := newHarness(t)
 	var msgs []any
 	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"q":"","sel":"","act":""}}},
 {"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
  {"id":"root","component":"HottyPicker","catalogId":"`+hottycat.ID+`","query":{"@path":"/q"},"selected":{"@path":"/sel"},"action":{"@path":"/act"},
-  "chip":">","placeholder":"Type a command","panelKey":"mod+k",
-  "rows":[{"value":"split","group":"Pane","title":"Split","section":"Used","match":[[0,2]],"actions":[{"id":"run","title":"Run"},{"id":"again","title":"Again","key":"mod+enter"}]},
-   {"value":"p-1","group":"Pane","title":"fish","detail":"~/code","section":"Panes"}],
+  "chip":">","placeholder":"Type a command","panelKey":"mod+k","height":`+strconv.Itoa(height)+`,
+  "rows":`+rows+`,
   "onAction":{"event":{"name":"act","context":{"row":{"@path":"/sel"},"action":{"@path":"/act"}}}}}]}}]`), &msgs))
 	x.process(msgs...)
 	return x, x.rs["s"]
