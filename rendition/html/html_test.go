@@ -1414,6 +1414,47 @@ func TestListOnHost(t *testing.T) {
 	}
 }
 
+// TestListCompact: a compact HottyList on a host is a list's box with
+// k-compact and no status line, an item's description beside its label
+// by kit.css; a page's rows that stand in for items hold no description.
+func TestListCompact(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"sel":"general"}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyList","catalogId":"`+hottycat.ID+`","variant":"compact","title":"Settings","selected":{"@path":"/sel"},"height":2,
+  "items":[{"label":"General","description":"Name, shell","value":"general"},{"label":"Terminal","value":"terminal"},{"label":"Keys","value":"keys"}]}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	if got, _ := s.Attr("root", "class"); got != "k-rich k-compact" {
+		t.Errorf("the box's class: %q", got)
+	}
+	if _, ok := s.Element(partID("root", partStatus)); ok {
+		t.Error("a compact list has a status line")
+	}
+	if got := s.TextOf(partID("root", partItem+"0")); got != "GeneralName, shell" {
+		t.Errorf("General reads %q", got)
+	}
+	must(t, x.h.Click(r.name, partID("root", partItem+"1")))
+	x.pump()
+	if _, ok, err := r.Key("arrow_right"); !ok || err != nil {
+		t.Fatalf("arrow_right: %v %v", ok, err)
+	}
+	x.update(r)
+	x.check(r)
+	html := s.HTML()
+	if body := html[strings.Index(html, "<body"):]; !strings.Contains(body, "k-rich-gap") || strings.Contains(body, "k-rich-desc") {
+		t.Errorf("the second page, Keys and a row for the item it lacks, holds a description:\n%s", body)
+	}
+	for _, rule := range []string{".k-compact .k-rich-item { display: flex; align-items: baseline; column-gap: 2ch; padding-block: 0.125rem; }",
+		".k-compact .k-rich-desc { flex-shrink: 1000; }"} {
+		if !strings.Contains(kitCSS, rule) {
+			t.Errorf("kit.css lacks %q", rule)
+		}
+	}
+}
+
 // A HottyTree on a host is a box, as a HottyList is: a treeitem a node
 // it shows, indented a level a step; a click selects a node, opens or
 // closes a branch and acts on a selected leaf, and the keys the box gives

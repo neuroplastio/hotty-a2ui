@@ -95,7 +95,8 @@ const (
 	// (the selected item's id), Filter (whether it filters), Query, Shown
 	// (the items the query leaves, best first) and Matched, Height (the
 	// items a page shows, 0 for all of them), Top (the page's first, in
-	// Shown) and Placeholder (what shows when no item does).
+	// Shown), Placeholder (what shows when no item does) and Variant
+	// (ListCompact for a compact one).
 	RichList Kind = "richlist"
 	// FilePicker lists a directory of a root the program grants
 	// (HottyFilePicker): Root, the grant's name; FileDir, the directory

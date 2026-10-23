@@ -721,6 +721,18 @@ textarea.k-resize-none { resize: none; }
 .k-match { text-decoration: underline; }
 .k-rich-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
 .k-rich-pages { padding: var(--k-2) var(--k-3) 0; letter-spacing: 0.2em; }
+/* A compact HottyList, a nav's (profile §6.9): an item a row, its
+   description beside its label, its title bold in muted, no status line,
+   and no room between its rows past the bar's. Its lines start where its
+   labels do, past the bar's 3px, as in cells. Where the box is narrower
+   than a row, the description gives up its room first: it shrinks a
+   thousand times as fast as the label. */
+.k-compact :is(.k-rich-title, .k-rich-filter, .k-rich-empty, .k-rich-pages) { padding: 0.125rem var(--k-3) 0.125rem calc(var(--k-3) + 3px); }
+.k-compact .k-rich-title { color: var(--k-muted); }
+.k-compact .k-rich-item { display: flex; align-items: baseline; column-gap: 2ch; padding-block: 0.125rem; }
+.k-compact .k-rich-item + .k-rich-item { margin-top: 0; }
+.k-compact :is(.k-rich-label, .k-rich-desc) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.k-compact .k-rich-desc { flex-shrink: 1000; }
 .k-dot { color: var(--k-border); }
 .k-dot.k-on { color: var(--k-fg); }
 
@@ -842,6 +854,8 @@ textarea.k-resize-none { resize: none; }
 .k-table tr.k-drop-before > td::before, .k-table tr.k-drop-after > td::after { content: ""; position: absolute; left: 0; right: 0; height: 2px; background: var(--k-accent); }
 .k-rich-item.k-drop-before::before { top: calc(var(--k-1) / -2 - 1px); }
 .k-rich-item.k-drop-after::after { bottom: calc(var(--k-1) / -2 - 1px); }
+.k-compact .k-rich-item.k-drop-before::before { top: -1px; }
+.k-compact .k-rich-item.k-drop-after::after { bottom: -1px; }
 .k-node.k-drop-before::before { top: 0; left: calc(var(--k-3) + var(--k-level, 0) * var(--k-5)); }
 .k-node.k-drop-after::after { bottom: 0; left: calc(var(--k-3) + var(--k-level, 0) * var(--k-5)); }
 .k-col > .k-drop-before::before { top: calc(var(--k-2) / -2 - 1px); }

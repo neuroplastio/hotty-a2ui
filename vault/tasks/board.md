@@ -145,8 +145,12 @@ in this order; plx bumps its pin as they land.
   instruction 38 (journal 2026-10-23.7). Story hotty/width. A field
   without one still fills its field on a host and stops at 32 in cells,
   as before. Shared columns come of KIT-WEIGHT.
-- [ ] **KIT-NAV** — A HottyList for a nav: a row an item, no status line
-  or blank rows, the selection shown, arrows moving it.
+- [x] **KIT-NAV** — HottyList `variant: "compact"`, a nav's: an item a
+  row, its description beside its label (cut first), its title bold in
+  muted, no status line, no blank rows, its dots under its items; keys,
+  filter, pages, moves and clicks the list's. On a host `k-compact`.
+  Profile §6.9, instruction 9 (journal 2026-10-23.8). Story hotty/nav;
+  the title's look awaits the maintainer.
 
 Two are hotty-blitz's, passed to the hotty agent: `::placeholder` is not
 drawn, and an empty `<input type=number>` is a sliver. Both fixed on

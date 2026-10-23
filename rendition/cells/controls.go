@@ -110,13 +110,15 @@ func isControlElement(e *view.Element) bool {
 
 // hasTitle reports whether an element has a title row of its own: a
 // longText, a Choice's options or a Progress with a label, a Table, its
-// header, and a HottyList, its status line. A one-line field's, a
-// CheckBox's, a HottySwitch's, a Slider's and a Spinner's labels are on
-// their one row.
+// header, and a HottyList, its status line (a compact one, its title, if
+// it has one). A one-line field's, a CheckBox's, a HottySwitch's, a
+// Slider's and a Spinner's labels are on their one row.
 func hasTitle(e *view.Element) bool {
 	switch e.Kind {
-	case view.Table, view.RichList, view.FilePicker:
+	case view.Table, view.FilePicker:
 		return true
+	case view.RichList:
+		return !compact(e) || e.Label != ""
 	case view.TextField, view.DateTime, view.Choice, view.Progress:
 		return e.Label != "" && !inlineRow(e)
 	}

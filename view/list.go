@@ -29,12 +29,21 @@ type Query struct {
 	Editing bool   `json:"editing,omitempty"`
 }
 
+// ListCompact is a compact HottyList's Variant: an item a row, its
+// description beside its label, with no status line or blank rows, as a
+// nav's sidebar lists its pages (profile §6.9).
+const ListCompact = "compact"
+
 // mapList makes a HottyList's element: its items, an id each (its value,
 // as text, else its index), the items the query leaves and where they
-// matched it, and the page that shows the selected item.
+// matched it, and the page that shows the selected item; Variant,
+// ListCompact for a compact one (variant "compact"), empty for the list.
 func mapList(b *Builder, n *a2ui.Node) *Element {
 	e := &Element{Kind: RichList, Label: b.String(n, "title"), Value: a2ui.ToString(b.Value(n, "selected")),
 		Filter: b.Bool(n, "filterable"), Placeholder: b.String(n, "emptyText")}
+	if b.Enum(n, "variant", "list") == ListCompact {
+		e.Variant = ListCompact
+	}
 	if _, set := n.Props["emptyText"]; !set {
 		e.Placeholder = "No items."
 	}

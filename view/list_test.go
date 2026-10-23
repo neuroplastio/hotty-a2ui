@@ -179,3 +179,24 @@ func TestListFilter(t *testing.T) {
 		t.Errorf("li: shown %v, selected %d", e.Shown, e.SelectedRow())
 	}
 }
+
+// A HottyList's variant compact is the view's ListCompact; one with
+// variant list, or none, is the list.
+func TestListCompact(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["nav","list","none"]},
+	 {"id":"nav","component":"HottyList","catalogId":"` + hotty.ID + `","variant":"compact","items":[{"label":"General"}]},
+	 {"id":"list","component":"HottyList","catalogId":"` + hotty.ID + `","variant":"list","items":[{"label":"General"}]},
+	 {"id":"none","component":"HottyList","catalogId":"` + hotty.ID + `","items":[{"label":"General"}]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	for id, want := range map[string]string{"nav": view.ListCompact, "list": "", "none": ""} {
+		if got := c.V.Find(id).Variant; got != want {
+			t.Errorf("%s's variant: %q, want %q", id, got, want)
+		}
+	}
+}

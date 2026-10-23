@@ -10,6 +10,9 @@ import (
 // one with its default delegate: the title, then a status line, then the
 // items, a label and a description each, then a page's dots. Every line
 // starts two columns in; the selected item's two columns are a "│" bar.
+// A compact one (view.ListCompact) is a nav's: its title, then an item a
+// row, its description beside its label, then its dots, with no status
+// line and no blank rows.
 
 // listIndent is the columns before every line of a HottyList: the
 // selected item's bar and a space.
@@ -18,10 +21,16 @@ const listIndent = 2
 // listFilter is what a HottyList's filter line starts with.
 const listFilter = "Filter: "
 
+// compact reports whether a HottyList is compact (view.ListCompact).
+func compact(e *view.Element) bool { return e.Variant == view.ListCompact }
+
 // itemRows is how many rows each of a HottyList's items takes: two when
 // one has a description, else one; and the blank rows between them, one
-// between items of two rows.
+// between items of two rows. A compact one's items take a row each.
 func itemRows(e *view.Element) (rows, gap int) {
+	if compact(e) {
+		return 1, 0
+	}
 	for _, it := range e.Items {
 		if it.Description != "" {
 			return 2, 1
@@ -32,9 +41,16 @@ func itemRows(e *view.Element) (rows, gap int) {
 
 // listHead is how many rows a HottyList's lines above its items take: its
 // title (or its filter while typed) and a blank row, unless it has
-// neither; then its status line and a blank row.
+// neither; then its status line and a blank row. A compact one's are its
+// title or its filter alone, if it has either.
 func listHead(e *view.Element) int {
-	if e.Label != "" || e.Query.Editing {
+	titled := e.Label != "" || e.Query.Editing
+	switch {
+	case compact(e) && titled:
+		return 1
+	case compact(e):
+		return 0
+	case titled:
 		return 4
 	}
 	return 2
@@ -57,17 +73,38 @@ func listBody(e *view.Element) int {
 // keeps them while a filter leaves fewer, so that it stays one height.
 func listPaged(e *view.Element) bool { return e.Height > 0 && len(e.Items) > e.Height }
 
-// listHeight is a HottyList's height.
-func listHeight(e *view.Element) int {
-	h := listHead(e) + listBody(e)
-	if listPaged(e) {
-		h += 2
+// dotRows is how many rows a HottyList keeps for its page's dots: none
+// unless it is paged (listPaged), else a blank row and the dots, or the
+// dots alone for a compact one.
+func dotRows(e *view.Element) int {
+	switch {
+	case !listPaged(e):
+		return 0
+	case compact(e):
+		return 1
 	}
-	return h
+	return 2
 }
+
+// listHeight is a HottyList's height.
+func listHeight(e *view.Element) int { return listHead(e) + listBody(e) + dotRows(e) }
 
 // listWidth is a HottyList's natural width: its widest line.
 func listWidth(e *view.Element) int {
+	if compact(e) {
+		n := max(Width(e.Label), Width(e.Placeholder))
+		if e.Filter {
+			n = max(n, Width(listFilter)+1)
+		}
+		for _, it := range e.Items {
+			iw := Width(it.Label)
+			if it.Description != "" {
+				iw += 2 + Width(it.Description)
+			}
+			n = max(n, iw)
+		}
+		return listIndent + n
+	}
 	n := max(Width(e.Label)+2, Width(e.ListStatus()), Width(e.Placeholder))
 	if e.Filter {
 		n = max(n, Width(listFilter)+1)
@@ -105,12 +142,19 @@ func marked(s string, at []int, st style) []glyph {
 // keyboard; otherwise its bar is in muted and its label bold, as a
 // HottyTree's (the maintainer, round 6). A label's characters
 // that matched the filter are underlined; the filter line, while typed,
-// has the cursor at its end.
+// has the cursor at its end. A compact one's title is bold in muted, a
+// sidebar's heading, and an item's description follows its label two
+// columns on.
 func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
 	r := l.r
 	focused := r.focused(e.ID)
 	in := x + listIndent
 	iw := max(w-listIndent, 0)
+	small := compact(e)
+	head := 2
+	if small {
+		head = 1
+	}
 	row := y
 	switch {
 	case e.Query.Editing:
@@ -119,14 +163,21 @@ func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
 		if focused && n < iw && in+n < cv.f.Cols && row < cv.f.Rows && r.caretOn(e.ID) {
 			cv.cursorAt(in+n, row, r.blockCursor())
 		}
-		row += 2
+		row += head
+	case small && e.Label != "":
+		cv.write(in, row, iw, fit(line(e.Label, style{role: Muted, attr: Bold}), iw))
+		row += head
 	case e.Label != "":
 		cv.write(in, row, iw, fit(line(" "+e.Label+" ", style{role: Accent, attr: Reverse}), iw))
+		row += head
+	}
+	if !small {
+		cv.write(in, row, iw, fit(line(e.ListStatus(), style{role: Muted}), iw))
 		row += 2
 	}
-	cv.write(in, row, iw, fit(line(e.ListStatus(), style{role: Muted}), iw))
-	row += 2
-	r.hits = append(r.hits, hit{x: x, y: y, w: w, h: row - y, id: e.ID, opt: -1})
+	if row > y {
+		r.hits = append(r.hits, hit{x: x, y: y, w: w, h: row - y, id: e.ID, opt: -1})
+	}
 
 	rows, gap := itemRows(e)
 	end := len(e.Shown)
@@ -158,7 +209,11 @@ func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
 				cv.write(x, at+j, w, line("│", bar))
 			}
 		}
-		cv.write(in, at, iw, fit(marked(it.Label, match, label), iw))
+		gs := marked(it.Label, match, label)
+		if small && it.Description != "" {
+			gs = concat(gs, line("  "+it.Description, desc))
+		}
+		cv.write(in, at, iw, fit(gs, iw))
 		if rows > 1 {
 			cv.write(in, at+1, iw, fit(line(it.Description, desc), iw))
 		}
@@ -166,13 +221,13 @@ func (l *layout) paintList(cv *canvas, e *view.Element, x, y, w int) {
 		at += rows + gap
 	}
 	row += listBody(e)
-	if listPaged(e) {
+	if n := dotRows(e); n > 0 {
 		// A HottyPaginator's dots (pageDots), as bubbles' list has its
 		// paginator; numbers in muted where they do not fit.
 		if pages, page := e.Pages(); pages > 1 {
-			cv.write(in, row+1, iw, fit(pageDots(pages, page, iw, false, style{}, style{role: Muted}), iw))
+			cv.write(in, row+n-1, iw, fit(pageDots(pages, page, iw, false, style{}, style{role: Muted}), iw))
 		}
-		row += 2
+		row += n
 	}
 	r.boxes[e.ID] = box{x, y, w, row - y}
 }

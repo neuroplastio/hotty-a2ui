@@ -22,9 +22,15 @@ const listKeys = tableKeys + " arrow_left=program arrow_right=program space=prog
 // its status line, the items the view shows (the same page as cells),
 // each an option whose id is the list's, "~i" and the item's index, and
 // the page's dots. The box's keys are the program's, so the filter is
-// typed as in cells: / and then the text.
+// typed as in cells: / and then the text. A compact one (k-compact) has no
+// status line, and kit.css sets each item on a row, its description
+// beside its label.
 func (m *markup) richList(e *view.Element) *node {
+	compact := e.Variant == view.ListCompact
 	box := el("div", "id", domID(e.ID), "class", "k-rich", "tabindex", "0", "role", "listbox", "data-keys", listKeys)
+	if compact {
+		box.set("class", "k-rich k-compact")
+	}
 	if e.Label != "" {
 		box.set("aria-label", e.Label)
 	}
@@ -37,7 +43,9 @@ func (m *markup) richList(e *view.Element) *node {
 	case e.Label != "":
 		box.add(el("div", "id", partID(e.ID, partTitle), "class", "k-rich-title").add(texts(e.Label)...))
 	}
-	box.add(el("div", "id", partID(e.ID, partStatus), "class", "k-rich-status", "aria-live", "polite").add(txt(e.ListStatus())))
+	if !compact {
+		box.add(el("div", "id", partID(e.ID, partStatus), "class", "k-rich-status", "aria-live", "polite").add(txt(e.ListStatus())))
+	}
 	end := len(e.Shown)
 	if e.Height > 0 {
 		end = min(e.Top+e.Height, end)
@@ -70,7 +78,7 @@ func (m *markup) richList(e *view.Element) *node {
 	// while one page is left.
 	paged := e.Height > 0 && len(e.Items) > e.Height
 	if paged {
-		desc := slices.ContainsFunc(e.Items, func(it view.Entry) bool { return it.Description != "" })
+		desc := !compact && slices.ContainsFunc(e.Items, func(it view.Entry) bool { return it.Description != "" })
 		for range e.Height - (end - e.Top) {
 			gap := el("div", "class", "k-rich-item k-rich-gap", "aria-hidden", "true").add(el("div", "class", "k-rich-label").add(txt("\u00a0")))
 			if desc {

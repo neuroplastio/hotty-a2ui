@@ -154,3 +154,54 @@ func TestListClicks(t *testing.T) {
 		t.Errorf("a click on the title changed something: %v %v %v", err, c.S.Data.Value("/sel"), *actions)
 	}
 }
+
+// nav is a surface with a compact HottyList, a settings screen's pages,
+// Terminal selected, and props (such as a title) before its items.
+func nav(t *testing.T, props string) (*Rendition, *view.Controller) {
+	t.Helper()
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"sel":"terminal"}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyList","catalogId":"` + hotty.ID + `","variant":"compact",` + props + `"selected":{"@path":"/sel"},
+	  "items":[{"label":"General","description":"Name, shell","value":"general"},{"label":"Terminal","value":"terminal"},
+	   {"label":"Appearance","value":"appearance"},{"label":"Keys","value":"keys"}]}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	return New(c), c
+}
+
+// A compact HottyList is a nav's: its title, bold in muted, then an item a
+// row, its description beside its label, then its page's dots, with no
+// status line and no blank rows; without a title, its items alone. A
+// click on an item's row selects it.
+func TestListCompact(t *testing.T) {
+	r, c := nav(t, `"title":"Settings","height":3,`)
+	want := "  Settings\n" +
+		"  General  Name, shell\n" +
+		"│ Terminal\n" +
+		"  Appearance\n" +
+		"  ••"
+	f := r.Draw(30)
+	if got := f.Plain(); got != want {
+		t.Fatalf("got\n%s\nwant\n%s", got, want)
+	}
+	if c := f.Cells[0][2]; c.Role != Muted || c.Attr&Bold == 0 {
+		t.Errorf("the title: %v %v, want bold in muted", c.Role, c.Attr)
+	}
+	if label, desc := f.Cells[1][2], f.Cells[1][11]; label.Role != Fg || desc.Role != Muted {
+		t.Errorf("General: its label %v, its description %v, want fg and muted", label.Role, desc.Role)
+	}
+	if got := r.Draw(14).Plain(); got != "  Settings\n  General  Na…\n│ Terminal\n  Appearance\n  ••" {
+		t.Errorf("at 14 columns:\n%s", got)
+	}
+	r.Draw(30)
+	if err := r.Click(4, 3); err != nil || c.S.Data.Value("/sel") != "appearance" {
+		t.Errorf("a click on Appearance: %v, selected %v", err, c.S.Data.Value("/sel"))
+	}
+	r, _ = nav(t, "")
+	if got := r.Draw(30).Plain(); got != "  General  Name, shell\n│ Terminal\n  Appearance\n  Keys" {
+		t.Errorf("without a title:\n%s", got)
+	}
+}

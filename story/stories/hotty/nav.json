@@ -1,0 +1,67 @@
+{
+  "name": "Nav sidebar",
+  "kind": "behaviour",
+  "component": "HottyList",
+  "icon": "vertical_split",
+  "description": "A settings screen's sidebar: two HottyLists with variant compact beside the page they pick. A compact list has an item a row, its description beside its label, its title bold in muted, and no status line or blank rows, as a nav lists its pages. The arrows, j and k move the selection, which is written to /section and /recent and shows in the page's head; Tab moves to the next list. The bar marks the selected item, in the accent while its list has the keyboard. A list with the default variant is bubbles' list, as in the List story: a status line and two rows an item.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "nav",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "pages": [
+            {"label": "General", "value": "General"},
+            {"label": "Terminal", "value": "Terminal"},
+            {"label": "Appearance", "value": "Appearance"},
+            {"label": "Keys", "value": "Keys"},
+            {"label": "Notifications", "value": "Notifications"},
+            {"label": "About", "value": "About"}
+          ],
+          "workspaces": [
+            {"label": "build-01", "description": "~/src/app", "value": "build-01"},
+            {"label": "notes", "description": "~/notes", "value": "notes"},
+            {"label": "infra", "description": "~/src/infra", "value": "infra"}
+          ],
+          "section": "Terminal",
+          "recent": "build-01"
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "nav",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["body", "help"]},
+          {"id": "body", "component": "Row", "children": ["side", "page"]},
+          {"id": "side", "component": "Column", "children": ["pages", "recent"]},
+          {
+            "id": "pages",
+            "component": "HottyList",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "variant": "compact",
+            "title": "Settings",
+            "items": {"@path": "/pages"},
+            "selected": {"@path": "/section"}
+          },
+          {
+            "id": "recent",
+            "component": "HottyList",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "variant": "compact",
+            "title": "Recent",
+            "items": {"@path": "/workspaces"},
+            "selected": {"@path": "/recent"}
+          },
+          {"id": "page", "component": "Column", "children": ["page_title", "page_where", "page_note"], "weight": 1},
+          {"id": "page_title", "component": "Text", "text": {"@call": "formatString", "args": {"value": "**${/section}**"}}},
+          {"id": "page_where", "component": "Text", "variant": "caption", "text": {"@call": "formatString", "args": {"value": "Workspace: ${/recent}"}}},
+          {"id": "page_note", "component": "Text", "text": "The page the sidebar picks shows here. A compact list keeps a row an item, so a sidebar of six pages and three workspaces fits a pane eleven rows tall."},
+          {"id": "help", "component": "HottyKeyHints", "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"}
+        ]
+      }
+    }
+  ]
+}
