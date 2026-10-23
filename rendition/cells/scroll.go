@@ -8,14 +8,16 @@ import (
 
 // A HottyScrollView in cells (profile §3.3, §3.4, §3.7), as bubbles'
 // viewport: Height rows of its content from its Top, a column in, then a
-// blank column and a scrollbar, in a box filled with the surface. Lines that do not wrap are cut at the width, from its
-// Left; a child is laid out at the width and painted shifted up, through
+// blank column and a scrollbar, in a box filled with the surface; a plain
+// one (view.ScrollPlain) has no fill and no column in, its content where
+// what is above it starts. Lines that do not wrap are cut at the width,
+// from its Left; a child is laid out at the width and painted shifted up, through
 // the box (canvas.clip). Where it is scrolled is the controller's state
 // (view.Controller.Scrolled), clamped here to the content as last drawn.
 
 const (
 	scrollBar = 2 // the columns right of the content: a blank one and the bar
-	scrollPad = 1 // the column left of the content, inside the box's fill
+	scrollPad = 1 // the column left of the content, inside the box's fill (scrollPadding)
 	wheelRows = 3 // the rows a notch of the wheel scrolls, as bubbles' viewport
 	sideCols  = 6 // the columns ← and → scroll, as bubbles' viewport
 )
@@ -56,27 +58,36 @@ func scrollLines(e *view.Element, w int) [][]glyph {
 	return rows
 }
 
+// scrollPadding is the columns left of a HottyScrollView's content: the
+// box's scrollPad, none for a plain one, which has no fill to keep it off.
+func scrollPadding(e *view.Element) int {
+	if e.Variant == view.ScrollPlain {
+		return 0
+	}
+	return scrollPad
+}
+
 // scrollWidth is a HottyScrollView's natural width: its widest line
 // unwrapped, wrap or not, or its child's, and the padding's and the
 // scrollbar's columns.
 func (l *layout) scrollWidth(e *view.Element) int {
 	if k := scrollChild(e); k != nil {
-		return l.natural(k) + scrollPad + scrollBar
+		return l.natural(k) + scrollPadding(e) + scrollBar
 	}
 	n := 0
 	for _, s := range e.Lines {
 		n = max(n, Width(s))
 	}
-	return n + scrollPad + scrollBar
+	return n + scrollPadding(e) + scrollBar
 }
 
 // scrollMinimum is the narrowest a HottyScrollView gets: its child's, or
 // a column of its lines, and the padding's and the scrollbar's columns.
 func (l *layout) scrollMinimum(e *view.Element) int {
 	if k := scrollChild(e); k != nil {
-		return l.minimum(k) + scrollPad + scrollBar
+		return l.minimum(k) + scrollPadding(e) + scrollBar
 	}
-	return 1 + scrollPad + scrollBar
+	return 1 + scrollPadding(e) + scrollBar
 }
 
 // paintScroll paints a HottyScrollView at (x, y), w wide and h tall: its
@@ -84,7 +95,8 @@ func (l *layout) scrollMinimum(e *view.Element) int {
 // (profile §6.11).
 func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w, h int) {
 	r := l.r
-	cx, cw, page := x+scrollPad, max(w-scrollPad-scrollBar, 1), max(h, e.Height)
+	pad := scrollPadding(e)
+	cx, cw, page := x+pad, max(w-pad-scrollBar, 1), max(h, e.Height)
 	k := scrollChild(e)
 	var rows [][]glyph
 	total, wide := 0, 0
@@ -132,6 +144,9 @@ func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w, h int) {
 		}
 	}
 	l.paintScrollbar(cv, e, x+w-1, y, page, total, top)
+	if e.Variant == view.ScrollPlain {
+		return
+	}
 	// The box is filled with the surface's colour, so that it stands apart
 	// from what is around it, where the theme colours the surface (Cell.Back
 	// is no tint otherwise); what its content tinted keeps its own.
@@ -234,18 +249,24 @@ func skipCols(gs []glyph, n int) []glyph {
 // paintScrollbar paints a scroll view's bar, page rows from (x, y): a
 // track of │ in border, faint, and a thumb of ┃ as long as the share of
 // the content that shows, where it shows; muted, and accent while the
-// scroll view has the keyboard. Nothing while all of it shows.
+// scroll view has the keyboard. Nothing while all of it shows, unless it
+// has the keyboard: then the thumb is the whole bar, so that the focus
+// shows where nothing else marks it (a plain one has no fill, and no box
+// has a ring in cells).
 func (l *layout) paintScrollbar(cv *canvas, e *view.Element, x, y, page, total, top int) {
-	if total <= page {
+	focused := l.r.focused(e.ID)
+	if total <= page && !focused {
 		return
 	}
 	size := max(1, (page*page+total/2)/total)
 	at := 0
 	if last := total - page; last > 0 {
 		at = (top*(page-size) + last/2) / last
+	} else {
+		size = page
 	}
 	thumb := style{role: Muted}
-	if l.r.focused(e.ID) {
+	if focused {
 		thumb.role = Accent
 	}
 	for i := range page {

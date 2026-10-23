@@ -1676,7 +1676,9 @@ func TestKeyHintsOnHost(t *testing.T) {
 // TestScrollViewOnHost: a HottyScrollView is a focusable box as many
 // rows tall as its height, which the host scrolls; its lines are a row
 // each, a log's a role=log, and a line that arrives is appended, not the
-// whole box sent again. A List, which scrolls too, is no such box.
+// whole box sent again. A List, which scrolls too, is no such box. A
+// plain one is k-plain, which kit.css draws with no box, its focus a line
+// down its right edge.
 func TestScrollViewOnHost(t *testing.T) {
 	x := newHarness(t)
 	var msgs []any
@@ -1686,19 +1688,25 @@ func TestScrollViewOnHost(t *testing.T) {
  {"id":"log","component":"HottyScrollView","catalogId":"`+hottycat.ID+`","lines":{"@path":"/log"},"height":4,"follow":true},
  {"id":"items","component":"List","children":["item"]},
  {"id":"item","component":"Text","text":"An item"},
- {"id":"doc","component":"HottyScrollView","catalogId":"`+hottycat.ID+`","child":"text","wrap":true},
+ {"id":"doc","component":"HottyScrollView","catalogId":"`+hottycat.ID+`","child":"text","wrap":true,"variant":"plain"},
  {"id":"text","component":"Text","text":"A document"}]}}]`), &msgs))
 	x.process(msgs...)
 	r := x.rs["s"]
 	s := x.h.Surface(r.name)
 	for _, want := range [][3]string{{"log", "class", "k-scroll"}, {"log", "tabindex", "0"}, {"log", "style", "--k-rows: 4"}, {"log", "role", "log"},
-		{partID("log", partLines), "class", "k-lines"}, {"doc", "style", "--k-rows: 10"}} {
+		{partID("log", partLines), "class", "k-lines"}, {"doc", "style", "--k-rows: 10"}, {"doc", "class", "k-scroll k-plain"}} {
 		if got, _ := s.Attr(want[0], want[1]); got != want[2] {
 			t.Errorf("%s's %s is %q, want %q", want[0], want[1], got, want[2])
 		}
 	}
 	if role, ok := s.Attr("doc", "role"); ok {
 		t.Errorf("a document is a %q", role)
+	}
+	for _, rule := range []string{".k-scroll.k-plain { padding: 0 var(--k-2) 0 0; background: none; border-radius: 0; }",
+		".k-scroll.k-plain:focus { outline: none; box-shadow: inset -2px 0 0 0 var(--k-focus);"} {
+		if !strings.Contains(kitCSS, rule) {
+			t.Errorf("kit.css lacks %q", rule)
+		}
 	}
 	if class, _ := s.Attr("items", "class"); !strings.Contains(class, "k-overflow") || strings.Contains(class, "k-scroll") {
 		t.Errorf("a List's class is %q, want k-overflow and no scroll view's box", class)

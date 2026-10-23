@@ -13,14 +13,14 @@ import (
 // A HottyScrollView's lines are text, a line each; one the agent left out
 // (a null, padding past the end) is empty. It shows 10 rows without a
 // height. With follow it follows the tail until it is scrolled; a child
-// takes the place of lines.
+// takes the place of lines. Its variant is the box's, unless it is plain.
 func TestScrollView(t *testing.T) {
 	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
 	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"log":["one",2,null,"four"]}}},
 	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
 	 {"id":"root","component":"Column","children":["log","doc"]},
 	 {"id":"log","component":"HottyScrollView","catalogId":"` + hotty.ID + `","lines":{"@path":"/log"},"follow":true,"wrap":true},
-	 {"id":"doc","component":"HottyScrollView","catalogId":"` + hotty.ID + `","child":"text","height":4},
+	 {"id":"doc","component":"HottyScrollView","catalogId":"` + hotty.ID + `","child":"text","height":4,"variant":"plain"},
 	 {"id":"text","component":"Text","text":"A document"}]}}]`
 	if err := p.ProcessJSON([]byte(msgs)); err != nil {
 		t.Fatal(err)
@@ -30,11 +30,11 @@ func TestScrollView(t *testing.T) {
 	if e == nil || e.Kind != view.ScrollView || !e.Focusable() || !slices.Equal(e.Lines, []string{"one", "2", "", "four"}) {
 		t.Fatalf("log: %+v", e)
 	}
-	if e.Height != 10 || !e.Active || !e.Tail || !e.Wrap {
-		t.Errorf("log: height %d, follow %v, tail %v, wrap %v", e.Height, e.Active, e.Tail, e.Wrap)
+	if e.Height != 10 || !e.Active || !e.Tail || !e.Wrap || e.Variant != "" {
+		t.Errorf("log: height %d, follow %v, tail %v, wrap %v, variant %q", e.Height, e.Active, e.Tail, e.Wrap, e.Variant)
 	}
 	doc := c.V.Find("doc")
-	if len(doc.Children) != 1 || doc.Children[0].ID != "text" || doc.Lines != nil || doc.Height != 4 || doc.Tail {
+	if len(doc.Children) != 1 || doc.Children[0].ID != "text" || doc.Lines != nil || doc.Height != 4 || doc.Tail || doc.Variant != view.ScrollPlain {
 		t.Errorf("doc: %+v", doc)
 	}
 	// A rendition scrolled the log up: it stops following.

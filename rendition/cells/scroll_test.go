@@ -146,12 +146,13 @@ func TestScrollFollows(t *testing.T) {
 // Lines that do not wrap are cut at the box, and ← and → scroll them six
 // columns; lines that wrap take the rows they need, broken between words
 // as the HTML's are and a word longer than a row where it ends, and do
-// not scroll sideways.
+// not scroll sideways. They all show, so the focused box's bar is a
+// whole thumb.
 func TestScrollSideways(t *testing.T) {
 	long := `["0123456789abcdefghijklmnopqrstuvwxyz","x"]`
 	r, c, _ := scrolling(t, `"lines":{"@path":"/log"},"height":2`, long)
 	c.Focus("root")
-	if got := first(r.Draw(21)); got != " 0123456789abcdefgh" {
+	if got := first(r.Draw(21)); got != " 0123456789abcdefgh ┃" {
 		t.Fatalf("cut: %q", got)
 	}
 	// At 21 columns, 18 of lines: keys() draws at 40, where the lines fit.
@@ -165,18 +166,18 @@ func TestScrollSideways(t *testing.T) {
 		}
 		return first(r.Draw(21))
 	}
-	if got := at21("l", "arrow_right"); got != " cdefghijklmnopqrst" {
+	if got := at21("l", "arrow_right"); got != " cdefghijklmnopqrst ┃" {
 		t.Errorf("12 columns right: %q", got)
 	}
-	if got := at21("l", "l", "l"); got != " ijklmnopqrstuvwxyz" {
+	if got := at21("l", "l", "l"); got != " ijklmnopqrstuvwxyz ┃" {
 		t.Errorf("right, clamped to the widest line: %q", got)
 	}
-	if got := at21("h", "h", "h", "h", "h"); got != " 0123456789abcdefgh" {
+	if got := at21("h", "h", "h", "h", "h"); got != " 0123456789abcdefgh ┃" {
 		t.Errorf("back left, clamped: %q", got)
 	}
 	r, c, _ = scrolling(t, `"lines":{"@path":"/log"},"height":3,"wrap":true`, long)
 	c.Focus("root")
-	if got := r.Draw(21).Plain(); got != " 0123456789abcdefgh\n ijklmnopqrstuvwxyz\n x" {
+	if got := r.Draw(21).Plain(); got != " 0123456789abcdefgh ┃\n ijklmnopqrstuvwxyz ┃\n x                  ┃" {
 		t.Errorf("wrapped:\n%s", got)
 	}
 	if ok, _ := r.Key("l"); ok {
@@ -210,6 +211,38 @@ func TestScrollSurface(t *testing.T) {
 		codeComp("c", `"code":"a","marks":[{"line":1,"kind":"error"}]`))
 	if c := r.Draw(10).Cells[0][2]; c.Back != Error || c.BackMix != 42 {
 		t.Errorf("a marked line in the box: %v %d", c.Back, c.BackMix)
+	}
+}
+
+// A plain scroll view (variant "plain") has no fill and no column in: its
+// lines start at its left edge, then the blank column and the scrollbar.
+// With the keyboard, where all of its content shows, the thumb is the
+// whole bar, in accent, a plain one's as a box's: nothing else in cells
+// shows the focus.
+func TestScrollPlain(t *testing.T) {
+	r, _, _ := scrolling(t, `"lines":{"@path":"/log"},"height":3,"variant":"plain"`, sixLines)
+	f := r.Draw(20)
+	want := fmt.Sprintf("%-19s┃\n%-19s┃\n%-19s│", "line 1", "line 2", "line 3")
+	if got := f.Plain(); got != want {
+		t.Fatalf("got\n%s\nwant\n%s", got, want)
+	}
+	for _, at := range [][2]int{{0, 0}, {18, 0}, {19, 2}} {
+		if cl := f.Cells[at[1]][at[0]]; cl.BackMix != 0 {
+			t.Errorf("(%d,%d) is filled: %v %d", at[0], at[1], cl.Back, cl.BackMix)
+		}
+	}
+	for _, tc := range []struct{ variant, line string }{{"box", " short"}, {"plain", "short"}} {
+		r, c, _ := scrolling(t, `"lines":["short"],"height":3,"variant":"`+tc.variant+`"`, `[]`)
+		if got := r.Draw(20).Plain(); got != tc.line+"\n\n" {
+			t.Errorf("%s, all of it shows, so no bar: %q", tc.variant, got)
+		}
+		c.Focus("root")
+		f := r.Draw(20)
+		for y := range 3 {
+			if cl := f.Cells[y][19]; cl.Text != "┃" || cl.Role != Accent {
+				t.Errorf("%s, focused, row %d of the bar: %q %v", tc.variant, y, cl.Text, cl.Role)
+			}
+		}
 	}
 }
 

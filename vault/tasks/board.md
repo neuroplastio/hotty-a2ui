@@ -123,8 +123,15 @@ in this order; plx bumps its pin as they land.
   plx drops its computed height. A weight no longer drops a box's
   `--k-rows` on a host. Profile §6.35, instruction 36 (journal
   2026-10-23.4); hotty/stretch awaits the maintainer's look.
-- [ ] **KIT-PLAIN** — A HottyScrollView for a page's body: no fill,
-  corners, padding or ring; its focus on its scrollbar.
+- [x] **KIT-PLAIN** — HottyScrollView `variant: "plain"`, a screen's
+  body: no fill, corners, padding or ring. Its focus is on its
+  scrollbar: on a host a 2px line down its right edge and the thumb in
+  the focus colour; in cells the accent thumb, the whole bar where all of
+  the content shows (any box's, which showed no focus there). Profile §2,
+  §3.4, §6.11, instruction 11 (journal 2026-10-23.5). hotty/stretch's
+  sections are plain. Look question: an overlay scrollbar (Blitz's)
+  shows nothing until the box scrolls, so on a host only the cut at its
+  foot says the body scrolls; rules above and below it are the option.
 - [ ] **KIT-GAP** — `io_neuroplast_hotty.gap` on a Column or a Row.
 - [ ] **KIT-WIDTH** — `io_neuroplast_hotty.width` on a field: columns in
   cells, `ch` on a host; shared columns come of KIT-WEIGHT.

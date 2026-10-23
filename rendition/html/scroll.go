@@ -16,13 +16,17 @@ import (
 // a log's (follow) is role=log, which a screen reader reads as lines
 // arrive. A program cannot set where a host has scrolled, so the box
 // starts at its top, follow or not, and hottyScrollTo does nothing there:
-// vault KIT-07h.
+// vault KIT-07h. A plain one is k-plain, with no box (kit.css).
 func (m *markup) scrollView(e *view.Element) *node {
 	keys := scrollKeys
 	if len(e.Children) == 0 && !e.Wrap {
 		keys += sideKeys
 	}
-	n := el("div", "id", domID(e.ID), "class", "k-scroll", "tabindex", "0",
+	class := "k-scroll"
+	if e.Variant == view.ScrollPlain {
+		class += " k-plain"
+	}
+	n := el("div", "id", domID(e.ID), "class", class, "tabindex", "0",
 		"style", "--k-rows: "+strconv.Itoa(e.Height), "data-keys", keys)
 	if len(e.Children) > 0 {
 		return n.add(m.all(e.Children)...)
@@ -30,7 +34,7 @@ func (m *markup) scrollView(e *view.Element) *node {
 	if e.Active {
 		n.set("role", "log")
 	}
-	class := "k-lines"
+	class = "k-lines"
 	if e.Wrap {
 		class += " k-wrap"
 	}

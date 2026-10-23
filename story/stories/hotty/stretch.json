@@ -3,7 +3,7 @@
   "kind": "behaviour",
   "component": "io_neuroplast_hotty.stretch",
   "icon": "dashboard",
-  "description": "A screen as tall as its pane, as a settings page or a dashboard is: the root Column has the stretch extension, and its HottyScrollView a weight of 1, so the rows the head and the buttons leave go to the sections, which scroll under the head. Resize the pane and the sections take the rows; the buttons and the key hints stay at the bottom. The scroll view's height, 6, is the least it shows. Without stretch, a root is as tall as what it holds, as a card or a form is. In cells the program says how many rows the pane has (Rendition.SetRows); on a hotty host the surface fills its pane.",
+  "description": "A screen as tall as its pane, as a settings page or a dashboard is: the root Column has the stretch extension, and its HottyScrollView a weight of 1, so the rows the head and the buttons leave go to the sections, which scroll under the head. Resize the pane and the sections take the rows; the buttons and the key hints stay at the bottom. The scroll view's height, 6, is the least it shows, and its variant is plain: the body of the screen, with no box, its focus on its scrollbar. Without stretch, a root is as tall as what it holds, as a card or a form is. In cells the program says how many rows the pane has (Rendition.SetRows); on a hotty host the surface fills its pane.",
   "messages": [
     {
       "version": "v1.0",
@@ -43,6 +43,7 @@
             "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
             "child": "sections_body",
             "height": 6,
+            "variant": "plain",
             "weight": 1
           },
           {

@@ -118,7 +118,7 @@ const (
 	// (HottyScrollView): its child (Children), or Lines; Top and Left,
 	// where it is scrolled to; Active, whether it follows the tail when
 	// scrolled to its end, and Tail, whether it does now; Wrap, whether
-	// long lines wrap.
+	// long lines wrap; Variant, ScrollPlain for one with no box.
 	ScrollView Kind = "scrollview"
 	// Listing is source code (HottyCode): Code, its lines as tokens;
 	// Lang; Numbers, whether its line numbers show, from FirstLine; Marks,

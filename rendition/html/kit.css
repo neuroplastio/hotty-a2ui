@@ -896,6 +896,14 @@ textarea.k-resize-none { resize: none; }
   overflow-y: auto; outline: none; background: var(--k-tonal); border-radius: var(--k-r-field);
   scrollbar-width: thin; scrollbar-color: var(--k-border) transparent; }
 .k-scroll:focus { outline: 2px solid var(--k-focus); outline-offset: -2px; }
+/* A plain one (profile §6.11) is the body of a screen, with no box: no
+   fill, corners or padding but a gap before its scrollbar, which a
+   classic scrollbar takes and an overlay one paints over. Its focus is
+   on the scrollbar: a 2px line in the focus colour down its right edge,
+   which shows whether or not a thumb does (Blitz's fade out, and a box
+   that all shows has none), and the thumb in the focus colour. */
+.k-scroll.k-plain { padding: 0 var(--k-2) 0 0; background: none; border-radius: 0; }
+.k-scroll.k-plain:focus { outline: none; box-shadow: inset -2px 0 0 0 var(--k-focus); scrollbar-color: var(--k-focus) transparent; }
 .k-lines { font-family: var(--k-mono); line-height: var(--hotty-cell-h, 1.25rem); white-space: pre; overflow: hidden; }
 .k-lines.k-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
 

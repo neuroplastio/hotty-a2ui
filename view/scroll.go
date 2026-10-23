@@ -12,14 +12,22 @@ import (
 // scrollHeight is a HottyScrollView's rows without a height.
 const scrollHeight = 10
 
+// ScrollPlain is a plain HottyScrollView's Variant: the body of a screen
+// that scrolls between what stays, with no box around it (profile §6.11).
+const ScrollPlain = "plain"
+
 // mapScrollView makes a HottyScrollView's element: its child, or its lines
 // (a line each, as text); Height, the rows it shows; Top and Left, where
 // it is scrolled to; Active, its follow prop; Tail, whether it follows the
 // tail, as follow says until the user scrolls; Wrap, whether long lines
-// wrap.
+// wrap; Variant, ScrollPlain for a plain one (variant "plain"), empty for
+// the box.
 func mapScrollView(b *Builder, n *a2ui.Node) *Element {
 	e := &Element{Kind: ScrollView, Children: b.Children(n.Props["child"]), Wrap: b.Bool(n, "wrap"), Height: scrollHeight,
 		Active: b.Bool(n, "follow")}
+	if b.Enum(n, "variant", "box") == ScrollPlain {
+		e.Variant = ScrollPlain
+	}
 	if len(e.Children) == 0 {
 		lines, _ := b.Raw(n, "lines").([]any)
 		e.Lines = make([]string, 0, len(lines))
