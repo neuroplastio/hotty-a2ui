@@ -174,15 +174,17 @@ on a hotty host: "Buttons are too thin".
   slide wants one. The story picks a Keymap with chips (tmux, screen,
   Emacs), not Leader buttons that spelled the keys in words and showed
   none picked (web; journal 2026-10-23.14).
-- [ ] **KIT-KEYS-BLITZ** On hottyterm a HottyKeys in a share narrower than
+- [x] **KIT-KEYS-BLITZ** On hottyterm a HottyKeys in a share narrower than
   its caps draws its last cap over the Text beside it, where Chromium
   pushes the Text over. Blitz's parley (at Blitz's pin) breaks after an
   inline-block that starts a `nowrap` line; upstream's U+FFFC boxes fix
   it. Reported to hotty for a mods/parley patch, no kit workaround
   (journal 2026-10-23.13). plx gives the keys half the row meanwhile.
   Fixed in hotty-blitz ab9bed4 (mods/parley 0002: an inline box takes its
-  span's white-space); closes when hottyterm re-pins it, the
-  maintainer's go-ahead.
+  span's white-space), released in hottyterm 26.10.23-dev.2e1006e (AUR,
+  Homebrew). hotty/cheatsheet at 40 columns keeps its caps whole and
+  pushes the Text over, as in Chromium; plx can give the keys their
+  natural width back on a host at 2e1006e or later.
 - [ ] **KIT-MD-TABLE** plx, FYI: on hottyterm, a HottyMarkdown table cell
   wrapping to three lines in a narrow column overlaps the next row. Not
   known yet whether `.k-doc`'s CSS or Blitz is at fault; plx is moving
