@@ -144,7 +144,9 @@ in this order; plx bumps its pin as they land.
   `k-cols` and `--k-cols` in `ch`, at most the field's. Profile §6.37,
   instruction 38 (journal 2026-10-23.7). Story hotty/width. A field
   without one still fills its field on a host and stops at 32 in cells,
-  as before. Shared columns come of KIT-WEIGHT.
+  as before. Shared columns come of KIT-WEIGHT. A number field has no
+  spin buttons on a host, which cut a port's 5 columns in Chromium
+  (journal 2026-10-23.9).
 - [x] **KIT-NAV** — HottyList `variant: "compact"`, a nav's: an item a
   row, its description beside its label (cut first), its title bold in
   muted, no status line, no blank rows, its dots under its items; keys,

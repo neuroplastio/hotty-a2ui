@@ -404,6 +404,14 @@
 /* A field's width (io_neuroplast_hotty.width, profile §6.37): its value's
    columns in ch, and its padding and border, at most its field's. */
 .k-input.k-cols { width: calc(var(--k-cols) * 1ch + 1.5rem + 2px); max-width: 100%; }
+/* A number field draws no spin buttons, as cells and hottyterm draw
+   none: a browser keeps their room inside the input, shown or not, so a
+   field `width` columns wide cut its value. Chromium's are pseudo-
+   elements, in a rule of their own, as a host drops a rule with a
+   selector it does not know. */
+input[type=number].k-input { appearance: textfield; -moz-appearance: textfield; }
+input[type=number].k-input::-webkit-inner-spin-button,
+input[type=number].k-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 /* A longText's corner resizes it, as a web textarea's, along the axes
    its resize allows (profile §6.30); a host draws the corner. */
 textarea.k-input { min-height: 5.5rem; resize: both; }

@@ -748,8 +748,13 @@ func TestWidth(t *testing.T) {
 	if style, _ := s.Attr(partID("port", partWrap), "style"); style != "--k-w: 1" {
 		t.Errorf("port's field's style: %q", style)
 	}
-	if rule := ".k-input.k-cols { width: calc(var(--k-cols) * 1ch + 1.5rem + 2px); max-width: 100%; }"; !strings.Contains(kitCSS, rule) {
-		t.Errorf("kit.css lacks %q", rule)
+	// A number field's spin buttons would take its value's room.
+	for _, rule := range []string{".k-input.k-cols { width: calc(var(--k-cols) * 1ch + 1.5rem + 2px); max-width: 100%; }",
+		"input[type=number].k-input { appearance: textfield; -moz-appearance: textfield; }",
+		"input[type=number].k-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }"} {
+		if !strings.Contains(kitCSS, rule) {
+			t.Errorf("kit.css lacks %q", rule)
+		}
 	}
 }
 
