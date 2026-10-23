@@ -180,6 +180,9 @@ on a hotty host: "Buttons are too thin".
   inline-block that starts a `nowrap` line; upstream's U+FFFC boxes fix
   it. Reported to hotty for a mods/parley patch, no kit workaround
   (journal 2026-10-23.13). plx gives the keys half the row meanwhile.
+  Fixed in hotty-blitz ab9bed4 (mods/parley 0002: an inline box takes its
+  span's white-space); closes when hottyterm re-pins it, the
+  maintainer's go-ahead.
 - [ ] **KIT-MD-TABLE** plx, FYI: on hottyterm, a HottyMarkdown table cell
   wrapping to three lines in a narrow column overlaps the next row. Not
   known yet whether `.k-doc`'s CSS or Blitz is at fault; plx is moving
