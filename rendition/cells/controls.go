@@ -53,13 +53,16 @@ func isOneLine(e *view.Element) bool {
 }
 
 // inputWidth is the columns of a one-line field's input (profile §3.5),
-// at most the room it is given: a text field's textInput; a DateTime's,
-// its value's form or its value, whichever is wider, and a column for the
+// at most the room it is given: a text field's or a DateTime's width
+// where it has one (§6.37); a text field's textInput; a DateTime's, its
+// value's form or its value, whichever is wider, and a column for the
 // caret after it; a select's, its widest option, a space and "▾"; a
 // cycle's, its widest option between "‹ " and " ›"; a Slider's, its
 // track, a space and its value.
 func inputWidth(e *view.Element) int {
 	switch {
+	case e.Width > 0:
+		return e.Width
 	case isSlider(e):
 		return trackWidth + 1 + sliderValueWidth(e)
 	case isSelect(e) && e.Cycle:
@@ -149,6 +152,15 @@ func isTextControl(e *view.Element) bool {
 
 func isLongText(e *view.Element) bool { return e.Kind == view.TextField && e.Variant == "longText" }
 
+// longWidth is a longText's natural columns, its grip's among them: its
+// width where it has one (§6.37), else fieldWidth.
+func longWidth(e *view.Element) int {
+	if e.Width > 0 {
+		return e.Width
+	}
+	return fieldWidth
+}
+
 // isSelect reports whether a Choice is a select: one value, from a list
 // rather than chips.
 func isSelect(e *view.Element) bool { return e != nil && e.Kind == view.Choice && len(e.Children) == 0 }
@@ -161,7 +173,7 @@ func controlWidth(e *view.Element) int {
 		return width(buttonFace(e, style{}))
 	case view.TextField, view.DateTime:
 		if isLongText(e) {
-			return gutter + max(Width(e.Label), fieldWidth)
+			return gutter + max(Width(e.Label), longWidth(e))
 		}
 		return gutter + labelled(e, inset+inputWidth(e))
 	case view.CheckBox:

@@ -328,7 +328,7 @@ Natural widths:
 | Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0 |
 | HottyMarkdown | as a Text's, its lines as §3.4 draws them: each with its frames (markers and bars), a code block's two columns in, a table's as wide as its columns' widest cells and their padding; a rule counts its frames |
 | Button | the label + 2, a column of padding each side, a List's too (a List's whose label is a Row or a Column, that's + 2); borderless, the label |
-| TextField, DateTime | 2 for the gutter, the label and a space when it has one (padded to its run's widest label, §3.5), the inset (1) and its input: a text field's 32, as wide as an email address takes, whatever is typed; a DateTime's, its value's form (`YYYY-MM-DDTHH:MM`, `YYYY-MM-DD` or `HH:MM`) or its value, whichever is wider, and a column for the caret. A longText, the label's or 20 (an HTML textarea's size) |
+| TextField, DateTime | 2 for the gutter, the label and a space when it has one (padded to its run's widest label, §3.5), the inset (1) and its input: a text field's 32, as wide as an email address takes, whatever is typed; a DateTime's, its value's form (`YYYY-MM-DDTHH:MM`, `YYYY-MM-DD` or `HH:MM`) or its value, whichever is wider, and a column for the caret. Either's `width` instead where it has one (§6.37). A longText, the label's or 20 (an HTML textarea's size), or its `width` |
 | CheckBox | 2 for the gutter, 3 for the box, plus 1 and the label when it has one |
 | HottySwitch | 2 for the gutter, 3 for the switch, plus 1 and the label when it has one |
 | a select | a one-line text field's, its input the widest option's label, a space and `▾` |
@@ -671,7 +671,8 @@ without colour:
   and never grows as the value is typed: a text field's is 32 columns,
   room for an email address; a DateTime's, its value's form or its
   value, whichever is wider, and a column for the caret; a select's, its
-  widest option, a space and `▾` (§3.4). It takes less where the field's
+  widest option, a space and `▾` (§3.4). A text field's or a DateTime's
+  `width` (§6.37) sets it instead. It takes less where the field's
   box is narrower, and scrolls. The underline's colour is `border` at
   half its contrast with the background, and `accent` at half while the
   field has the keyboard, so that it is there without drawing the eye
@@ -2925,6 +2926,30 @@ not a number is none; a fraction is rounded down, and more than 8 is 8.
 | cells | `gap` blank rows between each two children of a Column that draw rows (§3.3), whatever they are, and none of the automatic ones; `gap` columns between each two children of a Row, instead of one, in its natural width and its minimum too |
 | host | a class beside the container's own, `k-gap`, and `--k-gap` its number, which kit.css turns into `row-gap` in terminal rows (SPEC.md §8's `--hotty-cell-h`) for a Column, `column-gap` in terminal columns (`--hotty-cell-w`) for a Row. A drop's line (§6.21) sits in the middle of it |
 | text | nothing: a text rendition has no layout |
+
+### 6.37 width
+
+`metadata.extensions.io_neuroplast_hotty.width` on a TextField or a
+DateTimeInput: the characters its value shows, a whole number of terminal
+columns from 1 to 256, in place of the kit's own: a one-line text
+field's 32 (§3.5), a DateTime's value's form. A settings page sizes a
+port's field to 5 and a path's to 48 (plx, 2026-10-23: "TextField is
+fixed at 32 cols with no width hint"). A2UI v1.0's TextField has no width
+of its own: its renderers size fields as their theme does.
+
+It is the field's input, not the field: the label (§3.5) and the gutter
+(§3.4) are beside it, and the field still takes less where its box is
+narrower, its value scrolling. A longText starts as wide as its `width`,
+its grip's column among them (§6.30), and its grip resizes it from
+there. Fields that share columns get them from their Rows' weights
+(§3.3), not from a `width`. A width that is not a number is none; a
+fraction is rounded down, less than 1 is 1, and more than 256 is 256.
+
+| rendition | a TextField or a DateTimeInput with `width` |
+| --- | --- |
+| cells | its input `width` columns, underlined (§3.5), at most the room past its label and inset; its natural width counts them too (§3.3). A longText's value as many columns, until its grip resizes it |
+| host | a class beside the input's own, `k-cols`, and `--k-cols` its number, which kit.css turns into `width` in `ch`, the input's padding and border on top, at most its field's (`max-width: 100%`) |
+| text | nothing: a text rendition shows the value, not its input |
 
 ## 7. Fallbacks
 

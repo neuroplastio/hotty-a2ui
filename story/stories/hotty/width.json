@@ -1,0 +1,71 @@
+{
+  "name": "Field widths",
+  "kind": "behaviour",
+  "component": "io_neuroplast_hotty.width",
+  "icon": "format_size",
+  "description": "Fields as wide as the values they take, as a settings page sizes them: the port's has the width extension, 5, the host's 24, the socket path's 40, and the message's, a longText, 40 too, where its grip starts. The display name's has none, so it shows the 32 columns a one-line text field has, room for an email address. A width counts the characters the value shows, in terminal columns in cells and in ch on a hotty host, after the field's label; where the field has less room it takes less and its value scrolls.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "width",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "host": "localhost",
+          "port": "7420",
+          "socket": "~/.local/state/app/app.sock",
+          "name": "workstation",
+          "motd": "Back up before Friday's update."
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "width",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["title", "host", "port", "socket", "name", "motd", "save"]},
+          {"id": "title", "component": "Text", "text": "**Server**"},
+          {
+            "id": "host",
+            "component": "TextField",
+            "label": "Host",
+            "value": {"@path": "/host"},
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"width": 24}}}
+          },
+          {
+            "id": "port",
+            "component": "TextField",
+            "label": "Port",
+            "variant": "number",
+            "value": {"@path": "/port"},
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"width": 5}}}
+          },
+          {
+            "id": "socket",
+            "component": "TextField",
+            "label": "Socket",
+            "value": {"@path": "/socket"},
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"width": 40}}}
+          },
+          {
+            "id": "name",
+            "component": "TextField",
+            "label": "Display name",
+            "value": {"@path": "/name"}
+          },
+          {
+            "id": "motd",
+            "component": "TextField",
+            "variant": "longText",
+            "label": "Message of the day",
+            "value": {"@path": "/motd"},
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"width": 40}}}
+          },
+          {"id": "save", "component": "Button", "variant": "primary", "child": "save_t", "action": {"event": {"name": "save"}}},
+          {"id": "save_t", "component": "Text", "text": "Save"}
+        ]
+      }
+    }
+  ]
+}

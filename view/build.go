@@ -212,6 +212,9 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	if e.Kind == Stack {
 		e.Gap = gap(n)
 	}
+	if e.Kind == TextField || e.Kind == DateTime {
+		e.Width = width(n)
+	}
 	e.Autofocus = autofocus(n)
 	e.Keys = keys(n)
 	if e.Kind == Text || e.Kind == Icon {
@@ -465,6 +468,23 @@ func gap(n *a2ui.Node) *int {
 	}
 	g := int(min(max(v, 0), MaxGap))
 	return &g
+}
+
+// MaxWidth is the most io_neuroplast_hotty.width counts, wider than a
+// terminal is, so that an agent's width cannot make a field thousands of
+// columns wide.
+const MaxWidth = 256
+
+// width reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.width on a TextField or a DateTimeInput: the
+// columns of its value, 1 to MaxWidth, a fraction rounded down; 0 where it
+// has none or it is not a number.
+func width(n *a2ui.Node) int {
+	v := a2ui.ToNumber(hottyExt(n)["width"])
+	if math.IsNaN(v) {
+		return 0
+	}
+	return int(min(max(v, 1), MaxWidth))
 }
 
 // cycle reads the hotty extension metadata.extensions

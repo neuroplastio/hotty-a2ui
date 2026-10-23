@@ -140,13 +140,15 @@ func (l *layout) paintField(cv *canvas, e *view.Element, x, y, w int) {
 	r.rows[e.ID] = rows
 	// vx, vw are the value's columns: a one-line field's input, after the
 	// blank inset and as wide as inputWidth, or less where the room is; a
-	// longText's, as wide as its grip made it, at most its box's, its last
-	// column the grip's (resize.go).
+	// longText's, as wide as its grip made it, else its width (§6.37), at
+	// most its box's, its last column the grip's (resize.go).
 	vx, vw := ux, uw
 	if !long {
 		vx, vw = ux+inset, min(max(uw-inset, 0), inputWidth(e))
 	} else if s := r.sized[e.ID]; s.cols > 0 {
 		vw = min(vw, s.cols)
+	} else if e.Width > 0 {
+		vw = min(vw, e.Width)
 	}
 	grip := gripped(e, vw)
 	if grip {

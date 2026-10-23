@@ -401,6 +401,9 @@
    is a .k-input too, but a button. */
 :is(input, textarea).k-input { cursor: text; }
 .k-date { width: auto; max-width: 100%; }
+/* A field's width (io_neuroplast_hotty.width, profile §6.37): its value's
+   columns in ch, and its padding and border, at most its field's. */
+.k-input.k-cols { width: calc(var(--k-cols) * 1ch + 1.5rem + 2px); max-width: 100%; }
 /* A longText's corner resizes it, as a web textarea's, along the axes
    its resize allows (profile §6.30); a host draws the corner. */
 textarea.k-input { min-height: 5.5rem; resize: both; }

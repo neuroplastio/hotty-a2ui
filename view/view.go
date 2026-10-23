@@ -432,8 +432,12 @@ type Element struct {
 	// Gap is the blank rows between a Column's children, or the columns
 	// between a Row's, in place of the kit's own spacing
 	// (io_neuroplast_hotty.gap, profile §6.36); nil where it has none.
-	Gap  *int `json:"gap,omitempty"`
-	A11y A11y `json:"a11y,omitzero"`
+	Gap *int `json:"gap,omitempty"`
+	// Width is the columns of a TextField's or a DateTimeInput's value, in
+	// place of the kit's own (io_neuroplast_hotty.width, profile §6.37); 0
+	// where it has none.
+	Width int  `json:"width,omitempty"`
+	A11y  A11y `json:"a11y,omitzero"`
 }
 
 // FileEntry is one entry of a HottyFilePicker's directory: its name, and

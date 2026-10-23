@@ -363,6 +363,7 @@ func (m *markup) element(e *view.Element) *node {
 		if e.Placeholder != "" {
 			n.set("placeholder", e.Placeholder)
 		}
+		cols(e, n)
 		outer = m.field(e, "k-field", label(e), n, suggestions(e, n))
 	case view.CheckBox:
 		n = el("input", "id", id, "type", "checkbox").flag("checked", e.Value == true)
@@ -387,6 +388,7 @@ func (m *markup) element(e *view.Element) *node {
 		hint := e.DateHint()
 		n = el("input", "id", id, "class", "k-input k-date", "type", "text", "value", v, "data-on", "input",
 			"placeholder", hint, "size", strconv.Itoa(max(len(hint), len(v))), "inputmode", "numeric")
+		cols(e, n)
 		outer = m.field(e, "k-field", label(e), n)
 	case view.Slider:
 		// One button is the slider, as one focusable: arrow keys reach the
@@ -574,6 +576,17 @@ func (m *markup) element(e *view.Element) *node {
 		outer.set("class", strings.TrimSpace(class+" k-hidden"))
 	}
 	return outer
+}
+
+// cols gives a text field's or a DateTime's input its width where it has
+// one (io_neuroplast_hotty.width, profile §6.37): k-cols, and --k-cols
+// its columns, which kit.css turns into ch.
+func cols(e *view.Element, n *node) {
+	if e.Width == 0 {
+		return
+	}
+	class, _ := n.attr("class")
+	n.set("class", class+" k-cols").set("style", "--k-cols: "+strconv.Itoa(e.Width))
 }
 
 // option is one of a Choice's options: a checkbox among several picked,

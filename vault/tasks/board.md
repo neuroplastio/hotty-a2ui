@@ -138,8 +138,13 @@ in this order; plx bumps its pin as they land.
   `--k-gap` in `--hotty-cell-h`/`-w`. Profile §6.36, instruction 37
   (journal 2026-10-23.6). Story hotty/gap: settings a row apart, no
   Dividers.
-- [ ] **KIT-WIDTH** — `io_neuroplast_hotty.width` on a field: columns in
-  cells, `ch` on a host; shared columns come of KIT-WEIGHT.
+- [x] **KIT-WIDTH** — `io_neuroplast_hotty.width` on a TextField or a
+  DateTimeInput: its value's columns, 1 to 256, in place of a text
+  field's 32 or a DateTime's form; a longText starts that wide. On a host
+  `k-cols` and `--k-cols` in `ch`, at most the field's. Profile §6.37,
+  instruction 38 (journal 2026-10-23.7). Story hotty/width. A field
+  without one still fills its field on a host and stops at 32 in cells,
+  as before. Shared columns come of KIT-WEIGHT.
 - [ ] **KIT-NAV** — A HottyList for a nav: a row an item, no status line
   or blank rows, the selection shown, arrows moving it.
 

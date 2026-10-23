@@ -713,6 +713,46 @@ func TestGap(t *testing.T) {
 	}
 }
 
+// TestWidth: a TextField's or a DateTimeInput's input with
+// io_neuroplast_hotty.width (profile §6.37) has the class k-cols and its
+// number in --k-cols, which kit.css turns into ch; one without fills its
+// field, as before.
+func TestWidth(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["port","name","notes","when"]},
+ {"id":"port","component":"TextField","label":"Port","weight":1,
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"width":5}}}},
+ {"id":"name","component":"TextField","label":"Name"},
+ {"id":"notes","component":"TextField","label":"Notes","variant":"longText",
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"width":40}}}},
+ {"id":"when","component":"DateTimeInput","label":"When","enableDate":true,
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"width":12}}}}]}}]`), &msgs))
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	for id, want := range map[string][2]string{
+		"port":  {"k-input k-cols", "--k-cols: 5"},
+		"name":  {"k-input", ""},
+		"notes": {"k-input k-cols", "--k-cols: 40"},
+		"when":  {"k-input k-date k-cols", "--k-cols: 12"},
+	} {
+		class, _ := s.Attr(id, "class")
+		style, _ := s.Attr(id, "style")
+		if class != want[0] || style != want[1] {
+			t.Errorf("%s: class %q, style %q, want %q, %q", id, class, style, want[0], want[1])
+		}
+	}
+	// The weight is the field's, beside the input.
+	if style, _ := s.Attr(partID("port", partWrap), "style"); style != "--k-w: 1" {
+		t.Errorf("port's field's style: %q", style)
+	}
+	if rule := ".k-input.k-cols { width: calc(var(--k-cols) * 1ch + 1.5rem + 2px); max-width: 100%; }"; !strings.Contains(kitCSS, rule) {
+		t.Errorf("kit.css lacks %q", rule)
+	}
+}
+
 // TestIcons: an Icon on a host is its shape as an inline svg, 1em square
 // and filled with the text's colour (gov R-4): one of the 59 by name, or an
 // svgPath, bound or not. A path that is more than path data, and a name

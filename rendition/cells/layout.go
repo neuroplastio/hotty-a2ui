@@ -186,8 +186,8 @@ func (l *layout) minimum(e *view.Element) int {
 		n = gutter + max(longestWord(line(e.Label, style{})), 1)
 		if !isLongText(e) {
 			// Its label and a space, the inset and 3 columns of input,
-			// which scrolls.
-			n = gutter + labelled(e, inset+3)
+			// which scrolls, or its width where that is less.
+			n = gutter + labelled(e, inset+min(3, inputWidth(e)))
 		}
 	case view.Slider, view.RangeSlider:
 		n = gutter + 4 + sliderValueWidth(e)
