@@ -3,6 +3,7 @@ package view
 import (
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/neuroplastio/hotty-go"
 )
@@ -130,6 +131,26 @@ func TestKeycapsGlyphs(t *testing.T) {
 	} {
 		if got := (Keycaps{Present: tc.present}).Glyphs(tc.host); got != tc.want {
 			t.Errorf("Present %q on a host %v: %v", tc.present, tc.host, got)
+		}
+	}
+}
+
+// A label is UTF-8 whatever a key's name starts with: kit b538269 cased a
+// name's first byte, so "⇧⇥" went out as U+FFFD and two stray bytes, and a
+// host refused the whole document.
+func TestCapsUTF8(t *testing.T) {
+	for _, os := range []string{"linux", "mac", "windows"} {
+		for _, how := range []string{"", CaseTitle, CaseLower} {
+			for _, glue := range []string{"", GlueOn, GlueOff} {
+				c := &Controller{Keycaps: Keycaps{OS: os, Case: how, Glue: glue}}
+				for _, keys := range []string{"ctrl+b ⇧⇥", "ctrl+b shift+tab", "⇥/⌃é", "shift+é_ß", "ctrl+b ⇧"} {
+					for _, glyphs := range []bool{false, true} {
+						if got := caps(c, keys, glyphs); !utf8.ValidString(got) {
+							t.Errorf("%q %s case %q glue %q (glyphs %v): %q", keys, os, how, glue, glyphs, got)
+						}
+					}
+				}
+			}
 		}
 	}
 }
