@@ -22,6 +22,8 @@ type Catalog struct {
 	// Open accepts any component type with any properties, unchecked: a
 	// stand-in for a catalog the renderer knows only by its id.
 	Open bool
+	// src is the catalog this one is a Clone of.
+	src *Catalog
 }
 
 // ComponentType is one component of a catalog.
@@ -257,6 +259,29 @@ func (c *Catalog) Implement(name string, impl FuncImpl) error {
 	}
 	f.Impl = impl
 	return nil
+}
+
+// Clone is a copy of the catalog whose functions can be implemented anew
+// (Implement) without touching the original's. Its document and component
+// types are the original's, which nothing changes once parsed.
+func (c *Catalog) Clone() *Catalog {
+	out := *c
+	out.src = c.Source()
+	out.Functions = make(map[string]*Function, len(c.Functions))
+	for name, f := range c.Functions {
+		cp := *f
+		out.Functions[name] = &cp
+	}
+	return &out
+}
+
+// Source is the catalog this one is a Clone of, the catalog itself when it
+// is none: what a validator compiles once for all its copies.
+func (c *Catalog) Source() *Catalog {
+	if c.src != nil {
+		return c.src
+	}
+	return c
 }
 
 // ComponentNames lists the catalog's components, sorted.

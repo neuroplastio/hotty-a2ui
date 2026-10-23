@@ -165,8 +165,8 @@ func openCatalog() map[string]any {
 
 // Validator checks messages, components and function calls against
 // A2UI's schemas (a2ui.Validator), compiling each catalog's once, on first
-// use. Its zero value is ready; it may be shared by processors and
-// goroutines.
+// use: once for a catalog and all its clones (a2ui.Catalog.Source). Its
+// zero value is ready; it may be shared by processors and goroutines.
 type Validator struct {
 	mu   sync.Mutex
 	cats map[*a2ui.Catalog]*catalogSchemas
@@ -234,6 +234,7 @@ type catalogSchemas struct {
 // schemas compiles the catalog's schemas, once: its document's, and those
 // of the functions it was given without one. An open catalog has none.
 func (v *Validator) schemas(c *a2ui.Catalog) (*catalogSchemas, error) {
+	c = c.Source()
 	v.mu.Lock()
 	if v.cats == nil {
 		v.cats = map[*a2ui.Catalog]*catalogSchemas{}

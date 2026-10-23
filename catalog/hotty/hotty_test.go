@@ -2,6 +2,7 @@ package hotty_test
 
 import (
 	"encoding/json"
+	"slices"
 	"testing"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -121,5 +122,33 @@ func TestCatalog(t *testing.T) {
 		if err := (&schema.Validator{}).Component(c, d); (err == nil) != tc.ok {
 			t.Errorf("%s: %v, want ok=%v", tc.def, err, tc.ok)
 		}
+	}
+}
+
+// Each copy of the catalog has its own renderer: implementing one changes
+// neither the others nor the copies still to come, and all are one source,
+// whose schemas a validator compiles once.
+func TestCatalogCopies(t *testing.T) {
+	var got []string
+	focus := func(name string) hotty.Renderer {
+		return hotty.Renderer{Focus: func(_ *a2ui.Surface, _ a2ui.Scope, id string) error { got = append(got, name+":"+id); return nil }}
+	}
+	a, b := hotty.Catalog(), hotty.Catalog()
+	hotty.Implement(a, focus("a"))
+	hotty.Implement(b, focus("b"))
+	for _, c := range []*a2ui.Catalog{a, b} {
+		if _, err := c.Functions["hottyFocus"].Impl(&a2ui.Context{}, map[string]any{"id": "x"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if want := []string{"a:x", "b:x"}; !slices.Equal(got, want) {
+		t.Errorf("calls %q, want %q", got, want)
+	}
+	c := hotty.Catalog()
+	if c.Functions["hottyFocus"].Impl != nil {
+		t.Error("a new copy has another copy's implementation")
+	}
+	if a.Source() != b.Source() || a.Source() != c.Source() || a.Source() == a {
+		t.Error("copies of the catalog are not one source")
 	}
 }

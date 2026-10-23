@@ -11,6 +11,7 @@ package hotty
 
 import (
 	_ "embed"
+	"sync"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 )
@@ -24,15 +25,19 @@ var doc []byte
 // Doc is the catalog document, as an agent is given it.
 func Doc() []byte { return doc }
 
-// Catalog reads the catalog. Its functions have no implementation here:
-// they are the renderer's, which gives them (Implement).
-func Catalog() *a2ui.Catalog {
+// Catalog is a fresh copy of the catalog. Its functions have no
+// implementation here: they are the renderer's, which gives them
+// (Implement).
+func Catalog() *a2ui.Catalog { return parsed().Clone() }
+
+// parsed is the catalog, read once: Catalog's copies share its document.
+var parsed = sync.OnceValue(func() *a2ui.Catalog {
 	c, err := a2ui.ParseCatalog(doc)
 	if err != nil {
 		panic(err)
 	}
 	return c
-}
+})
 
 // Renderer is what the catalog's functions do, the renderer's: Focus
 // moves the keyboard to a component, Blur takes it back, ScrollTo scrolls

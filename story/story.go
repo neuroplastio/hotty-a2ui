@@ -17,6 +17,7 @@ import (
 	"path"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -65,8 +66,11 @@ const (
 //go:embed stories/*/*.json
 var stories embed.FS
 
-// All are the stories, by group (basic, hotty, fallback) and name.
-func All() []*Story {
+// All are the stories, by group (basic, hotty, fallback) and name. They
+// are read once, and shared: a story is not changed once read.
+func All() []*Story { return slices.Clone(all()) }
+
+var all = sync.OnceValue(func() []*Story {
 	var out []*Story
 	add := func(fsys fs.FS, glob, group string) {
 		names, _ := fs.Glob(fsys, glob)
@@ -86,13 +90,13 @@ func All() []*Story {
 	add(stories, "stories/hotty/*.json", Hotty)
 	add(stories, "stories/fallback/*.json", Fallback)
 	return out
-}
+})
 
 // Find is the story with a name, or with a name that ends in it
 // ("00_simple-login-form"); nil if none, or more than one.
 func Find(name string) *Story {
 	var found *Story
-	for _, st := range All() {
+	for _, st := range all() {
 		if st.Name == name {
 			return st
 		}
@@ -155,6 +159,9 @@ type Run struct {
 	surfaces []*Surface
 }
 
+// validator is every run's: it compiles the catalogs' schemas once.
+var validator schema.Validator
+
 // NewRun is a run with nothing fed yet. Its processor has the catalogs
 // the kit renders, basic and hotty, and hotty's hottyFocus and hottyBlur
 // move the keyboard in the run's views, hottyScrollTo scrolls them,
@@ -166,8 +173,10 @@ func NewRun() *Run {
 	h := hotty.Catalog()
 	hotty.Implement(h, hotty.Renderer{Focus: r.focus, Blur: r.blur, ScrollTo: r.scrollTo, FoldAll: r.foldAll,
 		Toast: r.toast, DismissToast: r.dismissToast, Timer: r.timer})
-	// The stories and -stream are A2UI another program wrote: checked.
+	// The stories and -stream are A2UI another program wrote: checked,
+	// against schemas compiled once for every run.
 	r.P = schema.NewProcessor(basic.Catalog(), h)
+	r.P.Validator = &validator
 	r.P.Send = func(o a2ui.Outbound) {
 		b, _ := json.Marshal(o)
 		r.Log = append(r.Log, Entry{Out: true, At: time.Now(), JSON: b})

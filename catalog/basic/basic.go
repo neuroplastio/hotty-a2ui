@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"unicode/utf16"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
@@ -23,7 +24,11 @@ const ID = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
 
 // Catalog returns a fresh copy of the basic catalog with every function
 // implemented.
-func Catalog() *a2ui.Catalog {
+func Catalog() *a2ui.Catalog { return parsed().Clone() }
+
+// parsed is the basic catalog, read and implemented once: Catalog's copies
+// share its document.
+var parsed = sync.OnceValue(func() *a2ui.Catalog {
 	c, err := a2ui.ParseCatalog(thirdparty.BasicCatalog)
 	if err != nil {
 		panic(err)
@@ -39,7 +44,7 @@ func Catalog() *a2ui.Catalog {
 		}
 	}
 	return c
-}
+})
 
 // Functions are the basic catalog's functions.
 var Functions = map[string]a2ui.FuncImpl{
