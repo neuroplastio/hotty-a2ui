@@ -149,11 +149,8 @@ func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 		item.add(first)
 	}
 	first.add(title)
-	if ks := strings.Fields(r.Keys); len(ks) > 0 {
-		for k, key := range ks {
-			ks[k] = m.keyText(key)
-		}
-		first.add(m.keycaps("k-pick-keys", strings.Join(ks, " ")))
+	if r.Keys != "" {
+		first.add(m.keycaps("k-pick-keys", view.KeysText(r.Keys, m.keyText)))
 	}
 	if desc {
 		item.add(el("div", "class", "k-pick-desc").add(texts(r.Description)...))
@@ -174,6 +171,12 @@ func (m *markup) keyText(k string) string {
 // (view.Keycaps.Present).
 func (r *Rendition) caps(keys string) [][]view.Chord {
 	return r.C.Caps(keys, r.C.Keycaps.Glyphs(true))
+}
+
+// said is keys as a screen reader says them: the caps' text labels, for
+// the user's system (Command-Shift-P on a Mac).
+func (r *Rendition) said(keys string) string {
+	return view.CapsText(r.C.Caps(keys, false))
 }
 
 // keyText is a key a program wrote, read with the Platform, as the key

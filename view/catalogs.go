@@ -151,6 +151,9 @@ func init() {
 	Register(hotty.ID, "HottyTable", mapTable)
 	Register(hotty.ID, "HottyList", mapList)
 	Register(hotty.ID, "HottyKeyHints", mapKeyHints)
+	Register(hotty.ID, "HottyKeys", func(b *Builder, n *a2ui.Node) *Element {
+		return &Element{Kind: Keys, Label: b.String(n, "keys")}
+	})
 	Register(hotty.ID, "HottyScrollView", mapScrollView)
 	Register(hotty.ID, "HottyCode", mapCode)
 	Register(hotty.ID, "HottyDiff", mapDiff)

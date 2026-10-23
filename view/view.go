@@ -115,6 +115,10 @@ const (
 	// Controller.KeyHints has them: Open while the full view shows, Active
 	// when ? switches views.
 	KeyHints Kind = "keyhints"
+	// Keys draws Label, keys in HottyShortcut's names, as the key hints'
+	// caps (HottyKeys, profile §6.39): a sequence's chords apart by
+	// spaces, alternatives by "/". It takes no focus and sends nothing.
+	Keys Kind = "keys"
 	// ScrollView is a box of Height rows whose content scrolls
 	// (HottyScrollView): its child (Children), or Lines; Top and Left,
 	// where it is scrolled to; Active, whether it follows the tail when

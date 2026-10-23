@@ -57,6 +57,27 @@ func TestProgressAndSpinner(t *testing.T) {
 	}
 }
 
+// TestKeys: a HottyKeys reads as its keys as the key hints write them;
+// with no Platform, mod stays mod.
+func TestKeys(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `"}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"Column","children":["r","p","u"]},
+	 {"id":"r","component":"Row","children":["k","t"]},
+	 {"id":"k","component":"HottyKeys","catalogId":"` + hotty.ID + `","keys":"ctrl+b v"},
+	 {"id":"t","component":"Text","text":"Split right"},
+	 {"id":"p","component":"HottyKeys","catalogId":"` + hotty.ID + `","keys":"mod+shift+p"},
+	 {"id":"u","component":"HottyKeys","catalogId":"` + hotty.ID + `","keys":"arrow_up/k"}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	got := text.Render(view.NewController(p.Surface("s")).V)
+	if want := "ctrl+b v  Split right\nmod+shift+p\n↑/k\n"; got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
 // TestTable: a table reads as its header and every row, aligned, "> "
 // on the selected one, whatever its height.
 func TestTable(t *testing.T) {

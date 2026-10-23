@@ -26,6 +26,11 @@ func (r *Rendition) caps(keys string, on *style) []glyph {
 	return capsOf(r.c.Caps(keys, r.c.Keycaps.Glyphs(false)), on)
 }
 
+// keyCaps are a HottyKeys' caps, each chord read with the Platform.
+func (r *Rendition) keyCaps(e *view.Element) []glyph {
+	return r.caps(view.KeysText(e.Label, r.keyText), nil)
+}
+
 // capsOf draws chords as caps (Rendition.caps).
 func capsOf(alts [][]view.Chord, on *style) []glyph {
 	body, plus, sep := capStyle, capPlus, capSep

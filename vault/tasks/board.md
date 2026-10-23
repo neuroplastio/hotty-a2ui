@@ -164,6 +164,17 @@ re-pins.
 The maintainer, through plx-settings, on plx's onboarding (plx 807e2e3a)
 on a hotty host: "Buttons are too thin".
 
+- [x] **KIT-KEYS** HottyKeys: keys as keycaps on their own, for the Keys
+  slide's cheat sheet (plx-settings). `keys` a DynamicString in
+  HottyShortcut's names, sequences and alternatives, read with the
+  Platform, drawn as a hint's caps; inline, no focus, no events; on a
+  host `role=img` labelled with the caps' words. Story hotty/cheatsheet,
+  whose program rewrites the keys when the leader changes (journal
+  2026-10-23.12). Open: a `size`, if plx's slide wants one.
+- [ ] **KIT-MD-TABLE** plx, FYI: on hottyterm, a HottyMarkdown table cell
+  wrapping to three lines in a narrow column overlaps the next row. Not
+  known yet whether `.k-doc`'s CSS or Blitz is at fault; plx is moving
+  off the table, so it waits.
 - [x] **KIT-FIELD-H** A one-line field is a medium Button's height,
   2.25rem: on the surface's line, 1.5, its border made it 2px taller than
   the Save beside it (web, measuring hotty/size live: field 35.8px, Save

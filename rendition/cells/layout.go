@@ -309,6 +309,8 @@ func (l *layout) measure(e *view.Element) int {
 		return 1
 	case view.KeyHints:
 		return l.r.hintsWidth(e)
+	case view.Keys:
+		return width(l.r.keyCaps(e))
 	case view.ScrollView:
 		return l.scrollWidth(e)
 	case view.Paginator:

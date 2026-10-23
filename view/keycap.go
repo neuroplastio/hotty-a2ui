@@ -76,6 +76,30 @@ type Chord struct {
 // Joined reports whether Sep comes before the chord's kth label.
 func (ch Chord) Joined(k int) bool { return k > 0 && k <= len(ch.Labels)-ch.Glued }
 
+// CapsText is caps as words, as a screen reader is to say them: each
+// chord its labels joined as its cap joins them, a sequence's chords apart
+// by spaces, alternatives by " or ".
+func CapsText(alts [][]Chord) string {
+	var b strings.Builder
+	for i, seq := range alts {
+		if i > 0 {
+			b.WriteString(" or ")
+		}
+		for j, ch := range seq {
+			if j > 0 {
+				b.WriteByte(' ')
+			}
+			for k, l := range ch.Labels {
+				if ch.Joined(k) {
+					b.WriteString(ch.Sep)
+				}
+				b.WriteString(l)
+			}
+		}
+	}
+	return b.String()
+}
+
 // Caps is a hint's keys (KeyText's form: alternatives joined by "/", a
 // sequence's keys by spaces) as caps: the alternatives, each a sequence of
 // chords. An arrow alone after an arrow with modifiers takes them, as in
@@ -110,22 +134,48 @@ func (c *Controller) Caps(keys string, glyphs bool) [][]Chord {
 	return out
 }
 
-// splitAlts is a hint's alternatives, split at each "/" that is not a key:
-// "/" alone, or after a modifier's "+" ("ctrl+/").
+// splitAlts is a hint's alternatives, split at each "/" that is not a key.
+// A "/" is a key where it starts one (the alternative's start, after a
+// space, after a modifier's "+") and ends one (the end, a space, the "/"
+// that follows): "/", "ctrl+/", "ctrl+b /", "a//". Else it parts two
+// alternatives: "↑/k", "+/-".
 func splitAlts(s string) []string {
-	ps := strings.Split(s, "/")
 	var out []string
-	for i := 0; i < len(ps); i++ {
-		p := ps[i]
-		if (p == "" || strings.HasSuffix(p, "+")) && i+1 < len(ps) && ps[i+1] == "" {
-			p += "/"
-			i++
+	start := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] != '/' {
+			continue
 		}
-		if p != "" {
+		starts := i == start || s[i-1] == ' ' || s[i-1] == '+'
+		ends := i+1 == len(s) || s[i+1] == ' ' || s[i+1] == '/'
+		if starts && ends {
+			continue
+		}
+		if p := s[start:i]; strings.TrimSpace(p) != "" {
 			out = append(out, p)
 		}
+		start = i + 1
+	}
+	if p := s[start:]; strings.TrimSpace(p) != "" {
+		out = append(out, p)
 	}
 	return out
+}
+
+// KeysText is keys a program wrote (a HottyKeys', a HottyPicker row's) as
+// Caps reads them: HottyShortcut's names, a sequence's chords apart by
+// spaces and alternatives by "/", each chord as text writes it (read with
+// the Platform, then KeyText).
+func KeysText(keys string, text func(string) string) string {
+	alts := splitAlts(keys)
+	for i, alt := range alts {
+		ks := strings.Fields(alt)
+		for j, k := range ks {
+			ks[j] = text(k)
+		}
+		alts[i] = strings.Join(ks, " ")
+	}
+	return strings.Join(alts, "/")
 }
 
 // readChord is a key as KeyText writes it, as its modifiers and its name

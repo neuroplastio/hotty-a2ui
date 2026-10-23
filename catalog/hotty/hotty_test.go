@@ -42,6 +42,11 @@ func TestCatalog(t *testing.T) {
 		{`{"id":"p","component":"HottyPicker","rows":[{"value":"a","title":"A","actions":[{"id":"x","title":"X","key":"ctrl+x"}]}]}`, false},
 		{`{"id":"p","component":"HottyPicker","rows":[{"value":"a"}]}`, false},
 		{`{"id":"p","component":"HottyPicker","query":"q"}`, false},
+		// A HottyKeys (instruction 40): keys, bound or not, and a weight.
+		{`{"id":"k","component":"HottyKeys","keys":"ctrl+b v"}`, true},
+		{`{"id":"k","component":"HottyKeys","keys":{"@path":"/keys/split"},"weight":1}`, true},
+		{`{"id":"k","component":"HottyKeys"}`, false},
+		{`{"id":"k","component":"HottyKeys","keys":"ctrl+b v","action":{"event":{"name":"x"}}}`, false},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"event":{"name":"send"}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyFocus","args":{"id":"name"}}}}`, true},
 		{`{"id":"f","component":"HottyForm","child":"col","onSubmit":{"functionCall":{"@call":"hottyBlur"}}}`, true},

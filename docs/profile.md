@@ -105,6 +105,7 @@ so that an error comes and goes as a text delta.
 | HottyList | `div tabindex=0 role=listbox`, as a HottyTable's box: its title (or, while its filter is typed, `Filter:`, the text and a caret that shows while it has the keyboard), its status line (`~u`), then the items of the page the view shows (the same page as cells, §3.4), each a `div role=option data-on=click` whose id is the list's and `~i` and the item's index, its label over its description in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-accent` with its text while the list has the keyboard; a label's characters that matched the filter in `span.k-match`, underlined; then a dot for each page, the page shown's in `--k-fg`, in a row (`~d`, `role=status`) that says which page shows (a HottyPaginator's dots, §6.26). Its `data-keys` give the program what a HottyTable's do, the arrows left and right and Space; the characters its filter types, Backspace, Enter and Escape reach the program anyway, a focused box using no keys, so the filter is typed as in cells. Its empty text shows when it has no items. Two-line rows in proportional type are vault KIT-04h; the item under the pointer is on `--k-surface` (§3.7, hovered). A `reorderable` one's `data-keys` give alt+arrow_up and alt+arrow_down too, and an item that can move has `data-on="click drag drop"` and `data-steps="0 1"` (§6.21). A compact one (`variant` `compact`, `k-compact`, §6.9) has no status line; each item is a flex row, its description `2ch` after its label, each on one line and cut with an ellipsis, the description first (it shrinks a thousand times as fast), 0.125rem above and below it and no room between items; its title is in `--k-muted`, and its title, filter, empty text and dots start where its labels do, past the bar |
 | HottyFilePicker | `div tabindex=0 role=listbox` (`k-filepicker`), as a HottyList's box: its current directory as title, then the entries the view shows (within its height, or all on a page), each a `div role=option data-on=click` whose id is the picker's and `~i` and the entry's index, directory names with a trailing `/` and files with their formatted size in `--k-muted`, `aria-selected` on the selected one, which is filled with `--k-tonal` and has a 3px bar at its start, in `--k-border`, and in `--k-focus` with its text while the picker has the keyboard. In a subdirectory, its title is a `role=button` that goes up, `◂` before the path. Its `data-keys` give the program the arrows, Page Up, Page Down, Home, End, Backspace, Escape, and the letters `k`, `j`, `h`, `l`, `g`, `shift+g`. Its empty text shows when it has no entries, or its error when the root is missing or unreadable. The entry under the pointer is on `--k-surface` (§3.7, hovered) |
 | HottyPicker | `div` (`k-pick`): its query, an `input` (`role=combobox`, `data-on=input`) whose `data-keys` give the program the picker's keys, its status, the lines its rows show (headings and rows, each row `role=option` with an id, `aria-selected`, `data-on=click`), and its footer; a query the program writes comes in a new `input` (§6.32) |
+| HottyKeys | `kbd.k-keys.k-caps`, its keys as caps as a hint's are (§6.10, *Keycaps*), read with the Platform; `role=img` with the caps' words for its `aria-label` (`Ctrl+B V`, `↑ or K`, `Command-Shift-P` on a Mac), since a screen reader says nothing for a glyph cap (⌃⇧P). It is inline: a Row of it and Texts wraps as one of Texts does |
 | HottyKeyHints | `div`: in the short view, a line of hints, each its keys as caps (`kbd.k-caps`, §6.10, *Keycaps*) and what it does (fainter), ` • ` between them, cut where it does not fit; in the full view, its groups (§6.10) side by side, `4ch` apart, each a grid of keys and what they do. The host moves focus among the elements it works itself (fields, boxes, Buttons) without telling the renderer (the keyboard, below), so their keys are left out, where a guess would go wrong at the next Tab; a HottyTable's, a HottyList's, a HottyFilePicker's, a HottyDiff's, a HottyTree's, a HottyPaginator's, a Slider's and a select's show, as the program's keys go there. `?`, which a focused field types, reaches the program from anywhere else and switches the views. On a surface with a component that has an `accessibility.description`, a row (`~z`, `k-hints-tip`) comes first: the tooltip (§6.23), the description of the element the host says the pointer is over, else of the element with the keyboard, in the text's colour and italics, cut with an ellipsis; empty, a line high, when neither has one |
 | a toast (`hottyToast`, §6.23) | in the toasts' region (`~t`, `div role=region aria-label=Notifications`), fixed at the surface's top right corner, a column `min(22rem, 100% − 1rem)` wide, the newest at the top: a `div data-on=click` whose id is `hottyToast:` and the toast's id, `role=alert` for a warning or an error, which a screen reader reads at once, `role=status` for news and a success, read when it is idle. It holds the kind's mark, the basic catalog's icon (`info`, `check`, `warning`, `error`) in the kind's colour (`--k-info`, `--k-success`, `--k-warning`, `--k-error`), `aria-hidden`; the message; and its action, a borderless `button` whose id is the toast's and `/action/0`. It is filled with a tenth of its kind's colour over `--k-surface`, ringed with it, rounded and shadowed. The region is cut at the surface's edges: a toast as a surface of its own at a higher z (SPEC.md §5.2) is vault KIT-13h |
 | HottyScrollView | `div tabindex=0`, a box `--k-rows` terminal rows tall (its `height`, by SPEC.md §8's `--hotty-cell-h`), filled with `--k-tonal`, a ring while focused, whose content overflows it: the host scrolls it, with its own scrollbar, the wheel, a touch drag and the keys a browser scrolls with (SPEC.md §5.3; the storybook places its surfaces with `scroll`). Its child goes inside as itself; its lines are a `div` (`~j`) of a row each, in the mono face and `white-space: pre`, so that the box shows `height` of them, cut at the box unless it wraps them. A weighted one in a Column is taller where the Column has rows to spare (`.k-col > .k-weighted`, §6.35), `height` its least. A log's (`follow`) box is `role=log`, which a screen reader reads as lines arrive, and a line written to the next index arrives as an `append` delta. A program cannot set where a host has scrolled, so the box starts at its top, `follow` or not, and `hottyScrollTo` does nothing there. A plain one (`variant` `"plain"`, `k-plain`, §6.11) has no fill, corners or padding, but `--k-2` before its scrollbar, and no ring: while focused, a 2px line in `--k-focus` runs down its right edge (an inset shadow) and its thumb is in `--k-focus` (`scrollbar-color`), as an overlay scrollbar, Blitz's, shows no thumb until it scrolls and none at all where the content fits. Its `data-keys` binds the keys bubbles' viewport scrolls with to the host's scroll actions (SPEC.md §10.2, *Scrolling keys*), so that they scroll it as in cells (§3.7): j and k, f, b, Space and shift+space, u and d (ctrl+u, ctrl+d), g and G, and h and l while its lines are cut. A Button in it keeps Space and a field in it types the letters, since a key an element uses stays its own and a field leaves scroll actions out. Following the tail on a host is vault KIT-07h |
@@ -342,6 +343,7 @@ Natural widths:
 | HottyList | 2 for the indent, plus its widest line: its title + 2, its status line, its empty text, `Filter: ` + 1 when it filters, each item's label and description; a compact one's are its title, its empty text, `Filter: ` + 1 when it filters, and each item's label, plus 2 and its description where it has one |
 | HottyFilePicker | 2 for the indent, plus its widest line: its title, each entry's name and trailing "/" for a directory, its size column, or its empty text or error |
 | HottyPicker | 1 either side, plus its widest line: its chip and placeholder (20 at least), its status, its empty text, each row's group, title, detail and keys, and its description |
+| HottyKeys | its caps (§6.10, *Keycaps*), uncut |
 | HottyKeyHints | its short line, or in the full view its columns, uncut; not its tooltip's row (§6.23), which is cut to the rest, so that nothing moves as it changes |
 | HottyScrollView | its widest line unwrapped (whether it wraps them or not), or its child's natural width, plus 1 for the padding (none for a plain one) and 2 for the scrollbar |
 | HottyCode | its gutter (§3.4) and its widest line |
@@ -1374,6 +1376,8 @@ reference is `rendition/text`.
   lines, signed; a binary file is git's line for one.
 - Tabs are their titles, the one shown in brackets, then its content.
 - A HottyKeyHints says nothing: a pipe takes no keys.
+- A HottyKeys is its keys as the key hints write them (`ctrl+b v`,
+  `↑/k`); a pipe has no Platform, so `mod` stays `mod`.
 - An error is `✗ message`, on the line after its control.
 - Image, Icon, Video, AudioPlayer and placeholders are as §7 has them; a
   HottyIcon is an Icon's glyph.
@@ -2984,6 +2988,38 @@ List's row (§2) keeps its row's size. Anything other than `large` is
 | cells | a medium one's: ` label ` on one row (§3.4), the least a terminal draws, and its fill already sets it apart |
 | host | a class beside its own, `k-large`, which kit.css makes at least 3rem tall, where a medium one is 2.25rem, with 0.625rem over and under its label and 1.5rem each side; an icon one at least 3rem wide, round |
 | text | nothing: a text rendition shows the label |
+
+### 6.39 HottyKeys
+
+Keys drawn as keycaps on their own, where a HottyKeyHints draws the keys
+the surface takes now: for a cheat sheet, an onboarding's keys, a menu's
+shortcut. plx's onboarding asked for it (2026-10-23), for a Keys slide
+that lists `ctrl+b v` Split right and `ctrl+b w t` New tab as the user's
+keymap choices change, in the kit's caps.
+
+`keys` is a DynamicString in HottyShortcut's names (§6.1): a sequence's
+chords apart by spaces, alternatives by `/` (`arrow_up/k`). A `/` is the
+key where it stands alone or after a modifier's `+` (`ctrl+/`), as in a
+hint. Each chord is read with the Platform (`mod+b` is `ctrl+b`, or
+`super+b` on a Mac) and drawn as a hint's keys are (§6.10, *Keycaps*):
+labelled by `Controller.Keycaps`, a cap a chord, a muted `>` between a
+sequence's caps and `/` between alternatives. A key's name that does not
+read is drawn as written.
+
+It is one line, as wide as its caps, which it does not cut: its minimum
+width is its natural one. It takes no focus and sends nothing; a key it
+shows is bound, if at all, by a HottyShortcut. A cheat sheet is a Column
+of Rows, each a HottyKeys and a Text weighted alike (§3.4, Row), so that
+the Rows line up as a table's columns in cells and on a host, as long
+as the HottyKeys' share holds its caps: where it is narrower, each keeps
+its caps whole and pushes its Text over, and the column goes ragged.
+A2UI v1.0 has no component for keys.
+
+| rendition | a HottyKeys |
+| --- | --- |
+| cells | its caps on one row, as a hint's (§3.4) |
+| host | `kbd.k-keys`, its caps (§2) |
+| text | its keys as the key hints write them (§4) |
 
 ## 7. Fallbacks
 

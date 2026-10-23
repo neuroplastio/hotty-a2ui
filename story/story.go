@@ -236,6 +236,7 @@ func (r *Run) Grant(name string, fsys fs.FS) {
 // story's name: what the program around the agent's surface does, which
 // no A2UI message says (granting a root, reading a file).
 var programs = map[string]func(r *Run){
+	"hotty/cheatsheet": cheatsheetProgram,
 	"hotty/filepicker": filePickerProgram,
 	"hotty/keycaps":    keycapsProgram,
 	"hotty/picker":     pickerProgram,

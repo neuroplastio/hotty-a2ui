@@ -44,6 +44,9 @@ type markup struct {
 	// caps is a hint's keys as caps (view.Controller.Caps), in the
 	// presentation the user set, glyphs by default.
 	caps func(keys string) [][]view.Chord
+	// said is keys as a screen reader says them: the caps' text labels
+	// (view.CapsText), whatever the presentation.
+	said func(keys string) string
 	// keyboard is the element with the keyboard, "" while the surface
 	// has none.
 	keyboard string
@@ -230,6 +233,15 @@ func (m *markup) element(e *view.Element) *node {
 		n = el("img", "id", id, "class", "k-img k-v-"+e.Variant+" k-fit-"+e.Fit, "src", e.URL, "alt", e.Alt)
 	case view.Icon:
 		n = icon(e, id)
+	case view.Keys:
+		// One image to a screen reader, labelled with the caps' words:
+		// glyphs (⌃⇧P, MDI's) say nothing aloud.
+		keys := view.KeysText(e.Label, m.keyText)
+		said := view.CapsText((&view.Controller{}).Caps(keys, false))
+		if m.said != nil {
+			said = m.said(keys)
+		}
+		n = m.keycaps("k-keys", keys).set("id", id).set("role", "img").set("aria-label", said)
 	case view.Media:
 		// A link, not a hyperlink: it takes the keyboard as it does in
 		// cells, and its click is the program's, which opens it.
@@ -701,7 +713,7 @@ func wraps(e *view.Element) bool {
 			field = true
 		case view.Choice:
 			field = field || len(k.Children) == 0
-		case view.Text, view.Icon, view.Button, view.Media, view.Placeholder:
+		case view.Text, view.Icon, view.Keys, view.Button, view.Media, view.Placeholder:
 		case view.Image:
 			inline = inline && (k.Variant == "icon" || k.Variant == "avatar")
 		default:

@@ -62,7 +62,7 @@ func pickWidth(e *view.Element) int {
 			rw += 2 + Width(row.Detail)
 		}
 		if row.Keys != "" {
-			rw += 2 + width(capsOf((&view.Controller{}).Caps(keysText(row.Keys, view.KeyText), false), nil))
+			rw += 2 + width(capsOf((&view.Controller{}).Caps(view.KeysText(row.Keys, view.KeyText), false), nil))
 		}
 		n = max(n, rw, Width(row.Description))
 	}
@@ -131,16 +131,7 @@ func (r *Rendition) pickKeys(row view.PickRow, on *style) []glyph {
 	if row.Keys == "" {
 		return nil
 	}
-	return r.caps(keysText(row.Keys, r.keyText), on)
-}
-
-// keysText is a sequence of keys, apart by spaces, each as text writes it.
-func keysText(keys string, text func(string) string) string {
-	ks := strings.Fields(keys)
-	for i, k := range ks {
-		ks[i] = text(k)
-	}
-	return strings.Join(ks, " ")
+	return r.caps(view.KeysText(row.Keys, r.keyText), on)
 }
 
 // keyText is a key a program wrote, read with the Platform, as the key

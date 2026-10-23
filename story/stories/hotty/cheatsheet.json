@@ -1,0 +1,274 @@
+{
+  "name": "Cheat sheet",
+  "kind": "component",
+  "component": "HottyKeys",
+  "icon": "keyboard",
+  "description": "Keys drawn as keycaps on their own, for a cheat sheet or an onboarding's keys: each chord a cap, a sequence's caps in order with > between them, alternatives apart by /, labelled for the user's system (mod+shift+p is Ctrl+Shift+P on Linux, ⌘⇧P on a Mac). A HottyKeys takes no focus and sends nothing: it shows keys and binds none. Each line is a Row of a HottyKeys and a Text weighted alike, so that the lines line up as a table's columns. The keys are bound to the data model, which the program writes from its keymap: pick another Leader and it sends the sheet its keys again.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "cheatsheet",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "keys": {
+            "v": "ctrl+b v",
+            "s": "ctrl+b s",
+            "t": "ctrl+b w t",
+            "x": "ctrl+b x",
+            "f": "ctrl+b /"
+          }
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "cheatsheet",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "pick",
+              "r_v",
+              "r_s",
+              "r_t",
+              "r_x",
+              "r_f",
+              "r_p",
+              "r_u"
+            ]
+          },
+          {
+            "id": "pick",
+            "component": "Row",
+            "align": "center",
+            "children": [
+              "pick_l",
+              "b_ctrl_b",
+              "b_ctrl_a",
+              "b_ctrl_space"
+            ]
+          },
+          {
+            "id": "pick_l",
+            "component": "Text",
+            "text": "Leader"
+          },
+          {
+            "id": "b_ctrl_b",
+            "component": "Button",
+            "child": "b_ctrl_b_t",
+            "action": {
+              "event": {
+                "name": "leader",
+                "context": {
+                  "leader": "ctrl+b"
+                }
+              }
+            }
+          },
+          {
+            "id": "b_ctrl_b_t",
+            "component": "Text",
+            "text": "Ctrl+B"
+          },
+          {
+            "id": "b_ctrl_a",
+            "component": "Button",
+            "child": "b_ctrl_a_t",
+            "action": {
+              "event": {
+                "name": "leader",
+                "context": {
+                  "leader": "ctrl+a"
+                }
+              }
+            }
+          },
+          {
+            "id": "b_ctrl_a_t",
+            "component": "Text",
+            "text": "Ctrl+A"
+          },
+          {
+            "id": "b_ctrl_space",
+            "component": "Button",
+            "child": "b_ctrl_space_t",
+            "action": {
+              "event": {
+                "name": "leader",
+                "context": {
+                  "leader": "ctrl+space"
+                }
+              }
+            }
+          },
+          {
+            "id": "b_ctrl_space_t",
+            "component": "Text",
+            "text": "Ctrl+Space"
+          },
+          {
+            "id": "r_v",
+            "component": "Row",
+            "children": [
+              "k_v",
+              "d_v"
+            ]
+          },
+          {
+            "id": "k_v",
+            "component": "HottyKeys",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "keys": {
+              "@path": "/keys/v"
+            },
+            "weight": 1
+          },
+          {
+            "id": "d_v",
+            "component": "Text",
+            "text": "Split right",
+            "weight": 2
+          },
+          {
+            "id": "r_s",
+            "component": "Row",
+            "children": [
+              "k_s",
+              "d_s"
+            ]
+          },
+          {
+            "id": "k_s",
+            "component": "HottyKeys",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "keys": {
+              "@path": "/keys/s"
+            },
+            "weight": 1
+          },
+          {
+            "id": "d_s",
+            "component": "Text",
+            "text": "Split down",
+            "weight": 2
+          },
+          {
+            "id": "r_t",
+            "component": "Row",
+            "children": [
+              "k_t",
+              "d_t"
+            ]
+          },
+          {
+            "id": "k_t",
+            "component": "HottyKeys",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "keys": {
+              "@path": "/keys/t"
+            },
+            "weight": 1
+          },
+          {
+            "id": "d_t",
+            "component": "Text",
+            "text": "New tab",
+            "weight": 2
+          },
+          {
+            "id": "r_x",
+            "component": "Row",
+            "children": [
+              "k_x",
+              "d_x"
+            ]
+          },
+          {
+            "id": "k_x",
+            "component": "HottyKeys",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "keys": {
+              "@path": "/keys/x"
+            },
+            "weight": 1
+          },
+          {
+            "id": "d_x",
+            "component": "Text",
+            "text": "Close the pane",
+            "weight": 2
+          },
+          {
+            "id": "r_f",
+            "component": "Row",
+            "children": [
+              "k_f",
+              "d_f"
+            ]
+          },
+          {
+            "id": "k_f",
+            "component": "HottyKeys",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "keys": {
+              "@path": "/keys/f"
+            },
+            "weight": 1
+          },
+          {
+            "id": "d_f",
+            "component": "Text",
+            "text": "Search the scrollback",
+            "weight": 2
+          },
+          {
+            "id": "r_p",
+            "component": "Row",
+            "children": [
+              "k_p",
+              "d_p"
+            ]
+          },
+          {
+            "id": "k_p",
+            "component": "HottyKeys",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "keys": "mod+shift+p",
+            "weight": 1
+          },
+          {
+            "id": "d_p",
+            "component": "Text",
+            "text": "Command palette",
+            "weight": 2
+          },
+          {
+            "id": "r_u",
+            "component": "Row",
+            "children": [
+              "k_u",
+              "d_u"
+            ]
+          },
+          {
+            "id": "k_u",
+            "component": "HottyKeys",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "keys": "arrow_up/k",
+            "weight": 1
+          },
+          {
+            "id": "d_u",
+            "component": "Text",
+            "text": "Move up a line",
+            "weight": 2
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -108,6 +108,27 @@ func TestFilePickerPickLoadsCode(t *testing.T) {
 	}
 }
 
+// TestCheatSheetLeader: picking a leader in hotty/cheatsheet sends the
+// sheet its keys again, which its HottyKeys show.
+func TestCheatSheetLeader(t *testing.T) {
+	run, err := Start(Find("hotty/cheatsheet"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := run.Surfaces()[0].C
+	if e := c.V.Find("k_t"); e == nil || e.Label != "ctrl+b w t" {
+		t.Fatalf("at first: %+v", e)
+	}
+	if err := c.Activate("b_ctrl_a"); err != nil {
+		t.Fatal(err)
+	}
+	for id, want := range map[string]string{"k_t": "ctrl+a w t", "k_f": "ctrl+a /", "k_p": "mod+shift+p"} {
+		if e := c.V.Find(id); e == nil || e.Label != want {
+			t.Errorf("after ctrl+a, %s: %+v, want %q", id, e, want)
+		}
+	}
+}
+
 // TestKeycapsControls: hotty/keycaps's controls set how its surfaces draw
 // keys, as a program's config would (Run.Configure).
 func TestKeycapsControls(t *testing.T) {

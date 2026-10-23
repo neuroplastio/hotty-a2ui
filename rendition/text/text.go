@@ -89,6 +89,13 @@ func element(e *view.Element) []string {
 		return []string{"[image: " + fallback(e.Alt, e.URL) + "]"}
 	case view.Icon:
 		return []string{icons.Glyph(e.Name)}
+	case view.Keys:
+		// As the key hints write keys; a pipe has no Platform, so mod
+		// stays mod.
+		if e.Label == "" {
+			return nil
+		}
+		return []string{view.KeysText(e.Label, view.KeyText)}
 	case view.Media:
 		return []string{"▶ " + e.Alt + ": " + e.URL}
 	case view.Divider:
