@@ -515,13 +515,15 @@ func edge(e *view.Element, first bool) *view.Element {
 	return e
 }
 
-// row places a Row's children across w columns (profile §3.3): each as
-// wide as its natural width; when they are too wide, a column at a time
+// row places a Row's children across w columns (profile §3.3), as a host
+// lays out its flex row: an unweighted child as wide as its natural
+// width, a weighted one from nothing (flex: weight 1 0%), so that the
+// columns the unweighted leave are the weighted's, by weight, whatever
+// they hold (share). When the children are too wide, a column at a time
 // comes off the widest that is wider than its minimum (the first of
-// equals), and once none is, off the widest; spare columns go to the
-// weighted children by weight, else as justify says. With justify
-// stretch, the columns are shared by weight (1 when unweighted) whatever
-// the children's widths. One column separates neighbours. It returns each
+// equals), and once none is, off the widest. With no weighted child, the
+// spare columns go as justify says; justify stretch weighs every child,
+// 1 when it is not. One column separates neighbours. It returns each
 // child's x and width.
 func (l *layout) row(kids []*view.Element, justify string, w int) (xs, ws []int) {
 	n := len(kids)
@@ -531,28 +533,24 @@ func (l *layout) row(kids []*view.Element, justify string, w int) (xs, ws []int)
 	}
 	avail := max(w-(n-1), 0)
 	weights := make([]float64, n)
+	weighted := false
 	for i, k := range kids {
 		weights[i] = k.Weight
-	}
-	if justify == "stretch" {
-		// As flex: 1 1 0, a weight as its grow: the columns are shared
-		// out whatever the children hold.
-		for i := range weights {
-			if weights[i] <= 0 {
-				weights[i] = 1
-			}
+		if justify == "stretch" && weights[i] <= 0 {
+			// As flex: 1 1 0, every child grows alike.
+			weights[i] = 1
 		}
-		l.spread(ws, weights, "", avail)
-		return place(ws, make([]int, n+1)), ws
+		weighted = weighted || weights[i] > 0
 	}
 	sum := 0
-	for i, k := range kids {
-		ws[i] = min(l.natural(k), avail)
-		sum += ws[i]
-	}
 	mins := make([]int, n)
 	for i, k := range kids {
+		ws[i] = min(l.natural(k), avail)
 		mins[i] = min(l.minimum(k), ws[i])
+		if weights[i] > 0 {
+			ws[i] = mins[i]
+		}
+		sum += ws[i]
 	}
 	for ; sum > avail; sum-- {
 		j := -1
@@ -570,8 +568,70 @@ func (l *layout) row(kids []*view.Element, justify string, w int) (xs, ws []int)
 		}
 		ws[j]--
 	}
+	if weighted {
+		share(ws, mins, weights, avail-sum)
+		return place(ws, make([]int, n+1)), ws
+	}
 	gaps := l.spread(ws, weights, justify, avail-sum)
 	return place(ws, gaps), ws
+}
+
+// share hands a Row's spare columns to its weighted children as a host's
+// flex grow does from a basis of nothing: what they hold and the spare
+// together, by weight. One whose part would be narrower than its minimum
+// is held at it, and the others share what remains; the floors first,
+// then a column each to those not held, in order.
+func share(ws, mins []int, weights []float64, spare int) {
+	if spare <= 0 {
+		return
+	}
+	room := spare
+	held := make([]bool, len(ws))
+	for i, wt := range weights {
+		if wt > 0 {
+			room += ws[i]
+		} else {
+			held[i] = true
+		}
+	}
+	total := 0.0
+	for {
+		total = 0
+		for i, wt := range weights {
+			if !held[i] {
+				total += wt
+			}
+		}
+		if total == 0 {
+			return
+		}
+		var under []int
+		for i, wt := range weights {
+			if !held[i] && float64(room)*wt/total < float64(mins[i]) {
+				under = append(under, i)
+			}
+		}
+		if len(under) == 0 {
+			break
+		}
+		for _, i := range under {
+			held[i], ws[i] = true, mins[i]
+			room -= mins[i]
+		}
+	}
+	given := 0
+	for i, wt := range weights {
+		if !held[i] {
+			ws[i] = int(float64(room) * wt / total)
+			given += ws[i]
+		}
+	}
+	for i := 0; given < room; i = (i + 1) % len(ws) {
+		if !held[i] {
+			ws[i]++
+			given++
+		}
+	}
 }
 
 // place is where a Row's children go: one column apart, plus the gaps.

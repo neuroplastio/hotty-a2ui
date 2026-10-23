@@ -451,17 +451,24 @@ How the containers lay their children out:
     - stretch weighs every child 1.
 - **Row** covers a Row and a horizontal List. One column separates each two
   children.
-  - **Widths, with `justify` stretch:** the columns are shared out by
-    weight, each unweighted child weighing 1, whatever the children hold
-    (CSS `flex: 1 1 0`).
-  - **Widths, otherwise:** each child starts at its natural width (at most
-    the room).
+  - **Widths** are a host's flex row's (§2: `flex: weight 1 0%`, as
+    A2UI's own renderer has it), so that a Row lays out alike in cells
+    and on a host, and Rows weighted alike line up as a grid's columns.
+    - An unweighted child starts at its natural width (at most the room),
+      a weighted one at its minimum.
     - While the children are too wide, one column comes off the widest
       child that is still wider than its minimum (the first of equals).
       Once none is, columns come off the widest child.
-    - Spare columns go to the weighted children by weight, as in a Column,
-      since a weight is `flex-grow`. Without weights, `justify` places the
-      children as in a Column.
+    - The columns the unweighted children leave are the weighted
+      children's, by weight, whatever they hold: two of weight 1 halve
+      them, one word or a page each. A child whose share is narrower than
+      its minimum is held at its minimum, and the others share what
+      remains, as a host's flex does. Each takes the floor of its share,
+      then those not held take one column each, in order, until none is
+      left.
+    - With `justify` stretch, every child is weighted, an unweighted one
+      weighing 1 (CSS `flex: 1 1 0`).
+    - Without weights, `justify` places the children as in a Column.
   - **Height:** the Row is as tall as its tallest child.
   - **Placement down** follows `align`: start, center (rounded down), end
     or stretch. With stretch, a child's box is the Row's height, which

@@ -112,9 +112,10 @@ in this order; plx bumps its pin as they land.
 - [ ] **KIT-MUTED** — Muted at 4.5:1 on the terminal's ground:
   `--k-muted` mixes 78% of the fg, not 62% (hottyterm's default palette:
   3.5 → 4.6:1).
-- [ ] **KIT-WEIGHT** — A Row's weights the same in cells as on a host and
+- [x] **KIT-WEIGHT** — A Row's weights the same in cells as on a host and
   in A2UI's own renderer: weighted children share what the others leave,
-  from nothing, each no narrower than its least.
+  from nothing, each no narrower than its least. Profile §3.3 (journal
+  2026-10-23.2); the icons grid and the kanban await the maintainer's look.
 - [ ] **KIT-FILL** — A Column's weights down: a weighted child takes the
   rows left, the surface as tall as its pane, and a weighted
   HottyScrollView pages at what it gets. plx drops its computed height.
