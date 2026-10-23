@@ -80,7 +80,7 @@ func (l *layout) labelWidth(e *view.Element) int {
 func shown(es []*view.Element) []*view.Element {
 	var out []*view.Element
 	for _, e := range es {
-		if e != nil && !e.A11y.Hidden {
+		if e != nil && !e.Hidden {
 			out = append(out, e)
 		}
 	}

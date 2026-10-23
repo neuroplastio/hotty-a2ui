@@ -206,6 +206,7 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 		e.Weight = w
 	}
 	e.A11y = b.a11y(n)
+	e.Hidden = b.hidden(n)
 	e.Autofocus = autofocus(n)
 	e.Keys = keys(n)
 	if e.Kind == Text || e.Kind == Icon {
@@ -389,6 +390,18 @@ func (b *Builder) a11y(n *a2ui.Node) A11y {
 		a.Live = s
 	}
 	return a
+}
+
+// hidden reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.hidden, a DynamicBoolean: a literal, or a path in
+// its scope, so that a change to the data model shows or hides it.
+func (b *Builder) hidden(n *a2ui.Node) bool {
+	v, ok := hottyExt(n)["hidden"]
+	if !ok {
+		return false
+	}
+	r, _ := b.S.Context(n.Scope).Resolve(v)
+	return a2ui.Truthy(r)
 }
 
 // autofocus reads the hotty extension metadata.extensions

@@ -420,7 +420,11 @@ type Element struct {
 	// it is one (io_neuroplast_hotty.keys): SPEC §10.2's data-keys, which
 	// override the keymaps above it key by key (Surface.KeyChain).
 	Keys string `json:"keys,omitempty"`
-	A11y A11y   `json:"a11y,omitzero"`
+	// Hidden: the element is not shown, takes no room and no focus
+	// (io_neuroplast_hotty.hidden, profile §6.34). A11y.Hidden only keeps
+	// it from a screen reader, as A2UI has it.
+	Hidden bool `json:"hidden,omitempty"`
+	A11y   A11y `json:"a11y,omitzero"`
 }
 
 // FileEntry is one entry of a HottyFilePicker's directory: its name, and
@@ -590,19 +594,37 @@ func (s *Surface) KeyChain(id string) []string {
 // toasts follow the surface in a host's document.
 func (s *Surface) Focusables() []string {
 	var out []string
-	add := func(e *Element) bool {
-		if e.Focusable() {
+	s.tabbed().walkHidden(func(e *Element, hidden bool) bool {
+		if !hidden && e.Focusable() {
 			out = append(out, e.ID)
 		}
 		return true
-	}
-	if s.Overlay != nil {
-		o := &Surface{Root: s.Overlay, Toasts: s.Toasts}
-		o.Walk(add)
-		return out
-	}
-	s.Walk(add)
+	})
 	return out
+}
+
+// tabbed is what Tab moves through: while a Modal is open, its content
+// and the toasts; else the whole surface.
+func (s *Surface) tabbed() *Surface {
+	if s.Overlay != nil {
+		return &Surface{Root: s.Overlay, Toasts: s.Toasts}
+	}
+	return s
+}
+
+// walkHidden is Walk, telling fn whether each element is hidden
+// (Element.Hidden), itself or inside one that is.
+func (s *Surface) walkHidden(fn func(e *Element, hidden bool) bool) {
+	skip := map[*Element]bool{}
+	s.Walk(func(e *Element) bool {
+		hidden := e.Hidden || skip[e]
+		if hidden {
+			for _, c := range e.Children {
+				skip[c] = true
+			}
+		}
+		return fn(e, hidden)
+	})
 }
 
 // Fraction is how far a Progress has come, from 0 to 1; ok is false

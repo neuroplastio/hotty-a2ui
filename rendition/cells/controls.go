@@ -339,7 +339,7 @@ func buttonLabel(e *view.Element) string {
 	var parts []string
 	var walk func(e *view.Element)
 	walk = func(e *view.Element) {
-		if e.A11y.Hidden {
+		if e.Hidden {
 			return
 		}
 		switch e.Kind {

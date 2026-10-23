@@ -44,7 +44,7 @@ func Render(v *view.Surface) string {
 }
 
 func element(e *view.Element) []string {
-	if e == nil || e.A11y.Hidden {
+	if e == nil || e.Hidden || e.A11y.Hidden {
 		return nil
 	}
 	errLine := func(lines []string) []string {

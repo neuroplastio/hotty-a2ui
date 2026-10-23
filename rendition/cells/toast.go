@@ -215,7 +215,7 @@ func (r *Rendition) describedAt(col, row int) string {
 	found := ""
 	var walk func(e *view.Element, desc string)
 	walk = func(e *view.Element, desc string) {
-		if e == nil || e.A11y.Hidden {
+		if e == nil || e.Hidden {
 			return
 		}
 		if e.A11y.Description != "" {

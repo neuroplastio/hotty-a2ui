@@ -153,7 +153,7 @@ func (r *Rendition) Draw(cols int) *Frame {
 	v := r.c.V
 	l := newLayout(r)
 	root := v.Root
-	if root != nil && root.A11y.Hidden {
+	if root != nil && root.Hidden {
 		root = nil
 	}
 	rootH, rows := 0, 0

@@ -475,7 +475,10 @@ How the containers lay their children out:
   - a bar of its titles, two columns apart, wrapping;
   - a `─` rule across, in `border`;
   - the shown tab's content.
-- **accessibility.hidden** elements take no room.
+- **Hidden** elements (`io_neuroplast_hotty.hidden`, §6.34) take no room.
+  One with `accessibility.hidden` is drawn: A2UI's `hidden` keeps it from a
+  screen reader only, which cells, where the screen is what is read, has
+  no way to do apart.
 
 ### 3.4 Paint
 
@@ -1360,7 +1363,8 @@ reference is `rendition/text`.
   message, and the action as a Button, two spaces after it
   (`✗ Could not reach the server  [ Retry ]`). A pipe has no time: a toast
   is listed while the view has it.
-- A component with `accessibility.hidden` says nothing, and an
+- A component with `accessibility.hidden` or `io_neuroplast_hotty.hidden`
+  (§6.34) says nothing, and an
   `accessibility.description` is not written: a pipe has no pointer and no
   focus to show it for.
 
@@ -2821,6 +2825,24 @@ the words or the icon say the same, as §3.6 asks of every colour.
 | cells | the role of every glyph of the Text, a caption's `muted` given way to it, inline code still `muted`; of an Icon's glyph |
 | host | a class beside the component's own, `k-tone-<role>` (`.k-text.k-tone-error`, `.k-icon.k-tone-success`), which kit.css colours with the role's colour; `accent` is the host's accent (`--k-link`), as cells' blue is |
 | text | nothing (§4) |
+
+### 6.34 hidden
+
+`metadata.extensions.io_neuroplast_hotty.hidden` on any component: while
+it is true, the component and what it holds show nothing, take no room
+and take no Tab stop. It is a DynamicBoolean: a literal, or a path, which
+in a template is the item's, so that a change to the data model shows or
+hides it, as a settings page shows a Reset button only while there is
+something to reset (plx, 2026-10-23). A2UI v1.0 has no such property: its
+`accessibility.hidden` keeps a component from assistive technologies, as
+`aria-hidden` does, and the component still shows (§3.3), so that an
+icon beside words that say the same is read once.
+
+| rendition | a hidden component |
+| --- | --- |
+| cells | nothing drawn, and no room in its Row or Column (§3.3). Tab passes over it and all it holds; the keyboard on it, or inside it, when it hides goes on to the next element that takes it, else the last before it, so that a Reset button which hides itself once pressed leaves the keyboard on what follows it |
+| host | a class beside the component's own, `k-hidden`, which kit.css gives `display: none`: not drawn, out of the Tab order and a screen reader's reading. Showing it again is one attribute's delta. Where the keyboard goes from a hidden element is the host's: a browser blurs it, and Tab goes on from where it was |
+| text | nothing, as `accessibility.hidden` (§4) |
 
 ## 7. Fallbacks
 

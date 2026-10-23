@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-18
+Last updated: 2026-10-23
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from rounds 7–9
@@ -97,6 +97,37 @@ follow [catalog-naming](../knowledge/catalog-naming.md).
   host baseline; story `hotty/picker` with the palette's agent behind it;
   vectors on both; `ref picker`; profile §6.32 (journal 2026-10-18.1).
   Awaiting the maintainer's look.
+
+### plx's settings page (2026-10-23)
+
+What plx's settings page (plx 709b743c) ran into, which the maintainer
+had plx-settings send here; the design calls are the kit's. A leg each,
+in this order; plx bumps its pin as they land.
+
+- [x] **KIT-HIDE** — `io_neuroplast_hotty.hidden`, a DynamicBoolean that
+  shows or hides a component as the data model changes, in all three
+  renditions; the keyboard on it goes on to what follows it.
+  `accessibility.hidden` is a screen reader's alone again: cells hid it,
+  a host drew it. Profile §6.34, instruction 35 (journal 2026-10-23.1).
+- [ ] **KIT-MUTED** — Muted at 4.5:1 on the terminal's ground:
+  `--k-muted` mixes 78% of the fg, not 62% (hottyterm's default palette:
+  3.5 → 4.6:1).
+- [ ] **KIT-WEIGHT** — A Row's weights the same in cells as on a host and
+  in A2UI's own renderer: weighted children share what the others leave,
+  from nothing, each no narrower than its least.
+- [ ] **KIT-FILL** — A Column's weights down: a weighted child takes the
+  rows left, the surface as tall as its pane, and a weighted
+  HottyScrollView pages at what it gets. plx drops its computed height.
+- [ ] **KIT-PLAIN** — A HottyScrollView for a page's body: no fill,
+  corners, padding or ring; its focus on its scrollbar.
+- [ ] **KIT-GAP** — `io_neuroplast_hotty.gap` on a Column or a Row.
+- [ ] **KIT-WIDTH** — `io_neuroplast_hotty.width` on a field: columns in
+  cells, `ch` on a host; shared columns come of KIT-WEIGHT.
+- [ ] **KIT-NAV** — A HottyList for a nav: a row an item, no status line
+  or blank rows, the selection shown, arrows moving it.
+
+Two are hotty-blitz's, passed to the hotty agent: `::placeholder` is not
+drawn, and an empty `<input type=number>` is a sliver.
 
 ## Phase 2 — The hotty layer
 

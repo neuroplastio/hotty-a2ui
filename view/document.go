@@ -323,30 +323,27 @@ func (c *Controller) afterJump(ids []string) (at int, ok bool) {
 		i := slices.Index(ids, e.Children[k].ID)
 		return i, i >= 0
 	}
-	i := c.V.placeOf(e.ID)
+	i, _ := c.V.placeOf(e.ID)
 	return i + len(e.Children), i >= 0
 }
 
 // placeOf is how many of the elements Focusables lists come before id in
-// tree order; -1 when id is not among those it walks.
-func (s *Surface) placeOf(id string) int {
-	n, at := 0, -1
-	count := func(e *Element) bool {
+// tree order, and whether id is hidden (Element.Hidden); at is -1 when id
+// is not among those it walks.
+func (s *Surface) placeOf(id string) (at int, hidden bool) {
+	n := 0
+	at = -1
+	s.tabbed().walkHidden(func(e *Element, h bool) bool {
 		if e.ID == id {
-			at = n
+			at, hidden = n, h
 			return false
 		}
-		if e.Focusable() {
+		if !h && e.Focusable() {
 			n++
 		}
 		return true
-	}
-	if s.Overlay != nil {
-		(&Surface{Root: s.Overlay, Toasts: s.Toasts}).Walk(count)
-	} else {
-		s.Walk(count)
-	}
-	return at
+	})
+	return at, hidden
 }
 
 // Slugger makes headings' IDs as GitHub does (github-slugger), one page's

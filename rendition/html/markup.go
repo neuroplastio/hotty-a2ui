@@ -551,6 +551,12 @@ func (m *markup) element(e *view.Element) *node {
 		class, _ := outer.attr("class")
 		outer.set("class", strings.TrimSpace(class+" k-weighted")).set("style", "--k-w: "+a2ui.NumberString(e.Weight))
 	}
+	if e.Hidden {
+		// kit.css: not shown, so out of the Tab order and a screen
+		// reader's reading too; showing it again is one attribute's delta.
+		class, _ := outer.attr("class")
+		outer.set("class", strings.TrimSpace(class+" k-hidden"))
+	}
 	return outer
 }
 

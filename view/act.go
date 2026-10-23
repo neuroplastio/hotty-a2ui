@@ -41,15 +41,39 @@ func NewController(s *a2ui.Surface) *Controller {
 func (c *Controller) Rebuild() {
 	c.V = Build(c.S, c.St)
 	if c.St.Focus != "" {
+		c.leaveHidden()
 		return
 	}
-	c.V.Walk(func(e *Element) bool {
-		if e.Autofocus && e.Focusable() {
+	c.V.walkHidden(func(e *Element, hidden bool) bool {
+		if !hidden && e.Autofocus && e.Focusable() {
 			c.St.Focus, c.St.Keyboard = e.ID, true
 			return false
 		}
 		return true
 	})
+}
+
+// leaveHidden hands the keyboard on from an element that is hidden now
+// (io_neuroplast_hotty.hidden), or inside one, to the next that takes it,
+// else the last before it; with neither, the surface loses it. A Reset
+// button that hides itself once pressed leaves the keyboard on what
+// follows it, not on nothing, so that the next key stays the surface's.
+func (c *Controller) leaveHidden() {
+	if !c.St.Keyboard {
+		return
+	}
+	at, hidden := c.V.placeOf(c.St.Focus)
+	if at < 0 || !hidden {
+		return
+	}
+	switch ids := c.V.Focusables(); {
+	case at < len(ids):
+		c.St.Focus = ids[at]
+	case at > 0:
+		c.St.Focus = ids[at-1]
+	default:
+		c.St.Keyboard = false
+	}
 }
 
 // Ancestors are the elements that contain id, outermost first; nil when

@@ -45,7 +45,7 @@ func (h hit) contains(col, row int) bool {
 
 // paint paints an element in its box, at (x, y), w wide and h tall.
 func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
-	if w <= 0 || h <= 0 || e == nil || e.A11y.Hidden {
+	if w <= 0 || h <= 0 || e == nil || e.Hidden {
 		return
 	}
 	l.r.boxes[e.ID] = box{x, y, w, h}

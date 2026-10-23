@@ -90,6 +90,9 @@
    (Blitz gives it its max-content width otherwise), so its text wraps. */
 .k-col > * { max-width: 100%; box-sizing: border-box; }
 .k-overflow { overflow: auto; }
+/* io_neuroplast_hotty.hidden (profile §6.34): not shown, whatever else
+   would show it. */
+.k-hidden { display: none !important; }
 .k-wrap { flex-wrap: wrap; row-gap: var(--k-2); }
 .k-j-start { justify-content: flex-start; }
 .k-j-center { justify-content: center; }

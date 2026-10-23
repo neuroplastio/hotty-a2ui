@@ -604,6 +604,42 @@ func TestWeights(t *testing.T) {
 	}
 }
 
+// TestHidden: io_neuroplast_hotty.hidden (profile §6.34) is the class
+// k-hidden, which kit.css shows as nothing, and showing it again is the
+// class's delta. accessibility.hidden is aria-hidden alone.
+func TestHidden(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"same":true}}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Row","children":["reset","mark"]},
+ {"id":"reset","component":"Text","text":"Reset",
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"hidden":{"@path":"/same"}}}}},
+ {"id":"mark","component":"Icon","name":"check","accessibility":{"hidden":true}}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	hidden := func(id string) bool {
+		class, _ := s.Attr(id, "class")
+		return strings.Contains(" "+class+" ", " k-hidden ")
+	}
+	if !hidden("reset") || hidden("mark") {
+		t.Errorf("k-hidden: reset %v, mark %v", hidden("reset"), hidden("mark"))
+	}
+	if aria, _ := s.Attr("mark", "aria-hidden"); aria != "true" {
+		t.Errorf("mark's aria-hidden: %q", aria)
+	}
+	var update any
+	if err := json.Unmarshal([]byte(`{"version":"v1.0","updateDataModel":{"surfaceId":"s","path":"/same","value":false}}`), &update); err != nil {
+		t.Fatal(err)
+	}
+	x.process(update)
+	if hidden("reset") {
+		t.Error("reset is still k-hidden once the data model shows it")
+	}
+}
+
 // TestIcons: an Icon on a host is its shape as an inline svg, 1em square
 // and filled with the text's colour (gov R-4): one of the 59 by name, or an
 // svgPath, bound or not. A path that is more than path data, and a name
