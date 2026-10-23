@@ -170,11 +170,18 @@ on a hotty host: "Buttons are too thin".
   Platform, drawn as a hint's caps; inline, no focus, no events; on a
   host `role=img` labelled with the caps' words. Story hotty/cheatsheet,
   whose program rewrites the keys when the leader changes (journal
-  2026-10-23.12). Open: a `size`, if plx's slide wants one.
+  2026-10-23.12). Adopted in plx f5b22107. Open: a `size`, if plx's
+  slide wants one.
+- [ ] **KIT-KEYS-BLITZ** On hottyterm a HottyKeys in a share narrower than
+  its caps draws its last cap over the Text beside it, where Chromium
+  pushes the Text over. Blitz's parley (at Blitz's pin) breaks after an
+  inline-block that starts a `nowrap` line; upstream's U+FFFC boxes fix
+  it. Reported to hotty for a mods/parley patch, no kit workaround
+  (journal 2026-10-23.13). plx gives the keys half the row meanwhile.
 - [ ] **KIT-MD-TABLE** plx, FYI: on hottyterm, a HottyMarkdown table cell
   wrapping to three lines in a narrow column overlaps the next row. Not
   known yet whether `.k-doc`'s CSS or Blitz is at fault; plx is moving
-  off the table, so it waits.
+  off the table and doesn't need it fixed, so it waits.
 - [x] **KIT-FIELD-H** A one-line field is a medium Button's height,
   2.25rem: on the surface's line, 1.5, its border made it 2px taller than
   the Save beside it (web, measuring hotty/size live: field 35.8px, Save
