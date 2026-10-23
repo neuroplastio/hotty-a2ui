@@ -251,8 +251,7 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   `Event` then `Update`) overflows TinyGo's 64 KB goroutine stack (hotty-web,
   2026-10-17); the site's main module runs it at `-stack-size=128KB`.
   Find the deep path (the html diff or the cells layout, hotty-web
-  guesses) and make it lighter, so the site can drop the flag. Waits for
-  the maintainer's word (token preservation).
+  guesses) and make it lighter, so the site can drop the flag.
 - [ ] **KIT-REDRAW** — cells `Draw` lays a long HottyMarkdown out whole on
   every draw, a hover's too (docs, 2026-10-17): on hotty's SPEC page at
   ~100 columns a link's hover draw is 93 ms of wasm in Chromium, natively
@@ -263,7 +262,7 @@ through hotty-go's `hottyvt` (web's `shared/screencast`).
   repaints (paintHover over the last base frame); reuse the frame, canvas
   and cell buffers. Repro: web docs-pilot on hotty-0.4, `make serve
   SITE=hotty CHECKOUT='../../../{name}/hotty-0.4'`, Text mode, pointer on
-  and off a link. Waits for the maintainer's word (token preservation).
+  and off a link.
 - [x] **KIT-TOUCH** — A finger drags a Slider in cells (the maintainer,
   via hotty-web, 2026-10-17: "in cell mode slider touch dragging doesn't
   work in xterm and in hottyterm"). The mouse drag worked
