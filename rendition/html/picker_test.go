@@ -163,8 +163,8 @@ func TestPickerDescription(t *testing.T) {
 	row := func(i int) string { return partID("root", partItem+strconv.Itoa(i)) }
 	html := s.HTML()
 	for _, want := range []string{
-		`<div class="k-pick-line"><span class="k-pick-title">pane.new</span>` + capsOf("k-pick-keys", []string{"\U000F0634", "B"}, []string{"N"}) + `</div><div class="k-pick-desc">New pane (your shell)</div>`,
-		`<span class="k-pick-title">pane.split<span class="k-pick-detail">right</span></span></div>`,
+		`<div class="k-pick-line"><span class="k-pick-title"><span class="k-pick-name">pane.new</span></span>` + capsOf("k-pick-keys", []string{"\U000F0634", "B"}, []string{"N"}) + `</div><div class="k-pick-desc">New pane (your shell)</div>`,
+		`<span class="k-pick-title"><span class="k-pick-name">pane.split</span><span class="k-pick-detail">right</span></span></div>`,
 	} {
 		if !strings.Contains(html, want) {
 			t.Errorf("no %s in\n%s", want, html)
@@ -240,6 +240,18 @@ func pickerHarness(t *testing.T) (*harness, *Rendition) {
 	t.Helper()
 	return pickerHarnessOf(t, 10, `[{"value":"split","group":"Pane","title":"Split","keys":"ctrl+b %","section":"Used","match":[[0,2]],"actions":[{"id":"run","title":"Run"},{"id":"again","title":"Again","key":"mod+enter"}]},
    {"value":"p-1","group":"Pane","title":"fish","detail":"~/code","section":"Panes"}]`)
+}
+
+// A picker that keeps keys is k-pick-keep, whose rows don't wrap their
+// keys out of sight (kit.css); one that doesn't isn't.
+func TestPickerKeepsKeys(t *testing.T) {
+	for keep, want := range map[string]string{`,"keep":"keys"`: "k-pick k-pick-keep", "": "k-pick"} {
+		x, r := pickerHarnessOf(t, 10, `[{"value":"theme.pick","title":"Switch plx's theme","detail":"theme.pick","keys":"ctrl+b , t"}]`+keep)
+		if got, _ := x.h.Surface(r.name).Attr("root", "class"); got != want {
+			t.Errorf("keep %q: the picker's class %q, want %q", keep, got, want)
+		}
+		leave(t, x, r)
+	}
 }
 
 // pickerHarnessOf is pickerHarness on rows, height lines high.

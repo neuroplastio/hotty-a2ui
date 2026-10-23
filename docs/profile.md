@@ -2721,7 +2721,9 @@ them. It takes the keyboard.
   binds to the row (a command's binding: key names, §5, a sequence apart
   by spaces, `ctrl+b , r`), at the row's right, muted, where they fit
   beside the row's whole text, which the picker shows and doesn't take (a
-  narrow picker shows them on the selected row alone: the detail wins);
+  narrow picker shows them on the selected row alone: the detail wins,
+  unless the picker's `keep` is `keys`, as a picker of bindings has it,
+  when every row shows its keys and its text is cut for them);
   `description`, a line of its
   own under the title, smaller and muted, which the row takes with it
   (two lines, selected together); `section`, a heading over the row
@@ -2749,6 +2751,9 @@ them. It takes the keyboard.
   `panelKey`. In the panel it is `Back esc`, then `Run enter` at the right.
   Titles are as the agent wrote them. Those that don't fit go from the
   left.
+- **A cut** takes a row's group and title first, so that its detail shows
+  whole; then the detail. In cells the group and title keep 8 columns
+  before the detail is cut.
 - **Status and loading:** `status` is a line under the query, an error
   drawn as one where `statusKind` is `error`; `loading` says rows are still
   to come. `emptyText` (`No matches.`) shows with no rows; `height` is the

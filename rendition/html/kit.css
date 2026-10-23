@@ -737,8 +737,10 @@ textarea.k-resize-none { resize: none; }
    wrapping out of sight at the left. The query is an input of its own,
    the host's caret in it. The detail wins, as in cells: a row wraps, and
    shows one line, so keys that don't fit beside its whole title wrap out
-   of sight; the selected row doesn't wrap, its keys stay and its title is
-   cut. */
+   of sight, an em below the clip, where their caps' edges don't show; the
+   selected row doesn't wrap, its keys stay and its text is cut. A picker
+   that keeps keys (k-pick-keep) wraps no row. A cut takes the name first;
+   the detail goes only where the name has gone. */
 .k-pick { display: flex; flex-direction: column; align-self: stretch; }
 .k-pick-query { display: flex; align-items: baseline; column-gap: 0.5ch; padding: var(--k-1) var(--k-3); border-bottom: 1px solid var(--k-border); }
 .k-pick-chip { color: var(--k-focus); font-weight: 600; white-space: pre; }
@@ -749,15 +751,16 @@ textarea.k-resize-none { resize: none; }
 .k-pick-status.k-error { color: var(--k-error); }
 .k-pick-rows { display: flex; flex-direction: column; padding: var(--k-1) 0; }
 .k-pick-head { color: var(--k-muted); font-weight: 600; font-size: 0.875rem; padding: var(--k-1) var(--k-3) 0; }
-.k-pick-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; column-gap: var(--k-3); padding: var(--k-1) var(--k-3); line-height: 1.5; height: 1.5em; overflow: hidden; cursor: pointer; white-space: nowrap; }
-.k-pick-row.k-sel { flex-wrap: nowrap; }
+.k-pick-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 1em var(--k-3); padding: var(--k-1) var(--k-3); line-height: 1.5; height: 1.5em; overflow: hidden; cursor: pointer; white-space: nowrap; }
+.k-pick-row.k-sel, .k-pick-keep .k-pick-row { flex-wrap: nowrap; }
 .k-pick-row.k-pick-two { display: block; height: auto; }
-.k-pick-line { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; column-gap: var(--k-3); height: 1.5em; overflow: hidden; }
-.k-pick-row.k-sel .k-pick-line { flex-wrap: nowrap; }
+.k-pick-line { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 1em var(--k-3); height: 1.5em; overflow: hidden; }
+.k-pick-row.k-sel .k-pick-line, .k-pick-keep .k-pick-line { flex-wrap: nowrap; }
 .k-pick-desc { color: var(--k-muted); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; }
-.k-pick-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.k-pick-title { display: flex; align-items: baseline; flex: 0 1 auto; min-width: 0; overflow: hidden; }
+.k-pick-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .k-pick-group, .k-pick-detail, .k-pick-keys { color: var(--k-muted); }
-.k-pick-detail { margin-left: 2ch; }
+.k-pick-detail { flex: none; margin-left: 2ch; }
 .k-pick-keys { flex: none; font-size: 1rem; white-space: pre; }
 .k-pick-row .k-match { text-decoration: none; color: var(--k-focus); font-weight: 600; }
 .k-pick-row.k-sel { background: var(--k-tonal); }

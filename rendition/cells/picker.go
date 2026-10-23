@@ -72,11 +72,11 @@ func pickWidth(e *view.Element) int {
 // pickMinimum is a HottyPicker's minimum: a few columns of query.
 func pickMinimum(e *view.Element) int { return Width(e.Chip) + 1 + 6 }
 
-// pickRow is a row's text: its group, muted, and ": ", its title, its
-// characters the query matched in the accent and bold, then its detail,
-// muted, two columns on. In the selected row everything is reversed in the
-// accent, and the matched characters underlined instead.
-func (r *Rendition) pickRow(row view.PickRow, sel, focused bool) []glyph {
+// pickRow is a row's text: its name, its group, muted, and ": ", then its
+// title, its characters the query matched in the accent and bold; then its
+// detail, muted, two columns on. In the selected row everything is
+// reversed in the accent, and the matched characters underlined instead.
+func (r *Rendition) pickRow(row view.PickRow, sel, focused bool) (name, detail []glyph) {
 	base, dim, hit := style{}, style{role: Muted}, style{role: Accent, attr: Bold}
 	if sel {
 		base = r.pickSelected(focused)
@@ -98,9 +98,22 @@ func (r *Rendition) pickRow(row view.PickRow, sel, focused bool) []glyph {
 		at += n
 	}
 	if row.Detail != "" {
-		gs = concat(gs, line("  "+row.Detail, dim))
+		detail = line("  "+row.Detail, dim)
 	}
-	return gs
+	return gs, detail
+}
+
+// pickName is the columns a row's name keeps before its detail is cut.
+const pickName = 8
+
+// pickFit fits a row's text into w columns: its name is cut first, so
+// that its detail shows whole, while the name keeps pickName columns;
+// then the detail.
+func pickFit(name, detail []glyph, w int) []glyph {
+	if nw := w - width(detail); width(name)+width(detail) > w && nw >= min(width(name), pickName) {
+		return concat(fit(name, nw), detail)
+	}
+	return fit(concat(name, detail), w)
 }
 
 // pickSelected is the selected row's style: reversed in the accent while
@@ -176,7 +189,8 @@ func (l *layout) paintPicker(cv *canvas, e *view.Element, x, y, w int) {
 // the last line, with none of its rows under it, is left out. A row's
 // keys show at its right where they fit beside its whole text; a narrow
 // picker shows them on the selected row alone, so that the others'
-// details aren't cut for them.
+// details aren't cut for them, unless it keeps keys (KeepKeys), when
+// every row shows them and its text is cut.
 func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused bool) {
 	r := l.r
 	in, iw := x+pickIndent, max(w-2*pickIndent, 0)
@@ -212,14 +226,15 @@ func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused
 			continue
 		}
 		// The detail wins: a row's keys show where they fit beside its
-		// whole text, else on the selected row alone, where they cut it.
-		ks, text := r.pickKeys(row, on), r.pickRow(row, sel, focused)
-		tw := iw
-		if kw := width(ks); kw > 0 && kw+2 < iw && (sel || width(text)+2+kw <= iw) {
+		// whole text, else on the selected row alone, where they cut it;
+		// on a picker that keeps keys, on every row.
+		ks, tw := r.pickKeys(row, on), iw
+		name, detail := r.pickRow(row, sel, focused)
+		if kw := width(ks); kw > 0 && kw+2 < iw && (sel || e.KeepKeys || width(name)+width(detail)+2+kw <= iw) {
 			cv.write(in+iw-kw, at, kw, ks)
 			tw = iw - kw - 2
 		}
-		cv.write(in, at, tw, fit(text, tw))
+		cv.write(in, at, tw, pickFit(name, detail, tw))
 	}
 }
 

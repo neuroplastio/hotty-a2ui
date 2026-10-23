@@ -127,6 +127,49 @@ func TestPickerDraws(t *testing.T) {
 	}
 }
 
+// A picker that keeps keys (keep: "keys", a picker of bindings) shows every
+// row's keys, cutting its text for them, where a narrow one shows the
+// selected row's alone.
+func TestPickerKeepsKeys(t *testing.T) {
+	r, c, _ := paletteWith(t, `"keep":"keys",`)
+	c.Focus("root")
+	keys(t, r, "arrow_down")
+	want := " Type a command\n" +
+		"────────────────────────────\n" +
+		" Pane: Split…   Ctrl+B > %\n" +
+		" Panes\n" +
+		" Pane: fish  ~/code\n" +
+		"              Focus  Enter"
+	if got := trimmed(r.Draw(28)); got != want {
+		t.Errorf("at 28 columns:\n%s\nwant\n%s", got, want)
+	}
+}
+
+// A row's text is cut in its name first, so that its detail shows whole,
+// while the name keeps pickName columns; then at its end.
+func TestPickFit(t *testing.T) {
+	for _, c := range []struct {
+		name, detail string
+		w            int
+		want         string
+	}{
+		{"Switch plx's theme, seeing each", "  theme.pick", 24, "Switch plx'…  theme.pick"},
+		{"Switch plx's theme, seeing each", "  theme.pick", 18, "Switch plx's them…"},
+		{"fish", "  ~/code/plexos", 19, "fish  ~/code/plexos"},
+		{"fish", "  ~/code/plexos", 17, "fish  ~/code/ple…"},
+		{"Split right", "", 8, "Split r…"},
+	} {
+		gs := pickFit(line(c.name, style{}), line(c.detail, style{}), c.w)
+		var b strings.Builder
+		for _, g := range gs {
+			b.WriteString(g.text)
+		}
+		if b.String() != c.want {
+			t.Errorf("%q %q in %d: %q, want %q", c.name, c.detail, c.w, b.String(), c.want)
+		}
+	}
+}
+
 // A row's description is on the line under it, in muted, the selected
 // row's reversed with it across the picker; a click on it is a click on
 // its row. A row without one takes a line.

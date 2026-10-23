@@ -1376,6 +1376,11 @@
           "type": "string",
           "description": "The key that opens the selected row's actions as a list, each with its key: the arrows move in it, Enter runs one, and Escape or the key again closes it. Without it there is no panel. \"mod+k\" is Raycast's."
         },
+        "keep": {
+          "type": "string",
+          "enum": ["detail", "keys"],
+          "description": "What a row keeps where its text and its keys don't both fit: \"detail\", the default, its whole text, so that only the selected row shows its keys; or \"keys\", on every row, its text cut for them, its title first, then its detail. A picker of key bindings keeps keys."
+        },
         "status": {
           "$ref": "common_types.json#/$defs/DynamicString",
           "description": "A line under the query: why the last action failed, or what it answered. Empty, it does not show."

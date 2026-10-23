@@ -108,7 +108,7 @@ const (
 	// Picker is a query and the rows the agent ranked for it (HottyPicker):
 	// Value, the query; Placeholder, Chip, Rows, Selected (the selected
 	// row, -1 for none), Status and StatusError, Busy, NoRows, PanelKey,
-	// Panel and PanelAt; Height and Top count lines (PickLines).
+	// Panel and PanelAt, KeepKeys; Height and Top count lines (PickLines).
 	Picker Kind = "picker"
 	// KeyHints shows the keys its surface takes now (HottyKeyHints), as
 	// Controller.KeyHints has them: Open while the full view shows, Active
@@ -325,7 +325,8 @@ type Element struct {
 	// before its query; the status under it, and whether that is an
 	// error; whether rows are still to come; what shows with no rows; the
 	// key that opens the actions panel, and the panel: open, and the
-	// action it highlights (profile §6.32).
+	// action it highlights; whether every row keeps its keys (keep:
+	// "keys") rather than its detail (profile §6.32).
 	Rows        []PickRow `json:"rows,omitempty"`
 	Chip        string    `json:"chip,omitempty"`
 	Status      string    `json:"status,omitempty"`
@@ -335,6 +336,7 @@ type Element struct {
 	PanelKey    string    `json:"panelKey,omitempty"`
 	Panel       bool      `json:"panel,omitempty"`
 	PanelAt     int       `json:"panelAt,omitempty"`
+	KeepKeys    bool      `json:"keepKeys,omitempty"`
 	// Written counts the queries written to a HottyPicker other than as
 	// the user typed them (Pick.Written).
 	Written int `json:"written,omitempty"`

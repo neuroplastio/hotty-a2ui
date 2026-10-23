@@ -18,7 +18,9 @@ import (
 // picker's, "~i" and the row's index, its keys at its right, its
 // description on a second line; and its footer, what the selected row's
 // keys do, flush right, as Zed's. While the actions panel is open, the
-// selected row's actions take the rows' place. The input gives the program the keys
+// selected row's actions take the rows' place. A picker that keeps keys
+// (view.Element.KeepKeys) is k-pick-keep, whose rows don't wrap their keys
+// out of sight (kit.css). The input gives the program the keys
 // the picker takes (pickKeys).
 //
 // A query the program writes (a completion, a staged command), other than
@@ -34,6 +36,9 @@ import (
 // keyboard back.
 func (m *markup) picker(e *view.Element) *node {
 	box := el("div", "id", domID(e.ID), "class", "k-pick")
+	if e.KeepKeys {
+		box.set("class", "k-pick k-pick-keep")
+	}
 	q, _ := e.Value.(string)
 	query := el("div", "class", "k-pick-query")
 	if e.Chip != "" {
@@ -115,9 +120,10 @@ func (m *markup) picker(e *view.Element) *node {
 	return box
 }
 
-// pickItem is a row: its group and title, the title's matched characters
-// in spans of class k-match, its detail, and its keys; with desc, those in
-// a line of their own (k-pick-line), and its description under them.
+// pickItem is a row: its name (k-pick-name), its group and title, the
+// title's matched characters in spans of class k-match; its detail; and
+// its keys; with desc, those in a line of their own (k-pick-line), and
+// its description under them.
 func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 	r := e.Rows[i]
 	cls := "k-pick-row"
@@ -129,11 +135,11 @@ func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 	}
 	item := el("div", "id", partID(e.ID, partItem+strconv.Itoa(i)), "class", cls, "role", "option",
 		"aria-selected", strconv.FormatBool(i == e.Selected), "data-on", "click")
-	title := el("span", "class", "k-pick-title")
+	title, name := el("span", "class", "k-pick-title"), el("span", "class", "k-pick-name")
 	if r.Group != "" {
-		title.add(el("span", "class", "k-pick-group").add(texts(r.Group + ": ")...))
+		name.add(el("span", "class", "k-pick-group").add(texts(r.Group + ": ")...))
 	}
-	title.add(pickMarked(r.Title, r.Match)...)
+	title.add(name.add(pickMarked(r.Title, r.Match)...))
 	if r.Detail != "" {
 		title.add(el("span", "class", "k-pick-detail").add(texts(r.Detail)...))
 	}

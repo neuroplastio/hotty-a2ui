@@ -73,7 +73,8 @@ const pickHeight = 10
 func mapPicker(b *Builder, n *a2ui.Node) *Element {
 	e := &Element{Kind: Picker, Value: a2ui.ToString(b.Value(n, "query")), Placeholder: b.String(n, "placeholder"),
 		Chip: b.String(n, "chip"), Status: b.String(n, "status"), StatusError: b.String(n, "statusKind") == "error",
-		Busy: b.Bool(n, "loading"), PanelKey: b.String(n, "panelKey"), NoRows: b.String(n, "emptyText"), Selected: -1}
+		Busy: b.Bool(n, "loading"), PanelKey: b.String(n, "panelKey"), NoRows: b.String(n, "emptyText"), Selected: -1,
+		KeepKeys: b.String(n, "keep") == "keys"}
 	if _, set := n.Props["emptyText"]; !set {
 		e.NoRows = "No matches."
 	}
