@@ -164,7 +164,13 @@ re-pins.
 The maintainer, through plx-settings, on plx's onboarding (plx 807e2e3a)
 on a hotty host: "Buttons are too thin".
 
-- [x] **KIT-SIZE** — `io_neuroplast_hotty.size` on a Button: `large`, a
+- [x] **KIT-FIELD-H** A one-line field is a medium Button's height,
+  2.25rem: on the surface's line, 1.5, its border made it 2px taller than
+  the Save beside it (web, measuring hotty/size live: field 35.8px, Save
+  33.8px, in Chromium and Firefox). A field's line is a Button's, 1.25,
+  and a cycle centres its chevrons in a field's min-height; a textarea
+  keeps the surface's line (journal 2026-10-23.11).
+- [x] **KIT-LARGE** — `io_neuroplast_hotty.size` on a Button: `large`, a
   page's call to action, or `medium`, the default. On a host `k-large`:
   at least 3rem tall where a medium one is 2.25rem (a field's), 1.5rem
   each side; borderless ones as tall, so a Back/Skip/Continue row lines

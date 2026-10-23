@@ -750,8 +750,12 @@ func TestSize(t *testing.T) {
 			t.Errorf("%s: class %q, want %q", id, class, want)
 		}
 	}
+	// A medium Button is a one-line field's height: their lines are the
+	// same, and a cycle's chevrons are centred in a field's min-height.
 	for _, rule := range []string{".k-btn.k-large { min-height: 3rem; padding: 0.625rem 1.5rem; }",
-		".k-icon-btn.k-large { min-width: 3rem; padding: 0.625rem; }"} {
+		".k-icon-btn.k-large { min-width: 3rem; padding: 0.625rem; }",
+		".k-input:not(textarea) { line-height: 1.25; }",
+		"max-width: 100%; padding: 0 0.25rem; column-gap: var(--k-1); }"} {
 		if !strings.Contains(kitCSS, rule) {
 			t.Errorf("kit.css lacks %q", rule)
 		}
