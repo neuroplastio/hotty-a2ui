@@ -580,6 +580,27 @@ func TestTickDrawsTheNextFrame(t *testing.T) {
 	}
 }
 
+// TestCheatSheetKeymapOnHost: a Keymap chip clicked on the host is the one
+// pressed, and the sheet's keys are that keymap's on the next draw, as the
+// story's program sends them (story.TestCheatSheetKeymap).
+func TestCheatSheetKeymapOnHost(t *testing.T) {
+	h := hottytest.New(t, hottytest.Size(120, 40))
+	run(t, h, Options{First: "hotty/cheatsheet", Prefix: "sb-"})
+	story := func() *hottytest.Surface { return h.Surface("sb-s1-0-h") }
+	eventually(t, "the sheet, tmux's", func() bool {
+		s := story()
+		return s != nil && s.Placed() && strings.Contains(s.TextOf("k_t"), "B")
+	})
+	if err := h.Click("sb-s1-0-h", "keymap/option/1"); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "screen pressed, its keys on the sheet", func() bool {
+		s := story()
+		pressed, _ := s.Attr("keymap/option/1", "aria-pressed")
+		return pressed == "true" && strings.Contains(s.TextOf("k_t"), "A") && !strings.Contains(s.TextOf("k_t"), "B")
+	})
+}
+
 // TestIconsRegistered: every name icons.txt lists has its shape, so
 // icons_gen.go is current (make icons).
 func TestIconsRegistered(t *testing.T) {

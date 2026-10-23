@@ -171,7 +171,9 @@ on a hotty host: "Buttons are too thin".
   host `role=img` labelled with the caps' words. Story hotty/cheatsheet,
   whose program rewrites the keys when the leader changes (journal
   2026-10-23.12). Adopted in plx f5b22107. Open: a `size`, if plx's
-  slide wants one.
+  slide wants one. The story picks a Keymap with chips (tmux, screen,
+  Emacs), not Leader buttons that spelled the keys in words and showed
+  none picked (web; journal 2026-10-23.14).
 - [ ] **KIT-KEYS-BLITZ** On hottyterm a HottyKeys in a share narrower than
   its caps draws its last cap over the Text beside it, where Chromium
   pushes the Text over. Blitz's parley (at Blitz's pin) breaks after an

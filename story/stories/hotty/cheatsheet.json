@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyKeys",
   "icon": "keyboard",
-  "description": "Keys drawn as keycaps on their own, for a cheat sheet or an onboarding's keys: each chord a cap, a sequence's caps in order with > between them, alternatives apart by /, labelled for the user's system (mod+shift+p is Ctrl+Shift+P on Linux, ⌘⇧P on a Mac). A HottyKeys takes no focus and sends nothing: it shows keys and binds none. Each line is a Row of a HottyKeys and a Text weighted alike, so that the lines line up as a table's columns. The keys are bound to the data model, which the program writes from its keymap: pick another Leader and it sends the sheet its keys again.",
+  "description": "Keys drawn as keycaps on their own, for a cheat sheet or an onboarding's keys: each chord a cap, a sequence's caps in order with > between them, alternatives apart by /, labelled for the user's system (mod+shift+p is Ctrl+Shift+P on Linux, ⌘⇧P on a Mac). A HottyKeys takes no focus and sends nothing: it shows keys and binds none. Each line is a Row of a HottyKeys and a Text weighted alike, so that the lines line up as a table's columns. The keys are bound to the data model, which the program writes from its keymaps: pick another Keymap and it sends the sheet that keymap's keys, after its leader (tmux's Ctrl+B, screen's Ctrl+A, Emacs's Ctrl+X).",
   "messages": [
     {
       "version": "v1.0",
@@ -11,6 +11,9 @@
         "surfaceId": "cheatsheet",
         "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
         "dataModel": {
+          "keymap": [
+            "tmux"
+          ],
           "keys": {
             "v": "ctrl+b v",
             "s": "ctrl+b s",
@@ -30,7 +33,7 @@
             "id": "root",
             "component": "Column",
             "children": [
-              "pick",
+              "keymap",
               "r_v",
               "r_s",
               "r_t",
@@ -41,74 +44,27 @@
             ]
           },
           {
-            "id": "pick",
-            "component": "Row",
-            "align": "center",
-            "children": [
-              "pick_l",
-              "b_ctrl_b",
-              "b_ctrl_a",
-              "b_ctrl_space"
+            "id": "keymap",
+            "component": "ChoicePicker",
+            "label": "Keymap",
+            "displayStyle": "chips",
+            "value": {
+              "@path": "/keymap"
+            },
+            "options": [
+              {
+                "label": "tmux",
+                "value": "tmux"
+              },
+              {
+                "label": "screen",
+                "value": "screen"
+              },
+              {
+                "label": "Emacs",
+                "value": "emacs"
+              }
             ]
-          },
-          {
-            "id": "pick_l",
-            "component": "Text",
-            "text": "Leader"
-          },
-          {
-            "id": "b_ctrl_b",
-            "component": "Button",
-            "child": "b_ctrl_b_t",
-            "action": {
-              "event": {
-                "name": "leader",
-                "context": {
-                  "leader": "ctrl+b"
-                }
-              }
-            }
-          },
-          {
-            "id": "b_ctrl_b_t",
-            "component": "Text",
-            "text": "Ctrl+B"
-          },
-          {
-            "id": "b_ctrl_a",
-            "component": "Button",
-            "child": "b_ctrl_a_t",
-            "action": {
-              "event": {
-                "name": "leader",
-                "context": {
-                  "leader": "ctrl+a"
-                }
-              }
-            }
-          },
-          {
-            "id": "b_ctrl_a_t",
-            "component": "Text",
-            "text": "Ctrl+A"
-          },
-          {
-            "id": "b_ctrl_space",
-            "component": "Button",
-            "child": "b_ctrl_space_t",
-            "action": {
-              "event": {
-                "name": "leader",
-                "context": {
-                  "leader": "ctrl+space"
-                }
-              }
-            }
-          },
-          {
-            "id": "b_ctrl_space_t",
-            "component": "Text",
-            "text": "Ctrl+Space"
           },
           {
             "id": "r_v",
