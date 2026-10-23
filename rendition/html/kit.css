@@ -58,6 +58,10 @@
   background: var(--k-bg);
 }
 .k-surface[inert] { opacity: 0.5; }
+/* A root with io_neuroplast_hotty.stretch (profile §6.35) takes the
+   surface's rows its content leaves, which go on to its weighted
+   children. A fit surface has none to give. */
+.k-surface > .k-stretch { flex-grow: 1; }
 /* A surface the program sizes to its document (Rendition.SetFit): as tall
    as its content, or the host's fit would never report fewer rows than
    the surface has. Its colour still fills the surface's last row, by a

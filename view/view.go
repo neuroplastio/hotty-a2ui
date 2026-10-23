@@ -424,7 +424,12 @@ type Element struct {
 	// (io_neuroplast_hotty.hidden, profile §6.34). A11y.Hidden only keeps
 	// it from a screen reader, as A2UI has it.
 	Hidden bool `json:"hidden,omitempty"`
-	A11y   A11y `json:"a11y,omitzero"`
+	// Stretch: the surface's root is as tall as the surface, and the rows
+	// its content leaves go to its weighted children or as its justify
+	// says (io_neuroplast_hotty.stretch, profile §6.35). Only the root's
+	// counts.
+	Stretch bool `json:"stretch,omitempty"`
+	A11y    A11y `json:"a11y,omitzero"`
 }
 
 // FileEntry is one entry of a HottyFilePicker's directory: its name, and

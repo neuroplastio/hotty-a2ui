@@ -66,7 +66,11 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 			case "end":
 				dy = h - kh
 			case "stretch", "":
-				bh = h
+				// Not a HottyScrollView's rows, its height, as a host's
+				// box of a set height is not stretched.
+				if k.Kind != view.ScrollView {
+					bh = h
+				}
 			}
 			l.paint(cv, k, x+xs[i], y+dy, ws[i], bh)
 		}
@@ -231,7 +235,7 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 	case view.KeyHints:
 		l.paintKeyHints(cv, e, x, y, w)
 	case view.ScrollView:
-		l.paintScroll(cv, e, x, y, w)
+		l.paintScroll(cv, e, x, y, w, h)
 	case view.Paginator:
 		l.paintPaginator(cv, e, x, y, w, h)
 	case view.Listing:

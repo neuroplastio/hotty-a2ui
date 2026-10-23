@@ -640,6 +640,39 @@ func TestHidden(t *testing.T) {
 	}
 }
 
+// TestStretch: a root with io_neuroplast_hotty.stretch (profile §6.35) has
+// the class k-stretch, which kit.css grows in the surface's column; a
+// child with stretch, not the root, has none.
+func TestStretch(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["head","body"],
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"stretch":true}}}},
+ {"id":"head","component":"Text","text":"Settings",
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"stretch":true}}}},
+ {"id":"body","component":"HottyScrollView","catalogId":"`+hottycat.ID+`","lines":["a","b"],"weight":1}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	stretched := func(id string) bool {
+		class, _ := s.Attr(id, "class")
+		return strings.Contains(" "+class+" ", " k-stretch ")
+	}
+	if !stretched("root") || stretched("head") {
+		t.Errorf("k-stretch: root %v, head %v", stretched("root"), stretched("head"))
+	}
+	// A weighted box keeps its height, the least it shows, beside its weight.
+	if style, _ := s.Attr("body", "style"); style != "--k-rows: 10; --k-w: 1" {
+		t.Errorf("the weighted scroll view's style: %q", style)
+	}
+	if !strings.Contains(kitCSS, ".k-surface > .k-stretch { flex-grow: 1; }") {
+		t.Error("kit.css does not grow .k-surface > .k-stretch")
+	}
+}
+
 // TestIcons: an Icon on a host is its shape as an inline svg, 1em square
 // and filled with the text's colour (gov R-4): one of the 59 by name, or an
 // svgPath, bound or not. A path that is more than path data, and a name

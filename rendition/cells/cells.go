@@ -27,6 +27,7 @@ type Rendition struct {
 	list    string         // the select whose list is open
 	hi      int            // the option highlighted in it
 	keys    string         // the text controls' keymap (SetKeys)
+	pane    int            // the rows the surface has (SetRows); 0, as many as it takes
 	// fields are the text controls as last edited, which keep a run of
 	// row moves' place along the row (editKey).
 	fields map[string]*hottyedit.Field
@@ -108,6 +109,14 @@ func (r *Rendition) animate(d time.Duration) {
 // Bubble Tea's.
 func (r *Rendition) SetKeys(keys string) { r.keys = keys }
 
+// SetRows sets the rows the surface has, as a pane's, which a host's
+// surface fills: every frame Draw returns is at least that tall, an open
+// Modal's panel centred in them, and a root with
+// io_neuroplast_hotty.stretch is as tall as they are, the rows its
+// content leaves to its weighted children (profile §6.35). New starts
+// with 0: a frame as tall as its content.
+func (r *Rendition) SetRows(rows int) { r.pane = max(rows, 0) }
+
 // blockCursor reports whether a text control's cursor is a block: under a
 // keymap set over the default one, a terminal's (hotty.TerminalKeys),
 // whose keys a block says, as a line says a GUI field's (profile §3.5).
@@ -137,12 +146,13 @@ func (r *Rendition) listOpen(e *view.Element) bool {
 // under the select down, so the frame is taller until the list closes.
 func (r *Rendition) ListOpen() bool { return r.list != "" && r.focused(r.list) }
 
-// Draw lays the surface out cols wide, as many rows as it takes, and
-// paints it (profile §3). The open Modal's content is a rounded panel over
-// it, centered; the toasts stack over both at the top right corner, after
-// their time is counted on the rendition's clock (view.Controller
-// .TickToasts), as the timers' is first (TickTimers), whose onTimeout may
-// show one. The frame grows when the panel or the stack is taller.
+// Draw lays the surface out cols wide, as many rows as it takes or as
+// SetRows gave it, and paints it (profile §3). The open Modal's content is
+// a rounded panel over it, centered; the toasts stack over both at the top
+// right corner, after their time is counted on the rendition's clock
+// (view.Controller.TickToasts), as the timers' is first (TickTimers),
+// whose onTimeout may show one. The frame grows when the panel or the
+// stack is taller.
 func (r *Rendition) Draw(cols int) *Frame {
 	cols = max(cols, 1)
 	timers := r.c.TickTimers(r.Clock())
@@ -156,10 +166,13 @@ func (r *Rendition) Draw(cols int) *Frame {
 	if root != nil && root.Hidden {
 		root = nil
 	}
-	rootH, rows := 0, 0
+	rootH, rows := 0, r.pane
 	if root != nil {
 		rootH = l.height(root, cols)
-		rows = rootH
+		if root.Stretch {
+			rootH = max(rootH, r.pane)
+		}
+		rows = max(rows, rootH)
 	}
 	var pw, ph int
 	if v.Overlay != nil {

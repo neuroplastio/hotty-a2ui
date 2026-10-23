@@ -1247,8 +1247,16 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 	var want []hottytea.Surface
 	var touch []hotty.TouchArea
 	for _, p := range order {
+		// pick, and panel on the preview, are as tall as what they hold;
+		// another pane's surface fills it, as a host's does.
+		fits := p == pick || p == panel && preview
 		switch p.kind {
 		case asCells:
+			if fits {
+				p.cells.SetRows(0)
+			} else {
+				p.cells.SetRows(p.rect.H)
+			}
 			p.frame = p.cells.Draw(p.rect.W)
 			if d := p.cells.Animating(); d > 0 && (b.anim == 0 || d < b.anim) {
 				b.anim = d
@@ -1266,7 +1274,6 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 			}
 		case asSurface:
 			p.html.SetTheme(b.theme)
-			fits := p == pick || p == panel && preview
 			p.html.SetFit(fits)
 			p.html.Away = b.focus != nil && b.focus != p && b.focus.s == p.s
 			h.Send(p.html.Update()...)
@@ -1313,6 +1320,7 @@ func (b *Book) View(r hottytea.Rect, h *hottytea.Session) (string, []hottytea.Su
 // it was last on the preview.
 func (b *Book) barHeight(p *pane, preview bool) int {
 	if p.kind == asCells && preview {
+		p.cells.SetRows(0) // the whole column's, on another tab
 		b.barRows = p.cells.Draw(p.rect.W).Rows
 	}
 	if b.barRows == 0 {

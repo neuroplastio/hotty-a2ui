@@ -1,0 +1,103 @@
+{
+  "name": "Fill the pane",
+  "kind": "behaviour",
+  "component": "io_neuroplast_hotty.stretch",
+  "icon": "dashboard",
+  "description": "A screen as tall as its pane, as a settings page or a dashboard is: the root Column has the stretch extension, and its HottyScrollView a weight of 1, so the rows the head and the buttons leave go to the sections, which scroll under the head. Resize the pane and the sections take the rows; the buttons and the key hints stay at the bottom. The scroll view's height, 6, is the least it shows. Without stretch, a root is as tall as what it holds, as a card or a form is. In cells the program says how many rows the pane has (Rendition.SetRows); on a hotty host the surface fills its pane.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "stretch",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "name": "build-01",
+          "shell": "zsh",
+          "follow": true,
+          "wrap": false,
+          "scrollback": 4000,
+          "theme": "system",
+          "cursor": "bar",
+          "blink": true,
+          "notify": true,
+          "sound": false
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "stretch",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "head_note", "sections", "actions", "hints"],
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"stretch": true}}}
+          },
+          {"id": "head", "component": "Text", "text": "**Settings**"},
+          {"id": "head_note", "component": "Text", "variant": "caption", "text": "The sections scroll under this head; the buttons stay at the bottom."},
+          {
+            "id": "sections",
+            "component": "HottyScrollView",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "child": "sections_body",
+            "height": 6,
+            "weight": 1
+          },
+          {
+            "id": "sections_body",
+            "component": "Column",
+            "children": ["general_title", "name", "shell", "rule_1", "output_title", "follow", "wrap", "scrollback", "rule_2", "look_title", "theme", "cursor", "blink", "rule_3", "alerts_title", "notify", "sound"]
+          },
+          {"id": "general_title", "component": "Text", "text": "**General**"},
+          {"id": "name", "component": "TextField", "label": "Name", "value": {"@path": "/name"}},
+          {
+            "id": "shell",
+            "component": "ChoicePicker",
+            "label": "Shell",
+            "value": {"@path": "/shell"},
+            "options": [{"label": "zsh", "value": "zsh"}, {"label": "bash", "value": "bash"}, {"label": "fish", "value": "fish"}]
+          },
+          {"id": "rule_1", "component": "Divider"},
+          {"id": "output_title", "component": "Text", "text": "**Output**"},
+          {"id": "follow", "component": "CheckBox", "label": "Follow new lines", "value": {"@path": "/follow"}},
+          {"id": "wrap", "component": "CheckBox", "label": "Wrap long lines", "value": {"@path": "/wrap"}},
+          {"id": "scrollback", "component": "Slider", "label": "Scrollback", "value": {"@path": "/scrollback"}, "min": 1000, "max": 10000, "steps": 9},
+          {"id": "rule_2", "component": "Divider"},
+          {"id": "look_title", "component": "Text", "text": "**Look**"},
+          {
+            "id": "theme",
+            "component": "ChoicePicker",
+            "label": "Theme",
+            "value": {"@path": "/theme"},
+            "options": [{"label": "System", "value": "system"}, {"label": "Light", "value": "light"}, {"label": "Dark", "value": "dark"}]
+          },
+          {
+            "id": "cursor",
+            "component": "ChoicePicker",
+            "label": "Cursor",
+            "value": {"@path": "/cursor"},
+            "options": [{"label": "Bar", "value": "bar"}, {"label": "Block", "value": "block"}, {"label": "Underline", "value": "underline"}]
+          },
+          {"id": "blink", "component": "CheckBox", "label": "Blink the cursor", "value": {"@path": "/blink"}},
+          {"id": "rule_3", "component": "Divider"},
+          {"id": "alerts_title", "component": "Text", "text": "**Alerts**"},
+          {"id": "notify", "component": "CheckBox", "label": "Notify when a command ends", "value": {"@path": "/notify"}},
+          {"id": "sound", "component": "CheckBox", "label": "Play a sound", "value": {"@path": "/sound"}},
+          {
+            "id": "actions",
+            "component": "Row",
+            "justify": "end",
+            "children": ["reset", "save"]
+          },
+          {"id": "reset", "component": "Button", "child": "reset_t", "action": {"event": {"name": "reset"}}},
+          {"id": "reset_t", "component": "Text", "text": "Reset"},
+          {"id": "save", "component": "Button", "variant": "primary", "child": "save_t", "action": {"event": {"name": "save"}}},
+          {"id": "save_t", "component": "Text", "text": "Save"},
+          {"id": "hints", "component": "HottyKeyHints", "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog"}
+        ]
+      }
+    }
+  ]
+}

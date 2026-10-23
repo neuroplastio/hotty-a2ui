@@ -94,7 +94,14 @@ func surface(v *view.Surface, th theme.Theme, keys string, fit, dense bool, m *m
 	if m.drag != nil {
 		dragging = " k-dragging"
 	}
-	main = el("div", "id", surfaceID, "class", class+dragging).add(m.element(v.Root))
+	root := m.element(v.Root)
+	// A root with io_neuroplast_hotty.stretch is as tall as the surface
+	// (kit.css, profile §6.35).
+	if root != nil && v.Root.Stretch {
+		c, _ := root.attr("class")
+		root.set("class", strings.TrimSpace(c+" k-stretch"))
+	}
+	main = el("div", "id", surfaceID, "class", class+dragging).add(root)
 	layer = el("div", "id", layerID, "class", "k-layer"+dragging)
 	if css := themeCSS(th); css != "" {
 		main.set("style", css)
@@ -547,9 +554,14 @@ func (m *markup) element(e *view.Element) *node {
 	}
 	if e.Weight > 0 {
 		// kit.css: in a Row, the weight is the child's share of it; in a
-		// Column, of the rows to spare.
+		// Column, of the rows to spare. After the element's own style, as
+		// a box's --k-rows, which it keeps.
 		class, _ := outer.attr("class")
-		outer.set("class", strings.TrimSpace(class+" k-weighted")).set("style", "--k-w: "+a2ui.NumberString(e.Weight))
+		style := "--k-w: " + a2ui.NumberString(e.Weight)
+		if own, ok := outer.attr("style"); ok && own != "" {
+			style = own + "; " + style
+		}
+		outer.set("class", strings.TrimSpace(class+" k-weighted")).set("style", style)
 	}
 	if e.Hidden {
 		// kit.css: not shown, so out of the Tab order and a screen

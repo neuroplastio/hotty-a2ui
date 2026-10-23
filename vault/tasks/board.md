@@ -117,9 +117,12 @@ in this order; plx bumps its pin as they land.
   in A2UI's own renderer: weighted children share what the others leave,
   from nothing, each no narrower than its least. Profile §3.3 (journal
   2026-10-23.2); the icons grid and the kanban await the maintainer's look.
-- [ ] **KIT-FILL** — A Column's weights down: a weighted child takes the
-  rows left, the surface as tall as its pane, and a weighted
-  HottyScrollView pages at what it gets. plx drops its computed height.
+- [x] **KIT-FILL** — `io_neuroplast_hotty.stretch` on the root: as tall
+  as the surface (cells: `Rendition.SetRows`), the rows left to its
+  weighted children; a weighted HottyScrollView pages at what it gets.
+  plx drops its computed height. A weight no longer drops a box's
+  `--k-rows` on a host. Profile §6.35, instruction 36 (journal
+  2026-10-23.4); hotty/stretch awaits the maintainer's look.
 - [ ] **KIT-PLAIN** — A HottyScrollView for a page's body: no fill,
   corners, padding or ring; its focus on its scrollbar.
 - [ ] **KIT-GAP** — `io_neuroplast_hotty.gap` on a Column or a Row.
@@ -129,7 +132,9 @@ in this order; plx bumps its pin as they land.
   or blank rows, the selection shown, arrows moving it.
 
 Two are hotty-blitz's, passed to the hotty agent: `::placeholder` is not
-drawn, and an empty `<input type=number>` is a sliver.
+drawn, and an empty `<input type=number>` is a sliver. Both fixed on
+hotty-blitz main at 2a5904a (2026-10-23); hottyterm has them once it
+re-pins.
 
 ## Phase 2 — The hotty layer
 

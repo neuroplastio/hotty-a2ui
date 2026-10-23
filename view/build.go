@@ -207,6 +207,7 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	}
 	e.A11y = b.a11y(n)
 	e.Hidden = b.hidden(n)
+	e.Stretch = hottyExt(n)["stretch"] == true
 	e.Autofocus = autofocus(n)
 	e.Keys = keys(n)
 	if e.Kind == Text || e.Kind == Icon {

@@ -79,10 +79,12 @@ func (l *layout) scrollMinimum(e *view.Element) int {
 	return 1 + scrollPad + scrollBar
 }
 
-// paintScroll paints a HottyScrollView at (x, y), w wide.
-func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w int) {
+// paintScroll paints a HottyScrollView at (x, y), w wide and h tall: its
+// height, or more where a Column gave it the rows to spare by its weight
+// (profile §6.11).
+func (l *layout) paintScroll(cv *canvas, e *view.Element, x, y, w, h int) {
 	r := l.r
-	cx, cw, page := x+scrollPad, max(w-scrollPad-scrollBar, 1), e.Height
+	cx, cw, page := x+scrollPad, max(w-scrollPad-scrollBar, 1), max(h, e.Height)
 	k := scrollChild(e)
 	var rows [][]glyph
 	total, wide := 0, 0
