@@ -673,6 +673,46 @@ func TestStretch(t *testing.T) {
 	}
 }
 
+// TestGap: a Column or a Row with io_neuroplast_hotty.gap (profile §6.36)
+// has the class k-gap and its number in --k-gap, before a weight's, which
+// kit.css turns into terminal rows or columns; one without keeps the
+// kit's gaps.
+func TestGap(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	if err := json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["apart","row"]},
+ {"id":"apart","component":"Column","children":["a"],"weight":1,
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"gap":1}}}},
+ {"id":"a","component":"Text","text":"a"},
+ {"id":"row","component":"Row","children":["b"],
+  "metadata":{"extensions":{"io_neuroplast_hotty":{"gap":0}}}},
+ {"id":"b","component":"Text","text":"b"}]}}]`), &msgs); err != nil {
+		t.Fatal(err)
+	}
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	for id, want := range map[string][2]string{
+		"root":  {"k-stack k-col k-j-start k-a-stretch", ""},
+		"apart": {"k-stack k-col k-j-start k-a-stretch k-gap k-weighted", "--k-gap: 1; --k-w: 1"},
+		"row":   {"k-stack k-row k-j-start k-a-stretch k-gap", "--k-gap: 0"},
+	} {
+		class, _ := s.Attr(id, "class")
+		style, _ := s.Attr(id, "style")
+		if class != want[0] || style != want[1] {
+			t.Errorf("%s: class %q, style %q, want %q, %q", id, class, style, want[0], want[1])
+		}
+	}
+	for _, rule := range []string{
+		".k-col.k-gap { row-gap: calc(var(--k-gap) * var(--hotty-cell-h, 1.25rem)); }",
+		".k-row.k-gap { column-gap: calc(var(--k-gap) * var(--hotty-cell-w, 1ch)); }"} {
+		if !strings.Contains(kitCSS, rule) {
+			t.Errorf("kit.css lacks %q", rule)
+		}
+	}
+}
+
 // TestIcons: an Icon on a host is its shape as an inline svg, 1em square
 // and filled with the text's colour (gov R-4): one of the 59 by name, or an
 // svgPath, bound or not. A path that is more than path data, and a name

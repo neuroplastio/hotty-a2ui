@@ -92,6 +92,11 @@
 .k-col > .k-weighted { flex-grow: var(--k-w); }
 .k-row { flex-direction: row; column-gap: var(--k-3); }
 .k-col { flex-direction: column; row-gap: var(--k-2); }
+/* io_neuroplast_hotty.gap (profile §6.36): whole terminal rows between a
+   Column's children, columns between a Row's, as in cells, in place of
+   the gaps above. */
+.k-col.k-gap { row-gap: calc(var(--k-gap) * var(--hotty-cell-h, 1.25rem)); }
+.k-row.k-gap { column-gap: calc(var(--k-gap) * var(--hotty-cell-w, 1ch)); }
 /* A child a column does not stretch is still no wider than the column
    (Blitz gives it its max-content width otherwise), so its text wraps. */
 .k-col > * { max-width: 100%; box-sizing: border-box; }
@@ -840,6 +845,10 @@ textarea.k-resize-none { resize: none; }
 .k-col > .k-drop-after::after { bottom: calc(var(--k-2) / -2 - 1px); }
 .k-row > .k-drop-before::before { top: 0; bottom: 0; left: calc(var(--k-3) / -2 - 1px); width: 2px; height: auto; }
 .k-row > .k-drop-after::after { top: 0; bottom: 0; left: auto; right: calc(var(--k-3) / -2 - 1px); width: 2px; height: auto; }
+.k-col.k-gap > .k-drop-before::before { top: calc(var(--k-gap) * var(--hotty-cell-h, 1.25rem) / -2 - 1px); }
+.k-col.k-gap > .k-drop-after::after { bottom: calc(var(--k-gap) * var(--hotty-cell-h, 1.25rem) / -2 - 1px); }
+.k-row.k-gap > .k-drop-before::before { left: calc(var(--k-gap) * var(--hotty-cell-w, 1ch) / -2 - 1px); }
+.k-row.k-gap > .k-drop-after::after { right: calc(var(--k-gap) * var(--hotty-cell-w, 1ch) / -2 - 1px); }
 /* At a List's ends the line goes just inside its first or last item:
    outside, the List's own box would clip it (k-overflow), and a drop
    into a column, after its last card, would show nothing. */

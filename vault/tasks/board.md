@@ -132,7 +132,12 @@ in this order; plx bumps its pin as they land.
   sections are plain. Look question: an overlay scrollbar (Blitz's)
   shows nothing until the box scrolls, so on a host only the cut at its
   foot says the body scrolls; rules above and below it are the option.
-- [ ] **KIT-GAP** — `io_neuroplast_hotty.gap` on a Column or a Row.
+- [x] **KIT-GAP** — `io_neuroplast_hotty.gap` on a Column, a Row or a
+  List: whole terminal rows (or a Row's columns), 0 to 8, in place of
+  the kit's own spacing in both renditions; on a host `k-gap` and
+  `--k-gap` in `--hotty-cell-h`/`-w`. Profile §6.36, instruction 37
+  (journal 2026-10-23.6). Story hotty/gap: settings a row apart, no
+  Dividers.
 - [ ] **KIT-WIDTH** — `io_neuroplast_hotty.width` on a field: columns in
   cells, `ch` on a host; shared columns come of KIT-WEIGHT.
 - [ ] **KIT-NAV** — A HottyList for a nav: a row an item, no status line

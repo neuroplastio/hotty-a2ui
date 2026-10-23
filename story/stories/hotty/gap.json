@@ -1,0 +1,95 @@
+{
+  "name": "Room between",
+  "kind": "behaviour",
+  "component": "io_neuroplast_hotty.gap",
+  "icon": "notes",
+  "description": "Settings a row apart, as a settings page has them: the Column that holds them has the gap extension, 1, so each setting, its name and control on a row and a caption under it, is a blank row from the next, with no Divider between them. Without gap, a Column's children stack tight here, as a form's fields do, and the kit sets a child apart only where it would read as part of what comes before it. The buttons' Row has a gap of 2, two columns between them for one. A gap counts terminal rows in a Column and columns in a Row, in cells and on a hotty host alike, in place of the kit's own spacing; 0 packs the children tight.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "gap",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "shell": "zsh",
+          "follow": true,
+          "notify": false,
+          "theme": "system"
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "gap",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["title", "settings", "actions"]},
+          {"id": "title", "component": "Text", "text": "**Terminal**"},
+          {
+            "id": "settings",
+            "component": "Column",
+            "children": ["shell_s", "follow_s", "notify_s", "theme_s"],
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"gap": 1}}}
+          },
+          {"id": "shell_s", "component": "Column", "children": ["shell_r", "shell_d"]},
+          {"id": "shell_r", "component": "Row", "align": "center", "children": ["shell_l", "shell"]},
+          {"id": "shell_l", "component": "Text", "text": "Shell", "weight": 1},
+          {
+            "id": "shell",
+            "component": "ChoicePicker",
+            "variant": "mutuallyExclusive",
+            "value": {"@path": "/shell"},
+            "options": [{"label": "zsh", "value": "zsh"}, {"label": "bash", "value": "bash"}, {"label": "fish", "value": "fish"}],
+            "accessibility": {"label": "Shell"}
+          },
+          {"id": "shell_d", "component": "Text", "variant": "caption", "text": "The shell a new pane starts."},
+          {"id": "follow_s", "component": "Column", "children": ["follow_r", "follow_d"]},
+          {"id": "follow_r", "component": "Row", "align": "center", "children": ["follow_l", "follow"]},
+          {"id": "follow_l", "component": "Text", "text": "Follow new lines", "weight": 1},
+          {
+            "id": "follow",
+            "component": "HottySwitch",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "value": {"@path": "/follow"},
+            "accessibility": {"label": "Follow new lines"}
+          },
+          {"id": "follow_d", "component": "Text", "variant": "caption", "text": "Keeps the newest line in sight as output arrives."},
+          {"id": "notify_s", "component": "Column", "children": ["notify_r", "notify_d"]},
+          {"id": "notify_r", "component": "Row", "align": "center", "children": ["notify_l", "notify"]},
+          {"id": "notify_l", "component": "Text", "text": "Notify when a command ends", "weight": 1},
+          {
+            "id": "notify",
+            "component": "HottySwitch",
+            "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+            "value": {"@path": "/notify"},
+            "accessibility": {"label": "Notify when a command ends"}
+          },
+          {"id": "notify_d", "component": "Text", "variant": "caption", "text": "Only for a command that ran longer than ten seconds."},
+          {"id": "theme_s", "component": "Column", "children": ["theme_r", "theme_d"]},
+          {"id": "theme_r", "component": "Row", "align": "center", "children": ["theme_l", "theme"]},
+          {"id": "theme_l", "component": "Text", "text": "Theme", "weight": 1},
+          {
+            "id": "theme",
+            "component": "ChoicePicker",
+            "variant": "mutuallyExclusive",
+            "value": {"@path": "/theme"},
+            "options": [{"label": "System", "value": "system"}, {"label": "Light", "value": "light"}, {"label": "Dark", "value": "dark"}],
+            "accessibility": {"label": "Theme"}
+          },
+          {"id": "theme_d", "component": "Text", "variant": "caption", "text": "System follows the desktop's light or dark mode."},
+          {
+            "id": "actions",
+            "component": "Row",
+            "justify": "end",
+            "children": ["reset", "save"],
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"gap": 2}}}
+          },
+          {"id": "reset", "component": "Button", "child": "reset_t", "action": {"event": {"name": "reset"}}},
+          {"id": "reset_t", "component": "Text", "text": "Reset"},
+          {"id": "save", "component": "Button", "variant": "primary", "child": "save_t", "action": {"event": {"name": "save"}}},
+          {"id": "save_t", "component": "Text", "text": "Save"}
+        ]
+      }
+    }
+  ]
+}

@@ -163,7 +163,7 @@ func (l *layout) minimum(e *view.Element) int {
 				continue
 			}
 			if i > 0 {
-				n++
+				n += colGap(e)
 			}
 			n += l.minimum(k)
 		}
@@ -276,7 +276,7 @@ func (l *layout) measure(e *view.Element) int {
 		n := 0
 		for i, k := range kids {
 			if i > 0 {
-				n++
+				n += colGap(e)
 			}
 			n += l.natural(k)
 		}
@@ -358,21 +358,21 @@ func (l *layout) measureHeight(e *view.Element, w int) int {
 			return 1
 		}
 		if e.Dir != view.Horizontal {
-			return l.columnHeight(kids, e.Align, w)
+			return l.columnHeight(kids, e.Align, rowGap(e), w)
 		}
-		_, ws := l.row(kids, e.Justify, w)
+		_, ws := l.row(kids, e.Justify, colGap(e), w)
 		h := 0
 		for i, k := range kids {
 			h = max(h, l.height(k, ws[i]))
 		}
 		return h
 	case view.Card:
-		return l.columnHeight(shown(e.Children), "stretch", w-4) + 2
+		return l.columnHeight(shown(e.Children), "stretch", -1, w-4) + 2
 	case view.Form, view.Modal:
-		return l.columnHeight(shown(e.Children), "stretch", w)
+		return l.columnHeight(shown(e.Children), "stretch", -1, w)
 	case view.Tabs:
 		bar, content := tabParts(e)
-		return tabRows(bar, w) + l.columnHeight(content, "stretch", w)
+		return tabRows(bar, w) + l.columnHeight(content, "stretch", -1, w)
 	case view.Text, view.Document:
 		return len(l.lines(e, w))
 	case view.ScrollView:
@@ -413,7 +413,7 @@ func (l *layout) columnWidth(e *view.Element, align string, w int) int {
 	return min(l.natural(e), w)
 }
 
-func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
+func (l *layout) columnHeight(kids []*view.Element, align string, gap, w int) int {
 	// Before a child's natural width is asked for, which its run's labels
 	// widen.
 	l.labelRuns(kids)
@@ -423,24 +423,27 @@ func (l *layout) columnHeight(kids []*view.Element, align string, w int) int {
 		hs[i] = l.height(k, l.columnWidth(k, align, w))
 		h += hs[i]
 	}
-	for _, s := range separators(kids, hs) {
+	for _, s := range separators(kids, hs, gap) {
 		h += s
 	}
 	return h
 }
 
 // separators are the blank rows a Column puts before each of its
-// children, as tall as hs (separator): none before one that draws no
-// rows, such as an empty List, so that nothing is set apart from nothing,
-// and one that follows such a child is set apart from the child before.
-func separators(kids []*view.Element, hs []int) []int {
+// children, as tall as hs: its gap (profile §6.36), else as separator
+// says where gap is -1; none before one that draws no rows, such as an
+// empty List, so that nothing is set apart from nothing, and one that
+// follows such a child is set apart from the child before.
+func separators(kids []*view.Element, hs []int, gap int) []int {
 	out := make([]int, len(kids))
 	prev := -1
 	for i, k := range kids {
 		if hs[i] == 0 {
 			continue
 		}
-		if prev >= 0 {
+		if prev >= 0 && gap >= 0 {
+			out[i] = gap
+		} else if prev >= 0 {
 			out[i] = separator(kids[prev], k)
 		}
 		prev = i
@@ -487,6 +490,24 @@ func separator(before, e *view.Element) int {
 	return 0
 }
 
+// rowGap is a Column's io_neuroplast_hotty.gap, the blank rows between
+// its children, or -1 where it has none and separator decides them.
+func rowGap(e *view.Element) int {
+	if e.Gap == nil {
+		return -1
+	}
+	return *e.Gap
+}
+
+// colGap is the columns between a Row's children: its
+// io_neuroplast_hotty.gap, else one.
+func colGap(e *view.Element) int {
+	if e.Gap == nil {
+		return 1
+	}
+	return *e.Gap
+}
+
 // endsInHeading reports whether an element is a Text whose last block is
 // a heading.
 func endsInHeading(e *view.Element) bool {
@@ -523,15 +544,15 @@ func edge(e *view.Element, first bool) *view.Element {
 // comes off the widest that is wider than its minimum (the first of
 // equals), and once none is, off the widest. With no weighted child, the
 // spare columns go as justify says; justify stretch weighs every child,
-// 1 when it is not. One column separates neighbours. It returns each
-// child's x and width.
-func (l *layout) row(kids []*view.Element, justify string, w int) (xs, ws []int) {
+// 1 when it is not. gap columns separate neighbours (colGap). It returns
+// each child's x and width.
+func (l *layout) row(kids []*view.Element, justify string, gap, w int) (xs, ws []int) {
 	n := len(kids)
 	xs, ws = make([]int, n), make([]int, n)
 	if n == 0 {
 		return
 	}
-	avail := max(w-(n-1), 0)
+	avail := max(w-gap*(n-1), 0)
 	weights := make([]float64, n)
 	weighted := false
 	for i, k := range kids {
@@ -570,10 +591,10 @@ func (l *layout) row(kids []*view.Element, justify string, w int) (xs, ws []int)
 	}
 	if weighted {
 		share(ws, mins, weights, avail-sum)
-		return place(ws, make([]int, n+1)), ws
+		return place(ws, make([]int, n+1), gap), ws
 	}
 	gaps := l.spread(ws, weights, justify, avail-sum)
-	return place(ws, gaps), ws
+	return place(ws, gaps, gap), ws
 }
 
 // share hands a Row's spare columns to its weighted children as a host's
@@ -634,13 +655,14 @@ func share(ws, mins []int, weights []float64, spare int) {
 	}
 }
 
-// place is where a Row's children go: one column apart, plus the gaps.
-func place(ws, gaps []int) []int {
+// place is where a Row's children go: gap columns apart, plus justify's
+// gaps.
+func place(ws, gaps []int, gap int) []int {
 	xs := make([]int, len(ws))
 	x := gaps[0]
 	for i := range ws {
 		if i > 0 {
-			x += 1 + gaps[i]
+			x += gap + gaps[i]
 		}
 		xs[i] = x
 		x += ws[i]

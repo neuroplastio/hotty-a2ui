@@ -53,10 +53,10 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 	case view.Stack:
 		kids := shown(e.Children)
 		if e.Dir != view.Horizontal {
-			l.paintColumn(cv, kids, e.Justify, e.Align, x, y, w, h)
+			l.paintColumn(cv, kids, e.Justify, e.Align, rowGap(e), x, y, w, h)
 			return
 		}
-		xs, ws := l.row(kids, e.Justify, w)
+		xs, ws := l.row(kids, e.Justify, colGap(e), w)
 		for i, k := range kids {
 			kh := l.height(k, ws[i])
 			dy, bh := 0, kh
@@ -76,11 +76,11 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 		}
 	case view.Card:
 		cv.box(x, y, w, h)
-		l.paintColumn(cv, shown(e.Children), "start", "stretch", x+2, y+1, w-4, h-2)
+		l.paintColumn(cv, shown(e.Children), "start", "stretch", -1, x+2, y+1, w-4, h-2)
 	case view.Form:
-		l.paintColumn(cv, shown(e.Children), "start", "stretch", x, y, w, h)
+		l.paintColumn(cv, shown(e.Children), "start", "stretch", -1, x, y, w, h)
 	case view.Modal:
-		l.paintColumn(cv, shown(e.Children), "start", "stretch", x, y, w, h)
+		l.paintColumn(cv, shown(e.Children), "start", "stretch", -1, x, y, w, h)
 		if e.Clickable {
 			if l.r.focused(e.ID) {
 				cv.restyle(x, y, w, h, func(c *Cell) { c.Role, c.Attr = Accent, c.Attr|Reverse })
@@ -90,7 +90,7 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 	case view.Tabs:
 		bar, content := tabParts(e)
 		n := l.paintTabBar(cv, bar, x, y, w)
-		l.paintColumn(cv, content, "start", "stretch", x, y+n, w, h-n)
+		l.paintColumn(cv, content, "start", "stretch", -1, x, y+n, w, h-n)
 	case view.Text:
 		for i, t := range l.lines(e, w) {
 			if i >= h {
@@ -243,7 +243,7 @@ func (l *layout) paint(cv *canvas, e *view.Element, x, y, w, h int) {
 	case view.DiffView:
 		l.paintDiff(cv, e, x, y, w)
 	default:
-		l.paintColumn(cv, shown(e.Children), "start", "stretch", x, y, w, h)
+		l.paintColumn(cv, shown(e.Children), "start", "stretch", -1, x, y, w, h)
 	}
 }
 
@@ -322,9 +322,10 @@ func (l *layout) paintSpinner(cv *canvas, e *view.Element, x, y, w int) {
 	}
 }
 
-// paintColumn lays children out down a box: each as tall as it is, spare
-// rows to the weighted ones or as justify says; across, as align says.
-func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align string, x, y, w, h int) {
+// paintColumn lays children out down a box: each as tall as it is, gap
+// rows apart (separators), spare rows to the weighted ones or as justify
+// says; across, as align says.
+func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align string, gap, x, y, w, h int) {
 	if w <= 0 {
 		return
 	}
@@ -338,7 +339,7 @@ func (l *layout) paintColumn(cv *canvas, kids []*view.Element, justify, align st
 		weights[i] = k.Weight
 		sum += hs[i]
 	}
-	seps := separators(kids, hs)
+	seps := separators(kids, hs, gap)
 	for _, s := range seps {
 		sum += s
 	}

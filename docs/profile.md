@@ -84,7 +84,7 @@ so that an error comes and goes as a text delta.
 
 | component | element |
 | --- | --- |
-| Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures); a Row of columns or cards shrinks them instead. A weighted child of a Row takes its share of it, whatever it holds (`flex: weight`, as A2UI's Lit renderer has it), so Rows weighted alike line up as a grid's; in a Column, a weight is a share of the rows to spare. A List whose items move (`reorder`, §6.21) gives the program alt+arrow_up and alt+arrow_down (`data-keys`), so that they move the item the keyboard is in, as in cells, and each of its children has `drag drop` in its `data-on`, the List `drop`: a drag moves it (§6.21) |
+| Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures); a Row of columns or cards shrinks them instead. A weighted child of a Row takes its share of it, whatever it holds (`flex: weight`, as A2UI's Lit renderer has it), so Rows weighted alike line up as a grid's; in a Column, a weight is a share of the rows to spare. Between children, a Column has `--k-2` and a Row `--k-3`; one with a `gap` (§6.36, `k-gap`) has that many terminal rows or columns instead. A List whose items move (`reorder`, §6.21) gives the program alt+arrow_up and alt+arrow_down (`data-keys`), so that they move the item the keyboard is in, as in cells, and each of its children has `drag drop` in its `data-on`, the List `drop`: a drag moves it (§6.21) |
 | Card | `div`, a raised fill and a rounded border |
 | Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9). A word breaks only when it fills a line alone. A Text that is one number (`$850,000,000.00`, a grid's cell) may also break after its group separators, a zero-width space after each, so a narrow column breaks it between groups, not between any two digits. An ordered list item's number is written out, a `span.k-n` the sheet sets in the indent with a gap, ending at the same place for `9.` and `10.`, because Blitz draws a list's own numbers flush against the text and has no counters to draw them otherwise |
 | Image | `img`, sized by its variant in `rem`. A weighted one in a Row takes its share of the row whatever its variant, and is as tall as its picture at that width, no taller than the surface: a picture to look at, beside what is said about it |
@@ -355,7 +355,7 @@ Natural widths:
 | Image, Icon, HottyIcon, Media, Placeholder | what they paint (§3.4) |
 | Divider | 1 |
 | Card | its content + 4 |
-| Row | its children's, plus one column between each two |
+| Row | its children's, plus one column between each two, or its `gap`'s (§6.36) |
 | Column, HottyForm, Modal | its widest child's |
 | Tabs | its titles two columns apart, or its content, whichever is wider |
 
@@ -435,6 +435,9 @@ How the containers lay their children out:
     (or, before it, its last). A child that draws no rows, such as an
     empty List, has no blank row before it and is passed over: the next
     child is set apart, or not, from the one before it.
+    A Column with a `gap` (§6.36) has that many blank rows between each
+    two children that draw rows instead, whatever they are, and none of
+    the rows above.
   - Across: with `align` stretch, a child gets the full width. With start,
     center or end, it gets its natural width (at most the full width),
     placed at the start, the centre (rounded down) or the end.
@@ -456,7 +459,7 @@ How the containers lay their children out:
       parts, the earlier parts one larger;
     - stretch weighs every child 1.
 - **Row** covers a Row and a horizontal List. One column separates each two
-  children.
+  children, or as many as its `gap` (§6.36).
   - **Widths** are a host's flex row's (§2: `flex: weight 1 0%`, as
     A2UI's own renderer has it), so that a Row lays out alike in cells
     and on a host, and Rows weighted alike line up as a grid's columns.
@@ -2898,6 +2901,30 @@ nothing.
 | cells | as tall as the rows `Rendition.SetRows` gave the surface, a pane's, or its content where that is taller. Without `SetRows`, the frame is as tall as the content, and `stretch` changes nothing |
 | host | a class beside the root's own, `k-stretch`, which kit.css gives `flex-grow: 1` in the surface's flex column (`min-height: 100vh`): the root takes the viewport's rows its content leaves, and its weighted children (`.k-col > .k-weighted`) theirs. Taller content makes the surface scroll, as without it |
 | text | nothing: a text rendition has no height |
+
+### 6.36 gap
+
+`metadata.extensions.io_neuroplast_hotty.gap` on a Column, a Row or a
+List: a whole number of terminal rows between a Column's children, or of
+columns between a Row's, from 0 to 8, in place of the kit's own spacing.
+A settings page sets each setting a blank row apart with `gap` 1, where
+it would otherwise put a Divider between them, since in cells settings
+whose controls follow one another stack tight, as a form's fields do
+(plx, 2026-10-23). 0 packs the children tight. A2UI v1.0's Column and
+Row have no spacing of their own: its renderers space children as their
+theme does.
+
+Without it, cells set children apart as §3.3 says, a blank row only where
+a control would read as part of what comes before it, and a host has a
+small gap, `--k-2` in a Column and `--k-3` in a Row. With it, both
+renditions put the same rows between the same children. A gap that is
+not a number is none; a fraction is rounded down, and more than 8 is 8.
+
+| rendition | a Column or a Row with `gap` |
+| --- | --- |
+| cells | `gap` blank rows between each two children of a Column that draw rows (§3.3), whatever they are, and none of the automatic ones; `gap` columns between each two children of a Row, instead of one, in its natural width and its minimum too |
+| host | a class beside the container's own, `k-gap`, and `--k-gap` its number, which kit.css turns into `row-gap` in terminal rows (SPEC.md §8's `--hotty-cell-h`) for a Column, `column-gap` in terminal columns (`--hotty-cell-w`) for a Row. A drop's line (§6.21) sits in the middle of it |
+| text | nothing: a text rendition has no layout |
 
 ## 7. Fallbacks
 

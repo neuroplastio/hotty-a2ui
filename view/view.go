@@ -429,7 +429,11 @@ type Element struct {
 	// says (io_neuroplast_hotty.stretch, profile §6.35). Only the root's
 	// counts.
 	Stretch bool `json:"stretch,omitempty"`
-	A11y    A11y `json:"a11y,omitzero"`
+	// Gap is the blank rows between a Column's children, or the columns
+	// between a Row's, in place of the kit's own spacing
+	// (io_neuroplast_hotty.gap, profile §6.36); nil where it has none.
+	Gap  *int `json:"gap,omitempty"`
+	A11y A11y `json:"a11y,omitzero"`
 }
 
 // FileEntry is one entry of a HottyFilePicker's directory: its name, and

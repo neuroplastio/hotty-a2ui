@@ -199,6 +199,10 @@ func (m *markup) element(e *view.Element) *node {
 	switch e.Kind {
 	case view.Stack:
 		n = el("div", "id", id, "class", stackClass(e))
+		if e.Gap != nil {
+			// kit.css: in terminal rows or columns (k-gap).
+			n.set("style", "--k-gap: "+strconv.Itoa(*e.Gap))
+		}
 		for i, c := range e.Children {
 			if k := m.element(c); k != nil {
 				m.drags(k, e, i)
@@ -653,6 +657,9 @@ func stackClass(e *view.Element) string {
 	}
 	if e.Align != "" {
 		c = append(c, "k-a-"+e.Align)
+	}
+	if e.Gap != nil {
+		c = append(c, "k-gap")
 	}
 	if e.Scroll {
 		// Not k-scroll, a HottyScrollView's box: a List only overflows.

@@ -2,6 +2,7 @@ package view
 
 import (
 	"io/fs"
+	"math"
 	"reflect"
 	"slices"
 	"strconv"
@@ -208,6 +209,9 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	e.A11y = b.a11y(n)
 	e.Hidden = b.hidden(n)
 	e.Stretch = hottyExt(n)["stretch"] == true
+	if e.Kind == Stack {
+		e.Gap = gap(n)
+	}
 	e.Autofocus = autofocus(n)
 	e.Keys = keys(n)
 	if e.Kind == Text || e.Kind == Icon {
@@ -443,6 +447,24 @@ func fill(n *a2ui.Node) string {
 		return "end"
 	}
 	return ""
+}
+
+// MaxGap is the most io_neuroplast_hotty.gap counts, so that an agent's
+// gap cannot make a surface thousands of rows tall.
+const MaxGap = 8
+
+// gap reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.gap on a Column, a Row or a List: the whole rows
+// or columns between its children, 0 to MaxGap, a fraction rounded down;
+// nil where it has none or it is not a number.
+func gap(n *a2ui.Node) *int {
+	raw, ok := hottyExt(n)["gap"]
+	v := a2ui.ToNumber(raw)
+	if !ok || math.IsNaN(v) {
+		return nil
+	}
+	g := int(min(max(v, 0), MaxGap))
+	return &g
 }
 
 // cycle reads the hotty extension metadata.extensions
