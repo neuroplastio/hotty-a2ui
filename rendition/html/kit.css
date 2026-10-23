@@ -734,7 +734,8 @@ textarea.k-resize-none { resize: none; }
    changes, the selected one tinted, in the focus colour while the picker
    has the keyboard; a row's keys at its end; then the footer, the
    selected row's actions from the right, as Zed's, those that don't fit
-   wrapping out of sight at the left. The query is an input of its own,
+   wrapping out of sight at the left, an em below the clip as rows' keys
+   do. The query is an input of its own,
    the host's caret in it. The detail wins, as in cells: a row wraps, and
    shows one line, so keys that don't fit beside its whole title wrap out
    of sight, an em below the clip, where their caps' edges don't show; the
@@ -768,7 +769,7 @@ textarea.k-resize-none { resize: none; }
 .k-pick:focus-within .k-pick-row.k-sel :is(.k-pick-group, .k-pick-detail, .k-pick-keys, .k-pick-desc, .k-match) { color: var(--k-bg); }
 .k-pick:focus-within .k-pick-row.k-sel .k-match { text-decoration: underline; }
 .k-pick-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
-.k-pick-keys-line { display: flex; flex-direction: row-reverse; flex-wrap: wrap; column-gap: var(--k-5); font-size: 1rem; line-height: 1.6; height: 1.6em; overflow: hidden; white-space: pre; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
+.k-pick-keys-line { display: flex; flex-direction: row-reverse; flex-wrap: wrap; gap: 1em var(--k-5); font-size: 1rem; line-height: 1.6; height: 1.6em; overflow: hidden; white-space: pre; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
 .k-pick-key { color: var(--k-muted); margin-left: 1ch; }
 
 /* HottyPaginator: a baseline (phase 1), as cells draws it: its child,
