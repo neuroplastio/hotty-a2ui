@@ -437,8 +437,12 @@ type Element struct {
 	// Width is the columns of a TextField's or a DateTimeInput's value, in
 	// place of the kit's own (io_neuroplast_hotty.width, profile §6.37); 0
 	// where it has none.
-	Width int  `json:"width,omitempty"`
-	A11y  A11y `json:"a11y,omitzero"`
+	Width int `json:"width,omitempty"`
+	// Size is a Button's: "large", taller and wider on a hotty host, for a
+	// page's call to action, or "" for the kit's own
+	// (io_neuroplast_hotty.size, profile §6.38).
+	Size string `json:"size,omitempty"`
+	A11y A11y   `json:"a11y,omitzero"`
 }
 
 // FileEntry is one entry of a HottyFilePicker's directory: its name, and

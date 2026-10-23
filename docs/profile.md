@@ -91,7 +91,7 @@ so that an error comes and goes as a text delta.
 | Icon | `span role=img`, holding an inline `svg` 1em square whose one `path` is filled with `currentColor`, so it takes the text's colour, the theme's or a Button's. One of the 59 names is its Material Symbols shape (Sharp, filled; `favoriteOff` and `starOff` unfilled), generated into `icons/` by `make icons` (gov R-4). An `svgPath` is drawn as A2UI's reference renderers draw it, in a 24 box, and only when it is path data and nothing else, at most 8 KB (`icons.Path`). The kit writes the `svg` itself, so a path is only ever an attribute. A name with no shape, or a path it doesn't accept, is the glyph cells draw. A HottyIcon is drawn the same way (§6.15); its path, with a `strokeWidth`, is stroked with `currentColor` that wide, with round caps and joins, and not filled |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
 | Divider | `hr`, or a vertical rule |
-| Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. While it has the host's focus it is filled with `--k-focus`, its label in `--k-on-accent`, as cells reverses it in the accent (§3.4) and huh fills the answer a Confirm would give (§6.24): a fill, where the host's own 1px focus ring may drop out on a rounded edge at a fractional scale. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing; it keeps the ring. A Row or a Column as its label fills it, so that a weighted child pushes what follows to the row's end, as in cells. A HottyForm's default (§6.2) has `k-enter`: a 3px line inside its left edge in `--k-fg` at 55%, as cells draws a bar there, whatever has the focus |
+| Button | `button type=button`, `disabled` while its checks fail. A Row as its label stays a row, so an icon is beside its text. While it has the host's focus it is filled with `--k-focus`, its label in `--k-on-accent`, as cells reverses it in the accent (§3.4) and huh fills the answer a Confirm would give (§6.24): a fill, where the host's own 1px focus ring may drop out on a rounded edge at a fractional scale. A vertical List's Button is its row (`k-item`), as a menu's: as wide as the List, its label at the start, its variant only a fill, so that focusing or picking a row moves nothing; it keeps the ring. A Row or a Column as its label fills it, so that a weighted child pushes what follows to the row's end, as in cells. A HottyForm's default (§6.2) has `k-enter`: a 3px line inside its left edge in `--k-fg` at 55%, as cells draws a bar there, whatever has the focus. A large one (§6.38) has `k-large`: taller and wider |
 | TextField | `input` (`text`, `password`, `number`) or `textarea`, with `data-on=input`; a `number` one without a browser's spin buttons (kit.css), which cells and Blitz do not draw and whose room would cut its value; a textarea resizes from its corner along the axes its `resize` allows (§6.30). With suggestions (§6.22), the `input` names (`list`) a `datalist` (`~x`) of the agent's options, which follows them by deltas: a host that draws a datalist, as a browser's DOM does, shows its own list, whose pick comes back as `input`. Blitz draws none (checked with `hotty render`), so on hottyterm the field is plain. The kit's list under the field, its ghost text and its keys are cells' until a list of the kit's own, a surface at a higher z (vault KIT-11h): a host keeps Tab (SPEC.md §10.2 ignores a binding of it) and leaves the value of the field it has focused alone (SPEC.md §6.2) |
 | CheckBox | `input type=checkbox` |
 | ChoicePicker | one of several shown as checkboxes is a select: a `button aria-haspopup=listbox` with the picked option's label and a chevron in `--k-muted` (Material's `keyboard_arrow_down`, `keyboard_arrow_up` while the list is open, 1.25em), whose list opens in a surface of its own (below); with `cycle` (§6.16), a field (`k-input k-cycle`, `~r`) as wide as its widest option, holding its value centred, a `button role=spinbutton` with `aria-valuetext` and the Tab stop, between two chevrons in `--k-muted` (Material's `keyboard_arrow_left` and `keyboard_arrow_right`, 1.25em, in `--k-focus` while it has the keyboard), buttons out of the Tab order (`~m` and `~n`, as a Slider's `−` and `+`); its `data-keys` give the program the arrows, Home and End, which step it as in cells (§3.7), and the host clicks it on Space and Enter; else its options, as checkboxes (several) or chips (`button aria-pressed`). Hosts draw `select` unevenly (Blitz not at all), and a select's list is the program's to place (SPEC.md §9). An option's icon (§6.16) goes before its label: in the list, on a chip or a checkbox, and on the select or the cycle while the option is picked |
@@ -2963,6 +2963,27 @@ fraction is rounded down, less than 1 is 1, and more than 256 is 256.
 | cells | its input `width` columns, underlined (§3.5), at most the room past its label and inset; its natural width counts them too (§3.3). A longText's value as many columns, until its grip resizes it |
 | host | a class beside the input's own, `k-cols`, and `--k-cols` its number, which kit.css turns into `width` in `ch`, the input's padding and border on top, at most its field's (`max-width: 100%`); a number field has no spin buttons to take its value's room (§2) |
 | text | nothing: a text rendition shows the value, not its input |
+
+### 6.38 size
+
+`metadata.extensions.io_neuroplast_hotty.size` on a Button: `medium`, the
+default, or `large`, for a page's call to action, such as an onboarding's
+Continue or a sign-in's Sign in. On a host a medium Button is as tall as
+a field (§2), which suits a form, a dialog and a card, but is slight
+under a slide's big title (plx's onboarding, 2026-10-23: "Buttons are too
+thin"). A2UI v1.0's Button has a `variant` and no size: its renderers
+size buttons as their theme does.
+
+Every variant takes it, and a borderless large Button is as tall as a
+filled one, so that a row of Back, Skip and Continue lines up. A vertical
+List's row (§2) keeps its row's size. Anything other than `large` is
+`medium`.
+
+| rendition | a Button with `size` `large` |
+| --- | --- |
+| cells | a medium one's: ` label ` on one row (§3.4), the least a terminal draws, and its fill already sets it apart |
+| host | a class beside its own, `k-large`, which kit.css makes at least 3rem tall, where a medium one is 2.25rem, with 0.625rem over and under its label and 1.5rem each side; an icon one at least 3rem wide, round |
+| text | nothing: a text rendition shows the label |
 
 ## 7. Fallbacks
 

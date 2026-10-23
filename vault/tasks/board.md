@@ -159,6 +159,19 @@ drawn, and an empty `<input type=number>` is a sliver. Both fixed on
 hotty-blitz main at 2a5904a (2026-10-23); hottyterm has them once it
 re-pins.
 
+### plx's onboarding (2026-10-23)
+
+The maintainer, through plx-settings, on plx's onboarding (plx 807e2e3a)
+on a hotty host: "Buttons are too thin".
+
+- [x] **KIT-SIZE** — `io_neuroplast_hotty.size` on a Button: `large`, a
+  page's call to action, or `medium`, the default. On a host `k-large`:
+  at least 3rem tall where a medium one is 2.25rem (a field's), 1.5rem
+  each side; borderless ones as tall, so a Back/Skip/Continue row lines
+  up; a List's row keeps its size. In cells a row, as before. Profile
+  §6.38, instruction 39 (journal 2026-10-23.10). Story hotty/size; how
+  large awaits the maintainer's look.
+
 ## Phase 2 — The hotty layer
 
 ### The host

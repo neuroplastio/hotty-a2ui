@@ -713,6 +713,51 @@ func TestGap(t *testing.T) {
 	}
 }
 
+// TestSize: a Button with io_neuroplast_hotty.size "large" (profile
+// §6.38) has the class k-large, borderless and icon ones too; a medium
+// one, one without and a List's row have none.
+func TestSize(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	large := `"metadata":{"extensions":{"io_neuroplast_hotty":{"size":"large"}}}`
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["next","skip","back","plain","fwd","menu"]},
+ {"id":"next","component":"Button","variant":"primary","child":"next-t","action":{"event":{"name":"n"}},`+large+`},
+ {"id":"skip","component":"Button","variant":"borderless","child":"skip-t","action":{"event":{"name":"n"}},`+large+`},
+ {"id":"back","component":"Button","child":"back-t","action":{"event":{"name":"n"}},"metadata":{"extensions":{"io_neuroplast_hotty":{"size":"medium"}}}},
+ {"id":"plain","component":"Button","child":"plain-t","action":{"event":{"name":"n"}}},
+ {"id":"fwd","component":"Button","child":"i","action":{"event":{"name":"n"}},`+large+`},
+ {"id":"menu","component":"List","children":["row"]},
+ {"id":"row","component":"Button","child":"row-t","action":{"event":{"name":"n"}},`+large+`},
+ {"id":"next-t","component":"Text","text":"Continue"},
+ {"id":"skip-t","component":"Text","text":"Skip"},
+ {"id":"back-t","component":"Text","text":"Back"},
+ {"id":"plain-t","component":"Text","text":"Help"},
+ {"id":"row-t","component":"Text","text":"Open"},
+ {"id":"i","component":"Icon","name":"arrowForward"}]}}]`), &msgs))
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	for id, want := range map[string]string{
+		"next":  "k-btn k-primary k-large",
+		"skip":  "k-btn k-borderless k-large",
+		"back":  "k-btn k-default",
+		"plain": "k-btn k-default",
+		"fwd":   "k-btn k-default k-icon-btn k-large",
+		"row":   "k-btn k-default k-item",
+	} {
+		if class, _ := s.Attr(id, "class"); class != want {
+			t.Errorf("%s: class %q, want %q", id, class, want)
+		}
+	}
+	for _, rule := range []string{".k-btn.k-large { min-height: 3rem; padding: 0.625rem 1.5rem; }",
+		".k-icon-btn.k-large { min-width: 3rem; padding: 0.625rem; }"} {
+		if !strings.Contains(kitCSS, rule) {
+			t.Errorf("kit.css lacks %q", rule)
+		}
+	}
+}
+
 // TestWidth: a TextField's or a DateTimeInput's input with
 // io_neuroplast_hotty.width (profile §6.37) has the class k-cols and its
 // number in --k-cols, which kit.css turns into ch; one without fills its

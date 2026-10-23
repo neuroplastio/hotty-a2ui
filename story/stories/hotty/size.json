@@ -1,0 +1,55 @@
+{
+  "name": "Button sizes",
+  "kind": "behaviour",
+  "component": "io_neuroplast_hotty.size",
+  "icon": "touch_app",
+  "description": "A page's call to action, as an onboarding's: Back, Skip and Continue have the size extension, large, taller and wider on a hotty host than the kit's own Buttons, Back and Skip borderless and as tall, so that the row lines up. Under them the same three at the kit's own size, medium, and a Save beside a field, as tall as it, as in a form, a dialog or a card. In cells every Button is a row tall either way.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "size",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {"name": ""}
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "size",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["kicker", "title", "lead", "ctas", "rule", "small", "ctas2", "form"],
+           "metadata": {"extensions": {"io_neuroplast_hotty": {"gap": 1}}}},
+          {"id": "kicker", "component": "Text", "text": "Step 1 of 3", "variant": "caption"},
+          {"id": "title", "component": "Text", "text": "# Set up your workspace"},
+          {"id": "lead", "component": "Text", "text": "A theme, your keys, a first project: three steps, each one skippable."},
+          {"id": "ctas", "component": "Row", "align": "center", "children": ["back", "space", "skip", "next"]},
+          {"id": "space", "component": "Column", "weight": 1, "children": []},
+          {"id": "back", "component": "Button", "variant": "borderless", "child": "back-t", "action": {"event": {"name": "back"}},
+           "metadata": {"extensions": {"io_neuroplast_hotty": {"size": "large"}}}},
+          {"id": "back-t", "component": "Text", "text": "Back"},
+          {"id": "skip", "component": "Button", "variant": "borderless", "child": "skip-t", "action": {"event": {"name": "skip"}},
+           "metadata": {"extensions": {"io_neuroplast_hotty": {"size": "large"}}}},
+          {"id": "skip-t", "component": "Text", "text": "Skip"},
+          {"id": "next", "component": "Button", "variant": "primary", "child": "next-t", "action": {"event": {"name": "next"}},
+           "metadata": {"extensions": {"io_neuroplast_hotty": {"size": "large"}}}},
+          {"id": "next-t", "component": "Text", "text": "Continue"},
+          {"id": "rule", "component": "Divider"},
+          {"id": "small", "component": "Text", "text": "The kit's own size, medium, as tall as a field:", "variant": "caption"},
+          {"id": "ctas2", "component": "Row", "align": "center", "children": ["back2", "space2", "skip2", "next2"]},
+          {"id": "space2", "component": "Column", "weight": 1, "children": []},
+          {"id": "form", "component": "Row", "align": "end", "children": ["name", "save"]},
+          {"id": "name", "component": "TextField", "label": "Workspace", "value": {"@path": "/name"}, "weight": 1},
+          {"id": "save", "component": "Button", "variant": "primary", "child": "save-t", "action": {"event": {"name": "save"}}},
+          {"id": "save-t", "component": "Text", "text": "Save"},
+          {"id": "back2", "component": "Button", "variant": "borderless", "child": "back2-t", "action": {"event": {"name": "back"}}},
+          {"id": "back2-t", "component": "Text", "text": "Back"},
+          {"id": "skip2", "component": "Button", "variant": "borderless", "child": "skip2-t", "action": {"event": {"name": "skip"}}},
+          {"id": "skip2-t", "component": "Text", "text": "Skip"},
+          {"id": "next2", "component": "Button", "variant": "primary", "child": "next2-t", "action": {"event": {"name": "next"}}},
+          {"id": "next2-t", "component": "Text", "text": "Continue"}
+        ]
+      }
+    }
+  ]
+}

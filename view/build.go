@@ -215,6 +215,9 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	if e.Kind == TextField || e.Kind == DateTime {
 		e.Width = width(n)
 	}
+	if e.Kind == Button {
+		e.Size = size(n)
+	}
 	e.Autofocus = autofocus(n)
 	e.Keys = keys(n)
 	if e.Kind == Text || e.Kind == Icon {
@@ -485,6 +488,16 @@ func width(n *a2ui.Node) int {
 		return 0
 	}
 	return int(min(max(v, 1), MaxWidth))
+}
+
+// size reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.size on a Button: "large" for a page's call to
+// action; anything else, "medium" the default, "".
+func size(n *a2ui.Node) string {
+	if hottyExt(n)["size"] == "large" {
+		return "large"
+	}
+	return ""
 }
 
 // cycle reads the hotty extension metadata.extensions

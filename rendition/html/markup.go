@@ -332,6 +332,11 @@ func (m *markup) element(e *view.Element) *node {
 		if len(e.Children) == 1 && e.Children[0].Kind == view.Icon {
 			class += " k-icon-btn"
 		}
+		// A large Button (profile §6.38) is a page's call to action; a
+		// List's row keeps its row's size.
+		if e.Size == "large" && !e.Item {
+			class += " k-large"
+		}
 		if e.Item {
 			class += " k-item"
 		}

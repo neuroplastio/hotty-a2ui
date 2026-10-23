@@ -621,8 +621,12 @@ func TestNav(t *testing.T) {
 	if b.cur != "hotty/tree" || b.ch.selected() != "behaviours" {
 		t.Errorf("on a branch: showing %s, selected %s", b.cur, b.ch.selected())
 	}
-	press("j") // Behaviours' first: the topic Drag and drop, open
-	if b.cur != "hotty/tree" || b.ch.selected() != "behaviours/Drag and drop" {
+	press("j") // Behaviours' first: Button sizes, a story
+	if b.cur != "hotty/size" || b.focus != nav {
+		t.Errorf("on Behaviours' first: showing %s, the keyboard on %v", b.cur, b.focus)
+	}
+	press("j") // the topic Drag and drop, open
+	if b.cur != "hotty/size" || b.ch.selected() != "behaviours/Drag and drop" {
 		t.Errorf("on a topic: showing %s, selected %s", b.cur, b.ch.selected())
 	}
 	press("j")
