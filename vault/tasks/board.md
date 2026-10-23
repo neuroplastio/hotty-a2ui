@@ -109,9 +109,10 @@ in this order; plx bumps its pin as they land.
   renditions; the keyboard on it goes on to what follows it.
   `accessibility.hidden` is a screen reader's alone again: cells hid it,
   a host drew it. Profile §6.34, instruction 35 (journal 2026-10-23.1).
-- [ ] **KIT-MUTED** — Muted at 4.5:1 on the terminal's ground:
+- [x] **KIT-MUTED** — Muted at 4.5:1 on the terminal's ground:
   `--k-muted` mixes 78% of the fg, not 62% (hottyterm's default palette:
-  3.5 → 4.6:1).
+  3.5 → 4.6:1); a palette with dim text stays under it. Profile §2
+  (journal 2026-10-23.3); the shade awaits the maintainer's look.
 - [x] **KIT-WEIGHT** — A Row's weights the same in cells as on a host and
   in A2UI's own renderer: weighted children share what the others leave,
   from nothing, each no narrower than its least. Profile §3.3 (journal

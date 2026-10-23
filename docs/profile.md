@@ -52,7 +52,10 @@ surface lays out as a page, the same components in the same order.
 - **Colour** is the host's palette (SPEC.md §8) unless a theme sets it on
   the surface's two elements as the kit's variables (`--k-fg`, `--k-bg`,
   `--k-accent`, …). The colours made from those (a card's raised fill, a
-  button's tonal fill, rules) follow. Without a theme the kit keeps to
+  button's tonal fill, rules) follow. Muted text is 78% of the
+  foreground over the background: 4.5:1 where the palette's own text is
+  at about 6.5:1, as hottyterm's default is, and still apart from that
+  text (plx, 2026-10-23). Without a theme the kit keeps to
   NEIO-4: accent only on focus and links, and a primary Button filled
   with the foreground.
 - **Shape**: Cards, fields and Buttons are rounded, chips are pills; a

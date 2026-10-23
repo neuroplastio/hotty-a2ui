@@ -37,7 +37,9 @@
    (markup.go puts it on these), so they follow it; a theme's own value of
    one of them wins. */
 .k-surface, .k-layer, .k-popover, .k-toasts {
-  --k-muted: color-mix(in srgb, var(--k-fg) 62%, var(--k-bg));
+  /* 78%: muted text at 4.5:1 on a terminal palette whose own text is at
+     about 6.5:1 (hottyterm's default, 4.6:1), and still apart from it. */
+  --k-muted: color-mix(in srgb, var(--k-fg) 78%, var(--k-bg));
   --k-surface: color-mix(in srgb, var(--k-fg) 5%, var(--k-bg));
   --k-tonal: color-mix(in srgb, var(--k-fg) 11%, var(--k-bg));
   --k-line: color-mix(in srgb, var(--k-fg) 14%, var(--k-bg));
