@@ -230,8 +230,9 @@ plx builds its palette on HottyPicker, a 60-column box in cells.
   sizes the box for one. Now it's one line, info or error, loading or
   not, cut with an ellipsis, the whole of it in its `title`. Cells
   already cut it with `…`. Get a setting in hotty/picker answers with
-  one. Journal 2026-10-24.2. Blitz has no `text-overflow` yet (a gap
-  hotty-blitz lists), so hottyterm cuts it at the edge, without `…`.
+  one. Journal 2026-10-24.2. plx pins c9f32d2. Blitz draws
+  `text-overflow`'s `…` since hotty-blitz 0d158dd, in hottyterm
+  26.10.24-dev.bfcf78b. An older hottyterm cuts at the edge, without one.
 
 ## Phase 2 — The hotty layer
 
