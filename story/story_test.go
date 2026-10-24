@@ -1,6 +1,7 @@
 package story
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -83,6 +84,37 @@ func TestKitStoriesSayWhatTheyAre(t *testing.T) {
 		if st.Group != Fallback && (st.Component == "" || st.Kind != KindComponent && st.Kind != KindBehaviour) {
 			t.Errorf("%s: kind %q, component %q", st.Name, st.Kind, st.Component)
 		}
+	}
+}
+
+// TestPickerRows: hotty/picker's rows with no query are the program's
+// (PickerRows), and a query's draw out the group's letters it matched as
+// well as the title's; each row's footer is its id.
+func TestPickerRows(t *testing.T) {
+	run, err := Start(Find("hotty/picker"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, _ := json.Marshal(run.Surfaces()[0].C.S.Data.Value("/rows"))
+	want, _ := json.Marshal(PickerRows(""))
+	if string(got) != string(want) {
+		t.Errorf("the story's rows\n%s\nare not the program's\n%s", got, want)
+	}
+	var lit bool
+	for _, r := range PickerRows("pane fi") {
+		m := r.(map[string]any)
+		if m["footer"] != m["value"] {
+			t.Errorf("%v: footer %v", m["value"], m["footer"])
+		}
+		if m["value"] == "p-1" {
+			lit = true
+			if g, _ := json.Marshal(m["groupMatch"]); string(g) != "[[0,4]]" {
+				t.Errorf("p-1's groupMatch %s, want [[0,4]]", g)
+			}
+		}
+	}
+	if !lit {
+		t.Error(`"pane fi" doesn't find p-1`)
 	}
 }
 

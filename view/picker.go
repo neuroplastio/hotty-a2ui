@@ -2,6 +2,8 @@ package view
 
 import (
 	"cmp"
+	"slices"
+	"strconv"
 
 	"github.com/neuroplastio/hotty-a2ui/a2ui"
 )
@@ -14,22 +16,40 @@ import (
 
 // PickRow is one of a HottyPicker's rows, as the agent wrote it: what
 // identifies it, its title, the group before it and the detail after it,
-// the keys that run it where the program binds them (a sequence, key
-// names apart by spaces), the description on a line under it, the heading
-// it falls under, where the query matched its title (character ranges,
-// from and to), its actions, the first Enter's, and what Tab fills the
-// query with ("" for its title).
+// its icon (a HottyIcon's name, or a character of its own, such as an
+// emoji), the keys that run it where the program binds them (a sequence,
+// key names apart by spaces), the description on a line under it, the
+// heading it falls under, where the query matched its title and its group
+// (character ranges, from and to), the note the footer shows while it is
+// selected, its actions, the first Enter's, and what Tab fills the query
+// with ("" for its title).
 type PickRow struct {
 	Value       string       `json:"value"`
 	Title       string       `json:"title"`
 	Complete    string       `json:"complete,omitempty"`
 	Group       string       `json:"group,omitempty"`
 	Detail      string       `json:"detail,omitempty"`
+	Icon        string       `json:"icon,omitempty"`
 	Keys        string       `json:"keys,omitempty"`
 	Description string       `json:"description,omitempty"`
 	Section     string       `json:"section,omitempty"`
 	Match       [][2]int     `json:"match,omitempty"`
+	GroupMatch  [][2]int     `json:"groupMatch,omitempty"`
+	Footer      string       `json:"footer,omitempty"`
 	Actions     []PickAction `json:"actions,omitempty"`
+}
+
+// PickIconNamed reports whether a row's icon is an icon's name, letters,
+// digits and _ (Material's "terminal", the basic Icon's "settings"), which
+// is drawn as an Icon draws it, rather than a character of the agent's
+// own, such as an emoji, which is drawn as it is.
+func PickIconNamed(icon string) bool {
+	for _, c := range icon {
+		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_') {
+			return false
+		}
+	}
+	return icon != ""
 }
 
 // PickAction is one of a row's actions: its id, what it does, and the key
@@ -108,7 +128,15 @@ func mapPicker(b *Builder, n *a2ui.Node) *Element {
 	if h := a2ui.ToNumber(b.Raw(n, "height")); h >= 1 {
 		e.Height = int(h)
 	}
-	e.Top = pickTop(e.PickLines(), e.Selected, b.St.Scroll[n.Key], e.Height)
+	// The lines follow the selection when it moves, or the rows move
+	// under it, and stay where the wheel left them otherwise.
+	lines, shown := e.PickLines(), ""
+	if r := e.SelectedPick(); r != nil {
+		shown = strconv.Itoa(slices.Index(lines, PickLine{Row: e.Selected})) + " " + r.Value
+	}
+	reveal := b.St.Revealed[n.Key] != shown
+	b.St.Revealed[n.Key] = shown
+	e.Top = pickTop(lines, e.Selected, b.St.Scroll[n.Key], e.Height, reveal)
 	b.St.Scroll[n.Key] = e.Top
 	return e
 }
@@ -116,15 +144,8 @@ func mapPicker(b *Builder, n *a2ui.Node) *Element {
 // pickRow reads a row as the agent wrote it.
 func pickRow(m map[string]any) PickRow {
 	r := PickRow{Value: a2ui.ToString(m["value"]), Title: a2ui.ToString(m["title"]), Complete: a2ui.ToString(m["complete"]), Group: a2ui.ToString(m["group"]),
-		Detail: a2ui.ToString(m["detail"]), Keys: a2ui.ToString(m["keys"]), Description: a2ui.ToString(m["description"]),
-		Section: a2ui.ToString(m["section"])}
-	ms, _ := m["match"].([]any)
-	for _, x := range ms {
-		p, _ := x.([]any)
-		if len(p) == 2 {
-			r.Match = append(r.Match, [2]int{int(a2ui.ToNumber(p[0])), int(a2ui.ToNumber(p[1]))})
-		}
-	}
+		Detail: a2ui.ToString(m["detail"]), Icon: a2ui.ToString(m["icon"]), Keys: a2ui.ToString(m["keys"]), Description: a2ui.ToString(m["description"]),
+		Section: a2ui.ToString(m["section"]), Match: pickRanges(m["match"]), GroupMatch: pickRanges(m["groupMatch"]), Footer: a2ui.ToString(m["footer"])}
 	as, _ := m["actions"].([]any)
 	for _, x := range as {
 		a, _ := x.(map[string]any)
@@ -133,13 +154,27 @@ func pickRow(m map[string]any) PickRow {
 	return r
 }
 
-// pickTop is the first line that shows: where it was, moved as little as
-// brings the selected row into view, its description too, with its
-// heading when that is the line above it. It is never a description's
-// line, whose row's title would be above it.
-func pickTop(lines []PickLine, sel, top, height int) int {
+// pickRanges reads a row's [from, to) character ranges.
+func pickRanges(v any) [][2]int {
+	ms, _ := v.([]any)
+	var out [][2]int
+	for _, x := range ms {
+		p, _ := x.([]any)
+		if len(p) == 2 {
+			out = append(out, [2]int{int(a2ui.ToNumber(p[0])), int(a2ui.ToNumber(p[1]))})
+		}
+	}
+	return out
+}
+
+// pickTop is the first line that shows: where it was (where the wheel
+// left it, Controller.ScrollRows), or, when the selection moved (reveal),
+// moved as little as brings the selected row into view, its description
+// too, with its heading when that is the line above it. It is never a
+// description's line, whose row's title would be above it.
+func pickTop(lines []PickLine, sel, top, height int, reveal bool) int {
 	for at, l := range lines {
-		if l.Row != sel || sel < 0 || l.Desc {
+		if !reveal || l.Row != sel || sel < 0 || l.Desc {
 			continue
 		}
 		first, last := at, at
@@ -154,7 +189,7 @@ func pickTop(lines []PickLine, sel, top, height int) int {
 	}
 	top = max(min(top, len(lines)-height), 0)
 	if top < len(lines) && lines[top].Desc {
-		if lines[top].Row == sel {
+		if reveal && lines[top].Row == sel || !reveal && top+height >= len(lines) {
 			return top - 1
 		}
 		return top + 1
@@ -202,30 +237,47 @@ func (e *Element) SelectedPick() *PickRow {
 	return &e.Rows[e.Selected]
 }
 
-// PickFooter is what a HottyPicker's footer lists, the most significant
-// first, for a footer that draws them from its right, as Zed's does: in
-// the actions panel, Enter's run and Escape's back; else the selected
-// row's actions, Enter's first, then each of the others that has a key,
-// and the panel key, where it lists them. Each is a key and its title, as
+// PickFoot is what a HottyPicker's footer shows (Element.PickFooter): the
+// selected row's note, at its left; what the keys do, each a key and its
+// title, the most significant first, for a footer that draws them from its
+// right, as Zed's does; and the panel's key (Key "" for none), left of
+// them. Where they don't all fit, the footer keeps Keys[0], Enter's, then
+// the panel's, then the note, then the other keys in order: the last goes
+// first.
+type PickFoot struct {
+	Note  string
+	Keys  []Hint
+	Panel Hint
+}
+
+// PickFooter is what a HottyPicker's footer shows: the selected row's
+// footer note; in the actions panel, Enter's run and Escape's back; else
+// the row's actions, Enter's first, then each of the others that has a
+// key, and Actions on the panel key, where it lists them. Titles are as
 // written.
-func (e *Element) PickFooter() []Hint {
-	if e.Panel {
-		return []Hint{{Key: "enter", Desc: "Run"}, {Key: "escape", Desc: "Back"}}
-	}
+func (e *Element) PickFooter() PickFoot {
 	r := e.SelectedPick()
-	if r == nil || len(r.Actions) == 0 {
-		return nil
+	if r == nil {
+		return PickFoot{}
 	}
-	hs := []Hint{{Key: "enter", Desc: r.Actions[0].Title}}
+	f := PickFoot{Note: r.Footer}
+	if e.Panel {
+		f.Keys = []Hint{{Key: "enter", Desc: "Run"}, {Key: "escape", Desc: "Back"}}
+		return f
+	}
+	if len(r.Actions) == 0 {
+		return f
+	}
+	f.Keys = []Hint{{Key: "enter", Desc: r.Actions[0].Title}}
 	for _, a := range r.Actions[1:] {
 		if a.Key != "" {
-			hs = append(hs, Hint{Key: a.Key, Desc: a.Title})
+			f.Keys = append(f.Keys, Hint{Key: a.Key, Desc: a.Title})
 		}
 	}
 	if e.PanelKey != "" {
-		hs = append(hs, Hint{Key: e.PanelKey, Desc: "Actions"})
+		f.Panel = Hint{Key: e.PanelKey, Desc: "Actions"}
 	}
-	return hs
+	return f
 }
 
 // PickerKey works a HottyPicker by a key, named as SPEC §10.4 has it. The

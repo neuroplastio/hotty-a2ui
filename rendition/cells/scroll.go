@@ -334,9 +334,9 @@ func (r *Rendition) scrollBy(e *view.Element, s scrolled, dx, dy int) {
 
 // Wheel is a notch of the wheel at (col, row) of the last frame: dy rows
 // down (up when negative), dx columns right, as the terminal reported it.
-// A HottyTree, a HottyTable or a HottyFilePicker with a height under the
-// pointer scrolls first, three rows a notch, while it can move that way:
-// it is inside any scroll view there.
+// A HottyTree, a HottyTable or a HottyFilePicker with a height, or a
+// HottyPicker, under the pointer scrolls first, three rows a notch, while
+// it can move that way: it is inside any scroll view there.
 // Else the innermost scroll view under the pointer that can still move
 // that way scrolls, three rows a notch, or six columns, as bubbles'
 // viewport does; handled reports whether one did.
@@ -346,7 +346,7 @@ func (r *Rendition) Wheel(col, row, dx, dy int) (handled bool) {
 			if col < h.x || col >= h.x+h.w || row < h.y || row >= h.y+h.h {
 				continue
 			}
-			if e := r.c.V.Find(h.id); e != nil && (e.Kind == view.Tree || e.Kind == view.Table || e.Kind == view.FilePicker) && r.c.ScrollRows(e.ID, dy*wheelRows) {
+			if e := r.c.V.Find(h.id); e != nil && (e.Kind == view.Tree || e.Kind == view.Table || e.Kind == view.FilePicker || e.Kind == view.Picker) && r.c.ScrollRows(e.ID, dy*wheelRows) {
 				return true
 			}
 			break

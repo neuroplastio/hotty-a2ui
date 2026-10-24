@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "HottyPicker",
   "icon": "terminal",
-  "description": "A terminal multiplexer's command palette: commands, panes and agents in one list, as Zed's, VS Code's and Raycast's palettes have them. A command has a description under its title, smaller and muted; a pane its directory or host after it. The agent ranks the rows: each change to the query sends query, and the program behind the story answers with the rows whose \"Group: Title\" holds what was typed, best first, the matched letters drawn out; with no query, every row under its section. The arrows (ctrl+p, ctrl+n) move the selection round, Page Up and Page Down by the rows it shows. A command's keys, as the multiplexer binds it, are at its right. Enter runs a row's first action, and mod+enter, alt+enter and shift+delete run those a row has on them; the footer says what each does for the selected row, Enter's at the right, as Zed's does. ctrl+k (mod+k) lists the selected row's actions, where the arrows and Enter pick one and Escape goes back. Each action sends act with the row and the action, and the program says in the status what ran; htop runs on bastion, which does not answer, so its Focus and Close pane say so as an error. Get a setting has no actions: Enter sends act with none.",
+  "description": "A terminal multiplexer's command palette: commands, panes and agents in one list, as Zed's, VS Code's and Raycast's palettes have them. A command has a description under its title, smaller and muted; a pane its directory or host after it, and its emoji before its name, as some commands have an icon: a row without one has a blank as wide, so that names line up. The agent ranks the rows: each change to the query sends query, and the program behind the story answers with the rows whose \"Group: Title\" holds what was typed, best first, the matched letters drawn out, the group's as well as the title's; with no query, every row under its section. The arrows (ctrl+p, ctrl+n) move the selection round, Page Up and Page Down by the rows it shows, and the wheel scrolls them. A command's keys, as the multiplexer binds it, are at its right. Enter runs a row's first action, and mod+enter, alt+enter and shift+delete run those a row has on them; the footer says what each does for the selected row, Enter's at the right, as Zed's does, and the row's id at its left, muted. Where the footer is short of room, the other actions go first: Enter's and Actions stay, then the id. ctrl+k (mod+k) lists the selected row's actions, each with its key, where the arrows and Enter pick one and Escape goes back. Each action sends act with the row and the action, and the program says in the status what ran; htop runs on bastion, which does not answer, so its Focus and Close pane say so as an error. Get a setting has no actions: Enter sends act with none.",
   "messages": [
     {
       "version": "v1.0",
@@ -24,6 +24,7 @@
               "keys": "ctrl+b %",
               "description": "Open a pane beside this one",
               "section": "Recently used",
+              "footer": "pane.split",
               "actions": [
                 {
                   "id": "run",
@@ -39,6 +40,11 @@
                   "id": "copy",
                   "title": "Copy the command",
                   "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Remove from used",
+                  "key": "shift+delete"
                 }
               ]
             },
@@ -49,6 +55,7 @@
               "keys": "ctrl+b c",
               "description": "Open a tab with your shell in it",
               "section": "Recently used",
+              "footer": "tab.new",
               "actions": [
                 {
                   "id": "run",
@@ -64,6 +71,11 @@
                   "id": "copy",
                   "title": "Copy the command",
                   "key": "alt+enter"
+                },
+                {
+                  "id": "forget",
+                  "title": "Remove from used",
+                  "key": "shift+delete"
                 }
               ]
             },
@@ -71,8 +83,10 @@
               "value": "p-1",
               "group": "Pane",
               "title": "fish",
+              "icon": "🐟",
               "detail": "~/code/plexos",
               "section": "Panes",
+              "footer": "p-1",
               "actions": [
                 {
                   "id": "focus",
@@ -95,8 +109,10 @@
               "value": "p-2",
               "group": "Pane",
               "title": "claude",
+              "icon": "🤖",
               "detail": "agent · plexos",
               "section": "Panes",
+              "footer": "p-2",
               "actions": [
                 {
                   "id": "focus",
@@ -119,8 +135,10 @@
               "value": "p-3",
               "group": "Pane",
               "title": "htop",
+              "icon": "📈",
               "detail": "bastion",
               "section": "Panes",
+              "footer": "p-3",
               "actions": [
                 {
                   "id": "focus",
@@ -143,9 +161,11 @@
               "value": "pane.close",
               "group": "Pane",
               "title": "Close",
+              "icon": "close",
               "keys": "ctrl+b x",
               "description": "Close this pane and what runs in it",
               "section": "Commands",
+              "footer": "pane.close",
               "actions": [
                 {
                   "id": "run",
@@ -171,6 +191,7 @@
               "keys": "ctrl+b z",
               "description": "Fill the tab with this pane, or put it back",
               "section": "Commands",
+              "footer": "pane.zoom",
               "actions": [
                 {
                   "id": "run",
@@ -193,8 +214,10 @@
               "value": "workspace.new",
               "group": "Workspace",
               "title": "New workspace",
+              "icon": "add",
               "description": "Start a workspace of its own",
               "section": "Commands",
+              "footer": "workspace.new",
               "actions": [
                 {
                   "id": "run",
@@ -217,9 +240,11 @@
               "value": "workspace.rename",
               "group": "Workspace",
               "title": "Rename…",
+              "icon": "edit",
               "keys": "ctrl+b $",
               "description": "Give this workspace another name",
               "section": "Commands",
+              "footer": "workspace.rename",
               "actions": [
                 {
                   "id": "run",
@@ -242,8 +267,10 @@
               "value": "config.get",
               "group": "Config",
               "title": "Get a setting",
+              "icon": "settings",
               "description": "Show what a setting is set to",
-              "section": "Commands"
+              "section": "Commands",
+              "footer": "config.get"
             },
             {
               "value": "session.quit",
@@ -251,6 +278,7 @@
               "title": "Quit",
               "description": "End the session and every pane in it",
               "section": "Commands",
+              "footer": "session.quit",
               "actions": [
                 {
                   "id": "run",

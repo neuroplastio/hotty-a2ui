@@ -68,7 +68,7 @@ func TestPickerDraws(t *testing.T) {
 		" Used\n" +
 		" Pane: Split right            Ctrl+B > %\n" +
 		"\n" +
-		"    Run again  Ctrl+Enter     Run  Enter"
+		"          Actions  Ctrl+K     Run  Enter"
 	f := r.Draw(42)
 	if got := trimmed(f); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
@@ -107,7 +107,7 @@ func TestPickerDraws(t *testing.T) {
 		" Pane: Split right            Ctrl+B > %\n" +
 		" Panes\n" +
 		" Pane: fish  ~/code\n" +
-		"  Close pane  Shift+Del     Focus  Enter"
+		"        Actions  Ctrl+K     Focus  Enter"
 	if got := trimmed(r.Draw(42)); got != want {
 		t.Errorf("after arrow_down, the lines follow the selection, its heading with it:\n%s\nwant\n%s", got, want)
 	}
@@ -238,6 +238,110 @@ func TestPickerKeys(t *testing.T) {
 	}
 }
 
+// A palette 60 columns wide, as plx's: a row's icon before its name (a
+// name's glyph, an emoji as it is, a blank on a row without one), the
+// group's matched letters lit as the title's are, and the footer keeping
+// Enter's, Actions and the note where the other actions don't fit, the
+// least significant going first; the panel lists every action with its
+// key.
+func TestPickerFooterFits(t *testing.T) {
+	p := a2ui.NewProcessor(basic.Catalog(), hotty.Catalog())
+	msgs := `[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"` + basic.ID + `","dataModel":{"rows":[
+	 {"value":"pane.split","group":"Pane","title":"Split right","groupMatch":[[0,4]],"icon":"settings","footer":"pane.split",
+	  "actions":[{"id":"primary","title":"Run","key":"enter"},{"id":"stay","title":"Run and stay","key":"mod+enter"},
+	   {"id":"copy","title":"Copy command","key":"alt+enter"},{"id":"destructive","title":"Remove from used","key":"shift+delete"}]},
+	 {"value":"p-1","group":"Pane","title":"fish","groupMatch":[[0,2]],"icon":"🐟","footer":"p-1",
+	  "actions":[{"id":"primary","title":"Go to pane","key":"enter"},{"id":"close","title":"Close pane","key":"shift+delete"}]},
+	 {"value":"theme","title":"Theme"}]}}},
+	{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+	 {"id":"root","component":"HottyPicker","catalogId":"` + hotty.ID + `","rows":{"@path":"/rows"},"panelKey":"mod+k","height":3}]}}]`
+	if err := p.ProcessJSON([]byte(msgs)); err != nil {
+		t.Fatal(err)
+	}
+	c := view.NewController(p.Surface("s"))
+	r := New(c)
+	c.Focus("root")
+	rows := "\n" + strings.Repeat("─", 60) + "\n" +
+		" ⚙  Pane: Split right\n" +
+		" 🐟 Pane: fish\n" +
+		"    Theme\n"
+	f := r.Draw(60)
+	if got, want := trimmed(f), rows+" pane.split                 Actions  Ctrl+K     Run  Enter"; got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+	if got := rolesOf(f, 3, 4, 6); got != "AAmmmm" {
+		t.Errorf("the group's roles %q, want its matched letters in the accent", got)
+	}
+	if cell := f.Cells[2][5]; cell.Attr&(Bold|Underline) != Bold|Underline {
+		t.Errorf("a matched letter of the selected row's group: %v, want bold and underlined", cell.Attr)
+	}
+	keys(t, r, "ctrl+k")
+	want := "\n" + strings.Repeat("─", 60) + "\n" +
+		" Actions: Split right\n" +
+		" Run                                                 Enter\n" +
+		" Run and stay                                   Ctrl+Enter\n" +
+		" Copy command                                    Alt+Enter\n" +
+		" Remove from used                                Shift+Del\n" +
+		" pane.split                       Back  Esc     Run  Enter"
+	if got := trimmed(r.Draw(60)); got != want {
+		t.Errorf("the panel: got\n%s\nwant\n%s", got, want)
+	}
+	keys(t, r, "escape", "arrow_down")
+	if got, want := trimmed(r.Draw(60)), rows+" p-1                 Actions  Ctrl+K     Go to pane  Enter"; got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+	// Narrower, Actions goes too; Enter's stays, and the note beside it.
+	if got := strings.Split(trimmed(r.Draw(30)), "\n")[5]; got != " p-1       Go to pane  Enter" {
+		t.Errorf("at 30 columns, the footer %q", got)
+	}
+	// A note too long for what is left is cut, the actions kept; a
+	// description is under the name, past the icons.
+	m := map[string]any{"value": "p-1", "title": "fish", "footer": strings.Repeat("x", 40), "icon": "🐟", "description": "The shell",
+		"actions": []any{map[string]any{"id": "go", "title": "Go"}, map[string]any{"id": "stay", "title": "Stay", "key": "mod+enter"}}}
+	must(t, c.S.Write("/rows", []any{m}))
+	c.Rebuild()
+	lines := strings.Split(trimmed(r.Draw(50)), "\n")
+	if got := lines[4]; got != " xxxxxxxxxxxxx…    Actions  Ctrl+K     Go  Enter" {
+		t.Errorf("a long note: %q", got)
+	}
+	if got := strings.TrimRight(lines[3], " "); got != "    The shell" {
+		t.Errorf("the description: %q", got)
+	}
+}
+
+// The wheel over a HottyPicker's rows moves them, three lines a notch, as
+// far as they go, and leaves the selection where it is; a key that moves
+// the selection brings it back into view.
+func TestPickerWheel(t *testing.T) {
+	r, c, _ := palette(t)
+	c.Focus("root")
+	shown := func() string {
+		return strings.Join(strings.Split(trimmed(r.Draw(42)), "\n")[2:5], "|")
+	}
+	shown()
+	if !r.Wheel(5, 3, 0, 1) {
+		t.Fatal("the wheel over the rows did nothing")
+	}
+	if got := shown(); got != " Panes| Pane: fish  ~/code| Pane: htop" {
+		t.Errorf("after a notch down: %q", got)
+	}
+	if v := c.V.Find("root").SelectedPick().Value; v != "pane.split" {
+		t.Errorf("the wheel selected %s", v)
+	}
+	if r.Wheel(5, 3, 0, 1) {
+		t.Error("a notch past the end moved the rows")
+	}
+	keys(t, r, "arrow_up") // round to htop, in view
+	r.Wheel(5, 3, 0, -1)
+	if got := shown(); got != " Used| Pane: Split right            Ctrl+B > %|" {
+		t.Errorf("after a notch up: %q", got)
+	}
+	keys(t, r, "arrow_up") // fish, out of view
+	if got := shown(); got != " Pane: Split right            Ctrl+B > %| Panes| Pane: fish  ~/code" {
+		t.Errorf("a key that moves the selection: %q", got)
+	}
+}
+
 // A HottyPicker's status reads as its head's, not as a row: muted, with a
 // rule under it, and the picker two rows taller for it. An error status
 // keeps its colour and its ✗.
@@ -252,7 +356,7 @@ func TestPickerStatus(t *testing.T) {
 		" Used\n" +
 		" Pane: Split right            Ctrl+B > %\n" +
 		"\n" +
-		"    Run again  Ctrl+Enter     Run  Enter"
+		"          Actions  Ctrl+K     Run  Enter"
 	if got := trimmed(f); got != want {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
 	}

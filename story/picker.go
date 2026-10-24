@@ -14,20 +14,23 @@ import (
 
 // pickerEntry is one of the palette's rows before ranking: what it is, the
 // keys the multiplexer binds it to, the section it shows under with no
-// query, and its actions.
+// query, its icon (a pane's emoji, a command's icon name), and its
+// actions.
 type pickerEntry struct {
-	value, group, title, detail, keys, description, section string
-	actions                                                 []map[string]any
+	value, group, title, detail, keys, description, section, icon string
+	actions                                                       []map[string]any
 }
 
-// pickerRun, pickerPane and pickerAgent are a command's, a pane's and an
-// agent's actions, as a terminal multiplexer's palette has them.
+// pickerRun, pickerUsed and pickerPane are a command's actions, a recently
+// used one's and a pane's, as a terminal multiplexer's palette has them.
 var (
 	pickerRun = []map[string]any{
 		{"id": "run", "title": "Run", "key": "enter"},
 		{"id": "again", "title": "Run and keep open", "key": "mod+enter"},
 		{"id": "copy", "title": "Copy the command", "key": "alt+enter"},
 	}
+	pickerUsed = append(pickerRun[:len(pickerRun):len(pickerRun)],
+		map[string]any{"id": "forget", "title": "Remove from used", "key": "shift+delete"})
 	pickerPane = []map[string]any{
 		{"id": "focus", "title": "Focus", "key": "enter"},
 		{"id": "close", "title": "Close pane", "key": "shift+delete"},
@@ -37,28 +40,39 @@ var (
 
 // pickerEntries are the palette's rows with no query, in order.
 var pickerEntries = []pickerEntry{
-	{"pane.split", "Pane", "Split right", "", "ctrl+b %", "Open a pane beside this one", "Recently used", pickerRun},
-	{"tab.new", "Tab", "New tab", "", "ctrl+b c", "Open a tab with your shell in it", "Recently used", pickerRun},
-	{"p-1", "Pane", "fish", "~/code/plexos", "", "", "Panes", pickerPane},
-	{"p-2", "Pane", "claude", "agent · plexos", "", "", "Panes", pickerPane},
-	{"p-3", "Pane", "htop", "bastion", "", "", "Panes", pickerPane},
-	{"pane.close", "Pane", "Close", "", "ctrl+b x", "Close this pane and what runs in it", "Commands", pickerRun},
-	{"pane.zoom", "Pane", "Zoom", "", "ctrl+b z", "Fill the tab with this pane, or put it back", "Commands", pickerRun},
-	{"workspace.new", "Workspace", "New workspace", "", "", "Start a workspace of its own", "Commands", pickerRun},
-	{"workspace.rename", "Workspace", "Rename…", "", "ctrl+b $", "Give this workspace another name", "Commands", pickerRun},
-	{"config.get", "Config", "Get a setting", "", "", "Show what a setting is set to", "Commands", nil},
-	{"session.quit", "Session", "Quit", "", "", "End the session and every pane in it", "Commands", pickerRun},
+	{"pane.split", "Pane", "Split right", "", "ctrl+b %", "Open a pane beside this one", "Recently used", "", pickerUsed},
+	{"tab.new", "Tab", "New tab", "", "ctrl+b c", "Open a tab with your shell in it", "Recently used", "", pickerUsed},
+	{"p-1", "Pane", "fish", "~/code/plexos", "", "", "Panes", "🐟", pickerPane},
+	{"p-2", "Pane", "claude", "agent · plexos", "", "", "Panes", "🤖", pickerPane},
+	{"p-3", "Pane", "htop", "bastion", "", "", "Panes", "📈", pickerPane},
+	{"pane.close", "Pane", "Close", "", "ctrl+b x", "Close this pane and what runs in it", "Commands", "close", pickerRun},
+	{"pane.zoom", "Pane", "Zoom", "", "ctrl+b z", "Fill the tab with this pane, or put it back", "Commands", "", pickerRun},
+	{"workspace.new", "Workspace", "New workspace", "", "", "Start a workspace of its own", "Commands", "add", pickerRun},
+	{"workspace.rename", "Workspace", "Rename…", "", "ctrl+b $", "Give this workspace another name", "Commands", "edit", pickerRun},
+	{"config.get", "Config", "Get a setting", "", "", "Show what a setting is set to", "Commands", "settings", nil},
+	{"session.quit", "Session", "Quit", "", "", "End the session and every pane in it", "Commands", "", pickerRun},
 }
 
 // PickerRows are the palette's rows for a query: with none, every row
 // under its section; else those whose "Group: Title" holds the query's
 // characters in order, best first (sahilm/fuzzy, as HottyList's filter
-// ranks), with no sections, the title's matched characters as match.
+// ranks), with no sections, the title's matched characters as match and
+// the group's as groupMatch. Each row's id is its footer's note.
 func PickerRows(query string) []any {
-	row := func(p pickerEntry, section string, match [][2]int) map[string]any {
-		m := map[string]any{"value": p.value, "title": p.title, "group": p.group}
+	ranges := func(rs [][2]int) []any {
+		out := make([]any, len(rs))
+		for i, r := range rs {
+			out[i] = []any{r[0], r[1]}
+		}
+		return out
+	}
+	row := func(p pickerEntry, section string, match, groupMatch [][2]int) map[string]any {
+		m := map[string]any{"value": p.value, "title": p.title, "group": p.group, "footer": p.value}
 		if p.detail != "" {
 			m["detail"] = p.detail
+		}
+		if p.icon != "" {
+			m["icon"] = p.icon
 		}
 		if p.keys != "" {
 			m["keys"] = p.keys
@@ -70,11 +84,10 @@ func PickerRows(query string) []any {
 			m["section"] = section
 		}
 		if len(match) > 0 {
-			ms := make([]any, len(match))
-			for i, r := range match {
-				ms[i] = []any{r[0], r[1]}
-			}
-			m["match"] = ms
+			m["match"] = ranges(match)
+		}
+		if len(groupMatch) > 0 {
+			m["groupMatch"] = ranges(groupMatch)
 		}
 		if p.actions != nil {
 			acts := make([]any, len(p.actions))
@@ -88,7 +101,7 @@ func PickerRows(query string) []any {
 	out := []any{}
 	if query == "" {
 		for _, p := range pickerEntries {
-			out = append(out, row(p, p.section, nil))
+			out = append(out, row(p, p.section, nil, nil))
 		}
 		return out
 	}
@@ -98,21 +111,21 @@ func PickerRows(query string) []any {
 	}
 	for _, m := range fuzzy.Find(query, targets) {
 		p := pickerEntries[m.Index]
-		out = append(out, row(p, "", titleRuns(p.group, p.title, m.MatchedIndexes)))
+		title := len(p.group) + len(": ")
+		out = append(out, row(p, "", pickerRuns(p.title, title, m.MatchedIndexes), pickerRuns(p.group, 0, m.MatchedIndexes)))
 	}
 	return out
 }
 
-// titleRuns are the runs of a title's characters among a match of
-// "Group: Title"'s bytes, as character ranges in the title.
-func titleRuns(group, title string, at []int) [][2]int {
-	start := len(group) + len(": ")
+// pickerRuns are the runs of s's characters among a match of "Group:
+// Title"'s bytes, s starting at byte start, as character ranges in s.
+func pickerRuns(s string, start int, at []int) [][2]int {
 	var runs [][2]int
 	for _, b := range at {
-		if b < start {
+		if b < start || b >= start+len(s) {
 			continue
 		}
-		c := len([]rune(title[:b-start]))
+		c := len([]rune(s[:b-start]))
 		if n := len(runs); n > 0 && runs[n-1][1] == c {
 			runs[n-1][1]++
 			continue

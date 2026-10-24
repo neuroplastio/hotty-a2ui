@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/neuroplastio/hotty-a2ui/icons"
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -14,15 +15,19 @@ import (
 // heading wherever their
 // section changes, the selected one reversed in the accent across the
 // picker, as a menu's item, a row's keys at its right and its description
-// in muted on the line under it; then the footer, what the selected row's
-// keys do, flush right, as Zed's. While the actions panel is open, the
-// selected row's actions take the rows' place.
+// in muted on the line under it; then the footer, the selected row's note
+// at its left and what its keys do, flush right, as Zed's. While the
+// actions panel is open, the selected row's actions take the rows' place.
 
 // pickIndent is the columns before a row's text and after its keys.
 const pickIndent = 1
 
 // pickGap is the columns between two of the footer's actions.
 const pickGap = "    "
+
+// pickNote is the fewest columns a footer's note is cut to; with fewer
+// left, it is left out.
+const pickNote = 6
 
 // pickHead is how many rows a HottyPicker's lines above its rows take:
 // the query and the rule, and the status and its rule while it has one.
@@ -53,8 +58,12 @@ func pickHeight(e *view.Element) int { return pickHead(e) + pickBody(e) + 1 }
 // as written (mod not yet read as ctrl or super).
 func pickWidth(e *view.Element) int {
 	n := max(Width(e.Chip)+1+max(Width(e.Placeholder), 20), Width(e.Status)+2, Width(e.NoRows))
+	iw := pickIcons(e)
 	for _, row := range e.Rows {
-		rw := Width(row.Title)
+		rw, dw := Width(row.Title), Width(row.Description)
+		if iw > 0 {
+			rw, dw = rw+iw+1, dw+iw+1
+		}
 		if row.Group != "" {
 			rw += Width(row.Group) + 2
 		}
@@ -64,7 +73,7 @@ func pickWidth(e *view.Element) int {
 		if row.Keys != "" {
 			rw += 2 + width(capsOf((&view.Controller{}).Caps(view.KeysText(row.Keys, view.KeyText), false), nil))
 		}
-		n = max(n, rw, Width(row.Description))
+		n = max(n, rw, dw)
 	}
 	return n + 2*pickIndent
 }
@@ -72,11 +81,12 @@ func pickWidth(e *view.Element) int {
 // pickMinimum is a HottyPicker's minimum: a few columns of query.
 func pickMinimum(e *view.Element) int { return Width(e.Chip) + 1 + 6 }
 
-// pickRow is a row's text: its name, its group, muted, and ": ", then its
-// title, its characters the query matched in the accent and bold; then its
+// pickRow is a row's text: its name, its icon in iw columns and a space
+// (none where iw is 0), its group, muted, and ": ", then its title, the
+// characters the query matched in either in the accent and bold; then its
 // detail, muted, two columns on. In the selected row everything is
 // reversed in the accent, and the matched characters underlined instead.
-func (r *Rendition) pickRow(row view.PickRow, sel, focused bool) (name, detail []glyph) {
+func (r *Rendition) pickRow(row view.PickRow, iw int, sel, focused bool) (name, detail []glyph) {
 	base, dim, hit := style{}, style{role: Muted}, style{role: Accent, attr: Bold}
 	if sel {
 		base = r.pickSelected(focused)
@@ -84,23 +94,57 @@ func (r *Rendition) pickRow(row view.PickRow, sel, focused bool) (name, detail [
 		hit.attr |= Bold | Underline
 	}
 	var gs []glyph
+	if iw > 0 {
+		ic := pickIcon(row.Icon)
+		gs = line(ic+strings.Repeat(" ", iw-Width(ic)+1), base)
+	}
 	if row.Group != "" {
-		gs = line(row.Group+": ", dim)
+		gs = append(gs, pickMarked(row.Group, row.GroupMatch, dim, hit)...)
+		gs = append(gs, line(": ", dim)...)
 	}
-	at := 0
-	for _, cl := range clusters(row.Title) {
-		st := base
-		n := len([]rune(cl))
-		if slices.ContainsFunc(row.Match, func(m [2]int) bool { return at < m[1] && at+n > m[0] }) {
-			st = hit
-		}
-		gs = append(gs, line(cl, st)...)
-		at += n
-	}
+	gs = append(gs, pickMarked(row.Title, row.Match, base, hit)...)
 	if row.Detail != "" {
 		detail = line("  "+row.Detail, dim)
 	}
 	return gs, detail
+}
+
+// pickMarked is s in st, the clusters that hold a character match takes
+// (view.PickRow.Match, character ranges) in hit.
+func pickMarked(s string, match [][2]int, st, hit style) []glyph {
+	var gs []glyph
+	at := 0
+	for _, cl := range clusters(s) {
+		n := len([]rune(cl))
+		on := st
+		if slices.ContainsFunc(match, func(m [2]int) bool { return at < m[1] && at+n > m[0] }) {
+			on = hit
+		}
+		gs = append(gs, line(cl, on)...)
+		at += n
+	}
+	return gs
+}
+
+// pickIcon is a row's icon in cells: a name's glyph, as an Icon draws it
+// (icons.Unknown for a name without one), or a character of the agent's
+// own, such as an emoji, as it is.
+func pickIcon(name string) string {
+	if name == "" || !view.PickIconNamed(name) {
+		return name
+	}
+	return icons.Glyph(name)
+}
+
+// pickIcons is the columns a HottyPicker's icons take: its widest row
+// icon's, so that the titles line up, a row without one blank there; 0
+// where no row has one.
+func pickIcons(e *view.Element) int {
+	n := 0
+	for _, row := range e.Rows {
+		n = max(n, Width(pickIcon(row.Icon)))
+	}
+	return n
 }
 
 // pickName is the columns a row's name keeps before its detail is cut.
@@ -176,7 +220,8 @@ func (l *layout) paintPicker(cv *canvas, e *view.Element, x, y, w int) {
 
 // paintPickRows paints the lines that show from Top: a heading in muted
 // and bold, or a row, the selected one across the picker, and a row's
-// description in muted under it, across the picker with it. A heading on
+// description in muted under it, under its name past the rows' icons,
+// across the picker with it. A heading on
 // the last line, with none of its rows under it, is left out. A row's
 // keys show at its right where they fit beside its whole text; a narrow
 // picker shows them on the selected row alone, so that the others'
@@ -185,7 +230,7 @@ func (l *layout) paintPicker(cv *canvas, e *view.Element, x, y, w int) {
 func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused bool) {
 	r := l.r
 	in, iw := x+pickIndent, max(w-2*pickIndent, 0)
-	lines := e.PickLines()
+	lines, icw := e.PickLines(), pickIcons(e)
 	if len(lines) == 0 {
 		text := e.NoRows
 		if e.Busy {
@@ -213,14 +258,18 @@ func (l *layout) paintPickRows(cv *canvas, e *view.Element, x, y, w int, focused
 		}
 		r.hits = append(r.hits, hit{x: x, y: at, w: w, h: 1, id: e.ID, opt: ln.Row})
 		if ln.Desc {
-			cv.write(in, at, iw, fit(line(row.Description, keys), iw))
+			pad := 0
+			if icw > 0 {
+				pad = min(icw+1, iw)
+			}
+			cv.write(in+pad, at, iw-pad, fit(line(row.Description, keys), iw-pad))
 			continue
 		}
 		// The detail wins: a row's keys show where they fit beside its
 		// whole text, else on the selected row alone, where they cut it;
 		// on a picker that keeps keys, on every row.
 		ks, tw := r.pickKeys(row, on), iw
-		name, detail := r.pickRow(row, sel, focused)
+		name, detail := r.pickRow(row, icw, sel, focused)
 		if kw := width(ks); kw > 0 && kw+2 < iw && (sel || e.KeepKeys || width(name)+width(detail)+2+kw <= iw) {
 			cv.write(in+iw-kw, at, kw, ks)
 			tw = iw - kw - 2
@@ -260,23 +309,78 @@ func (l *layout) paintPickPanel(cv *canvas, e *view.Element, x, y, w int, focuse
 	}
 }
 
-// pickFooter is a HottyPicker's footer in w columns, as Zed's: what its
-// keys do now (view.Element.PickFooter), each its title and its key as a
-// cap, from the right, the most significant there; those that don't fit
-// at the left are left out.
+// pickFooter is a HottyPicker's footer in w columns, as Zed's
+// (view.Element.PickFooter): the selected row's note in muted at the left,
+// then, flush right, what its keys do, each its title and its key as a
+// cap, the most significant at the right, and Actions and the panel key
+// left of them. Where they don't all fit, it keeps Enter's, then Actions,
+// then the note, cut to the columns left if it doesn't fit whole, then the
+// others in order while they fit: the least significant go first.
 func (r *Rendition) pickFooter(e *view.Element, w int) []glyph {
-	var out []glyph
-	for _, h := range e.PickFooter() {
-		item := concat(line(h.Desc+" ", style{}), r.caps(r.keyText(h.Key), nil))
-		if out != nil {
-			item = concat(item, line(pickGap, style{}))
+	f := e.PickFooter()
+	gap, used := line(pickGap, style{}), 0
+	item := func(h view.Hint) []glyph {
+		return concat(line(h.Desc+" ", style{}), r.caps(r.keyText(h.Key), nil))
+	}
+	room := func(g []glyph) bool {
+		n := width(g)
+		if used > 0 {
+			n += width(gap)
 		}
-		if width(item)+width(out) > w {
+		if used+n > w {
+			return false
+		}
+		used += n
+		return true
+	}
+	var enter, panel, note []glyph
+	var others [][]glyph
+	if len(f.Keys) > 0 {
+		if enter = item(f.Keys[0]); !room(enter) {
+			return nil
+		}
+	}
+	if f.Panel.Key != "" {
+		if panel = item(f.Panel); !room(panel) {
+			panel = nil
+		}
+	}
+	cut := false
+	if f.Note != "" {
+		note = line(f.Note, style{role: Muted})
+		if !room(note) {
+			left := w - used
+			if used > 0 {
+				left -= width(gap)
+			}
+			cut, note = true, nil
+			if left >= pickNote {
+				note = fit(line(f.Note, style{role: Muted}), left)
+				room(note)
+			}
+		}
+	}
+	for i := 1; !cut && i < len(f.Keys); i++ {
+		g := item(f.Keys[i])
+		if !room(g) {
 			break
 		}
-		out = concat(item, out)
+		others = append(others, g)
 	}
-	return out
+	var right []glyph
+	for _, g := range append(append([][]glyph{enter}, others...), panel) {
+		if len(g) == 0 {
+			continue
+		}
+		if right != nil {
+			g = concat(g, gap)
+		}
+		right = concat(g, right)
+	}
+	if note == nil {
+		return right
+	}
+	return concat(note, repeat(" ", w-width(note)-width(right), style{}), right)
 }
 
 // pickCaret puts a HottyPicker's caret at its query's end once a query is

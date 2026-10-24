@@ -16,8 +16,9 @@ import (
 // with a rule under it, so that it reads as the head's and not as a row;
 // its rows, a heading wherever their section changes, each an option whose id is the
 // picker's, "~i" and the row's index, its keys at its right, its
-// description on a second line; and its footer, what the selected row's
-// keys do, flush right, as Zed's. While the actions panel is open, the
+// description on a second line; and its footer, the selected row's note at
+// its left and what its keys do, flush right, as Zed's. While the actions
+// panel is open, the
 // selected row's actions take the rows' place. A picker that keeps keys
 // (view.Element.KeepKeys) is k-pick-keep, whose rows don't wrap their keys
 // out of sight (kit.css). The input gives the program the keys
@@ -89,6 +90,10 @@ func (m *markup) picker(e *view.Element) *node {
 	default:
 		// A page shows every line, not a window of them (§2.1).
 		lines, top, height := e.PickLines(), e.Top, e.Height
+		icons := slices.ContainsFunc(e.Rows, func(r view.PickRow) bool { return r.Icon != "" })
+		if icons {
+			list.set("class", "k-pick-rows k-pick-icons")
+		}
 		if m.page {
 			top, height = 0, len(lines)+1
 		}
@@ -104,27 +109,53 @@ func (m *markup) picker(e *view.Element) *node {
 				// A description shows on its line, as in cells: a row on
 				// the last line shows without it.
 				desc := k+1 < len(lines) && lines[k+1].Desc && k+1 < top+height
-				list.add(m.pickItem(e, ln.Row, desc))
+				list.add(m.pickItem(e, ln.Row, desc, icons))
 			}
 		}
 	}
 	box.add(list)
-	// The most significant first, which the CSS puts at the right; those
-	// that don't fit wrap out of sight at the left.
-	foot := el("div", "class", "k-pick-keys-line")
-	for _, h := range e.PickFooter() {
-		foot.add(el("span", "class", "k-pick-act").add(texts(h.Desc)...).
-			add(m.keycaps("k-pick-key", m.keyText(h.Key))))
-	}
-	box.add(foot)
+	box.add(m.pickFooter(e))
 	return box
 }
 
-// pickItem is a row: its name (k-pick-name), its group and title, the
-// title's matched characters in spans of class k-match; its detail; and
-// its keys; with desc, those in a line of their own (k-pick-line), and
+// pickFooter is a HottyPicker's footer (view.Element.PickFooter), in the
+// order it shows, from the left: the note (k-pick-note), Actions and the
+// panel key, the other keys in k-pick-more, the most significant first,
+// which the CSS puts at the right, and Enter's at the right. Each is a
+// k-pick-act, its title and its key in k-pick-key. k-pick-more has only
+// the room the others leave, its least significant wrapping out of sight;
+// short of room still, the note is cut (kit.css).
+func (m *markup) pickFooter(e *view.Element) *node {
+	f := e.PickFooter()
+	act := func(h view.Hint) *node {
+		return el("span", "class", "k-pick-act").add(texts(h.Desc)...).add(m.keycaps("k-pick-key", m.keyText(h.Key)))
+	}
+	foot := el("div", "class", "k-pick-keys-line")
+	if f.Note != "" {
+		foot.add(el("span", "class", "k-pick-note").add(texts(f.Note)...))
+	}
+	if f.Panel.Key != "" {
+		foot.add(act(f.Panel))
+	}
+	if len(f.Keys) > 1 {
+		more := el("span", "class", "k-pick-more")
+		for _, h := range f.Keys[1:] {
+			more.add(act(h))
+		}
+		foot.add(more)
+	}
+	if len(f.Keys) > 0 {
+		foot.add(act(f.Keys[0]))
+	}
+	return foot
+}
+
+// pickItem is a row: its icon, where the picker's rows have icons (a
+// blank one where it has none); its name (k-pick-name), its group and
+// title, their matched characters in spans of class k-match; its detail;
+// and its keys; with desc, those in a line of their own (k-pick-line), and
 // its description under them.
-func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
+func (m *markup) pickItem(e *view.Element, i int, desc, icons bool) *node {
 	r := e.Rows[i]
 	cls := "k-pick-row"
 	if desc {
@@ -136,8 +167,11 @@ func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 	item := el("div", "id", partID(e.ID, partItem+strconv.Itoa(i)), "class", cls, "role", "option",
 		"aria-selected", strconv.FormatBool(i == e.Selected), "data-on", "click")
 	title, name := el("span", "class", "k-pick-title"), el("span", "class", "k-pick-name")
+	if icons {
+		title.add(pickIcon(r.Icon))
+	}
 	if r.Group != "" {
-		name.add(el("span", "class", "k-pick-group").add(texts(r.Group + ": ")...))
+		name.add(el("span", "class", "k-pick-group").add(pickMarked(r.Group, r.GroupMatch)...).add(texts(": ")...))
 	}
 	title.add(name.add(pickMarked(r.Title, r.Match)...))
 	if r.Detail != "" {
@@ -156,6 +190,19 @@ func (m *markup) pickItem(e *view.Element, i int, desc bool) *node {
 		item.add(el("div", "class", "k-pick-desc").add(texts(r.Description)...))
 	}
 	return item
+}
+
+// pickIcon is a row's icon: a name's, as an Icon draws it beside a label,
+// or a character of the agent's own, such as an emoji, as it is; a blank
+// as wide for none. A screen reader skips it, as the title says the row.
+func pickIcon(name string) *node {
+	switch {
+	case name == "":
+		return el("span", "class", "k-icon k-icon-blank", "aria-hidden", "true")
+	case view.PickIconNamed(name):
+		return beside(name)
+	}
+	return el("span", "class", "k-icon", "aria-hidden", "true").add(texts(name)...)
 }
 
 // keyText is a key as the markup writes it (markup.key), as written where

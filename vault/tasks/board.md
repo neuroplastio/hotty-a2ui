@@ -203,6 +203,22 @@ on a hotty host: "Buttons are too thin".
   §6.38, instruction 39 (journal 2026-10-23.10). Story hotty/size; how
   large awaits the maintainer's look.
 
+### plx's palette (2026-10-24)
+
+plx builds its palette on HottyPicker, a 60-column box in cells.
+
+- [x] **KIT-PICK-PALETTE** Six asks from plx, in hotty/picker:
+  - `groupMatch` lights the group's letters.
+  - A row's `footer` is a muted note at the footer's left (its id).
+  - A row's `icon` is a name or the agent's own character, such as an
+    emoji.
+  - The footer keeps Enter's, then Actions and the panel key, then the
+    note, and the other actions leave first.
+  - The panel lists every action's key.
+  - The wheel scrolls the rows in cells.
+
+  Journal 2026-10-24.1.
+
 ## Phase 2 — The hotty layer
 
 ### The host

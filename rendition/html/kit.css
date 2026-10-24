@@ -783,10 +783,17 @@ textarea.k-resize-none { resize: none; }
    out: the query after its chip, with the program's caret; a rule; the
    status; the rows the agent ranked, headings where their section
    changes, the selected one tinted, in the focus colour while the picker
-   has the keyboard; a row's keys at its end; then the footer, the
-   selected row's actions from the right, as Zed's, those that don't fit
-   wrapping out of sight at the left, an em below the clip as rows' keys
-   do. The query is an input of its own,
+   has the keyboard; a row's icon before its name, a fixed width so that
+   names line up (in rem, so that a description, smaller, lines up
+   under the name too, k-pick-icons); a row's keys at its end; then the
+   footer, the selected row's note at the left, muted, and its actions
+   from the right, as
+   Zed's: Enter's, the others, then Actions and the panel key. The others
+   (k-pick-more) have only the room the rest leave (a basis of 0), those
+   that don't fit wrapping out of sight from the left, an em below the
+   clip as rows' keys do, a first item of a line's height and no width
+   (::before) letting even the first of them wrap; where the rest don't
+   fit, the note is cut. The query is an input of its own,
    the host's caret in it. The detail wins, as in cells: a row wraps, and
    shows one line, so keys that don't fit beside its whole title wrap out
    of sight, an em below the clip, where their caps' edges don't show; the
@@ -820,7 +827,14 @@ textarea.k-resize-none { resize: none; }
 .k-pick:focus-within .k-pick-row.k-sel :is(.k-pick-group, .k-pick-detail, .k-pick-keys, .k-pick-desc, .k-match) { color: var(--k-bg); }
 .k-pick:focus-within .k-pick-row.k-sel .k-match { text-decoration: underline; }
 .k-pick-empty { color: var(--k-muted); padding: var(--k-1) var(--k-3); }
-.k-pick-keys-line { display: flex; flex-direction: row-reverse; flex-wrap: wrap; gap: 1em var(--k-5); font-size: 1rem; line-height: 1.6; height: 1.6em; overflow: hidden; white-space: pre; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
+.k-pick-title > .k-icon { flex: none; align-self: center; width: 1.25rem; margin-right: 0.5rem; }
+.k-pick-icons .k-pick-desc { padding-left: 1.75rem; }
+.k-pick-keys-line { display: flex; justify-content: flex-end; align-items: flex-start; font-size: 1rem; line-height: 1.6; height: 1.6em; overflow: hidden; white-space: pre; padding: var(--k-1) var(--k-3); border-top: 1px solid var(--k-border); }
+.k-pick-act { flex: none; }
+.k-pick-keys-line > .k-pick-act:not(:last-child), .k-pick-more > .k-pick-act { margin-right: var(--k-5); }
+.k-pick-more { display: flex; flex-direction: row-reverse; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; row-gap: 1em; flex: 1 1 0; min-width: 0; height: 1.6em; overflow: hidden; }
+.k-pick-more::before { content: ""; height: 1.6em; }
+.k-pick-note { flex: 0 1 auto; min-width: 0; margin-right: auto; padding-right: var(--k-5); overflow: hidden; text-overflow: ellipsis; color: var(--k-muted); }
 .k-pick-key { color: var(--k-muted); margin-left: 1ch; }
 
 /* HottyPaginator: a baseline (phase 1), as cells draws it: its child,

@@ -209,26 +209,39 @@ func TestPickerStatus(t *testing.T) {
 }
 
 // TestPickerFooter: a row's actions show in the footer alone, not on the
-// row: each its title and its key, the most significant first, which the
-// CSS puts at the right (Enter's, the others with a key, the panel's); in
-// the panel, Enter's and Escape's.
+// row: each its title and its key, in the order they show from the left
+// (the note, the panel's, the others with a key in k-pick-more, the most
+// significant first, which the CSS puts at the right, then Enter's); in
+// the panel, Escape's and Enter's. A row's icon is before its name, a
+// blank on a row without one, and its group's matched letters are marked.
 func TestPickerFooter(t *testing.T) {
-	x, r := pickerHarnessOf(t, 10, `[{"value":"p-1","title":"Pane: gov","detail":"main · p-3",
-  "actions":[{"id":"focus","title":"Go to pane"},{"id":"close","title":"Close pane","key":"shift+delete"}]}]`)
+	x, r := pickerHarnessOf(t, 10, `[{"value":"p-1","title":"gov","group":"Pane","groupMatch":[[0,2]],"detail":"main · p-3","icon":"🐟","footer":"pane.focus",
+  "actions":[{"id":"focus","title":"Go to pane"},{"id":"close","title":"Close pane","key":"shift+delete"}]},
+  {"value":"p-2","title":"htop"}]`)
 	s := x.h.Surface(r.name)
-	if got := s.TextOf(partID("root", partItem+"0")); got != "Pane: govmain · p-3" {
+	if got := s.TextOf(partID("root", partItem+"0")); got != "🐟Pane: govmain · p-3" {
 		t.Errorf("the row reads %q", got)
+	}
+	html := s.HTML()
+	for _, want := range []string{
+		`<span class="k-pick-title"><span class="k-icon" aria-hidden="true"><span class="k-emoji">🐟</span></span><span class="k-pick-name"><span class="k-pick-group"><span class="k-match">Pa</span>ne: </span>gov</span>`,
+		`<span class="k-pick-title"><span class="k-icon k-icon-blank" aria-hidden="true"></span><span class="k-pick-name">htop</span>`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("no %s in\n%s", want, html)
+		}
 	}
 	act := func(title string, key []string) string {
 		return `<span class="k-pick-act">` + title + capsOf("k-pick-key", key) + `</span>`
 	}
-	want := `<div class="k-pick-keys-line">` + act("Go to pane", []string{"Enter"}) + act("Close pane", []string{"\U000F0636", "Del"}) + act("Actions", []string{"\U000F0634", "K"}) + `</div>`
+	want := `<div class="k-pick-keys-line"><span class="k-pick-note">pane.focus</span>` + act("Actions", []string{"\U000F0634", "K"}) +
+		`<span class="k-pick-more">` + act("Close pane", []string{"\U000F0636", "Del"}) + `</span>` + act("Go to pane", []string{"Enter"}) + `</div>`
 	if html := s.HTML(); !strings.Contains(html, want) {
 		t.Errorf("no %s in\n%s", want, html)
 	}
 	must(t, func() error { _, err := r.C.PickerKey("root", "ctrl+k"); return err }())
 	x.update(r)
-	want = `<div class="k-pick-keys-line">` + act("Run", []string{"Enter"}) + act("Back", []string{"Esc"}) + `</div>`
+	want = `<div class="k-pick-keys-line"><span class="k-pick-note">pane.focus</span><span class="k-pick-more">` + act("Back", []string{"Esc"}) + `</span>` + act("Run", []string{"Enter"}) + `</div>`
 	if html := s.HTML(); !strings.Contains(html, want) {
 		t.Errorf("in the panel, no %s in\n%s", want, html)
 	}

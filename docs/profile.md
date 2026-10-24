@@ -1263,10 +1263,11 @@ control takes the keys with nothing to undo or redo too. Without the
 kitty keyboard protocol a terminal sends ctrl+shift+z as ctrl+z,
 and `ctrl+y` redoes. A history keeps 100 steps.
 
-**The wheel** over a HottyTree or a HottyTable with a `height` moves its
-rows, three a notch, while they can move that way, and leaves the
-selection where it is; a key that moves the selection brings it back
-into view. Else it scrolls the innermost
+**The wheel** over a HottyTree or a HottyTable with a `height`, or a
+HottyPicker's rows, moves its rows, three a notch, while they can move
+that way, and leaves the selection where it is; a key that moves the
+selection, or rows the agent sends that move it, bring it back into
+view. Else it scrolls the innermost
 HottyScrollView, or HottyCode whose lines are cut, under the pointer that
 can still move that way: three rows a notch, or sideways (the wheel's
 left and right, or Shift with it) six columns, as bubbles' viewport takes
@@ -2770,7 +2771,9 @@ them. It takes the keyboard.
   orders the rows. Each change the user makes to the query is written to
   `query` and runs `onQuery`; the agent answers by writing `rows`, best
   first. A row's `match` is where the query matched its title, `[from,
-  to)` character ranges, which the picker draws out.
+  to)` character ranges, which the picker draws out, and its `groupMatch`
+  where it matched its group, for an agent that matches `Group: Title`
+  whole.
 - **A row** is `value` (what identifies it, and the selection) and
   `title`, then optionally `group`, shown before the title as `Group:
   Title`, muted; `detail`, after it, muted; `keys`, the keys the agent
@@ -2783,7 +2786,11 @@ them. It takes the keyboard.
   `description`, a line of its
   own under the title, smaller and muted, which the row takes with it
   (two lines, selected together); `section`, a heading over the row
-  wherever it differs from the row before's; and `actions`.
+  wherever it differs from the row before's; `icon`, before its name: a
+  name as HottyIcon's (§6.16) or one of the basic Icon's, or anything
+  else, such as an emoji, drawn as it is, a row without one a blank as
+  wide where others have one; `footer`, a note the footer shows while the
+  row is selected, such as its id; and `actions`.
 - **Actions** are `{id, title, key}`. The first runs on Enter, whatever its
   key; the others run on theirs, which the footer shows, not the row. A
   key is one of `enter`, `mod+enter`, `alt+enter`, `shift+enter` and
@@ -2801,12 +2808,16 @@ them. It takes the keyboard.
   move in it, Enter runs one, Escape or the key again closes it; another
   key closes it and does what it does.
 - **The footer** says what the keys do to the selected row, as Zed's
-  palette's does: each action's title and then its key, flush right, the
-  most significant at the right. Enter's action is there, then, leftward,
-  the row's other actions that have a key, in order, then `Actions` and
-  `panelKey`. In the panel it is `Back esc`, then `Run enter` at the right.
-  Titles are as the agent wrote them. Those that don't fit go from the
-  left.
+  palette's does: the row's `footer` note at the left, muted, then each
+  action's title and its key, flush right, the most significant at the
+  right. Enter's action is there, then, leftward, the row's other actions
+  that have a key, in order, then `Actions` and `panelKey`. In the panel
+  it is the note, `Back esc`, then `Run enter` at the right. Titles are as
+  the agent wrote them. Where they don't all fit, the least significant
+  go first: Enter's stays, then `Actions`, then the note, cut where it
+  doesn't fit whole, and the other actions, from the left, give up their
+  room first. The panel lists every action with its key, so an action the
+  footer has no room for is a `panelKey` away.
 - **A cut** takes a row's group and title first, so that its detail shows
   whole; then the detail. In cells the group and title keep 8 columns
   before the detail is cut.
@@ -2852,9 +2863,9 @@ them. It takes the keyboard.
 
 | rendition | a HottyPicker |
 | --- | --- |
-| cells | its chip in `accent` and bold, then the query, a one-line field with no underline, the terminal's cursor at its caret, its placeholder faint in `muted`; a rule in `border`; its status, `✗ ` and the status in `error` for an error; the lines from the first shown, a heading in `muted` and bold, a row one column in: its group and `: ` in `muted`, its title, the matched characters in `accent` and bold, its detail in `muted` two columns on, its keys right-aligned in `muted` where they fit beside the row's whole text (else on the selected row alone, which they cut), its description on the next line in `muted`. The selected row is reversed in `accent` across the picker while it has the keyboard (reversed in `muted` otherwise), both its lines, its matched characters bold and underlined. A click on either line is a click on the row. Then the footer, flush right: each action's title, two spaces and its key in `muted`, four columns apart, `Actions  ctrl+k    Close pane  shift+delete    Go to pane  enter` |
-| host | `div.k-pick`: `div.k-pick-query` with `span.k-pick-chip` and `input.k-pick-input` (`role=combobox`, its placeholder; its `data-keys` give the program the moves, the actions' keys and the panel's) between the stops `span.k-pick-stop` (`~m` before it, `~n` after it, for Shift+Tab and Tab); `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the row's keys in `span.k-pick-keys`, which wrap out of a row's one line where they don't fit beside its title (the selected row doesn't wrap); a row with a description that shows is `.k-pick-two`, its title and keys in `div.k-pick-line`, then `div.k-pick-desc`, smaller and muted (a row whose description is past the last line shows without it); `div.k-pick-keys-line`, the footer, a `span.k-pick-act` for each, the most significant first, its title and its key in `span.k-pick-key` (muted), which the CSS lays out from the right (`row-reverse`), those that don't fit wrapping out of sight at the left |
-| text | `? ` and its chip and query; its status; every row in order under its heading and `:`, `> ` marking the selected one, its group, title, and after a dash its detail, its keys, and its keyed actions with their keys (§4), its description on the line under it, four spaces in |
+| cells | its chip in `accent` and bold, then the query, a one-line field with no underline, the terminal's cursor at its caret, its placeholder faint in `muted`; a rule in `border`; its status, `✗ ` and the status in `error` for an error; the lines from the first shown, a heading in `muted` and bold, a row one column in: its group and `: ` in `muted`, its title, the matched characters in `accent` and bold, its detail in `muted` two columns on, its keys right-aligned in `muted` where they fit beside the row's whole text (else on the selected row alone, which they cut), its description on the next line in `muted`. A row's icon, where any row has one, is before its group: an Icon's glyph for a name (§6.16, `◇` for one it doesn't know) or the agent's character as it is, padded to the widest and a column, a blank on a row without one; the description lines up under the name, past the icons. The group's matched characters are in `accent` and bold, as the title's, `: ` still `muted`. The selected row is reversed in `accent` across the picker while it has the keyboard (reversed in `muted` otherwise), both its lines, its matched characters bold and underlined. A click on either line is a click on the row. Then the footer: the note in `muted` at the left, then, flush right, each action's title, two spaces and its key in `muted`, four columns apart, `pane.split    Actions  ctrl+k    Close pane  shift+delete    Go to pane  enter`; where they don't all fit, the note is cut to the columns left (with fewer than 6 it goes) and the other actions leave first |
+| host | `div.k-pick`: `div.k-pick-query` with `span.k-pick-chip` and `input.k-pick-input` (`role=combobox`, its placeholder; its `data-keys` give the program the moves, the actions' keys and the panel's) between the stops `span.k-pick-stop` (`~m` before it, `~n` after it, for Shift+Tab and Tab); `div.k-pick-status`; `div.k-pick-rows` (`role=listbox`) of `div.k-pick-head` and `div.k-pick-row` (`role=option`, `aria-selected`, `.k-sel`), the matched characters in `span.k-match`, the row's keys in `span.k-pick-keys`, which wrap out of a row's one line where they don't fit beside its title (the selected row doesn't wrap); a row with a description that shows is `.k-pick-two`, its title and keys in `div.k-pick-line`, then `div.k-pick-desc`, smaller and muted (a row whose description is past the last line shows without it); a row's icon, where any row has one, first in its `span.k-pick-title`, as an Icon beside a label draws it (`span.k-icon`, `aria-hidden`), the agent's character in it as it is, `span.k-icon.k-icon-blank` on a row without one, and the rows `.k-pick-icons`, whose descriptions line up under the names, past the icons; the group's matched characters in `span.k-match` as the title's; `div.k-pick-keys-line`, the footer, in the order it shows from the left: `span.k-pick-note` (muted, cut with an ellipsis), the `span.k-pick-act` of `Actions`, `span.k-pick-more` holding the others, the most significant first, which the CSS lays out from the right (`row-reverse`), and Enter's at the right; each its title and its key in `span.k-pick-key` (muted). `span.k-pick-more` has only the room the others leave, those of it that don't fit wrapping out of sight from its last; short of room still, the note is cut |
+| text | `? ` and its chip and query; its status; every row in order under its heading and `:`, `> ` marking the selected one, its group, title, and after a dash its detail, its keys, and its keyed actions with their keys (§4), its description on the line under it, four spaces in; no icon, and no footer note |
 
 ### 6.33 tone
 

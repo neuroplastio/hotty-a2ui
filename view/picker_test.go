@@ -1,6 +1,7 @@
 package view_test
 
 import (
+	"reflect"
 	"slices"
 	"testing"
 
@@ -79,39 +80,46 @@ func TestPickerBuilds(t *testing.T) {
 			t.Errorf("line %d: %+v, want %+v", i, lines[i], want[i])
 		}
 	}
-	if got := e.PickFooter(); !slices.Equal(got, []view.Hint{{Key: "enter", Desc: "Run"}, {Key: "mod+enter", Desc: "Run and stay"}, {Key: "mod+k", Desc: "Actions"}}) {
+	if got := e.PickFooter(); !reflect.DeepEqual(got, view.PickFoot{Keys: []view.Hint{{Key: "enter", Desc: "Run"}, {Key: "mod+enter", Desc: "Run and stay"}},
+		Panel: view.Hint{Key: "mod+k", Desc: "Actions"}}) {
 		t.Errorf("footer %+v", got)
 	}
 }
 
-// A row's keys are the agent's, as written; the footer lists the selected
-// row's actions, Enter's first, then those with a key in order, then the
-// panel key; in the panel, Enter's and Escape's.
+// A row's keys, icon, group's match and footer note are the agent's, as
+// written; the footer has the selected row's note, its actions, Enter's
+// first, then those with a key in order, and the panel key apart; in the
+// panel, Enter's and Escape's, and the note still.
 func TestPickerFooter(t *testing.T) {
-	c, _ := paletteOf(t, `[{"value":"pane.new","title":"pane.new","keys":"ctrl+b , n","actions":[{"id":"run","title":"Run"}]},
-	 {"value":"p-1","title":"fish","actions":[{"id":"focus","title":"Go to pane"},{"id":"rename","title":"Rename"},
+	c, _ := paletteOf(t, `[{"value":"pane.new","title":"pane.new","keys":"ctrl+b , n","footer":"pane.new","actions":[{"id":"run","title":"Run"}]},
+	 {"value":"p-1","title":"fish","group":"Pane","groupMatch":[[0,2]],"icon":"terminal","actions":[{"id":"focus","title":"Go to pane"},{"id":"rename","title":"Rename"},
 	  {"id":"close","title":"Close pane","key":"shift+delete"}]},
-	 {"value":"config.get","title":"Get a setting"}]`, "")
+	 {"value":"config.get","title":"Get a setting","icon":"🤖"}]`, "")
 	e := c.V.Find("root")
-	if e.Rows[0].Keys != "ctrl+b , n" || e.Rows[1].Keys != "" {
-		t.Errorf("keys %q, %q", e.Rows[0].Keys, e.Rows[1].Keys)
+	if e.Rows[0].Keys != "ctrl+b , n" || e.Rows[1].Keys != "" || e.Rows[0].Footer != "pane.new" || e.Rows[1].Icon != "terminal" ||
+		!slices.Equal(e.Rows[1].GroupMatch, [][2]int{{0, 2}}) || e.Rows[2].Icon != "🤖" {
+		t.Errorf("rows %+v", e.Rows)
 	}
+	if !view.PickIconNamed("terminal") || !view.PickIconNamed("accountCircle") || view.PickIconNamed("🤖") || view.PickIconNamed("") {
+		t.Error("PickIconNamed: names are letters, digits and _")
+	}
+	panel := view.Hint{Key: "mod+k", Desc: "Actions"}
 	for _, step := range []struct {
 		key  string
-		want []view.Hint
+		want view.PickFoot
 	}{
-		{"", []view.Hint{{Key: "enter", Desc: "Run"}, {Key: "mod+k", Desc: "Actions"}}},
-		{"arrow_down", []view.Hint{{Key: "enter", Desc: "Go to pane"}, {Key: "shift+delete", Desc: "Close pane"}, {Key: "mod+k", Desc: "Actions"}}},
-		{"ctrl+k", []view.Hint{{Key: "enter", Desc: "Run"}, {Key: "escape", Desc: "Back"}}},
-		{"escape", []view.Hint{{Key: "enter", Desc: "Go to pane"}, {Key: "shift+delete", Desc: "Close pane"}, {Key: "mod+k", Desc: "Actions"}}},
-		{"arrow_down", nil},
+		{"", view.PickFoot{Note: "pane.new", Keys: []view.Hint{{Key: "enter", Desc: "Run"}}, Panel: panel}},
+		{"arrow_down", view.PickFoot{Keys: []view.Hint{{Key: "enter", Desc: "Go to pane"}, {Key: "shift+delete", Desc: "Close pane"}}, Panel: panel}},
+		{"ctrl+k", view.PickFoot{Keys: []view.Hint{{Key: "enter", Desc: "Run"}, {Key: "escape", Desc: "Back"}}}},
+		{"escape", view.PickFoot{Keys: []view.Hint{{Key: "enter", Desc: "Go to pane"}, {Key: "shift+delete", Desc: "Close pane"}}, Panel: panel}},
+		{"arrow_down", view.PickFoot{}},
 	} {
 		if step.key != "" {
 			if ok, err := c.PickerKey("root", step.key); !ok || err != nil {
 				t.Fatalf("%s: %v, %v", step.key, ok, err)
 			}
 		}
-		if got := c.V.Find("root").PickFooter(); !slices.Equal(got, step.want) {
+		if got := c.V.Find("root").PickFooter(); !reflect.DeepEqual(got, step.want) {
 			t.Errorf("after %q: footer %+v, want %+v", step.key, got, step.want)
 		}
 	}
