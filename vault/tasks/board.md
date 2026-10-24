@@ -217,7 +217,14 @@ plx builds its palette on HottyPicker, a 60-column box in cells.
   - The panel lists every action's key.
   - The wheel scrolls the rows in cells.
 
-  Journal 2026-10-24.1.
+  Journal 2026-10-24.1. plx pins 67a745d. It's live on the site via
+  web 064a4cd (2026-10-24).
+
+  On hottyterm 511254e, "Actions" sat low beside its cap. That was
+  Blitz's cached measurement, fixed in hotty-blitz fc1c8fe, so it's
+  gone on hottyterm 2bda9ea. The slack under a fitted picker's footer
+  is the padding plus row rounding. plx rounds its own fit if it wants
+  it gone.
 
 ## Phase 2 — The hotty layer
 
