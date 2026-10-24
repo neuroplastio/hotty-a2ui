@@ -1443,7 +1443,7 @@
         },
         "status": {
           "$ref": "common_types.json#/$defs/DynamicString",
-          "description": "A line under the query: why the last action failed, or what it answered. Empty, it does not show."
+          "description": "A line under the query: why the last action failed, or what it answered. It stays one line, cut with an ellipsis where it is wider than the picker. Empty, it does not show."
         },
         "statusKind": {
           "$ref": "common_types.json#/$defs/DynamicString",

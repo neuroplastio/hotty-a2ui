@@ -806,7 +806,7 @@ textarea.k-resize-none { resize: none; }
 .k-pick-input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; color: inherit; font: inherit; padding: 0; margin: 0; }
 .k-pick-input::placeholder { color: var(--k-muted); opacity: 0.7; }
 .k-pick-stop { width: 0; height: 0; overflow: hidden; outline: none; }
-.k-pick-status { color: var(--k-muted); font-size: 0.875rem; padding: var(--k-1) var(--k-3); border-bottom: 1px solid var(--k-border); }
+.k-pick-status { color: var(--k-muted); font-size: 0.875rem; padding: var(--k-1) var(--k-3); border-bottom: 1px solid var(--k-border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .k-pick-status.k-error { color: var(--k-error); }
 .k-pick-rows { display: flex; flex-direction: column; padding: var(--k-1) 0; }
 .k-pick-head { color: var(--k-muted); font-weight: 600; font-size: 0.875rem; padding: var(--k-1) var(--k-3) 0; }

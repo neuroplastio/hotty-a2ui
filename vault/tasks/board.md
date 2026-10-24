@@ -225,6 +225,13 @@ plx builds its palette on HottyPicker, a 60-column box in cells.
   gone on hottyterm 2bda9ea. The slack under a fitted picker's footer
   is the padding plus row rounding. plx rounds its own fit if it wants
   it gone.
+- [x] **KIT-PICK-STATUS** A long status (plx's stage hint) wrapped to
+  three lines on a host, over the rule and the first row, where plx
+  sizes the box for one. Now it's one line, info or error, loading or
+  not, cut with an ellipsis, the whole of it in its `title`. Cells
+  already cut it with `…`. Get a setting in hotty/picker answers with
+  one. Journal 2026-10-24.2. Blitz has no `text-overflow` yet (a gap
+  hotty-blitz lists), so hottyterm cuts it at the edge, without `…`.
 
 ## Phase 2 — The hotty layer
 

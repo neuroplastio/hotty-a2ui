@@ -139,7 +139,8 @@ func pickerRuns(s string, start int, at []int) [][2]int {
 // A query action's context names the query, and it answers with the rows
 // for it (PickerRows); an act action's, the row and the action, and it
 // says in the status what it did, as an agent's message, logged as one: an
-// error for an action on a pane of bastion, which doesn't answer.
+// error for an action on a pane of bastion, which doesn't answer; for Get
+// a setting, the setting and its help (pickerSetting).
 func pickerProgram(r *Run) {
 	r.hears = func(a *a2ui.ActionMessage) {
 		switch a.Name {
@@ -150,15 +151,24 @@ func pickerProgram(r *Run) {
 			row, _ := a.Context["row"].(string)
 			act, _ := a.Context["action"].(string)
 			status, kind := strings.TrimSpace(act+" "+row), "info"
-			if row == "p-3" && act != "copy" {
+			switch {
+			case row == "p-3" && act != "copy":
 				// htop runs on bastion, which doesn't answer: an error.
 				status, kind = "bastion is not reachable", "error"
+			case row == "config.get":
+				status = pickerSetting
 			}
 			r.feedModel(a.SurfaceID, "/statusKind", kind)
 			r.feedModel(a.SurfaceID, "/status", status)
 		}
 	}
 }
+
+// pickerSetting is what Get a setting answers: a setting, its value and its
+// help, as a multiplexer's stage hint has them, wider than the palette, so
+// that the status shows on one line, cut with an ellipsis.
+const pickerSetting = "palette.position · caret · Where the palette opens: just above the focused pane's caret, " +
+	"or below it where there is no room; centred on the pane where it shows no caret"
 
 // feedModel feeds the run an updateDataModel of path, as the agent's.
 func (r *Run) feedModel(surface, path string, value any) {

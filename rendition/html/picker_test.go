@@ -184,24 +184,33 @@ func TestPickerDescription(t *testing.T) {
 
 // TestPickerStatus: a picker's status reads as its head's, not as a row:
 // under the query, in a class of its own (k-pick-status, muted and smaller,
-// with a rule under it), and an error's keeps its colour and its ✗.
+// with a rule under it), and an error's keeps its colour and its ✗. It is
+// one line, as plx sizes its palette for, cut with an ellipsis however
+// long, info or error, the whole of it in its title.
 func TestPickerStatus(t *testing.T) {
 	if !regexp.MustCompile(`\.k-pick-status \{[^}]*color: var\(--k-muted\);[^}]*font-size: 0\.875rem;[^}]*border-bottom: `).MatchString(kitCSS) {
 		t.Error("kit.css sets the status off neither muted, smaller nor ruled")
 	}
-	for _, c := range []struct{ kind, class, text string }{
-		{"info", "k-pick-status", "theme.use · theme"},
-		{"error", "k-pick-status k-error", "✗ theme.use · theme"},
+	if !regexp.MustCompile(`\.k-pick-status \{[^}]*white-space: nowrap;[^}]*overflow: hidden;[^}]*text-overflow: ellipsis;`).MatchString(kitCSS) {
+		t.Error("kit.css lets the status wrap past its one line")
+	}
+	long := "palette.position · caret · " + strings.Repeat("Where the palette opens ", 8)
+	for _, c := range []struct{ kind, class, status, text, loading string }{
+		{"info", "k-pick-status", "theme.use · theme", "theme.use · theme", "false"},
+		{"error", "k-pick-status k-error", "theme.use · theme", "✗ theme.use · theme", "false"},
+		{"info", "k-pick-status", long, long, "false"},
+		{"error", "k-pick-status k-error", long, "✗ " + long, "false"},
+		{"info", "k-pick-status", long, long, "true"},
 	} {
 		x := newHarness(t)
 		var msgs []any
 		must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`","dataModel":{"q":""}}},
 {"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
- {"id":"root","component":"HottyPicker","catalogId":"`+hottycat.ID+`","query":{"@path":"/q"},"status":"theme.use · theme","statusKind":"`+c.kind+`",
+ {"id":"root","component":"HottyPicker","catalogId":"`+hottycat.ID+`","query":{"@path":"/q"},"status":"`+c.status+`","statusKind":"`+c.kind+`","loading":`+c.loading+`,
   "rows":[{"value":"a","title":"a"}]}]}}]`), &msgs))
 		x.process(msgs...)
 		s := x.h.Surface(x.rs["s"].name)
-		want := `</div><div id="` + partID("root", partStatus) + `" class="` + c.class + `" aria-live="polite">` + c.text + `</div><div class="k-pick-rows"`
+		want := `</div><div id="` + partID("root", partStatus) + `" class="` + c.class + `" aria-live="polite" title="` + c.status + `">` + c.text + `</div><div class="k-pick-rows"`
 		if html := s.HTML(); !strings.Contains(html, want) {
 			t.Errorf("%s: no %s in\n%s", c.kind, want, html)
 		}

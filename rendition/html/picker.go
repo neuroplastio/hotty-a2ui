@@ -13,7 +13,9 @@ import (
 // picker is a HottyPicker on a host (profile §2, §6.32): a box holding
 // its query, after its chip, as a text input of its own, which the host
 // edits, its caret the host's; a rule; its status, muted and smaller,
-// with a rule under it, so that it reads as the head's and not as a row;
+// with a rule under it, so that it reads as the head's and not as a row,
+// one line cut with an ellipsis, as the program sizes the picker for one
+// (kit.css), the whole of it in its title;
 // its rows, a heading wherever their section changes, each an option whose id is the
 // picker's, "~i" and the row's index, its keys at its right, its
 // description on a second line; and its footer, the selected row's note at
@@ -61,7 +63,7 @@ func (m *markup) picker(e *view.Element) *node {
 		if e.StatusError {
 			cls, text = "k-pick-status k-error", "✗ "+text
 		}
-		box.add(el("div", "id", partID(e.ID, partStatus), "class", cls, "aria-live", "polite").add(texts(text)...))
+		box.add(el("div", "id", partID(e.ID, partStatus), "class", cls, "aria-live", "polite", "title", e.Status).add(texts(text)...))
 	}
 	list := el("div", "class", "k-pick-rows", "role", "listbox")
 	switch {

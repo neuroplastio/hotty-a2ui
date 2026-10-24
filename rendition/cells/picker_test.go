@@ -378,3 +378,31 @@ func TestPickerStatus(t *testing.T) {
 		t.Errorf("an error status: %v, want the error's", cell.Role)
 	}
 }
+
+// A status wider than the picker, as a stage hint's, is one line cut with
+// … at the picker's edge, info or error, loading or not: the picker is as
+// tall as with a short one, since a program that sizes it (plx's palette,
+// 60 columns) counts the status as one line.
+func TestPickerStatusLong(t *testing.T) {
+	long := "palette.position · caret · " + strings.Repeat("Where the palette opens ", 8)
+	short, _, _ := paletteWith(t, `"status":"theme.use · theme","statusKind":"info",`)
+	height := len(short.Draw(60).Cells)
+	for _, c := range []struct{ extra, want string }{
+		{`"statusKind":"info",`, " palette.position · caret · Where the palette opens Where …"},
+		{`"statusKind":"error",`, " ✗ palette.position · caret · Where the palette opens Wher…"},
+		{`"statusKind":"info","loading":true,`, " palette.position · caret · Where the palette opens Where …"},
+	} {
+		r, _, _ := paletteWith(t, `"status":"`+long+`",`+c.extra)
+		f := r.Draw(60)
+		if len(f.Cells) != height {
+			t.Errorf("%s: %d rows, want %d, as with a short status", c.extra, len(f.Cells), height)
+		}
+		lines := strings.Split(trimmed(f), "\n")
+		if lines[2] != c.want {
+			t.Errorf("%s: the status %q, want %q", c.extra, lines[2], c.want)
+		}
+		if lines[3] != strings.Repeat("─", 60) {
+			t.Errorf("%s: under the status %q, want its rule", c.extra, lines[3])
+		}
+	}
+}
