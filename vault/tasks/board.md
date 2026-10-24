@@ -233,6 +233,7 @@ plx builds its palette on HottyPicker, a 60-column box in cells.
   one. Journal 2026-10-24.2. plx pins c9f32d2. Blitz draws
   `text-overflow`'s `…` since hotty-blitz 0d158dd, in hottyterm
   26.10.24-dev.bfcf78b. An older hottyterm cuts at the edge, without one.
+  It's live on the site via web 0ad9a32 (2026-10-24).
 
 ## Phase 2 — The hotty layer
 
