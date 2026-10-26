@@ -243,8 +243,10 @@ plx builds its palette on HottyPicker, a 60-column box in cells.
   capital, the Shift gone (ctrl+P); `Keycaps.Then` is what stands between
   a sequence's caps, `>` unset, a space a gap alone ([Ctrl+B] [%]).
   Profile §6.10 *Keycaps*; hotty/keycaps's Case and Between (journal
-  2026-10-26.1). plx wires `keys.style.case shifted` and a setting for
-  Then.
+  2026-10-26.1). plx 941c2c03 wires `keys.style.case shifted` and
+  `keys.style.then` (auto, >, space), pinning 0749c07; local, its push
+  waits for the maintainer. The site's bump (web hotty, docs-pilot) passed
+  the gate but waits for the maintainer's push.
 
 ## Phase 2 — The hotty layer
 
