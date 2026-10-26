@@ -1,6 +1,8 @@
 package html
 
 import (
+	"strings"
+
 	"github.com/neuroplastio/hotty-a2ui/view"
 )
 
@@ -47,7 +49,8 @@ func (m *markup) keyHints(e *view.Element) *node {
 // keycaps are a hint's keys as caps (view.Controller.Caps, KIT-08h), in a
 // kbd of class cls: a kbd of class k-cap for each chord, its labels joined
 // by its dim separator ("+", say) unless they sit tight (⌘⇧P), and a dim
-// ">" between a sequence's chords and "/" between alternatives.
+// ">" between a sequence's chords (view.Keycaps.Between; a blank one a
+// span.k-cap-gap, a gap alone) and "/" between alternatives.
 func (m *markup) keycaps(cls, keys string) *node {
 	n := el("kbd", "class", cls+" k-caps")
 	var alts [][]view.Chord
@@ -56,7 +59,14 @@ func (m *markup) keycaps(cls, keys string) *node {
 	} else {
 		alts = (&view.Controller{}).Caps(keys, true)
 	}
+	then := m.then
+	if then == "" {
+		then = view.Keycaps{}.Between()
+	}
 	sep := func(s string) *node {
+		if strings.TrimSpace(s) == "" {
+			return el("span", "class", "k-cap-gap", "aria-hidden", "true")
+		}
 		return el("span", "class", "k-cap-sep", "aria-hidden", "true").add(txt(s))
 	}
 	for i, seq := range alts {
@@ -65,7 +75,7 @@ func (m *markup) keycaps(cls, keys string) *node {
 		}
 		for j, ch := range seq {
 			if j > 0 {
-				n.add(sep(">"))
+				n.add(sep(then))
 			}
 			cp := el("kbd", "class", "k-cap")
 			for k, l := range ch.Labels {

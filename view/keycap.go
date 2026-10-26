@@ -23,13 +23,18 @@ type Keycaps struct {
 	// the terminal's.
 	Present string
 	// Case is how a cap's words are written: "title", each word's first
-	// letter a capital (Ctrl+Shift+L, Esc), or "lower" (ctrl+shift+l). ""
-	// is the system's: title, but for macOS's glyphs, whose Esc is "esc",
-	// as Apple's keys print it.
+	// letter a capital (Ctrl+Shift+L, Esc); "lower" (ctrl+shift+l); or
+	// "shifted", lower but for a letter with Shift, which is its capital
+	// without the Shift (ctrl+L, as Shift types it). "" is the system's:
+	// title, but for macOS's glyphs, whose Esc is "esc", as Apple's keys
+	// print it.
 	Case string
 	// Sep joins a chord's labels. "" is the system's: "-" on macOS, as
 	// Apple writes keys (Command-Shift-P), "+" elsewhere.
 	Sep string
+	// Then stands between a sequence's chords, dim: "" is ">" ([Ctrl+B] >
+	// [N]), and a space a gap alone ([Ctrl+B] [N]; Keycaps.Between).
+	Then string
 	// Glue is whether a chord's modifiers drawn as glyphs sit tight against
 	// its key, with no Sep (⌘⇧P), after any written as words
 	// (Meta+Alt+⌃⇧R): "on" or "off". "" is the system's: on in macOS's
@@ -48,6 +53,7 @@ const (
 	PresentText   = "text"
 	CaseTitle     = "title"
 	CaseLower     = "lower"
+	CaseShifted   = "shifted"
 	GlueOn        = "on"
 	GlueOff       = "off"
 )
@@ -62,6 +68,15 @@ func (k Keycaps) Glyphs(host bool) bool {
 		return false
 	}
 	return host
+}
+
+// Between is what a rendition draws between a sequence's chords
+// (Keycaps.Then): ">" by default, a gap where it is blank.
+func (k Keycaps) Between() string {
+	if k.Then == "" {
+		return ">"
+	}
+	return k.Then
 }
 
 // A Chord is a key with its modifiers, as a cap shows it: its labels,
@@ -209,7 +224,9 @@ func arrow(key string) bool { return strings.HasPrefix(key, "arrow_") }
 var modOrder = []string{"super", "ctrl", "alt", "shift"}
 
 // chord is a key's cap on os. With glue on, the modifiers drawn as glyphs
-// (a label of one character) go last, tight against the key.
+// (a label of one character) go last, tight against the key. In the
+// shifted case a letter with Shift is its capital, and the Shift goes,
+// unless the user labels the letter.
 func (c *Controller) chord(os string, glyphs bool, mods []string, key string) Chord {
 	mac := os == "mac"
 	mods = slices.Clone(mods)
@@ -217,6 +234,12 @@ func (c *Controller) chord(os string, glyphs bool, mods []string, key string) Ch
 		return slices.Index(modOrder, a) - slices.Index(modOrder, b)
 	})
 	k := c.Keycaps
+	label := c.keyLabel(os, glyphs, key)
+	_, own := k.Labels[key]
+	if r, n := utf8.DecodeRuneInString(key); k.Case == CaseShifted && !own && n == len(key) && unicode.ToUpper(r) != r && slices.Contains(mods, "shift") {
+		label = string(unicode.ToUpper(r))
+		mods = slices.DeleteFunc(mods, func(m string) bool { return m == "shift" })
+	}
 	ch := Chord{Sep: k.Sep}
 	switch {
 	case ch.Sep != "":
@@ -235,7 +258,7 @@ func (c *Controller) chord(os string, glyphs bool, mods []string, key string) Ch
 			ch.Labels = append(ch.Labels, l)
 		}
 	}
-	ch.Labels = append(append(ch.Labels, marks...), c.keyLabel(os, glyphs, key))
+	ch.Labels = append(append(ch.Labels, marks...), label)
 	if len(marks) > 0 {
 		ch.Glued = len(marks) + 1
 	}
@@ -282,10 +305,11 @@ func systemLabel(os string, glyphs bool, key string) string {
 }
 
 // cased is a label in a Case (Keycaps.Case): its words' first letters
-// capitals, or all of it lower case; "" leaves it as it is.
+// capitals, or all of it lower case (the shifted case's capitals are
+// chord's); "" leaves it as it is.
 func cased(l, how string) string {
 	switch how {
-	case CaseLower:
+	case CaseLower, CaseShifted:
 		return strings.ToLower(l)
 	case CaseTitle:
 		words := strings.Split(l, " ")

@@ -147,7 +147,8 @@ func (r *Rendition) markup() *markup {
 	toasts := r.C.TickToasts(at, r.heldToast)
 	short, full := r.C.KeyHints(r.keys, true)
 	m := &markup{list: r.openList(), now: at, short: short, full: full,
-		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover), drag: r.C.St.Drag, key: r.keyText, caps: r.caps, said: r.said}
+		described: r.C.V.Described(), tip: r.C.Tooltip(r.hover), drag: r.C.St.Drag, key: r.keyText, caps: r.caps, said: r.said,
+		then: r.C.Keycaps.Between()}
 	m.animate(toasts)
 	m.animate(timers)
 	if r.C.St.Keyboard && !r.Away {

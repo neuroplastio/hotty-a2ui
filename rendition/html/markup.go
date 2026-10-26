@@ -44,6 +44,9 @@ type markup struct {
 	// caps is a hint's keys as caps (view.Controller.Caps), in the
 	// presentation the user set, glyphs by default.
 	caps func(keys string) [][]view.Chord
+	// then stands between a sequence's caps (view.Keycaps.Between), ">"
+	// where it is "".
+	then string
 	// said is keys as a screen reader says them: the caps' text labels
 	// (view.CapsText), whatever the presentation.
 	said func(keys string) string

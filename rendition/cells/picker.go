@@ -71,7 +71,7 @@ func pickWidth(e *view.Element) int {
 			rw += 2 + Width(row.Detail)
 		}
 		if row.Keys != "" {
-			rw += 2 + width(capsOf((&view.Controller{}).Caps(view.KeysText(row.Keys, view.KeyText), false), nil))
+			rw += 2 + width(capsOf((&view.Controller{}).Caps(view.KeysText(row.Keys, view.KeyText), false), view.Keycaps{}.Between(), nil))
 		}
 		n = max(n, rw, dw)
 	}

@@ -105,6 +105,14 @@ func TestCapsStyle(t *testing.T) {
 		{Keycaps{OS: "mac", Glue: GlueOff}, "super+shift+p", true, "[\U000F0633-\U000F0636-P]"},
 		{Keycaps{OS: "mac", Labels: map[string]string{"super": "Super"}}, "super+shift+p", true, "[Super-\U000F0636P]"},
 		{Keycaps{Case: CaseLower, Labels: map[string]string{"super": "Super"}}, "super+k", false, "[Super+k]"},
+		{Keycaps{Case: CaseShifted}, "ctrl+shift+l", false, "[ctrl+L]"},
+		{Keycaps{Case: CaseShifted}, "ctrl+l", false, "[ctrl+l]"},
+		{Keycaps{Case: CaseShifted}, "G/g g", false, "[G]/[g]>[g]"},
+		{Keycaps{Case: CaseShifted}, "shift+tab/shift+1/?", false, "[shift+tab]/[shift+1]/[?]"},
+		{Keycaps{Case: CaseShifted}, "ctrl+shift+arrow_right/f5", false, "[ctrl+shift+→]/[f5]"},
+		{Keycaps{OS: "mac", Case: CaseShifted}, "super+shift+p", true, "[\U000F0633P]"},
+		{Keycaps{OS: "mac", Case: CaseShifted}, "super+shift+p", false, "[command-P]"},
+		{Keycaps{Case: CaseShifted, Labels: map[string]string{"p": "π"}}, "ctrl+shift+p", false, "[ctrl+shift+π]"},
 	} {
 		c := &Controller{Keycaps: tc.k}
 		if got := caps(c, tc.keys, tc.glyphs); got != tc.want {
@@ -122,6 +130,15 @@ func TestCapsLabels(t *testing.T) {
 	c.Keycaps.OS = "mac"
 	if got := caps(c, "super+k", true); got != "[◆K]" {
 		t.Errorf("relabelled super on macOS: %q", got)
+	}
+}
+
+// Then is ">" unless set: a space is a gap alone.
+func TestKeycapsBetween(t *testing.T) {
+	for then, want := range map[string]string{"": ">", " ": " ", "→": "→"} {
+		if got := (Keycaps{Then: then}).Between(); got != want {
+			t.Errorf("Then %q: %q, want %q", then, got, want)
+		}
 	}
 }
 

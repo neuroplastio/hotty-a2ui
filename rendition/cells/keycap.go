@@ -19,11 +19,12 @@ var (
 // them: each chord a cap, a column of room either side of its labels and
 // its background tinted toward the text, else the terminal's bright black
 // (as a Button's fill); its labels joined by its faint separator ("+",
-// say) unless they sit tight (⌘⇧P); a muted ">" between a sequence's chords and "/" between
+// say) unless they sit tight (⌘⇧P); a muted ">" between a sequence's chords
+// (view.Keycaps.Between: a space is a column untinted) and "/" between
 // alternatives. Where on is set (a selected row's reverse), the caps are
 // drawn in it, untinted, as tint and reverse don't mix.
 func (r *Rendition) caps(keys string, on *style) []glyph {
-	return capsOf(r.c.Caps(keys, r.c.Keycaps.Glyphs(false)), on)
+	return capsOf(r.c.Caps(keys, r.c.Keycaps.Glyphs(false)), r.c.Keycaps.Between(), on)
 }
 
 // keyCaps are a HottyKeys' caps, each chord read with the Platform.
@@ -31,8 +32,9 @@ func (r *Rendition) keyCaps(e *view.Element) []glyph {
 	return r.caps(view.KeysText(e.Label, r.keyText), nil)
 }
 
-// capsOf draws chords as caps (Rendition.caps).
-func capsOf(alts [][]view.Chord, on *style) []glyph {
+// capsOf draws chords as caps (Rendition.caps), then between a
+// sequence's.
+func capsOf(alts [][]view.Chord, then string, on *style) []glyph {
 	body, plus, sep := capStyle, capPlus, capSep
 	if on != nil {
 		body, plus, sep = *on, *on, *on
@@ -44,7 +46,7 @@ func capsOf(alts [][]view.Chord, on *style) []glyph {
 		}
 		for j, ch := range seq {
 			if j > 0 {
-				out = concat(out, line(">", sep))
+				out = concat(out, line(then, sep))
 			}
 			out = concat(out, line(" ", body))
 			for k, l := range ch.Labels {

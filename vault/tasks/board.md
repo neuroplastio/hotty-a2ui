@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-23
+Last updated: 2026-10-26
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from rounds 7–9
@@ -234,6 +234,17 @@ plx builds its palette on HottyPicker, a 60-column box in cells.
   `text-overflow`'s `…` since hotty-blitz 0d158dd, in hottyterm
   26.10.24-dev.bfcf78b. An older hottyterm cuts at the edge, without one.
   It's live on the site via web 0ad9a32 (2026-10-24).
+
+### plx's keys (2026-10-26)
+
+- [x] **KIT-CAPS-SHIFT** The maintainer, on caps in plx: `keys.style.case`
+  wants a third state, and `>` between a sequence's caps is too much.
+  `Keycaps.Case` `shifted` is lower but a letter with Shift is its
+  capital, the Shift gone (ctrl+P); `Keycaps.Then` is what stands between
+  a sequence's caps, `>` unset, a space a gap alone ([Ctrl+B] [%]).
+  Profile §6.10 *Keycaps*; hotty/keycaps's Case and Between (journal
+  2026-10-26.1). plx wires `keys.style.case shifted` and a setting for
+  Then.
 
 ## Phase 2 — The hotty layer
 

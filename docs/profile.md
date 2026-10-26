@@ -1687,7 +1687,7 @@ HottyScrollView's keys are the host's own there, so it has none.
 A hint's keys, and a HottyPicker's (a row's, its footer's, its panel's),
 are drawn as keycaps (`view.Controller.Caps`): each chord in a cap of
 its own, its modifiers then its key; a sequence's caps in order, a muted
-`>` between them; alternatives a muted `/` apart. So `ctrl+b %` is
+`>` between them (`Then`, below); alternatives a muted `/` apart. So `ctrl+b %` is
 [Ctrl+B] > [%], and `G/end` is [Shift+G] / [End]. An arrow alone after
 an arrow with modifiers takes them (`alt+↑/↓`).
 
@@ -1701,16 +1701,22 @@ not the agent's:
   ship a font that has them (hotty HOST.md §2), and cells draw text,
   since their font is the terminal's. Either rendition draws either: a
   terminal whose font has the glyphs takes them in cells too.
-- `Case`, `title` (Ctrl+Shift+L) or `lower` (ctrl+shift+l). Unset, the
-  system's: title, but macOS's glyphs write Esc as its key does, `esc`.
+- `Case`, `title` (Ctrl+Shift+L), `lower` (ctrl+shift+l) or `shifted`:
+  lower, but a letter with Shift is its capital and the Shift goes
+  (ctrl+L, Shift+P as P), as Shift types it. A key that has no capital
+  keeps its Shift (shift+tab), and any other character with Shift in it
+  is already the one it types (`?`, SPEC §10.4). Unset, the system's:
+  title, but macOS's glyphs write Esc as its key does, `esc`.
 - `Sep`, what joins a chord's labels. Unset, the system's: `-` on macOS,
   as Apple writes keys (Command-Shift-P), `+` elsewhere.
+- `Then`, what stands between a sequence's caps. Unset, `>`; a space is
+  a gap alone, [Ctrl+B] [%], as tmux and Emacs write a sequence.
 - `Glue`, `on` or `off`: whether a chord's modifiers drawn as glyphs sit
   tight against its key, with no `Sep` (⌃⇧P). Unset, on in macOS's
   glyphs only. Modifiers that are words (Alt, Meta) come first and keep
   the `Sep`: Meta+Alt+⌃⇧R.
 
-  These three let a user write keys as the system they came from does,
+  These let a user write keys as the system they came from does,
   where the defaults are each system's own.
 - `Labels`, the user's own label for a key by name (SPEC §10.4): `super`
   as Tux (Material Design Icons' `linux`), say. The kit's own labels
@@ -1738,13 +1744,15 @@ kit does by default.
 
 On a host the caps are `kbd.k-caps`, a `kbd.k-cap` a chord, its labels
 joined by `span.k-cap-join`, the separator, unless they sit tight, and `span.k-cap-sep`
-(`aria-hidden`) for `>` and `/`: a cap is the size of the text around
+(`aria-hidden`) for `>` and `/`, or a `span.k-cap-gap`, empty and
+`0.4em` wide, where `Then` is blank: a cap is the size of the text around
 it (a picker's keys and its footer the size of its rows), filled with `--k-tonal` and
 ringed with `--k-line`, a device pixel wide (`--hotty-px`) and two at its
 bottom, in AdwaitaMono Nerd Font Propo where the host has it. In cells a
 cap is its labels with a column of room either side, its background
 tinted toward the text (the terminal's bright black where nothing can be
-tinted), the separator faint between them; on a selected row, which is reversed,
+tinted), the separator faint between them, and a blank `Then` a column
+untinted; on a selected row, which is reversed,
 the caps are drawn in the row's style.
 
 ### 6.11 HottyScrollView
@@ -3015,7 +3023,7 @@ chords apart by spaces, alternatives by `/` (`arrow_up/k`). A `/` is the
 key where it stands alone or after a modifier's `+` (`ctrl+/`), as in a
 hint. Each chord is read with the Platform (`mod+b` is `ctrl+b`, or
 `super+b` on a Mac) and drawn as a hint's keys are (§6.10, *Keycaps*):
-labelled by `Controller.Keycaps`, a cap a chord, a muted `>` between a
+labelled by `Controller.Keycaps`, a cap a chord, a muted `>` (its `Then`) between a
 sequence's caps and `/` between alternatives. A key's name that does not
 read is drawn as written.
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/neuroplastio/hotty-a2ui/catalog/basic"
 	hottycat "github.com/neuroplastio/hotty-a2ui/catalog/hotty"
+	"github.com/neuroplastio/hotty-a2ui/view"
 	hotty "github.com/neuroplastio/hotty-go"
 )
 
@@ -50,5 +51,28 @@ func TestKeys(t *testing.T) {
 	x.update(r)
 	if got, _ := s.Attr("p", "aria-label"); got != "Command-Shift-P" {
 		t.Errorf("on a Mac, mod+shift+p's label is %q", got)
+	}
+}
+
+// A blank Keycaps.Then is a gap between a sequence's caps, a
+// span.k-cap-gap with no text, where ">" was; the screen reader's words
+// are as they were.
+func TestKeysGap(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"HottyKeys","catalogId":"`+hottycat.ID+`","keys":"ctrl+b v"}]}}]`), &msgs))
+	x.process(msgs...)
+	r := x.rs["s"]
+	s := x.h.Surface(r.name)
+	r.C.Keycaps = view.Keycaps{Then: " "}
+	x.update(r)
+	gap := `</kbd><span class="k-cap-gap" aria-hidden="true"></span><kbd class="k-cap">`
+	if html := s.HTML(); !strings.Contains(html, gap) || strings.Contains(html, `class="k-cap-sep"`) {
+		t.Errorf("no gap %s in\n%s", gap, html)
+	}
+	if got, _ := s.Attr("root", "aria-label"); got != "Ctrl+B V" {
+		t.Errorf("the label is %q", got)
 	}
 }

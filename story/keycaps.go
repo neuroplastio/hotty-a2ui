@@ -10,7 +10,7 @@ import (
 // /system names ("auto", the Platform's guess), as its /present says
 // ("default", the rendition's), in the /case, /sep and /glue it picks and
 // with the label its /meta picks as super's, each "system" for the
-// system's own.
+// system's own; /then stands between a sequence's caps.
 func keycapsProgram(r *Run) {
 	r.config = func(s *Surface) {
 		k := view.Keycaps{}
@@ -38,6 +38,7 @@ func keycapsProgram(r *Run) {
 				*v = s
 			}
 		}
+		k.Then = picked("/then")
 		if meta := picked("/meta"); meta != "system" && meta != "" {
 			k.Labels = map[string]string{"super": meta}
 		}

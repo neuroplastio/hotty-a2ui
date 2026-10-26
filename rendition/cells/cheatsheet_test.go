@@ -62,6 +62,23 @@ func TestKeysDraw(t *testing.T) {
 	}
 }
 
+// Keycaps.Then stands between a sequence's caps, a space a column
+// untinted, and the shifted case folds Shift into a letter's capital.
+func TestKeysThen(t *testing.T) {
+	r, c := sheet(t, [2]string{"ctrl+b w t", "New tab"}, [2]string{"ctrl+shift+p", "Palette"})
+	c.Keycaps = view.Keycaps{Then: " ", Case: view.CaseShifted}
+	f := r.Draw(40)
+	want := fmt.Sprintf("%-21s%s\n%-21s%s", " ctrl+b   w   t ", "New tab", " ctrl+P ", "Palette")
+	if got := f.Plain(); got != want {
+		t.Fatalf("got\n%s\nwant\n%s", got, want)
+	}
+	for i, want := range map[int]style{7: capStyle, 8: capSep, 9: capStyle} {
+		if got := f.Cells[0][i]; got.Role != want.role || got.BackMix != want.backMix {
+			t.Errorf("column %d (%q): %v %d, want %v %d", i, got.Text, got.Role, got.BackMix, want.role, want.backMix)
+		}
+	}
+}
+
 // A HottyKeys is as wide as its caps, which it does not cut: narrower than
 // them, the Text beside it gives up its columns.
 func TestKeysWidth(t *testing.T) {
