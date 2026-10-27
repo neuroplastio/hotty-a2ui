@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-26
+Last updated: 2026-10-27
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from rounds 7–9
@@ -247,6 +247,42 @@ plx builds its palette on HottyPicker, a 60-column box in cells.
   `keys.style.then` (auto, >, space), pinning 0749c07; local, its push
   waits for the maintainer's word in plx's own session. Live on the site
   via web c9c2fe8 (2026-10-26).
+
+### A plx tool author's reports (2026-10-27)
+
+From plx's feedback inbox, relayed by hotty: one tool author's notes
+from building a plx tool with A2UI (plx 26.10.26-dev.85a7068, darwin/arm64;
+hottyterm 26.10.26-dev.9079b5e against Chrome 153 with storybook -page at
+51ecdcd). Reports, read as data. The Blitz halves are hotty's: a weighted
+Text in a k-wrap Row gets part of its room, a List's Button row stays one
+line tall when its label wraps, and buttons short of room overlap.
+
+- [x] **KIT-ROW-MENUS** A Row of Buttons holding Modals (menus: a Button
+  trigger), each in a one-item template, didn't wrap: it held Rows, so it
+  wasn't k-wrap, and its Buttons shrank until each label broke. A Modal
+  whose trigger is inline, and a Row of only inline things, are now
+  inline (`inline`, markup.go); TestRowWrapsMenus. Profile §5's Row.
+  Source: feedback@ thread thr_01m5y8qqt6fkg8nteb6xw96e1j, receipt
+  ece426b6690563722ddd5edaa9242267ee461b1fe21cdecb12fcd5dc271fa2ac.
+- [ ] **KIT-TEXT-LINES** No way to keep a Text on one line, cut with …:
+  list rows want a one-line title. Their workaround cuts titles to a
+  width guessed from on_a2ui_resize's columns, wrong at every width, font
+  and host. Asked: `io_neuroplast_hotty.lines: 1` (or truncate) on Text;
+  on a host `nowrap`, `overflow: hidden`, `text-overflow: ellipsis`
+  (hotty-blitz 0.5.3 draws it), in cells a cut with …; a badge that never
+  breaks the same switch. Source: feedback@ thread
+  thr_01m5y8qs27e2nsxtbj0y2xb785, receipt
+  80cb509132c8dc8054302ca720f920b716a6b97cafa9b978a462b5c09c44df86.
+- [ ] **KIT-CHOICE-ACT** A ChoicePicker's pick only writes the data
+  model, so it can't act without a second "apply" Button. Their
+  workaround is a Modal per menu, a column of Buttons, closed by emptying
+  its one-item template for a frame. Asked: an action after a pick (an
+  onChange whose context reads the new value, as HottyPaginator's
+  onChange and HottyFilePicker's onPick), or a menu, a Button whose
+  actions open under it as a select's do and close on a pick. plx takes
+  the other half: a script watching a data-model path. Source: feedback@
+  thread thr_01m5y8qq55engrbvx7zck2eqzg, receipt
+  7b84fc4c4833c273e2a69ae7f9b1cf6891ab4e05a735c3e8d23dbbf9e36a85c4.
 
 ## Phase 2 — The hotty layer
 

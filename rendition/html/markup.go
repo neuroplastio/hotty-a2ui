@@ -706,24 +706,46 @@ func stackClass(e *view.Element) string {
 
 // wraps: a Row wraps, as a page's inline content does, rather than cut
 // what it cannot fit, when it holds a form field (squeezed, its value
-// would be cut) or holds only inline things: texts, icons, buttons, small
-// pictures. A Row of columns or cards shrinks them instead.
+// would be cut) or holds only inline things (inline). A Row of columns or
+// cards shrinks them instead.
 func wraps(e *view.Element) bool {
-	field, inline := false, true
+	field, inl := false, true
 	for _, k := range e.Children {
 		switch k.Kind {
 		case view.TextField, view.DateTime, view.Slider, view.RangeSlider:
 			field = true
 		case view.Choice:
 			field = field || len(k.Children) == 0
-		case view.Text, view.Icon, view.Keys, view.Button, view.Media, view.Placeholder:
-		case view.Image:
-			inline = inline && (k.Variant == "icon" || k.Variant == "avatar")
 		default:
-			inline = false
+			inl = inl && inline(k)
 		}
 	}
-	return field || inline && len(e.Children) > 1
+	return field || inl && len(e.Children) > 1
+}
+
+// inline: e is a thing a line holds: a text, an icon, keys, a button, a
+// small picture; a Modal whose trigger is one (a menu's button); or a Row
+// of only such things, as a one-item template of a Modal is.
+func inline(e *view.Element) bool {
+	switch e.Kind {
+	case view.Text, view.Icon, view.Keys, view.Button, view.Media, view.Placeholder:
+		return true
+	case view.Image:
+		return e.Variant == "icon" || e.Variant == "avatar"
+	case view.Modal: // its trigger
+	case view.Stack:
+		if e.Dir != view.Horizontal {
+			return false
+		}
+	default:
+		return false
+	}
+	for _, k := range e.Children {
+		if !inline(k) {
+			return false
+		}
+	}
+	return len(e.Children) > 0
 }
 
 // notches is how many a Slider's track is cut into: one for each of its
