@@ -3,7 +3,7 @@
   "kind": "component",
   "component": "ChoicePicker, io_neuroplast_hotty.cycle",
   "icon": "radio_button_checked",
-  "description": "The four ways a ChoicePicker draws. Environment is a cycle (io_neuroplast_hotty.cycle): its options stepped through in place, ‹ staging ›, the value centred between the arrows; the arrows, or a click on its ‹ and ›, step it round from either end, and Home and End go to the ends. Region is a select, which picks one from a list that opens. Replicas is a Slider, whose track starts in the column the values above start in. Strategy is chips that pick one, radio buttons in cells. Notify picks several, as checkboxes. Each pick is written to the data model.",
+  "description": "The four ways a ChoicePicker draws. Environment is a cycle (io_neuroplast_hotty.cycle): its options stepped through in place, ‹ staging ›, the value centred between the arrows; the arrows, or a click on its ‹ and ›, step it round from either end, and Home and End go to the ends. Region is a select, which picks one from a list that opens; its onChange (io_neuroplast_hotty.onChange) runs after each pick, here a toast, so a pick acts without an Apply button. Replicas is a Slider, whose track starts in the column the values above start in. Strategy is chips that pick one, radio buttons in cells. Notify picks several, as checkboxes. Each pick is written to the data model.",
   "messages": [
     {
       "version": "v1.0",
@@ -100,7 +100,23 @@
                 "label": "ap-southeast-2",
                 "value": "ap-southeast-2"
               }
-            ]
+            ],
+            "metadata": {
+              "extensions": {
+                "io_neuroplast_hotty": {
+                  "onChange": {
+                    "functionCall": {
+                      "@call": "hottyToast",
+                      "catalogId": "https://hotty.neuroplast.io/a2ui/v1/catalog",
+                      "args": {
+                        "message": "Region changed: the next deploy goes there",
+                        "kind": "info"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           {
             "id": "replicas",

@@ -3072,6 +3072,38 @@ that is not a number is none; a fraction is rounded down, less than 1 is
 Story `hotty/lines`: a task list's titles on a line beside due dates, and
 a note of two lines.
 
+
+### 6.41 onChange
+
+`metadata.extensions.io_neuroplast_hotty.onChange` on a ChoicePicker: an
+action that runs after each pick the user makes that changes its value,
+once the data model has it. A2UI v1.0's ChoicePicker has no action: a
+pick only writes the data model, so it can't act without a second Apply
+button (a plx tool author, 2026-10-27, who built each menu as a Modal of
+Buttons instead). HottyPaginator's `onChange` and HottyFilePicker's
+`onPick` are the same pattern: the pick is written, then the action's
+context reads it from where it is bound.
+
+It runs in the ChoicePicker's scope, so in a template a relative path
+reads the item's pick and the item's other fields (its id). Every way of
+picking runs it: a select's option, a checkbox or a chip, a cycle's step,
+a host's own control (§2). A pick that leaves the value as it was (the
+option already picked, a cycle of one) runs nothing; a toggle in one that
+picks several runs it each time. It is a user's gesture (A2UI v1.0,
+user activation), as a Button's action is. On anything but a
+ChoicePicker it is nothing.
+
+A menu, a Button whose actions open under it and close on a pick, is not
+this: a ChoicePicker shows its value, and a menu shows none. It would be
+a component of its own, which waits for a use a ChoicePicker with
+`onChange` doesn't cover.
+
+| rendition | a ChoicePicker with `onChange` |
+| --- | --- |
+| cells, host, text | the same, as a ChoicePicker draws; the action runs from the view (`view.Controller.SetValue`, `Activate`), after the pick is written |
+
+Story `hotty/choice`: Region's pick shows a toast.
+
 ## 7. Fallbacks
 
 A component never fails the surface it is in.

@@ -214,6 +214,9 @@ func (c *Controller) Activate(id string) error {
 			picked = append(slices.Clone(picked), v)
 		}
 		err = c.set(ch, picked)
+		if was, _ := ch.Value.([]string); err == nil && !slices.Equal(was, picked) {
+			err = c.choiceChange(choiceID)
+		}
 	case Media:
 		if c.S.Env().OpenURL != nil && e.URL != "" {
 			err = c.S.Env().OpenURL(e.URL)
@@ -266,7 +269,8 @@ func (c *Controller) CloseModal() {
 // (clamped to its range, on its steps), a RangeSlider's knob's (as a
 // Slider's, and stopped where it meets the other knob), a Choice's value
 // or values. A bound value goes to the data model; another stays the
-// renderer's. A text field's new value then runs its suggestions' onInput.
+// renderer's. A text field's new value then runs its suggestions' onInput,
+// and a Choice's its onChange.
 func (c *Controller) SetValue(id string, v any) error {
 	e := c.V.Find(id)
 	if e == nil {
@@ -307,7 +311,29 @@ func (c *Controller) SetValue(id string, v any) error {
 		err = c.suggestInput(id)
 		c.Rebuild()
 	}
+	if now := c.V.Find(id); e.Kind == Choice && err == nil && now != nil {
+		was, _ := e.Value.([]string)
+		if is, _ := now.Value.([]string); !slices.Equal(was, is) {
+			err = c.choiceChange(id)
+			c.Rebuild()
+		}
+	}
 	return err
+}
+
+// choiceChange runs a ChoicePicker's onChange (io_neuroplast_hotty
+// .onChange, profile §6.41) after the user's pick changed its value: in
+// its scope, so that its context reads the value where it is bound.
+func (c *Controller) choiceChange(id string) error {
+	n := c.V.Node(id)
+	if n == nil {
+		return nil
+	}
+	a, ok := hottyExt(n)["onChange"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	return c.dispatch(a, n.Scope, n.ComponentID, true)
 }
 
 // StepSlider moves a Slider, or a RangeSlider's knob, by n of its steps

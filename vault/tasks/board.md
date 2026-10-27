@@ -275,8 +275,13 @@ line tall when its label wraps, and buttons short of room overlap.
   hotty/lines (journal 2026-10-27.1). Source: feedback@ thread
   thr_01m5y8qs27e2nsxtbj0y2xb785, receipt
   80cb509132c8dc8054302ca720f920b716a6b97cafa9b978a462b5c09c44df86.
-- [ ] **KIT-CHOICE-ACT** A ChoicePicker's pick only writes the data
-  model, so it can't act without a second "apply" Button. Their
+- [x] **KIT-CHOICE-ACT** A ChoicePicker's pick only writes the data
+  model, so it can't act without a second "apply" Button. Now
+  `io_neuroplast_hotty.onChange` on a ChoicePicker runs after each pick
+  that changes its value, in its scope (a template's item), on every way
+  of picking; profile §6.41, instruction 42, Region in hotty/choice
+  toasts (journal 2026-10-27.2). A menu component waits for a use this
+  doesn't cover. Their
   workaround is a Modal per menu, a column of Buttons, closed by emptying
   its one-item template for a frame. Asked: an action after a pick (an
   onChange whose context reads the new value, as HottyPaginator's
