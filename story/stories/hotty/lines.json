@@ -1,0 +1,57 @@
+{
+  "name": "Text lines",
+  "kind": "behaviour",
+  "component": "io_neuroplast_hotty.lines",
+  "icon": "short_text",
+  "description": "Text kept to its lines, as a task list keeps its rows: each title has the lines extension, 1, so it stays on one line and is cut with … at the room it has, which changes with the terminal's width, its font and the host's, so the program never cuts it. Each due date has it too, so a short badge never breaks and keeps its place. The note under them has 2: two rows at most, the last cut with …. Narrow the window to see them give way. A host draws one line with text-overflow; it clamps more with line-clamp, which Blitz doesn't draw yet, so in hottyterm the note shows whole.",
+  "messages": [
+    {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "lines",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "dataModel": {
+          "tasks": [
+            {"title": "Write the release notes for 0.6 and send them round to everyone on the list", "due": "Fri"},
+            {"title": "Review the shell's Tab completion", "due": "today"},
+            {"title": "Move the nightly backups to the new bucket, then check that last week's restore still works", "due": "next week"},
+            {"title": "Book the room", "due": "Mon"}
+          ]
+        }
+      }
+    },
+    {
+      "version": "v1.0",
+      "updateComponents": {
+        "surfaceId": "lines",
+        "components": [
+          {"id": "root", "component": "Column", "children": ["head", "tasks", "rule", "note"]},
+          {"id": "head", "component": "Text", "text": "**Tasks**"},
+          {"id": "tasks", "component": "Column", "children": {"componentId": "task", "path": "/tasks"}},
+          {"id": "task", "component": "Row", "align": "center", "children": ["task_title", "task_due"]},
+          {
+            "id": "task_title",
+            "component": "Text",
+            "text": {"@path": "title"},
+            "weight": 1,
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"lines": 1}}}
+          },
+          {
+            "id": "task_due",
+            "component": "Text",
+            "text": {"@path": "due"},
+            "variant": "caption",
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"lines": 1, "tone": "muted"}}}
+          },
+          {"id": "rule", "component": "Divider"},
+          {
+            "id": "note",
+            "component": "Text",
+            "text": "The backups move first: the old bucket closes at the end of the month, and the restore check needs a quiet evening, since it reads every snapshot from last week back into a scratch volume before comparing them.",
+            "metadata": {"extensions": {"io_neuroplast_hotty": {"lines": 2}}}
+          }
+        ]
+      }
+    }
+  ]
+}

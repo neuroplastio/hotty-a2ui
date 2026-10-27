@@ -222,7 +222,16 @@ func (m *markup) element(e *view.Element) *node {
 		if e.Tone != "" {
 			class += " k-tone-" + e.Tone
 		}
+		switch {
+		case e.Clamp == 1:
+			class += " k-one-line"
+		case e.Clamp > 1:
+			class += " k-clamp"
+		}
 		n = el("div", "id", id, "class", class)
+		if e.Clamp > 1 {
+			n.set("style", "--k-clamp: "+strconv.Itoa(e.Clamp))
+		}
 		n.text, n.raw = emojiHTML(view.MarkdownHTML(e.Markdown)), true
 		n.text = groupBreaks(strings.TrimSpace(view.PlainText(view.Markdown(e.Markdown))), n.text)
 	case view.Document:

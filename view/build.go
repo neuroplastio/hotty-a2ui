@@ -223,6 +223,9 @@ func (b *Builder) Node(n *a2ui.Node) *Element {
 	if e.Kind == Text || e.Kind == Icon {
 		e.Tone = b.tone(n)
 	}
+	if e.Kind == Text {
+		e.Clamp = clamp(n)
+	}
 	if e.Kind == TextField && e.Variant == "longText" {
 		e.Resize = resize(n)
 	}
@@ -498,6 +501,22 @@ func size(n *a2ui.Node) string {
 		return "large"
 	}
 	return ""
+}
+
+// MaxLines is the most io_neuroplast_hotty.lines counts: more rows than
+// a screen has, so that an agent's count stays an int.
+const MaxLines = 1000
+
+// clamp reads the hotty extension metadata.extensions
+// .io_neuroplast_hotty.lines on a Text: the most rows it shows, 1 to
+// MaxLines, a fraction rounded down; 0 where it has none or it is not a
+// number.
+func clamp(n *a2ui.Node) int {
+	v := a2ui.ToNumber(hottyExt(n)["lines"])
+	if math.IsNaN(v) {
+		return 0
+	}
+	return int(min(max(v, 1), MaxLines))
 }
 
 // cycle reads the hotty extension metadata.extensions

@@ -264,13 +264,15 @@ line tall when its label wraps, and buttons short of room overlap.
   inline (`inline`, markup.go); TestRowWrapsMenus. Profile §5's Row.
   Source: feedback@ thread thr_01m5y8qqt6fkg8nteb6xw96e1j, receipt
   ece426b6690563722ddd5edaa9242267ee461b1fe21cdecb12fcd5dc271fa2ac.
-- [ ] **KIT-TEXT-LINES** No way to keep a Text on one line, cut with …:
-  list rows want a one-line title. Their workaround cuts titles to a
-  width guessed from on_a2ui_resize's columns, wrong at every width, font
-  and host. Asked: `io_neuroplast_hotty.lines: 1` (or truncate) on Text;
-  on a host `nowrap`, `overflow: hidden`, `text-overflow: ellipsis`
-  (hotty-blitz 0.5.3 draws it), in cells a cut with …; a badge that never
-  breaks the same switch. Source: feedback@ thread
+- [x] **KIT-TEXT-LINES** No way to keep a Text on one line, cut with …:
+  list rows want a one-line title. Their workaround cut titles to a width
+  guessed from on_a2ui_resize's columns, wrong at every width, font and
+  host. Now `io_neuroplast_hotty.lines` on a Text: the most rows it
+  shows, the last cut with …; 1 is its first line, cut at its room, and
+  keeps a badge whole. Its minimum is a column, so a Row cuts it first.
+  On a host `k-one-line` (text-overflow) or `k-clamp` (line-clamp, which
+  Blitz doesn't draw: told hotty). Profile §6.40, instruction 41, story
+  hotty/lines (journal 2026-10-27.1). Source: feedback@ thread
   thr_01m5y8qs27e2nsxtbj0y2xb785, receipt
   80cb509132c8dc8054302ca720f920b716a6b97cafa9b978a462b5c09c44df86.
 - [ ] **KIT-CHOICE-ACT** A ChoicePicker's pick only writes the data

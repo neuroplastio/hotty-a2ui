@@ -446,7 +446,11 @@ type Element struct {
 	// page's call to action, or "" for the kit's own
 	// (io_neuroplast_hotty.size, profile §6.38).
 	Size string `json:"size,omitempty"`
-	A11y A11y   `json:"a11y,omitzero"`
+	// Clamp is the most rows a Text shows, the last cut with … where it
+	// has more (io_neuroplast_hotty.lines, profile §6.40); 0 where it has
+	// no such bound.
+	Clamp int  `json:"clamp,omitempty"`
+	A11y  A11y `json:"a11y,omitzero"`
 }
 
 // FileEntry is one entry of a HottyFilePicker's directory: its name, and

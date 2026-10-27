@@ -132,6 +132,14 @@
 /* A word breaks only when it fills a line alone (break-word, not anywhere,
    which lets a row squeeze a word to a letter a line). */
 .k-text { overflow-wrap: break-word; }
+/* A Text cut to its lines (io_neuroplast_hotty.lines, profile §6.40):
+   one is its first block on a line, cut with an ellipsis, the others
+   hidden; more are clamped, which Blitz does not draw yet. Either shrinks
+   in a Row, as its cut text allows. */
+.k-one-line, .k-one-line > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.k-one-line > * + * { display: none; }
+.k-clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--k-clamp); line-clamp: var(--k-clamp); overflow: hidden; }
+.k-one-line, .k-clamp { min-width: 0; }
 /* In a Row that stretches its children (A2UI's default), a Text's box is
    as tall as the row; its words go in the middle, by a Button's label. */
 .k-row.k-a-stretch > .k-text { align-self: center; }

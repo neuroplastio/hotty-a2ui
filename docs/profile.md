@@ -86,7 +86,7 @@ so that an error comes and goes as a text delta.
 | --- | --- |
 | Row, Column, List | `div`, a flex row or column; List scrolls. A Row wraps, as a page's inline content does, when it holds a field or only inline things (texts, icons, buttons, small pictures, a Modal whose trigger is one, as a menu's button is, and a Row of only such things, as a one-item template of a Modal is); a Row of columns or cards shrinks them instead. A weighted child of a Row takes its share of it, whatever it holds (`flex: weight`, as A2UI's Lit renderer has it), so Rows weighted alike line up as a grid's; in a Column, a weight is a share of the rows to spare. Between children, a Column has `--k-2` and a Row `--k-3`; one with a `gap` (§6.36, `k-gap`) has that many terminal rows or columns instead. A List whose items move (`reorder`, §6.21) gives the program alt+arrow_up and alt+arrow_down (`data-keys`), so that they move the item the keyboard is in, as in cells, and each of its children has `drag drop` in its `data-on`, the List `drop`: a drag moves it (§6.21) |
 | Card | `div`, a raised fill and a rounded border |
-| Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9). A word breaks only when it fills a line alone. A Text that is one number (`$850,000,000.00`, a grid's cell) may also break after its group separators, a zero-width space after each, so a narrow column breaks it between groups, not between any two digits. An ordered list item's number is written out, a `span.k-n` the sheet sets in the indent with a gap, ending at the same place for `9.` and `10.`, because Blitz draws a list's own numbers flush against the text and has no counters to draw them otherwise |
+| Text | `div` with the Markdown as HTML, its emoji in spans; links open in the terminal (`target=_blank`, SPEC.md §9). A word breaks only when it fills a line alone. A Text that is one number (`$850,000,000.00`, a grid's cell) may also break after its group separators, a zero-width space after each, so a narrow column breaks it between groups, not between any two digits. An ordered list item's number is written out, a `span.k-n` the sheet sets in the indent with a gap, ending at the same place for `9.` and `10.`, because Blitz draws a list's own numbers flush against the text and has no counters to draw them otherwise. One with `lines` (§6.40) is `k-one-line` or `k-clamp` |
 | Image | `img`, sized by its variant in `rem`. A weighted one in a Row takes its share of the row whatever its variant, and is as tall as its picture at that width, no taller than the surface: a picture to look at, beside what is said about it |
 | Icon | `span role=img`, holding an inline `svg` 1em square whose one `path` is filled with `currentColor`, so it takes the text's colour, the theme's or a Button's. One of the 59 names is its Material Symbols shape (Sharp, filled; `favoriteOff` and `starOff` unfilled), generated into `icons/` by `make icons` (gov R-4). An `svgPath` is drawn as A2UI's reference renderers draw it, in a 24 box, and only when it is path data and nothing else, at most 8 KB (`icons.Path`). The kit writes the `svg` itself, so a path is only ever an attribute. A name with no shape, or a path it doesn't accept, is the glyph cells draw. A HottyIcon is drawn the same way (§6.15); its path, with a `strokeWidth`, is stroked with `currentColor` that wide, with round caps and joins, and not filled |
 | Video, AudioPlayer | `a` with `href`: a link the program opens (§7) |
@@ -326,7 +326,7 @@ Natural widths:
 
 | element | natural width |
 | --- | --- |
-| Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0 |
+| Text | its widest line unwrapped, a list item's indent and marker included; a rule counts 0; one with `lines` (§6.40), its first `lines` rows |
 | HottyMarkdown | as a Text's, its lines as §3.4 draws them: each with its frames (markers and bars), a code block's two columns in, a table's as wide as its columns' widest cells and their padding; a rule counts its frames |
 | Button | the label + 2, a column of padding each side, a List's too (a List's whose label is a Row or a Column, that's + 2); borderless, the label |
 | TextField, DateTime | 2 for the gutter, the label and a space when it has one (padded to its run's widest label, §3.5), the inset (1) and its input: a text field's 32, as wide as an email address takes, whatever is typed; a DateTime's, its value's form (`YYYY-MM-DDTHH:MM`, `YYYY-MM-DD` or `HH:MM`) or its value, whichever is wider, and a column for the caret. Either's `width` instead where it has one (§6.37). A longText, the label's or 20 (an HTML textarea's size), or its `width` |
@@ -364,7 +364,7 @@ Natural widths:
 Minimums:
 
 - A Text's minimum is its longest word. A list item's indent and marker
-  count with its first word. A HottyMarkdown's is its longest word too,
+  count with its first word. One with `lines` (§6.40) is 1: it is cut. A HottyMarkdown's is its longest word too,
   a table's cell's with its padding; its frames give way where they
   leave no room (§3.4).
 - A one-line text field's and a DateTime's is the gutter, its label and a
@@ -3041,6 +3041,36 @@ A2UI v1.0 has no component for keys.
 | cells | its caps on one row, as a hint's (§3.4) |
 | host | `kbd.k-keys`, its caps (§2) |
 | text | its keys as the key hints write them (§4) |
+
+
+### 6.40 lines
+
+`metadata.extensions.io_neuroplast_hotty.lines` on a Text: the most rows
+it shows, a whole number from 1 to 1000; where it has more, the last is
+cut with `…`. A list row's title wants one line, cut where it doesn't
+fit (a plx tool author, 2026-10-27: "No way to keep a Text on one line or
+cut it with an ellipsis"). A2UI v1.0's Text wraps, and a program can't
+cut it right itself: where a line ends depends on the width, the font and
+the host, none of which it knows. A short Text with `lines` 1, a badge
+or a status, never breaks: the same switch.
+
+One line is the Text's first line unwrapped, cut at the room it has;
+any other paragraph is left out. More than one are its rows as wrapped
+(§3.3), the first `lines`, the last cut with `…` where any are left out.
+A clamped Text's minimum width is a column (§3.3), so that a Row squeezes
+it, cut, before its neighbours: a weighted title gives way to the badge
+beside it. Its natural width is its first `lines` rows unwrapped. A count
+that is not a number is none; a fraction is rounded down, less than 1 is
+1, and more than 1000 is 1000. On anything but a Text it is nothing.
+
+| rendition | a Text with `lines` |
+| --- | --- |
+| cells | its first `lines` rows, the last cut to end in `…` where any are left out, with no space before it; one is its first line unwrapped, cut at its width |
+| host | `lines` 1: class `k-one-line`, which kit.css gives `white-space: nowrap`, `overflow: hidden` and `text-overflow: ellipsis`, its first block alone shown. More: `k-clamp`, and `--k-clamp` its number, `-webkit-line-clamp` and `line-clamp`. Either has `min-width: 0`. Blitz draws the one line's ellipsis (hotty-blitz 0.5.3) but not `line-clamp`, so in hottyterm a Text of more lines shows whole |
+| text | nothing: a text rendition shows the whole text |
+
+Story `hotty/lines`: a task list's titles on a line beside due dates, and
+a note of two lines.
 
 ## 7. Fallbacks
 

@@ -1,6 +1,7 @@
 package cells
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 
@@ -152,6 +153,42 @@ func runStyle(st style, r view.Run) style {
 
 // noWrap is a width wider than any line: lines are not wrapped.
 const noWrap = 1 << 30
+
+// clamped are a Text's lines t at width w cut to its Clamp
+// (io_neuroplast_hotty.lines), the last ending in … where any are cut.
+// One line is its first unwrapped and cut at w, as a host cuts it
+// (text-overflow), not its first row as wrapped.
+func clamped(e *view.Element, t []tline, w int) []tline {
+	n := e.Clamp
+	if n == 0 || len(t) <= n {
+		return t
+	}
+	if n == 1 {
+		one := markdown(e, noWrap)[0]
+		one.gs = ellipsis(one.gs, w)
+		return []tline{one}
+	}
+	t = slices.Clone(t[:n])
+	t[n-1].gs = ellipsis(t[n-1].gs, w)
+	return t
+}
+
+// ellipsis is gs cut to end in … within w columns, with no space before
+// it.
+func ellipsis(gs []glyph, w int) []glyph {
+	n, i := 0, 0
+	for ; i < len(gs) && n+gs[i].width <= w-1; i++ {
+		n += gs[i].width
+	}
+	var st style
+	if len(gs) > 0 {
+		st = gs[min(i, len(gs)-1)].style
+	}
+	for i > 0 && gs[i-1].text == " " {
+		i--
+	}
+	return append(gs[:i:i], glyph{text: "…", width: 1, style: st})
+}
 
 // wrap breaks glyphs into lines w columns wide (profile §3.3): at hard
 // breaks, and at spaces; a word longer than a line is broken where the

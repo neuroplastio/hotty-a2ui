@@ -109,3 +109,35 @@ func TestRowWrapsMenus(t *testing.T) {
 		}
 	}
 }
+
+// A Text with lines (io_neuroplast_hotty.lines, profile §6.40) is
+// k-one-line at 1, which kit.css keeps on a line cut with an ellipsis,
+// and k-clamp with --k-clamp above; one without is neither.
+func TestTextClampClasses(t *testing.T) {
+	x := newHarness(t)
+	var msgs []any
+	must(t, json.Unmarshal([]byte(`[{"version":"v1.0","createSurface":{"surfaceId":"s","catalogId":"`+basic.ID+`"}},
+{"version":"v1.0","updateComponents":{"surfaceId":"s","components":[
+ {"id":"root","component":"Column","children":["one","two","prose"]},
+ {"id":"one","component":"Text","text":"Title","metadata":{"extensions":{"io_neuroplast_hotty":{"lines":1}}}},
+ {"id":"two","component":"Text","text":"Summary","metadata":{"extensions":{"io_neuroplast_hotty":{"lines":3}}}},
+ {"id":"prose","component":"Text","text":"Prose"}]}}]`), &msgs))
+	x.process(msgs...)
+	s := x.h.Surface(x.rs["s"].name)
+	for _, c := range []struct{ id, has, hasnt, style string }{
+		{"one", "k-one-line", "k-clamp", ""},
+		{"two", "k-clamp", "k-one-line", "--k-clamp: 3"},
+		{"prose", "k-text", "k-clamp", ""},
+	} {
+		cls, _ := s.Attr(c.id, "class")
+		if !strings.Contains(cls, c.has) || strings.Contains(cls, c.hasnt) {
+			t.Errorf("%s's class is %q", c.id, cls)
+		}
+		if st, _ := s.Attr(c.id, "style"); st != c.style {
+			t.Errorf("%s's style is %q, want %q", c.id, st, c.style)
+		}
+	}
+	if cls, _ := s.Attr("prose", "class"); strings.Contains(cls, "k-one-line") {
+		t.Errorf("prose's class is %q", cls)
+	}
+}

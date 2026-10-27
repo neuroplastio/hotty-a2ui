@@ -179,6 +179,11 @@ func (l *layout) minimum(e *view.Element) int {
 			n = max(n, l.indent(k)+l.minimum(k))
 		}
 	case view.Text, view.Document:
+		if e.Clamp > 0 {
+			// Cut with … where it is narrower than its lines.
+			n = 1
+			break
+		}
 		for _, t := range l.lines(e, noWrap) {
 			n = max(n, longestWord(t.gs))
 		}
@@ -389,7 +394,8 @@ func (l *layout) measureHeight(e *view.Element, w int) int {
 	return l.controlHeight(e, w)
 }
 
-// lines are a Text's lines at width w, or a HottyMarkdown's.
+// lines are a Text's lines at width w, cut to its Clamp, or a
+// HottyMarkdown's.
 func (l *layout) lines(e *view.Element, w int) []tline {
 	k := sized{e, w}
 	if t, ok := l.text[k]; ok {
@@ -399,7 +405,7 @@ func (l *layout) lines(e *view.Element, w int) []tline {
 	if e.Kind == view.Document {
 		t = l.r.document(e, w)
 	} else {
-		t = markdown(e, w)
+		t = clamped(e, markdown(e, w), w)
 	}
 	l.text[k] = t
 	return t
