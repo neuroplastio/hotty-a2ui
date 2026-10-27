@@ -281,7 +281,9 @@ line tall when its label wraps, and buttons short of room overlap.
   that changes its value, in its scope (a template's item), on every way
   of picking; profile §6.41, instruction 42, Region in hotty/choice
   toasts (journal 2026-10-27.2). A menu component waits for a use this
-  doesn't cover. Their
+  doesn't cover. plx 48404bde pins e27e779 (local, ships with the maintainer),
+  with a test of a pick's action on a host; it dropped its script
+  data-model watch. Their
   workaround is a Modal per menu, a column of Buttons, closed by emptying
   its one-item template for a frame. Asked: an action after a pick (an
   onChange whose context reads the new value, as HottyPaginator's
