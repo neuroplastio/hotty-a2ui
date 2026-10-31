@@ -1,6 +1,6 @@
 # Board
 
-Last updated: 2026-10-27
+Last updated: 2026-10-31
 
 **Active phase:** 1 — Cells parity ([roadmap](../roadmap.md))
 **Waiting on the maintainer:** nothing from rounds 7–9
@@ -426,6 +426,19 @@ Terminal to play an asciicast, which is parked (KIT-18): until it comes
 back, their own player draws screencasts and one-frame hotty snapshots
 through hotty-go's `hottyvt` (web's `shared/screencast`).
 
+- [ ] **KIT-CODE-WRAP** — A code line wraps at a space, not inside a
+  word (web, in NEIO-14's leg 2; gov, 2026-10-31). In cells,
+  view.CodeBlock (rendition/cells/text.go) wraps a code line wider than
+  its column by character (`chars(…, w-indent)`). So the docs' tui pages
+  show `# macOS on Apple si` and then `licon`, on every site. The fix:
+  - break at a space where the line has one, and by character only in a
+    run with no spaces;
+  - indent the tail under the code, with a dim `↪` in the gutter;
+  - keep the continuation a soft wrap, so that a copy gives the line
+    whole.
+  web picks it up with a hotty-a2ui pin bump in docs/go.mod. Waiting:
+  done after hotty's 0.6 stack, or when the kit's pause ends, whichever
+  comes first. Nothing on plx's path waits for it.
 - [ ] **KIT-24p** — A page host, split from KIT-24: the addon's surface
   code (DOM, events, deltas) without the terminal, so that a wasm program
   running the kit makes page mode's HTML live. Progressive enhancement,
